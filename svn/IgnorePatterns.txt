@@ -1,0 +1,1 @@
+*.o *.lo *.la *.al *.so.[0-9]* *.pyc *.pyo *.rej *~ #*# .#* .*.swp .DS_Store ui_*.h *.Release *.pro.user *.Debug moc_*.cpp *.log object_script.* Thumbs.db
