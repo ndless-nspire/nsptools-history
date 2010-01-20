@@ -15,7 +15,8 @@ loader: loader.S components/files.S
 	$(LD) $(LDFLAGS) -Ttext 0x1800E15C -o loader.elf loader.o
 	$(OBJCOPY) -O binary loader.elf loader.bin
 	rm -f tmp_loader.S loader.o loader.elf
-	../tools/LoaderWrapper/LoaderWrapper loader.bin ../res/$(NSPIRE_HARDWARE)/loader.tns
+	mkdir -p res/$(NSPIRE_HARDWARE)
+	../tools/LoaderWrapper/LoaderWrapper loader.bin res/$(NSPIRE_HARDWARE)/loader.tns
 	
 hook: hook.S components/files.S
 	@rm -rf hook.bin
@@ -24,7 +25,8 @@ hook: hook.S components/files.S
 	$(LD) $(LDFLAGS) -o hook.elf hook.o
 	$(OBJCOPY) -O binary hook.elf hook.bin
 	rm -f tmp_hook.S hook.o hook.elf
-	cp -f hook.bin ../res/$(NSPIRE_HARDWARE)/hook.tns
+	mkdir -p res/$(NSPIRE_HARDWARE)
+	cp -f hook.bin res/$(NSPIRE_HARDWARE)/hook.tns
 
 demo: demo.S
 	@rm -rf demo.bin
@@ -33,18 +35,18 @@ demo: demo.S
 	$(LD) $(LDFLAGS) -o demo.elf demo.o
 	$(OBJCOPY) -O binary demo.elf demo.bin
 	rm -f tmp_demo.S demo.o demo.elf
-	cp -f demo.bin ../res/$(NSPIRE_HARDWARE)/demo.tns
+	mkdir -p res/$(NSPIRE_HARDWARE)
+	cp -f demo.bin res/$(NSPIRE_HARDWARE)/demo.tns
 
 emulator:
 	../tools/FlashEdit/FlashEdit ../res/$(NSPIRE_HARDWARE)/loader.tns '/Users/geogeo/Development/Calculatrice TI/Nspire/Emulator/011/Flash.bin' 0x611D60
 
-.PHONY: cleanall
+.PHONY: clean
 
-cleanall: cleanbin cleanapp
+clean: cleanbin cleanapp
 
 cleanapp:
-	@rm -rf res/CAS/loader.tns res/CAS/hook.tns res/CAS/demo.tns
-	@rm -rf res/NON-CAS/loader.tns res/NON-CAS/hook.tns res/NON-CAS/demo.tns
+	@rm -rf res
 
 cleanbin:
 	@rm -rf loader.bin hook.bin demo.bin
