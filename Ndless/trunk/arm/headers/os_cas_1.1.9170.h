@@ -15,7 +15,6 @@
 	.equ stat,                          0x1018A00C
   .equ create_path_filename,          0x10004BC0
   .equ sprintf,                       0x10182A28
-  .equ rmdir,                         0x102157E0
   .equ mkdir,                         0x10184B18
   .equ set_current_dir,               0x10187734
 

@@ -1,10 +1,48 @@
-  .include "headers/os_cas_1.1.9170.h"
-  .include "headers/defines.h"
+/****************************************************************************
+ * @(#) Ndless hack loader
+ *
+ * Copyright (C) 2010 by ANNEHEIM Geoffrey and ARMAND Olivier
+ * Contact: geoffrey.anneheim@gmail.com / olivier.armand@gmail.com
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * RCSID $Id$
+ ****************************************************************************/
+ 
+/**
+ * TODO:
+ * -----
+ *
+ * - Avoid to replace 'strings.res' by 'strbackup.tns'. Fork the OS address used
+ * to load resources (CAS: S_OFFSET_HACKED_RESTORE,0x10052084)
+ * restore_resource:
+ *   cmp     r7, #2               
+ *   bne     _restore_resource_continue    @ resource not located into syst folder
+ *   adr     r0, fileResourceStringsBackup @ use the resource saved instead of standard resource (hacked) 
+ *
+ * _restore_resource_continue:
+ *   adr     r1, rb
+ *   ldr     pc, =(OS_OFFSET_HACKED_RESTORE + 8)
+ *
+ * - Move files 'loader.tns' and 'strbackup.tns' into the folder /phoenix.
+ * - Fork the OS address used to select the user language.
+ */
+     
+  #include "headers/os.h"
+  #include "headers/defines.h"
   
-  .set  HACK_BASE_ADDRESS,            0x1800E15C
-  .set  HACK_BYTES_SIZE,              5120
-  .set  OS_OFFSET_HACKED,             0x10008F58
-  .set  OS_SHADOWED_CALL,             0x1004C7B4
+  #ifdef CAS
+    .set  OS_OFFSET_HACKED,             0x10008F58
+    .set  OS_SHADOWED_CALL,             0x1004C7B4
+  #elif NON_CAS
+    .set  OS_OFFSET_HACKED,             0x10008F88
+    .set  OS_SHADOWED_CALL,             0x1004C800
+  #endif
+  
+  .set  HACK_BASE_ADDRESS,              0x1800E15C
+  .set  HACK_BYTES_SIZE,                5120
     
   .text
 

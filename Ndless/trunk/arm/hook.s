@@ -1,9 +1,28 @@
-  .include "headers/os_cas_1.1.9170.h"
-  .include "headers/defines.h"
+/*****************************************************************************
+ * @(#) Ndless hook (i.e run user programs thanks of the TI documents browser)
+ *
+ * Copyright (C) 2010 by ANNEHEIM Geoffrey and ARMAND Olivier
+ * Contact: geoffrey.anneheim@gmail.com / olivier.armand@gmail.com
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * RCSID $Id$
+ *****************************************************************************/
+
+  #include "headers/os.h"
+  #include "headers/defines.h"
   
-  .set  OS_OFFSET_HACKED,             0x10005E40
-  .set  OS_SHADOWED_CALL,             0x10005758
-  .set  PRG_SIGNATURE_BYTES_SIZE,     4
+  #ifdef CAS
+    .set  OS_OFFSET_HACKED,             0x10005E40
+    .set  OS_SHADOWED_CALL,             0x10005758
+  #elif NON_CAS
+    .set  OS_OFFSET_HACKED,             0x10005E58
+    .set  OS_SHADOWED_CALL,             0x10005770
+  #endif
+  
+  .set  PRG_SIGNATURE_BYTES_SIZE,       4
     
   .text
 
