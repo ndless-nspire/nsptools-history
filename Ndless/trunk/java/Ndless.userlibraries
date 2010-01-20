@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<eclipse-userlibraries version="2">
+    <library name="TI-Nspire Computer Link BuildTime" systemlibrary="false">
+        <archive path="C:/Program Files/TI Education/TI-Nspire Computer Link/lib/pxconnect.jar"/>
+        <archive path="C:/Program Files/TI Education/TI-Nspire Computer Link/lib/navnet/navnet.jar"/>
+    </library>
+</eclipse-userlibraries>

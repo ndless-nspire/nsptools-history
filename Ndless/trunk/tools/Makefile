@@ -1,0 +1,11 @@
+SUBDIRS = FlashEdit LoaderWrapper
+
+all:
+	@for i in $(SUBDIRS); do \
+	echo "make all in $$i..."; \
+  (cd $$i; make all); done
+  
+clean:
+	@for i in $(SUBDIRS); do \
+	echo "Clearing in $$i..."; \
+	(cd $$i; make clean); done

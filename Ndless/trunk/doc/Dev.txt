@@ -1,0 +1,30 @@
+      =================================
+      = Development environment setup =
+      =================================
+
+This file describes the prerequisites and setup steps for a Windows developement environment.
+
+ARM
+===
+
+- YAGARTO GNU ARM toolchain - http://www.yagarto.de
+- Cygwin, with GCC and GNU Make - http://www.cygwin.com
+
+* Add YAGARTO's home directory to your PATH environment variable
+
+Java
+====
+
+- Java JDK 6 - http://java.sun.com/javase/downloads/index.jsp
+- Eclipse IDE for Java Developers - http://www.eclipse.org/downloads
+- Subclipse (SVN plug-in for Eclipse) - http://subclipse.tigris.org/
+- Apache Ant - http://ant.apache.org/bindownload.cgi
+- ProGuard - http://proguard.sourceforge.net/
+
+* Add Apache Ant's home directory to your PATH environment variable
+* Unzip ProGuard to Ndles\java\tools\proguard (there will be bin/ and README in this directory)
+* Import in Eclipse the Java Project Ndless\java
+* Edit with a text editor Ndlessjava\Ndless.userlibraries, and configure the paths depending on your environment
+* Load this file in Eclipse : Window -> Preferences -> Java -> Build Path -> User Libraries -> Import
+* Copy Ndless\java\build_config.properties.tpl to Ndless\java\build_config.properties, and adapt the latter
+* Edit Ndless\java\ndless.pro and adapt the libraryjars paths
