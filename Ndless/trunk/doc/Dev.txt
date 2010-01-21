@@ -4,11 +4,17 @@
 
 This file describes the prerequisites and setup steps for a Windows developement environment.
 
+C
+=
+
+- Cygwin, with GCC and GNU Make - http://www.cygwin.com
+
+* Copy Ndless/Makefile.config.tpl to Ndless/Makefile.config and configure the latter
+
 ARM
 ===
 
 - YAGARTO GNU ARM toolchain - http://www.yagarto.de
-- Cygwin, with GCC and GNU Make - http://www.cygwin.com
 
 * Add YAGARTO's home directory to your PATH environment variable
 
@@ -22,9 +28,17 @@ Java
 - ProGuard - http://proguard.sourceforge.net/
 
 * Add Apache Ant's home directory to your PATH environment variable
-* Unzip ProGuard to Ndles\java\tools\proguard (there will be bin/ and README in this directory)
-* Import in Eclipse the Java Project Ndless\java
-* Edit with a text editor Ndlessjava\Ndless.userlibraries, and configure the paths depending on your environment
+* Unzip ProGuard to Ndles/java/tools/proguard (there will be bin/ and README in this directory)
+* Import in Eclipse the Java Project Ndless/java
+* Edit with a text editor Ndlessjava/Ndless.userlibraries, and configure the paths depending on your environment
 * Load this file in Eclipse : Window -> Preferences -> Java -> Build Path -> User Libraries -> Import
-* Copy Ndless\java\build_config.properties.tpl to Ndless\java\build_config.properties, and adapt the latter
-* Edit Ndless\java\ndless.pro and adapt the libraryjars paths
+* Copy Ndless/java/build_config.properties.tpl to Ndless/java/build_config.properties and configure the latter
+* Edit Ndless/java/ndless.pro and adapt the libraryjars paths
+
+Building
+========
+
+From Ndless root directory:
+
+* make: builds the artifacts
+* make dist: builds the artificats and create a release directory (dist)

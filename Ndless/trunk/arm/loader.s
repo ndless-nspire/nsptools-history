@@ -52,10 +52,10 @@ _start: .global _start
 
 # -------------------------------------------------------------------------
 # Install hack in OS memory space.
-# If the key theta is hold on, the resource file 'strings.res' is restored.
+# If the key theta is hold down, the resource file 'strings.res' is restored.
 # (i.e Remove the hack) 
 # 1) Allocate a block memory.
-# 2) Copy the code of the loader in the block memory.
+# 2) Copy the code of the loader to the block memory.
 # 3) Inject the block memory address in the OS space.
 # 4) Restore resource 'strings.res' to perform a valid OS reboot.
 # 5) Restart OS.

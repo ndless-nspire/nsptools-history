@@ -15,7 +15,7 @@ Command-line parameters:
 	<!-- ================================= 
           target: default              
          ================================= -->
-	<target name="default" depends="clean,build,jar,obfuscate,noobfuscation">
+	<target name="default" depends="build,jar,obfuscate,noobfuscation">
 	</target>
 
 	<target name="clean">

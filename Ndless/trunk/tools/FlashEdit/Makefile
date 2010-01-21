@@ -1,11 +1,9 @@
 CC=gcc
 CFLAGS = -W -Wall
 
-all: FlashEdit.exe
+all: FlashEdit
 
-.PHONY: FlashEdit
-
-FlashEdit: FlashEdit.c
+FlashEdit.exe: FlashEdit.c
 	
 clean:
 	@rm -rf *.exe

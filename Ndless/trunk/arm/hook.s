@@ -1,5 +1,5 @@
 /*****************************************************************************
- * @(#) Ndless hook (i.e run user programs thanks of the TI documents browser)
+ * @(#) Ndless hook (i.e run user programs thanks to the TI documents browser)
  *
  * Copyright (C) 2010 by ANNEHEIM Geoffrey and ARMAND Olivier
  * Contact: geoffrey.anneheim@gmail.com / olivier.calc@gmail.com
@@ -66,7 +66,7 @@ _ti_open_file:
   ldmfd   sp!, {r0-r12, lr}
   
   # Restore OS instructions
-  oscall  OS_SHADOWED_CALL    @ call the OS function which open a TI document
+  oscall  OS_SHADOWED_CALL    @ call the OS function which opens a TI document
   cmp     r0, #0              @ execute the OS instruction previously erased by install_hook
   ldr     pc, =(OS_OFFSET_HACKED + 8)
 

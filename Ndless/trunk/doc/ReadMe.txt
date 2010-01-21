@@ -5,9 +5,9 @@
 What is it?
 ===========
 
-Ndless allows to run arbitrary code on the TI-Nspire hardware.
-Ndless comes with an installer to prepare the TI-Nspire and download the executable
-automatically from a computer.
+Ndless allows to run executables on the TI-Nspire hardware.
+Ndless comes with an installer to prepare the TI-Nspire and install the executable
+loader automatically from a computer.
 
 What do I need to run it?
 =========================
@@ -54,12 +54,8 @@ What you need to know as a developer
 What you can't currently do, but should soon I be able to
 =========================================================
 
-- Upgrade to a more recent version of the OS and while keeping Ndless installed
+- Upgrade to a more recent version of the OS while keeping Ndless installed
 - Install or run the executable with the TI-84+ keyboard of the TI-Nspire
-
-What is not yet planned
-=======================
-
 - Mac support
 
 Known issues
@@ -87,6 +83,3 @@ History
 
 * - beta 2
  64-bit architectures support thanks to hwti
-
-* 2010-01-12 - beta 1
- First release

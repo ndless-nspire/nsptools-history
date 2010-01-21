@@ -1,4 +1,5 @@
 # buggy
+# TODO we should rewrite the code to avoid any copyright issue
   .xdef drawString
 
 drawString:
