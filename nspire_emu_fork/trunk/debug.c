@@ -225,8 +225,13 @@ readstdin:
 			set_debug_next(arm.reg[15] + 4);
 			break;
 		} else if (!stricmp(cmd, "d")) {
-			u32 addr = strtoul(strtok(NULL, " \n"), 0, 16);
-			dump(addr);
+			char *arg = strtok(NULL, " \n");
+			if (!arg)
+				printf("Missing address parameter.\n");
+			else {
+				u32 addr = strtoul(arg, 0, 16);
+				dump(addr);
+			}
 		} else if (!stricmp(cmd, "u")) {
 			char *arg = strtok(NULL, " \n");
 			u32 addr = arg ? strtoul(arg, 0, 16) & ~3 : arm.reg[15];
