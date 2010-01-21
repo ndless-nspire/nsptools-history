@@ -23,3 +23,5 @@ shifts.o : shifts.S
 %.o : %.c
 	gcc $(FLAGS) -O2 -c $< -o $@
 
+clean:
+	rm -rf *.o emu.exe
