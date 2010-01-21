@@ -193,7 +193,7 @@ LRESULT CALLBACK keys_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		UINT align = SetTextAlign(hdc, TA_CENTER);
 		for (row = 0; row < 9; row++) {
 			for (col = 0; col < 16; col++) {
-				COLORREF tc, bc;
+				COLORREF tc = 0, bc = 0;
 				const char *str;
 				if (row < 8 && col < 12) 
 					str = key_names[emulate_ti84_keypad][row][col];

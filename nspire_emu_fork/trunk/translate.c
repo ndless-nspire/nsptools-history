@@ -479,7 +479,7 @@ no_condition:
 			int set_carry = -1;
 			int right_is_imm = insn >> 25 & 1;
 			int right_is_reg = 0;
-			u32 imm;
+			u32 imm = 0;
 			if (right_is_imm) {
 				// Right operand is immediate
 				imm = insn & 0xFF;

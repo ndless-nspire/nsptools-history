@@ -103,6 +103,7 @@ u32 __attribute__((fastcall)) get_spsr();
 void __attribute__((fastcall)) set_spsr(u32 cpsr, u32 mask);
 void cpu_exception(int type);
 void cpu_interpret_instruction(u32 insn);
+void cpu_irq_check();
 
 /* Declarations for debug.c */
 
