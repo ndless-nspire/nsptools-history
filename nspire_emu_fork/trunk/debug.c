@@ -70,6 +70,7 @@ static void set_debug_next(u32 next) {
 	debug_next = next;
 }
 
+FILE *debugger_stdin;
 void debugger() {
 	char line[80];
 	char *cmd;
@@ -95,8 +96,21 @@ void debugger() {
 	timer_off();
 	while (1) {
 		printf("debug> ");
-		if (!fgets(line, sizeof line, stdin))
-			exit(1);
+		if (!debugger_stdin)
+			debugger_stdin = stdin;
+readstdin:
+		if (!fgets(line, sizeof line, debugger_stdin)) {
+			if (debugger_stdin != stdin) {
+				fclose(debugger_stdin);
+				debugger_stdin = stdin;
+				goto readstdin;
+			}
+			else
+				exit(1);
+		}
+		if (debugger_stdin != stdin) {
+			printf("%s\n", line);
+		}
 		cmd = strtok(line, " \n");
 		if (!cmd) {
 			continue;

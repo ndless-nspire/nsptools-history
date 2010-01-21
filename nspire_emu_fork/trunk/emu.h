@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 typedef unsigned char      u8;
 typedef unsigned short     u16;
 typedef unsigned int       u32;
@@ -103,6 +105,8 @@ void cpu_exception(int type);
 void cpu_interpret_instruction(u32 insn);
 
 /* Declarations for debug.c */
+
+extern FILE *debugger_stdin;
 
 void backtrace(u32 fp);
 void debugger();

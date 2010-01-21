@@ -101,6 +101,7 @@ int main(int argc, char **argv) {
 	FILE *f;
 
 	char *boot1_filename = NULL, *boot2_filename = NULL;
+	char *debug_cmds_filename = NULL;
 	bool new_flash_image = false;
 
 	char *preload_boot2 = NULL, *preload_diags = NULL, *preload_os = NULL;
@@ -171,6 +172,11 @@ int main(int argc, char **argv) {
 					*pp = arg;
 					break;
 				}
+				case 'R':
+					cpu_events |= EVENT_DEBUG_STEP;
+					if (*arg == '=') arg++;
+					debug_cmds_filename = arg;
+					break;
 				default:
 usage:
 					printf(
@@ -183,7 +189,8 @@ usage:
 						"  /K            - emulate TI-84+ keypad\n"
 						"  /N            - create new flash image\n"
 						"  /PB=boot2.img - preload flash with BOOT2 (.img file)\n"
-						"  /PO=osfile    - preload flash with OS (.tnc/.tno file)\n");
+						"  /PO=osfile    - preload flash with OS (.tnc/.tno file)\n"
+						"  /R=cmdfile    - run debugger commands at start\n");
 					return 1;
 			}
 		} else {
@@ -242,6 +249,14 @@ usage:
 		fread(RAM_PTR(0x00000000), 1, 0x80000, f);
 		fclose(f);
 	}
+	
+	if (debug_cmds_filename) {
+		debugger_stdin = fopen(debug_cmds_filename, "rt");
+		if (!debugger_stdin) {
+			perror(debug_cmds_filename);
+			return 1;
+		}
+}
 
 	memory_initialize();
 
