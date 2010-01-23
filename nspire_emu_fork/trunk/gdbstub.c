@@ -10,7 +10,7 @@
  */
 
 /*
- * Derived from GDB's sparc-stub.c.
+ * Some parts derived from GDB's sparc-stub.c.
  *
  * The following gdb commands are supported:
  *
@@ -52,10 +52,116 @@
  ****************************************************************************/
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
-/************************************************************************/
-/* BUFMAX defines the maximum number of characters in inbound/outbound buffers*/
+#ifdef __MINGW32__
+#include <winsock2.h>
+#else
+#include <sys/socket.h>
+#include <netinet/in.h>
+#endif
+
+static int socket_fd;
+
+static void log_socket_error(const char *msg) {
+#ifdef __MINGW32__
+	printf("%s: %i\n", msg, WSAGetLastError());
+#else
+	perror(msg);
+#endif
+}
+
+static char sockbuf[4096];
+static char *sockbufptr = sockbuf;
+
+static void flush_out_buffer(void) {
+	char *p = sockbuf;
+	while (p != sockbufptr) {
+		int n = send(socket_fd, p, sockbufptr-p, 0);
+		if (n == -1) {
+			log_socket_error("Failed to send to GDB stub socket");
+			break;
+		}
+		p += n;
+	}
+	sockbufptr = sockbuf;
+}
+
+static void put_debug_char(char c) {
+	printf("%c", c);
+	if (sockbufptr == sockbuf + sizeof sockbuf)
+		flush_out_buffer();
+	*sockbufptr++ = c;
+}
+
+static char get_debug_char(void) {
+	char c;
+	int r;
+	printf("%c", c);
+	r = recv(socket_fd, &c, 1, 0);
+	if (r == -1) {
+		log_socket_error("Failed to recv from GDB stub socket");
+		// TODO disconnect
+	} else if(r == 0) {
+		// TODO disconnect
+		puts("Disconnected from GDB.");
+		return -1;
+	}
+	return c;
+}
+
+static void wait_gdb_connection(int port) {
+	int listen_socket_fd;
+	struct sockaddr_in sockaddr;
+	int r, on;
+	
+#ifdef __MINGW32__
+	WORD wVersionRequested = MAKEWORD(2, 0);
+	WSADATA wsaData;
+	if (WSAStartup(wVersionRequested, &wsaData)) {
+		log_socket_error("WSAStartup failed");
+		exit(1);
+	}
+#endif
+
+	listen_socket_fd = socket(PF_INET, SOCK_STREAM, 0);
+	if (listen_socket_fd == -1) {
+		log_socket_error("Failed to create GDB stub socket");
+		exit(1);
+	}
+	memset (&sockaddr, '\000', sizeof sockaddr);
+	sockaddr.sin_family = AF_INET;
+	sockaddr.sin_port = htons(port);
+	sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	r = bind(listen_socket_fd, (struct sockaddr *)&sockaddr, sizeof(sockaddr));
+	if (r == -1) {
+		log_socket_error("Failed to bind GDB stub socket");
+		exit(1);
+	}
+	r = listen(listen_socket_fd, 0);
+	if (r == -1) {
+		log_socket_error("Failed to listen on GDB stub socket");
+	}
+	socket_fd = accept(listen_socket_fd, NULL, NULL);
+	if (socket_fd == -1) {
+		log_socket_error("Failed to accept on GDB stub socket");
+	}
+	close(listen_socket_fd);
+	/* Disable Nagle for low latency */
+	on = 1;
+#ifdef __MINGW32__
+	r = setsockopt(socket_fd, IPPROTO_TCP, TCP_NODELAY, (const char *)&on, sizeof(on));
+#else
+	r = setsockopt(socket_fd, IPPROTO_TCP, TCP_NODELAY, &on, sizeof(on));
+#endif
+	if (r == -1)
+		log_socket_error("setsockopt(TCP_NODELAY) failed for GDB stub socket");
+	puts("Connected to GDB.");
+}
+
+/* BUFMAX defines the maximum number of characters in inbound/outbound buffers */
 /* at least NUMREGBYTES*2 are needed for register packets */
 #define BUFMAX 2048
 
@@ -69,16 +175,6 @@ static const char hexchars[]="0123456789abcdef";
 #define NUMREGBYTES (NUMREGS * 4)
 enum regnames {R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, SP, LR, PC,
 	F0, F1, F2, F3, F4, F5, F6, F7, FPS, CPSR};
-
-void putDebugChar(char c) {
-	printf("%c", c);
-}
-
-#include <conio.h>
-int getDebugChar(void) {
-	// TODO
-	return _getch();
-}
 
 /* Convert ch from a hex digit to an int */
 static int hex(unsigned char ch) {
@@ -104,8 +200,12 @@ unsigned char *getpacket(void) {
 
 	while (1) {
 		/* wait around for the start character, ignore all other characters */
-		while ((ch = getDebugChar()) != '$')
-			;
+		do {
+			ch = get_debug_char();
+			// TODO handle disconnections
+			if (ch == -1)
+				exit(1);
+		}	while (ch != '$');
 		
 retry:
 		checksum = 0;
@@ -114,7 +214,7 @@ retry:
 		
 		/* now, read until a # or end of buffer is found */
 		while (count < BUFMAX - 1) {
-			ch = getDebugChar();
+			ch = get_debug_char();
 			if (ch == '$')
 				goto retry;
 			if (ch == '#')
@@ -126,23 +226,25 @@ retry:
 		buffer[count] = 0;
 
 		if (ch == '#') {
-			ch = getDebugChar();
+			ch = get_debug_char();
 			xmitcsum = hex(ch) << 4;
-			ch = getDebugChar();
+			ch = get_debug_char();
 			xmitcsum += hex(ch);
 
 			if (checksum != xmitcsum) {
-				putDebugChar('-');	/* failed checksum */
+				put_debug_char('-');	/* failed checksum */
+				flush_out_buffer();
 			}	else {
-				putDebugChar('+');	/* successful transfer */
-	
+				put_debug_char('+');	/* successful transfer */
+				
 				/* if a sequence char is present, reply the sequence ID */
 				if(buffer[2] == ':') {
-					putDebugChar(buffer[0]);
-					putDebugChar(buffer[1]);
-		
+					put_debug_char(buffer[0]);
+					put_debug_char(buffer[1]);
+					flush_out_buffer();
 					return &buffer[3];
 				}
+				flush_out_buffer();
 				return &buffer[0];
 			}
 		}
@@ -157,22 +259,22 @@ static void putpacket(unsigned char *buffer) {
 
 	/*  $<packet info>#<checksum>. */
 	do {
-			putDebugChar('$');
+			put_debug_char('$');
 			checksum = 0;
 			count = 0;
 
 			while ((ch = buffer[count])) {
-				putDebugChar(ch);
+				put_debug_char(ch);
 				checksum += ch;
 				count += 1;
 			}
 
-			putDebugChar('#');
-			putDebugChar(hexchars[checksum >> 4]);
-			putDebugChar(hexchars[checksum & 0xf]);
-
+			put_debug_char('#');
+			put_debug_char(hexchars[checksum >> 4]);
+			put_debug_char(hexchars[checksum & 0xf]);
+			flush_out_buffer();
 		}
-	while (getDebugChar() != '+');
+	while (get_debug_char() != '+');
 }
 
 /* Indicate to caller of mem2hex or hex2mem that there has been an
@@ -359,6 +461,9 @@ void handle_exception(unsigned long *registers) {
 				if (hexToInt(&ptr, &addr)
 				    && *ptr++ == ','
 				    && hexToInt(&ptr, &length)) {
+				  // TODO
+				  char dummy[100] = {};
+				 	addr = dummy;
 					if (mem2hex((char *)addr, remcomOutBuffer, length, 1))
 						break;
 		
@@ -406,4 +511,9 @@ void handle_exception(unsigned long *registers) {
 		/* reply to the request */
 		putpacket(remcomOutBuffer);
 	}
+}
+
+void gdbstub_init(void) {
+	// TODO param
+	wait_gdb_connection(7777);
 }
