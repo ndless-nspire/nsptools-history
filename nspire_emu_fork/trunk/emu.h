@@ -99,6 +99,7 @@ extern struct arm_state arm;
 
 u32 __attribute__((fastcall)) get_cpsr();
 void __attribute__((fastcall)) set_cpsr(u32 cpsr, u32 mask);
+void set_cpsr_full(u32 cpsr);
 u32 __attribute__((fastcall)) get_spsr();
 void __attribute__((fastcall)) set_spsr(u32 cpsr, u32 mask);
 void cpu_exception(int type);
@@ -108,6 +109,7 @@ void cpu_irq_check();
 /* Declarations for debug.c */
 
 extern FILE *debugger_stdin;
+extern bool gdb_debugger;
 
 void backtrace(u32 fp);
 void debugger();
@@ -123,6 +125,11 @@ u32 nand_flash_read_word(u32 addr);
 void nand_flash_write_word(u32 addr, u32 value);
 void flash_save_changes();
 void flash_initialize(char *preload_boot2, char *preload_diags, char *preload_os);
+
+/* Declarations for gdbstub.c */
+
+void gdbstub_init(int port);
+void gdbstub_loop(void);
 
 /* Declarations for gui.c */
 

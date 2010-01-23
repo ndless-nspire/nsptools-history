@@ -103,6 +103,7 @@ int main(int argc, char **argv) {
 	char *boot1_filename = NULL, *boot2_filename = NULL;
 	char *debug_cmds_filename = NULL;
 	bool new_flash_image = false;
+	int gdb_port = 0;
 
 	char *preload_boot2 = NULL, *preload_diags = NULL, *preload_os = NULL;
 
@@ -130,6 +131,15 @@ int main(int argc, char **argv) {
 				case 'F':
 					if (*arg == '=') arg++;
 					flash_filename = arg;
+					break;
+				case 'G':
+					if (*arg == '=') arg++;
+					gdb_port = atoi(arg);
+					if (!gdb_port) {
+						printf("Invalid listen port for GDB stub%s%s\n", *arg ? ": " : "", arg);
+						exit(1);
+					}
+					gdb_debugger = true;
 					break;
 				case 'K':
 					if (*arg) goto usage;
@@ -186,6 +196,7 @@ usage:
 						"  /C            - emulate CAS hardware version\n"
 						"  /D            - enter debugger at start\n"
 						"  /F=file       - flash image filename\n"
+						"  /G=port       - debug with external GDB through TCP\n"
 						"  /K            - emulate TI-84+ keypad\n"
 						"  /N            - create new flash image\n"
 						"  /PB=boot2.img - preload flash with BOOT2 (.img file)\n"
@@ -300,6 +311,9 @@ reset:
 		 * instead of 000000xx like they're supposed to (see cpu_exception)*/
 		memcpy(RAM_PTR(0xA4000000), RAM_PTR(0x00000000), 0x40);
 	}
+
+	if (gdb_debugger)
+		gdbstub_init(gdb_port);
 
 	while (!exiting) {
 		while (cycle_count_delta < 0) {

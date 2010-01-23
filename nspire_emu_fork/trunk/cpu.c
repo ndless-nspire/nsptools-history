@@ -21,7 +21,7 @@ u32 __attribute__((fastcall)) get_cpsr() {
 	     | arm.cpsr_v << 28
 	     | arm.cpsr_low28;
 }
-static void set_cpsr_full(u32 cpsr) {
+void set_cpsr_full(u32 cpsr) {
 	if ((cpsr ^ arm.cpsr_low28) & 0x1F) {
 		/* Switching to a different processor mode. Swap out registers of old mode */
 		if ((arm.cpsr_low28 & 0x1F) == MODE_FIQ)

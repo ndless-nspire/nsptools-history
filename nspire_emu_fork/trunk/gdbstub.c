@@ -63,6 +63,10 @@
 #include <netinet/in.h>
 #endif
 
+#include "emu.h"
+
+#define TRACE_PACKETS 0
+
 static int socket_fd;
 
 static void log_socket_error(const char *msg) {
@@ -90,7 +94,9 @@ static void flush_out_buffer(void) {
 }
 
 static void put_debug_char(char c) {
+#if TRACE_PACKETS
 	printf("%c", c);
+#endif
 	if (sockbufptr == sockbuf + sizeof sockbuf)
 		flush_out_buffer();
 	*sockbufptr++ = c;
@@ -99,14 +105,16 @@ static void put_debug_char(char c) {
 static char get_debug_char(void) {
 	char c;
 	int r;
+#if TRACE_PACKETS
 	printf("%c", c);
+#endif
 	r = recv(socket_fd, &c, 1, 0);
 	if (r == -1) {
 		log_socket_error("Failed to recv from GDB stub socket");
 		// TODO disconnect
 	} else if(r == 0) {
 		// TODO disconnect
-		puts("Disconnected from GDB.");
+		puts("GDB disconnected.");
 		return -1;
 	}
 	return c;
@@ -144,6 +152,7 @@ static void wait_gdb_connection(int port) {
 	if (r == -1) {
 		log_socket_error("Failed to listen on GDB stub socket");
 	}
+	puts("Waiting for GDB to connect...");
 	socket_fd = accept(listen_socket_fd, NULL, NULL);
 	if (socket_fd == -1) {
 		log_socket_error("Failed to accept on GDB stub socket");
@@ -158,7 +167,7 @@ static void wait_gdb_connection(int port) {
 #endif
 	if (r == -1)
 		log_socket_error("setsockopt(TCP_NODELAY) failed for GDB stub socket");
-	puts("Connected to GDB.");
+	puts("GDB connected.");
 }
 
 /* BUFMAX defines the maximum number of characters in inbound/outbound buffers */
@@ -169,12 +178,15 @@ static void set_mem_fault_trap();
 
 static const char hexchars[]="0123456789abcdef";
 
-#define NUMREGS 72
+#define NUMREGS 26
 
-/* Number of bytes of registers.  */
+/* Number of bytes of registers. */
 #define NUMREGBYTES (NUMREGS * 4)
 enum regnames {R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, SP, LR, PC,
 	F0, F1, F2, F3, F4, F5, F6, F7, FPS, CPSR};
+
+// see GDB's gdb/signal.h
+enum target_signal {SIGNAL_TRAP = 5};
 
 /* Convert ch from a hex digit to an int */
 static int hex(unsigned char ch) {
@@ -328,6 +340,7 @@ static char *hex2mem(unsigned char *buf, unsigned char *mem, int count, int may_
 	return mem;
 }
 
+
 // TODO
 static void set_mem_fault_trap(int enable) {
 }
@@ -356,130 +369,96 @@ static int hexToInt(char **ptr, int *intValue) {
 	return (numChars);
 }
 
-/*
- * This function does all command processing for interfacing to gdb.  It
- * returns 1 if you should skip the instruction at the trap address, 0
- * otherwise.
- */
+/* From emu to GDB */
+static void get_registers(unsigned long regbuf[NUMREGS]) {
+	// GDB's format in arm-tdep.c/arm_register_names
+	memset(regbuf, 0, sizeof(unsigned long) * NUMREGS);
+	memcpy(regbuf, arm.reg, sizeof(unsigned long) * 16);
+	regbuf[NUMREGS-1] = (unsigned long)get_cpsr();
+}
+
+/* From GDB to emu */
+static void set_registers(const unsigned long regbuf[NUMREGS]) {
+	memcpy(arm.reg, regbuf, sizeof(unsigned long) * 16);
+	set_cpsr_full(regbuf[NUMREGS-1]);
+}
+
+#define append_hex_char(ptr,ch) do {*ptr++ = hexchars[(ch) >> 4]; *ptr++ = hexchars[(ch) & 0xf];} while (0)
+
+void send_signal_reply(int signal) {
+	char *ptr = remcomOutBuffer;
+	*ptr++ = 'T';
+	append_hex_char(ptr, signal);
+	append_hex_char(ptr, 13);
+	*ptr++ = ':';
+	ptr = mem2hex((char *)&arm.reg[13], ptr, sizeof(u32), 0);
+	*ptr++ = ';';
+	append_hex_char(ptr, 15);
+	*ptr++ = ':';
+	ptr = mem2hex((char *)&arm.reg[15], ptr, sizeof(u32), 0);
+	*ptr++ = ';';
+	*ptr++ = 0;
+	putpacket(remcomOutBuffer);
+}
+
 extern void breakinst();
 
-void handle_exception(unsigned long *registers) {
-	int tt;			/* Trap type */
-	int sigval;
+void handle_exception(void) {
+	send_signal_reply(SIGNAL_TRAP);
+}
+
+void gdbstub_loop(void) {
 	int addr;
 	int length;
 	char *ptr;
-	unsigned long *sp;
-
-	// TODO define breakinst
-//	if (registers[PC] == (unsigned long)breakinst) {
-//		registers[PC] += 4;
-//	}
-
-	sp = (unsigned long *)registers[SP];
-
-	// TODO
-	//tt = (registers[TBR] >> 4) & 0xff;
-
-	/* reply to host that an exception has occurred */
-	sigval = 0; // TODO: computeSignal(tt);
-	ptr = remcomOutBuffer;
-
-	*ptr++ = 'T';
-	*ptr++ = hexchars[sigval >> 4];
-	*ptr++ = hexchars[sigval & 0xf];
-
-	*ptr++ = hexchars[PC >> 4];
-	*ptr++ = hexchars[PC & 0xf];
-	*ptr++ = ':';
-	ptr = mem2hex((char *)&registers[PC], ptr, sizeof(unsigned long), 0);
-	*ptr++ = ';';
-
-	// TODO define FP constant and find its value
-	#define FP 0
-	*ptr++ = hexchars[FP >> 4];
-	*ptr++ = hexchars[FP & 0xf];
-	*ptr++ = ':';
-	// TODO
-	ptr = mem2hex((char*)(sp + 8 + 6), ptr, sizeof(unsigned long), 0); /* FP */
-	*ptr++ = ';';
-
-	*ptr++ = hexchars[SP >> 4];
-	*ptr++ = hexchars[SP & 0xf];
-	*ptr++ = ':';
-	ptr = mem2hex((char *)&sp, ptr, sizeof(unsigned long), 0);
-	*ptr++ = ';';
-
-	// TODO NPC? Are there others?
-
-	*ptr++ = 0;
-
-	putpacket(remcomOutBuffer);
-
+	void *ramaddr;
+	unsigned long regbuf[NUMREGS];
+	
+	send_signal_reply(SIGNAL_TRAP);
+	cpu_events &= ~EVENT_DEBUG_STEP;
+	
 	while (1)	{
 		remcomOutBuffer[0] = 0;
 
 		ptr = getpacket();
 		switch (*ptr++) 	{
 			case '?':
-				remcomOutBuffer[0] = 'S';
-				remcomOutBuffer[1] = hexchars[sigval >> 4];
-				remcomOutBuffer[2] = hexchars[sigval & 0xf];
-				remcomOutBuffer[3] = 0;
+				send_signal_reply(SIGNAL_TRAP);
 				break;
 
-			case 'd':		/* toggle debug flag */
-				break;
-	
-			// TODO check the format expected for ARM target. Change '18' constant elsewhere
-			case 'g':		/* return the value of the CPU registers */
+			case 'g':  /* return the value of the CPU registers */
+				get_registers(regbuf);
 				ptr = remcomOutBuffer;
-				ptr = mem2hex((char *)registers, ptr, 26 * sizeof(unsigned long), 0); 
+				ptr = mem2hex((char *)regbuf, ptr, NUMREGS * sizeof(unsigned long), 0); 
 				break;
 		
-			// TODO check the format expected for ARM target
-			case 'G': {  /* set the value of the CPU registers - return OK */
-				unsigned long *newsp;
-		
-				hex2mem(ptr, (char *)registers, 26 * sizeof(unsigned long), 0);
-
-				// TODO
-				/* See if the stack pointer has moved.  If so, then copy the saved
-				   locals and ins to the new location.  This keeps the window
-				   overflow and underflow routines happy.  */
-				newsp = (unsigned long *)registers[SP];
-				if (sp != newsp)
-					sp = memcpy(newsp, sp, 26 * sizeof(unsigned long));
-		
+			case 'G':  /* set the value of the CPU registers - return OK */
+				hex2mem(ptr, (char *)regbuf, NUMREGS * sizeof(unsigned long), 0);
+				set_registers(regbuf);
 				strcpy(remcomOutBuffer,"OK");
 				break;
-			}
 		
-			case 'm':	  /* mAA..AA,LLLL  Read LLLL bytes at address AA..AA */
-				/* Try to read %x,%x.  */
-		
+			case 'm':  /* mAA..AA,LLLL  Read LLLL bytes at address AA..AA */
+				/* Try to read %x,%x */
 				if (hexToInt(&ptr, &addr)
 				    && *ptr++ == ','
 				    && hexToInt(&ptr, &length)) {
-				  // TODO
-				  char dummy[100] = {};
-				 	addr = dummy;
-					if (mem2hex((char *)addr, remcomOutBuffer, length, 1))
+					ramaddr = RAM_PTR(addr);
+					if (!ramaddr || mem2hex((char *)ramaddr, remcomOutBuffer, length, 1))
 						break;
-		
 					strcpy(remcomOutBuffer, "E03");
 				}	else
 					strcpy(remcomOutBuffer,"E01");
 				break;
 		
 			case 'M': /* MAA..AA,LLLL: Write LLLL bytes at address AA.AA return OK */
-				/* Try to read '%x,%x:'.  */
-		
+				/* Try to read '%x,%x:' */
 				if (hexToInt(&ptr, &addr)
 				    && *ptr++ == ','
 				    && hexToInt(&ptr, &length)
 				    && *ptr++ == ':')	{
-					if (hex2mem(ptr, (char *)addr, length, 1))
+				  ramaddr = RAM_PTR(addr);
+					if (ramaddr && hex2mem(ptr, (char *)ramaddr, length, 1))
 						strcpy(remcomOutBuffer, "OK");
 					else
 						strcpy(remcomOutBuffer, "E03");
@@ -487,24 +466,37 @@ void handle_exception(unsigned long *registers) {
 					strcpy(remcomOutBuffer, "E02");
 				break;
 		
+			case 's': /* cAA..AA    Step at address AA..AA(optional) */
+				cpu_events |= EVENT_DEBUG_STEP;
 			case 'c':    /* cAA..AA    Continue at address AA..AA(optional) */
-				/* try to read optional parameter, pc unchanged if no parm */
-		
 				if (hexToInt(&ptr, &addr)) {
-					registers[PC] = addr;
+					arm.reg[15] = addr;
 				}
-		
 				return;
-		
-				/* kill the program */
-			case 'k' :		/* do nothing */
-				break;
-#if 0
-			case 't':		/* Test feature */
-				break;
-#endif
-			case 'r':		/* Reset */
-				// TODO
+			
+			case 'v':
+				ptr = strtok(ptr, ";:");
+				if (!strcmp("Cont?", ptr)) { /* supported actions query */
+					strcpy(remcomOutBuffer, "vCont;");
+					strcat(remcomOutBuffer, "cs"); /* supports these actions */
+				}
+				else if (!strcmp("Cont", ptr)) {
+					ptr = strtok(NULL, ""); /* [action[:thread-id];]* */
+					while (ptr && *ptr) {
+						char action = *ptr++;
+						ptr = strtok(ptr, ";");
+						if (*ptr != ':') { /* thread-ids or not supported: perform action if not a thread-id */
+							switch (action) {
+								case 's':
+									cpu_events |= EVENT_DEBUG_STEP;
+									return;
+								case 'c':
+									return;
+							}
+						}
+						ptr = strtok(NULL, ";"); 
+					}
+				}
 				break;
 		}			/* switch */
 
@@ -513,7 +505,6 @@ void handle_exception(unsigned long *registers) {
 	}
 }
 
-void gdbstub_init(void) {
-	// TODO param
-	wait_gdb_connection(7777);
+void gdbstub_init(int port) {
+	wait_gdb_connection(port);
 }
