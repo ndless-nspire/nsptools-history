@@ -1,11 +1,11 @@
 /*
  * TODO:
+ * - Fix cpsr not displayed by GDB/IDA
+ * - 'Fail to bind' when restarting CPU from the menu
  * - Trap exceptions (trap_low, handle_exception defined but not used, set_mem_fault_trap, trap...)
  * - Signals (hard_trap_info, sig...)
  * - Breakpoints ("Need to flush the instruction cache here")
  * - Sync up at startup ("This function will generate a breakpoint exception")
- * - alignment: not with tabs
- * - Support thumb (REGISTERS[PC] += 4)
  * 
  */
 
@@ -65,7 +65,7 @@
 
 #include "emu.h"
 
-#define TRACE_PACKETS 0
+#define TRACE_PACKETS 1
 
 static int socket_fd;
 
@@ -303,7 +303,6 @@ static unsigned char * mem2hex(unsigned char *mem, unsigned char *buf, int count
 	unsigned char ch;
 
 	set_mem_fault_trap(may_fault);
-
 	while (count-- > 0)	{
 		ch = *mem++;
 		if (mem_err)
@@ -311,11 +310,8 @@ static unsigned char * mem2hex(unsigned char *mem, unsigned char *buf, int count
 		*buf++ = hexchars[ch >> 4];
 		*buf++ = hexchars[ch & 0xf];
 	}
-
 	*buf = 0;
-
 	set_mem_fault_trap(0);
-
 	return buf;
 }
 
@@ -326,7 +322,6 @@ static char *hex2mem(unsigned char *buf, unsigned char *mem, int count, int may_
 	unsigned char ch;
 
 	set_mem_fault_trap(may_fault);
-
 	for (i=0; i<count; i++) {
 		ch = hex(*buf++) << 4;
 		ch |= hex(*buf++);
@@ -334,12 +329,9 @@ static char *hex2mem(unsigned char *buf, unsigned char *mem, int count, int may_
 		if (mem_err)
 			return 0;
 	}
-
 	set_mem_fault_trap(0);
-
 	return mem;
 }
-
 
 // TODO
 static void set_mem_fault_trap(int enable) {
@@ -352,17 +344,14 @@ static void set_mem_fault_trap(int enable) {
 static int hexToInt(char **ptr, int *intValue) {
 	int numChars = 0;
 	int hexValue;
-
+	
 	*intValue = 0;
-
 	while (**ptr) {
 		hexValue = hex(**ptr);
 		if (hexValue < 0)
 			break;
-
 		*intValue = (*intValue << 4) | hexValue;
 		numChars ++;
-
 		(*ptr)++;
 	}
 
@@ -443,7 +432,7 @@ void gdbstub_loop(void) {
 				if (hexToInt(&ptr, &addr)
 				    && *ptr++ == ','
 				    && hexToInt(&ptr, &length)) {
-					ramaddr = RAM_PTR(addr);
+					ramaddr = ram_ptr(addr, length);
 					if (!ramaddr || mem2hex((char *)ramaddr, remcomOutBuffer, length, 1))
 						break;
 					strcpy(remcomOutBuffer, "E03");
@@ -457,8 +446,14 @@ void gdbstub_loop(void) {
 				    && *ptr++ == ','
 				    && hexToInt(&ptr, &length)
 				    && *ptr++ == ':')	{
-				  ramaddr = RAM_PTR(addr);
-					if (ramaddr && hex2mem(ptr, (char *)ramaddr, length, 1))
+				  ramaddr = ram_ptr(addr, length);
+				  if (!ramaddr) {
+				  	strcpy(remcomOutBuffer, "E03");
+				  	break;
+				  }
+				  if (range_translated((u32)ramaddr, (u32)((char *)ramaddr + length)))
+				  	flush_translations();
+					if (hex2mem(ptr, (char *)ramaddr, length, 1))
 						strcpy(remcomOutBuffer, "OK");
 					else
 						strcpy(remcomOutBuffer, "E03");
@@ -466,10 +461,20 @@ void gdbstub_loop(void) {
 					strcpy(remcomOutBuffer, "E02");
 				break;
 		
-			case 's': /* cAA..AA    Step at address AA..AA(optional) */
+			case 'S': /* Ssig[;AA..AA] Step with signal at address AA..AA(optional). Same as 's' for us. */
+				ptr = strchr(ptr, ';'); /* skip the signal */
+				if (ptr)
+					ptr++;
+			case 's': /* s[AA..AA]  Step at address AA..AA(optional) */
 				cpu_events |= EVENT_DEBUG_STEP;
-			case 'c':    /* cAA..AA    Continue at address AA..AA(optional) */
-				if (hexToInt(&ptr, &addr)) {
+				goto parse_new_pc;
+			case 'C': /* Csig[;AA..AA] Continue with signal at address AA..AA(optional). Same as 'c' for us. */
+				ptr = strchr(ptr, ';'); /* skip the signal */
+				if (ptr)
+					ptr++;
+			case 'c':    /* c[AA..AA]    Continue at address AA..AA(optional) */
+parse_new_pc:
+				if (ptr && hexToInt(&ptr, &addr)) {
 					arm.reg[15] = addr;
 				}
 				return;

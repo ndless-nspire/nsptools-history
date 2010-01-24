@@ -257,6 +257,7 @@ extern struct translation translation_table[];
 int translate(u32 start_pc);
 void flush_translations();
 void invalidate_translation(int index);
+int range_translated(u32 range_start, u32 range_end);
 
 /* Declarations for usblink.c */
 

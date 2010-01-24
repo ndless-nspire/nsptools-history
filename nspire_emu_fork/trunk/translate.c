@@ -949,6 +949,19 @@ void invalidate_translation(int index) {
 	flush_translations();
 }
 
+// returns 1 if at least one instruction translated in the range
+int range_translated(u32 range_start, u32 range_end) {
+		u32 pc;
+		int translated = 0;
+		for (pc = range_start; pc < range_end;  pc += 4) {
+			void *pc_ram_ptr = ram_ptr(pc, 4);
+			if (!pc_ram_ptr)
+				break;
+			translated |= RAM_FLAGS(pc_ram_ptr) & RF_CODE_TRANSLATED;
+		}
+		return translated;
+}
+
 #if 0
 void translate_range(u32 range_start, u32 range_end, int dump) {
 	u32 pc = range_start;
