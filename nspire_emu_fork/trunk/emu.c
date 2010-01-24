@@ -351,6 +351,8 @@ reset:
 							printf("Hit breakpoint at %08X. Entering debugger.\n", pc);
 enter_debugger:
 						debugger();
+						if (arm.reg[15] != pc)
+							continue;
 					}
 					if (flags & RF_EXEC_HACK)
 						if (exec_hack())

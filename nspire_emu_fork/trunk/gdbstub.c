@@ -11,45 +11,8 @@
 
 /*
  * Some parts derived from GDB's sparc-stub.c.
- *
- * The following gdb commands are supported:
- *
- * command          function                               Return value
- *
- *    g             return the value of the CPU registers  hex data or ENN
- *    G             set the value of the CPU registers     OK or ENN
- *
- *    mAA..AA,LLLL  Read LLLL bytes at address AA..AA      hex data or ENN
- *    MAA..AA,LLLL: Write LLLL bytes at address AA.AA      OK or ENN
- *
- *    c             Resume at current address              SNN   ( signal NN)
- *    cAA..AA       Continue at address AA..AA             SNN
- *
- *    s             Step one instruction                   SNN
- *    sAA..AA       Step one instruction from AA..AA       SNN
- *
- *    k             kill
- *
- *    ?             What was the last sigval ?             SNN   (signal NN)
- *
- * All commands and responses are sent with a packet which includes a
- * checksum.  A packet consists of
- *
- * $<packet info>#<checksum>.
- *
- * where
- * <packet info> :: <characters representing the command or response>
- * <checksum>    :: < two hex digits computed as modulo 256 sum of <packetinfo>>
- *
- * When a packet is received, it is first acknowledged with either '+' or '-'.
- * '+' indicates a successful transfer.  '-' indicates a failed transfer.
- *
- * Example:
- *
- * Host:                  Reply:
- * $m0,10#2a               +$00010203040506070809101112131415#42
- *
- ****************************************************************************/
+ * Refer to Appendix D - GDB Remote Serial Protocol in GDB's documentation
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -65,7 +28,7 @@
 
 #include "emu.h"
 
-#define TRACE_PACKETS 1
+// #define TRACE_PACKETS 1
 
 static int socket_fd;
 
@@ -358,12 +321,13 @@ static int hexToInt(char **ptr, int *intValue) {
 	return (numChars);
 }
 
-/* From emu to GDB */
-static void get_registers(unsigned long regbuf[NUMREGS]) {
+/* From emu to GDB. Returns regbuf. */
+static unsigned long *get_registers(unsigned long regbuf[NUMREGS]) {
 	// GDB's format in arm-tdep.c/arm_register_names
 	memset(regbuf, 0, sizeof(unsigned long) * NUMREGS);
 	memcpy(regbuf, arm.reg, sizeof(unsigned long) * 16);
 	regbuf[NUMREGS-1] = (unsigned long)get_cpsr();
+	return regbuf;
 }
 
 /* From GDB to emu */
@@ -397,7 +361,7 @@ void handle_exception(void) {
 }
 
 void gdbstub_loop(void) {
-	int addr;
+	int addr, val;
 	int length;
 	char *ptr;
 	void *ramaddr;
@@ -425,6 +389,28 @@ void gdbstub_loop(void) {
 				hex2mem(ptr, (char *)regbuf, NUMREGS * sizeof(unsigned long), 0);
 				set_registers(regbuf);
 				strcpy(remcomOutBuffer,"OK");
+				break;
+				
+			case 'p': /* pn Read the value of register n */
+				if (hexToInt(&ptr, &addr) && (size_t)addr < sizeof(regbuf)) {
+					mem2hex((char*)(get_registers(regbuf) + addr), remcomOutBuffer, sizeof(unsigned long), 0);
+				} else {
+					strcpy(remcomOutBuffer,"E01");
+				}
+				break;
+				
+			case 'P': /* Pn=r Write register n with value r */
+				ptr = strtok(ptr, "=");
+				if (hexToInt(&ptr, &addr)
+					  && (ptr=strtok(NULL, ""))
+					  && hexToInt(&ptr, &val)
+					  && (size_t)addr < sizeof(regbuf)) {
+					get_registers(regbuf)[addr] = val;
+					set_registers(regbuf);
+					strcpy(remcomOutBuffer, "OK");
+				} else {
+					strcpy(remcomOutBuffer,"E01");
+				}
 				break;
 		
 			case 'm':  /* mAA..AA,LLLL  Read LLLL bytes at address AA..AA */
