@@ -366,14 +366,17 @@ void gdbstub_loop(void) {
 	char *ptr;
 	void *ramaddr;
 	unsigned long regbuf[NUMREGS];
+	static bool first_pkt_received = 0;
 	
-	send_signal_reply(SIGNAL_TRAP);
+	if (first_pkt_received)
+		send_signal_reply(SIGNAL_TRAP);
 	cpu_events &= ~EVENT_DEBUG_STEP;
 	
 	while (1)	{
 		remcomOutBuffer[0] = 0;
 
 		ptr = getpacket();
+		first_pkt_received = 1;
 		switch (*ptr++) 	{
 			case '?':
 				send_signal_reply(SIGNAL_TRAP);
