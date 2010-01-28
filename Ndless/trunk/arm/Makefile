@@ -20,7 +20,7 @@ all: loader hook demo static
 loader: loader.S components/files.s	
 	@rm -rf loader.bin
 	$(GCC) $(GCCFLAGS) -E loader.S -o tmp_loader.S -D $(NSPIRE_HARDWARE)
-	$(AS) $(ASFLAGS) -o loader.o tmp_loader.s components/files.s
+	$(AS) $(ASFLAGS) -o loader.o tmp_loader.s components/files.s components/utils.s
 	$(LD) $(LDFLAGS) -Ttext 0x1800E15C -o loader.elf loader.o
 	$(OBJCOPY) -O binary loader.elf loader.bin
 	rm -f tmp_loader.S loader.o loader.elf

@@ -17,6 +17,10 @@
   .equ sprintf,                       0x10182D20
   .equ mkdir,                         0x101888F4
   .equ set_current_dir,               0x10187A2C
+  .equ power_off,                     0x1004DA1C
+  #.equ ascii2utf16,                   0x00000000
+  #.equ show_dialog_box,               0x00000000
+  #.equ show_dialog_box2,              0x00000000
 
 	.macro oscall address
 		 	mov	lr,pc

@@ -13,6 +13,7 @@
 
   #include "headers/os.h"
   #include "headers/defines.h"
+  #include "bootstrapper.h"
   
   #ifdef CAS
     .set  OS_OFFSET_HACKED,             0x10005E40
@@ -37,10 +38,7 @@ install_hook:
   
   # Inject hook address
   mov     r2, r0              @ hook address, jump to 'open_document'
-  ldr     r0, =OS_OFFSET_HACKED
-  ldr     r1, =0xE51FF004     @ ldr pc, [pc, #-4]
-  str     r1, [r0]
-  str     r2, [r0, #4]
+  fork_address  OS_OFFSET_HACKED
   
   ldmfd   sp, {r1-r2, r11, sp, pc}
   
@@ -66,7 +64,7 @@ _ti_open_file:
   ldmfd   sp!, {r0-r12, lr}
   
   # Restore OS instructions
-  oscall  OS_SHADOWED_CALL    @ call the OS function which opens a TI document
+  oscall  OS_SHADOWED_CALL    @ call the OS function that open a TI document
   cmp     r0, #0              @ execute the OS instruction previously erased by install_hook
   ldr     pc, =(OS_OFFSET_HACKED + 8)
 
