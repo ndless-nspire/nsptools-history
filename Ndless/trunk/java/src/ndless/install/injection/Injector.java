@@ -33,9 +33,9 @@ import com.ti.eps.util.LoggerUtil;
 public class Injector implements CurrentStep {
 	private static final boolean forceOSUpdate = false;
 	private static final String deviceInstallDir = "ndless-installation";
-	private static final String resPackage = "/ndless/install/resources/";
-	// TODO update for CAS
-	private static final String localRequiredOSFilename = "tinspire_1.1.9253.tno";
+	private static final String resDirPrefix = "res/";
+	private File resDir;
+	private static final String localRequiredOSFilename = "tinspire_1.1.tno";
 	private static final File userFolder = new File("userfiles");
 	private static final IPXConnectApp pxConnectApp = PXConnectApp
 			.getInstance();
@@ -45,18 +45,17 @@ public class Injector implements CurrentStep {
 	// When anonymous classes need to exchange data
 	private String anonSharedStr;
 	private boolean hadNoOS;
+	private boolean isNonCas;
 
 	public void inject() throws Exception {
 		try {
 			MainFrame.setCurrentStep(this);
-			setupUserFolder();
 			MainFrame.log("Connecting to the device...");
 			setupNavnet();
 			DeviceInfo deviceInfo = pxConnectApp.connectedDevice()
 					.getDeviceInfo();
-			if (!"NonCas".equals(deviceInfo.getDeviceType()))
-				throw new NdlessException(
-						"Only non-CAS TI-Nspire is currently supported.");
+			this.isNonCas = "NonCas".equals(deviceInfo.getDeviceType());
+			this.resDir = new File(resDirPrefix	+ (isNonCas ? "NON_CAS/" : "CAS/"));
 			Version currentOsVersion = deviceInfo.getOsVersion();
 			this.hadNoOS = hasNoOS(currentOsVersion);
 			downgradeOSIfNeeded(currentOsVersion);
@@ -64,31 +63,23 @@ public class Injector implements CurrentStep {
 			MainFrame.log("Preparing required files on the device:");
 			MainFrame.log(" - Creating Ndless installation directory");
 			mkDeviceDocDir(deviceInstallDir);
+			MainFrame.log(" - Backuping overwritten files");
+			copyFileLocallyOnDevice("/../phoenix/syst/locales/en/strings.res",
+					deviceInstallDir + "/strbackup.tns", true);
+
 			// strings.res with shellcode run by buffer overflow at boot time
-			File ndlessBootFile = TempFileManager
-					.loadResourceToTempDir(resPackage + "boot.tns");
-			if (!ndlessBootFile.exists())
+			File loaderFile = new File(resDir, "loader.tns");
+			File hookFile = new File(resDir, "hook.tns");
+			if (!loaderFile.exists() || !hookFile.exists())
 				throw new NdlessException(
 						"Corrupted Ndless directory: missing file '"
-								+ ndlessBootFile.getPath() + "'");
-			MainFrame.log(" - Backuping overwritten files");
-			copyFileLocallyOnDevice("/../phoenix/syst/locales/en/strings.res", deviceInstallDir
-					+ "/strbackup.tns", true);
-
-			MainFrame.log(" - Transfering Ndless boot");
-			sendFileToDevice(ndlessBootFile.getPath(), deviceInstallDir
-					+ "/boot.tns");
-
-			File execFile = new File(userFolder, "runme.tns");
-			if (!execFile.exists()) {
-				MainFrame.log(" - Transfering executable ('"
-						+ execFile.getPath() + "' not found, using demo file)");
-				execFile = TempFileManager.loadResourceToTempDir(resPackage
-						+ "runme.tns");
-			} else
-				MainFrame.log(" - Transfering executable");
-			sendFileToDevice(execFile.getPath(), deviceInstallDir
-					+ "/runme.tns");
+								+ hookFile.getPath() + "'");
+			MainFrame.log(" - Transfering loader");
+			sendFileToDevice(new File(resDir, "loader.tns").getPath(), deviceInstallDir
+					+ "/loader.tns");
+			MainFrame.log(" - Transfering hook");
+			sendFileToDevice(hookFile.getPath(), deviceInstallDir
+					+ "/hook.tns");
 
 			MainFrame.log(" - Deleting copier");
 			deleteFileOnDevice("/../phoenix/syst/locales/copysamples");
@@ -121,7 +112,8 @@ public class Injector implements CurrentStep {
 			conApi = NavnetConnectivityAPI.getInstance();
 		} catch (IllegalNavnetStateException e) {
 			throw new NdlessException(
-					"Another instance of Ndless or TI-Nspire Computer Link is already running");
+					"Another instance of Ndless or TI-Nspire Computer Link is" +
+					" already running");
 		}
 		pxConnectApp.setConnectAPI(conApi);
 		PXDevice[] devices;
@@ -169,13 +161,13 @@ public class Injector implements CurrentStep {
 						+ currentOsVersion.getMinor() + "."
 						+ currentOsVersion.getBuild());
 			ContinueDialog.ask("Ndless needs to " + action
-					+ " 1.1.9253.\nContinue?");
+					+ " 1.1.\nContinue?");
 			requiredOSFile = new File(userFolder, localRequiredOSFilename);
 			if (requiredOSFile.exists()) {
 				MainFrame.log("Using the local OS copy '"
 						+ requiredOSFile.getPath() + "'");
 			} else {
-				MainFrame.log("Downloading OS version 1.1.9253...");
+				MainFrame.log("Downloading OS version 1.1...");
 				downloadRequiredOS();
 			}
 			MainFrame.log(direction + " the OS of the device...");
@@ -227,11 +219,11 @@ public class Injector implements CurrentStep {
 		(new Thread() {
 			public void run() {
 				try {
-					// TODO update for CAS
 					Utils
 							.downloadFile(
 									new URL(
-											"http://ti.bank.free.fr/modules/archives/download.php?id=1394"),
+											"http://ti.bank.free.fr/modules/archives/" +
+											"download.php?id=" + (isNonCas ? 1394 : 1395)),
 									requiredOSFile, dlStatus);
 				} catch (Exception e) {
 				} // handled below
@@ -244,13 +236,15 @@ public class Injector implements CurrentStep {
 		MainFrame.setStepProgressCompleted();
 		if (dlStatus.getException() != null) {
 			MainFrame
-					.log("Ndless can't download the file. You may try to copy it manually to Ndless directory as '"
+					.log("Ndless can't download the file. You may try to copy it" +
+							"manually to Ndless directory as '"
 							+ new File(userFolder, localRequiredOSFilename)
 									.getPath()
 							+ "' and retry the installation.");
 			throw dlStatus.getException();
 		}
 		try {
+			setupUserFolder();
 			Utils.copyFile(requiredOSFile, new File(userFolder,
 					localRequiredOSFilename));
 			MainFrame.log("OS file kept locally for next installations.");
@@ -413,10 +407,12 @@ public class Injector implements CurrentStep {
 	 */
 	private void copyCopier() throws InterruptedException, DeviceException,
 			IOException {
-		// TODO update for CAS
-		final File copierFile = TempFileManager
-				.loadResourceToTempDir(resPackage + "copier.tno");
+		final File copierFile = new File(resDir, "../copier.tno");
 		MainFrame.log(" - Transfering new copier");
+		if (!copierFile.exists())
+			throw new NdlessException(
+				"Corrupted Ndless directory: missing file '"
+						+ copierFile.getPath() + "'");
 		copyFileToDeviceThroughOSUpgrade(copierFile.getPath());
 		// TODO slow after the last USB command, why...?
 		MainFrame.log(" - Checking copier transfer"); 
@@ -477,7 +473,6 @@ public class Injector implements CurrentStep {
 	 */
 	private void rebootDevice(boolean waitForStartup)
 			throws InterruptedException, IOException, DeviceException {
-		// TODO update for CAS
 		final File corruptedOSFile = TempFileManager
 				.createTempFile("reboot.tno");
 		if (!corruptedOSFile.exists()) {
@@ -547,7 +542,8 @@ public class Injector implements CurrentStep {
 	private void waitForDeviceToShutdown() throws InterruptedException {
 		MainFrame.log("Waiting for the device to shut down...");
 		boolean deviceHasShutdown = false;
-		for (int waitForShutdownCount = 3; waitForShutdownCount > 0; waitForShutdownCount--) {
+		for (int waitForShutdownCount = 3; waitForShutdownCount > 0;
+			waitForShutdownCount--) {
 			if (!isDeviceStillResponsive()) {
 				deviceHasShutdown = true;
 				break;
@@ -562,7 +558,8 @@ public class Injector implements CurrentStep {
 	private void waitForDeviceToStartup() throws InterruptedException {
 		MainFrame.log("Waiting for the device to start up...");
 		boolean deviceHasStartedup = false;
-		for (int waitForShutdownCount = 18; waitForShutdownCount > 0; waitForShutdownCount--) {
+		for (int waitForShutdownCount = 18; waitForShutdownCount > 0;
+			waitForShutdownCount--) {
 			PXDevice[] devices = pxConnectApp.enumerateConnectedDevices();
 			if (devices.length != 0) {
 				pxConnectApp.connect(devices[0]);

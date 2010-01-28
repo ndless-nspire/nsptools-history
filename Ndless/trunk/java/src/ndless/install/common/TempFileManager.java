@@ -107,16 +107,6 @@ public class TempFileManager {
 	}
 	
 	/**
-	 * Copies a resource to the root of the temp dir
-	 * @return File created
-	 */
-	public static File loadResourceToTempDir(String resPath) throws IOException {
-		File file = createTempFile(resPath.substring(resPath.lastIndexOf('/') + 1));
-		Utils.copyResource(resPath, file);
-		return file;
-	}
-
-	/**
 	 * Deletes all of the files in the given directory, recursing into any sub
 	 * directories found. Also deletes the root directory.
 	 * 

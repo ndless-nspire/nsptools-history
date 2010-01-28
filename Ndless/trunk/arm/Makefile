@@ -9,13 +9,13 @@ LDFLAGS =
 OBJCOPY = arm-elf-objcopy
 
 ifeq ($(NSPIRE_HARDWARE),CAS)
-	NS_EMU_STRING_RES_OFFSET=0x611D60
+	NS_EMU_STRING_RES_OFFSET=0x5DC990
 else
 	# TODO!
 	NS_EMU_STRING_RES_OFFSET=0x611D60
 endif
 
-all: loader hook demo
+all: loader hook demo static
 
 loader: loader.S components/files.s	
 	@rm -rf loader.bin
@@ -46,6 +46,9 @@ demo: demo.S
 	rm -f tmp_demo.S demo.o demo.elf
 	mkdir -p res/$(NSPIRE_HARDWARE)
 	cp -f demo.bin res/$(NSPIRE_HARDWARE)/demo.tns
+
+static:
+	cp -f copier.tno res
 
 emulator: loader
 	../tools/FlashEdit/FlashEdit res/$(NSPIRE_HARDWARE)/loader.tns '${NS_EMU_FLASH_PATH}' ${NS_EMU_STRING_RES_OFFSET}
