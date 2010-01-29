@@ -117,7 +117,7 @@ install_hack:
   # Copy loader.tns (usefull to reinstall hack if the user changes language)
   adr     r0, fileLoaderInstalled
   adr     r1, fileLoaderBackup
-  b       copyFile
+  bl      copyFile
   
   # Erase strings.res (it's probably a new loader)
   adr     r0, fileResourceStrings
@@ -152,7 +152,7 @@ remove_hack:
   adr     r0, fileResourceStringsBackup
   adr     r1, fileResourceStrings
   oscall  rename
-  b       rebootCalculator            @ Remove all forked address
+  bl      rebootCalculator            @ Remove all forked address
 
 # ------------------------------------------------------------------------------
 # Execute hook.tns (hook installation)
@@ -200,16 +200,15 @@ fileResourceStringsBackupInstalled:  .string "/documents/ndless/strbackup.tns"
 fileHook:                            .string "/documents/ndless/hook.tns"
 
 # TODO : Better messages ^^
-#dialogTitle:                 
+#dialogTitle:
 #  .string "Ndless version bêta 2"
-#  .align
- 
+
 #welcomeMessage:
-#  .ascii "Welcome to Ndless hack installation.\n\n"
-#  .ascii "Ndless allows to run arbitrary code on your Nspire calculator.\n"
-#  .ascii "During initialization of Operating System you can :\n"
-#  .ascii "- Hold down THETA key to remove Ndless.\n"
-#  .ascii "- Hold down PI key to avoid running hook installation.\0"
+#  .ascii "Welcome to Ndless hack installation.\n\n" \
+#         "Ndless allows to run arbitrary code on your Nspire calculator.\n" \
+#         "During initialization of Operating System you can :\n" \
+#         "- Hold down THETA key to remove Ndless.\n" \
+#         "- Hold down PI key to avoid running hook installation.\0"
 #  .align
   
 #removeMessage:
