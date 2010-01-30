@@ -5,8 +5,8 @@ all: subdirs arm
 .PHONY: subdirs arm
 
 arm:
-	(cd arm; NSPIRE_HARDWARE=CAS make)
-	(cd arm; NSPIRE_HARDWARE=NON_CAS make)
+	(cd arm; make NSPIRE_HARDWARE=CAS)
+	(cd arm; make NSPIRE_HARDWARE=NON_CAS)
 
 subdirs:
 	@for i in $(SUBDIRS); do \

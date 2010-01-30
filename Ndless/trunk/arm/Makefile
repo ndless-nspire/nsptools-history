@@ -11,8 +11,7 @@ OBJCOPY = arm-elf-objcopy
 ifeq ($(NSPIRE_HARDWARE),CAS)
 	NS_EMU_STRING_RES_OFFSET=0x5DC990
 else
-	# TODO!
-	NS_EMU_STRING_RES_OFFSET=0x611D60
+	NS_EMU_STRING_RES_OFFSET=0x613830
 endif
 
 all: loader hook demo static

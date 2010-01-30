@@ -32,7 +32,7 @@ import com.ti.eps.util.LoggerUtil;
 
 public class Injector implements CurrentStep {
 	private static final boolean forceOSUpdate = false;
-	private static final String deviceInstallDir = "ndless-installation";
+	private static final String deviceInstallDir = "ndless";
 	private static final String resDirPrefix = "res/";
 	private File resDir;
 	private static final String localRequiredOSFilename = "tinspire_1.1.tno";

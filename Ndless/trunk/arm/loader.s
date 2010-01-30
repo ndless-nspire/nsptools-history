@@ -38,7 +38,7 @@
   
 _start: .global _start
 # -------------------------------------------------------------------------
-# If the file loader.tns exists in ndless folder, install hack.
+# If the file loader.tns exists in ndless folder, install this new loader.
 # Else fork OS addresses (execute_hack).
 # -------------------------------------------------------------------------
   ldr     sp, =HACK_BASE_ADDRESS
@@ -47,7 +47,7 @@ _start: .global _start
   mov     r0, #0xFFFFFFFF
   oscall  TCT_Local_Control_Interrupts
   
-  # Is it the first installation of the hack in OS memory space ?
+  # Is it the first installation of the hack in OS memory space?
   adr     r0, fileLoaderInstalled
   adr     r1, rb
   oscall  fopen
@@ -201,14 +201,14 @@ fileHook:                            .string "/documents/ndless/hook.tns"
 
 # TODO : Better messages ^^
 #dialogTitle:
-#  .string "Ndless version bêta 2"
+#  .string "Ndless version beta 2"
 
 #welcomeMessage:
 #  .ascii "Welcome to Ndless hack installation.\n\n" \
 #         "Ndless allows to run arbitrary code on your Nspire calculator.\n" \
-#         "During initialization of Operating System you can :\n" \
+#         "During the initialization of the Operating System you can:\n" \
 #         "- Hold down THETA key to remove Ndless.\n" \
-#         "- Hold down PI key to avoid running hook installation.\0"
+#         "- Hold down PI key to avoid running the hook installation.\0"
 #  .align
   
 #removeMessage:
