@@ -177,8 +177,6 @@ remove_hack:
   oscall  rename
   adr     r0,dirNdlessSys
   oscall  NU_Remove_Dir
-break:
-	b break
   bl      rebootCalculator            @ Remove all forked address
 
 # ------------------------------------------------------------------------------
