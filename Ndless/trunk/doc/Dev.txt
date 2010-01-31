@@ -2,7 +2,7 @@
       = Development environment setup =
       =================================
 
-This file describes the prerequisites and setup steps for a Windows developement environment.
+This file describes the prerequisites and setup steps for a Windows development environment.
 
 C
 =
@@ -30,9 +30,12 @@ Java
 * Add Apache Ant's home directory to your PATH environment variable
 * Unzip ProGuard to Ndles/java/tools/proguard (there will be bin/ and README in this directory)
 * Import in Eclipse the Java Project Ndless/java
-* Edit with a text editor Ndlessjava/Ndless.userlibraries, and configure the paths depending on your environment
-* Load this file in Eclipse : Window -> Preferences -> Java -> Build Path -> User Libraries -> Import
-* Copy Ndless/java/build_config.properties.tpl to Ndless/java/build_config.properties and configure the latter
+* Edit with a text editor Ndlessjava/Ndless.userlibraries, and configure the paths depending
+  on your environment
+* Load this file in Eclipse : Window -> Preferences -> Java -> Build Path -> User Libraries
+  -> Import
+* Copy Ndless/java/build_config.properties.tpl to Ndless/java/build_config.properties and
+  configure the latter
 * Edit Ndless/java/ndless.pro and adapt the libraryjars paths
 
 Building
@@ -41,8 +44,9 @@ Building
 From Ndless root directory:
 
 * make: builds the artifacts
-* make dist FAST=true: builds the artificats and create a release directory (dist) for development tests.
-   This disables Java obfuscation.
+* make arm [NSPIRE_HARDWARE=CAS|NON_CAS, default is NON_CAS]: builds the ARM artifacts
+* make dist FAST=true: builds the artificats and create a release directory (dist) for
+  development tests. Java obfuscation is disabled.
 * make dist: builds the artificats and create a release directory (dist)
 
 Debugging the installer
@@ -52,3 +56,21 @@ The Eclipse Debug configuration should be configured this way:
 * Arguments -> Working directory -> Other -> <dist in Ndless root directory>
 * Classpath -> User Entries: The Computer Link User Library must be removed
   to use the version patched at runtime. choose Remove, then Add Projects -> Ndless
+
+Debugging the ARM code
+======================
+
+Goplat's nspire_emu TI-Nspire's emulator/debugger is used.
+
+* Create a flash image for nspire_emu
+* Reference the image in Makefile.config
+* Build Ndless ARM code (see above)
+* Run the flash image with nspire_emu. Create a Documents directory named 'ndless'. Send boot.tns
+  and debug_resources/strbackup.tns to this directory. Save the flash image.
+* Back up the flash
+* Execute the commands: cd arm; make emulator NSPIRE_HARDWARE=CAS|NON_CAS: this builds the loader
+  and write it to the flash image
+* Run the emulator
+
+Caution, writing files to the flash at this point may cause the hard-coded offset for the loader
+injection to change, and make the build chain inject the loader at the wrong offset.

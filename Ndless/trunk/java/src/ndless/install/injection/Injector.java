@@ -470,7 +470,8 @@ public class Injector implements CurrentStep {
 			ContinueDialog
 					.ask(firstMenu ? "Now confirm the setup dialogs on the device to\n"
 							+ "bring up the Home Menu, and select 'My Documents'\n"
-							+ "by pressing '6'."
+							+ "by pressing '6'.\n"
+							+ "You must keep English as the system language.\n"
 							: "It seems I wasn't clear enough.\n"
 									+ "Could you please confirm the setup dialogs on the device\n"
 									+ "to bring up the Home Menu, and then select 'My Documents'\n"

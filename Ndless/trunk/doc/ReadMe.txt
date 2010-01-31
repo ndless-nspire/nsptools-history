@@ -7,7 +7,7 @@ What is it?
 
 Ndless allows to run executables on the TI-Nspire hardware.
 Ndless comes with an installer to prepare the TI-Nspire and install the executable
-loader automatically from a computer.
+loader from a computer.
 
 What do I need to install it?
 =============================
@@ -43,11 +43,13 @@ A demo executable can be found in Ndless package (res/<TI-Nspire model>/demo.tns
 What you need to know as a user
 ===============================
 
-- The Ndless Installer and Ndless create files in the documents directory
-  'ndless-installation'
+- Keep English as the chosen language in the System settings, else the executable loader
+  hook won't be lost at the next startup.
+- The Ndless Installer creates files in the documents directory 'ndless'.
+  This directory should not be removed as long as Ndless is installed.
 - If the TI-Nspire becomes unusable:
    * Reboot it while holding the keys ON+Home+Enter+P. To reboot the TI-Nspire, unplug the
-     USB cable, then remove and put back the batteries
+     USB cable, then remove and put back the a battery
    * Select '2' to uninstall the current OS. Use the Ndless Installer or TI-Nspire Computer
      Link Software to reinstall an OS.
 - If the Ndless Installer is lost in is installation sequence, restart it. Ndless may get
@@ -61,12 +63,14 @@ The executable format and conventions are currently being defined and prone to c
 - Executables must be position independent: don't use absolute addresses
 - Executable files must start with the 4-bytes-long header 'PRG\0'
 - OS functions can be called from the program run (see the sample include file 'arm\os.s')
+- Ndless installation directory is /phoenix/ndless
 
 What you can't currently do, but should soon I be able to
 =========================================================
 
-- Install Ndless on the TI-Nspire emulator nspire_emu
-- Upgrade to a more recent version of the OS while keeping Ndless installed
+- Change the language settings and keep Ndless installed
+- Install Ndless on the TI-Nspire emulator 'nspire_emu'
+- Upgrade to a more recent version of the OS and keep Ndless installed
 - Use a fully-fledged executable runner, with relocation and library support, an exception
   handler, version-independent OS calls, ...
 - Run executables with the TI-84+ keyboard of the TI-Nspire
@@ -93,7 +97,9 @@ Geoffrey Anneheim aka geogeo - < geoffrey dt anneheim hat free dt fr>
 History
 =======
 
-* - beta 3
+* <unreleased> - beta 3
+ - OS hook to run executables from the Documents screen
+ - Fast upgrade by the installer if Ndless is already installed
 
 * 2010-01-24 - beta 2
- 64-bit architectures support thanks to hwti
+ - 64-bit architectures support thanks to hwti
