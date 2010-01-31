@@ -1,11 +1,9 @@
 /*
  * TODO:
- * - Fix cpsr not displayed by GDB/IDA
  * - 'Fail to bind' when restarting CPU from the menu
  * - Trap exceptions (trap_low, handle_exception defined but not used, set_mem_fault_trap, trap...)
- * - Signals (hard_trap_info, sig...)
- * - Breakpoints ("Need to flush the instruction cache here")
- * - Sync up at startup ("This function will generate a breakpoint exception")
+ * - Explicitely supports the endianness (set/get_registers). Currently the host must be little-endian
+ *   as ARM is.
  * 
  */
 
@@ -361,7 +359,7 @@ void handle_exception(void) {
 }
 
 void gdbstub_loop(void) {
-	int addr, val;
+	int addr;
 	int length;
 	char *ptr;
 	void *ramaddr;
@@ -406,9 +404,10 @@ void gdbstub_loop(void) {
 				ptr = strtok(ptr, "=");
 				if (hexToInt(&ptr, &addr)
 					  && (ptr=strtok(NULL, ""))
-					  && hexToInt(&ptr, &val)
-					  && (size_t)addr < sizeof(regbuf)) {
-					get_registers(regbuf)[addr] = val;
+					  && (size_t)addr < sizeof(regbuf)
+					  // TODO hex2mem doesn't check the format
+					  && hex2mem((unsigned char*)ptr, (unsigned char*)&get_registers(regbuf)[addr], sizeof(u32), 1)
+					  ) {
 					set_registers(regbuf);
 					strcpy(remcomOutBuffer, "OK");
 				} else {
