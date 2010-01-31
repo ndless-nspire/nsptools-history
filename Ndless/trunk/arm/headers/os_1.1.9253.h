@@ -21,6 +21,7 @@
   .equ ascii2utf16,                   0x00000000
   .equ show_dialog_box,               0x00000000
   .equ show_dialog_box2,              0x00000000
+  .equ NU_Remove_Dir,                 0x1018B76C
 
 	.macro oscall address
 		 	mov	lr,pc

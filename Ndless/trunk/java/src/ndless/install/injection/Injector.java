@@ -90,9 +90,12 @@ public class Injector implements CurrentStep {
 			
 			rebootDevice(true);
 			waitForDeviceInitialization();
-			rebootDevice(false);
+			rebootDevice(true);
 			
-			MainFrame.log("The device is ready! Just wait for the reboot.");
+			MainFrame.log("Cleaning up installation files...");
+			deleteFileOnDevice(deviceInstallDir	+ "/loader.tns");
+			
+			MainFrame.log("The device is ready!");
 			MainFrame.log("You can now close the installer.");
 			MainFrame.canExit();
 		} catch (DeviceException de) {

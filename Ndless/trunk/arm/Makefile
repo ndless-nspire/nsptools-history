@@ -1,5 +1,7 @@
 include ../Makefile.config
 
+NSPIRE_HARDWARE ?= NON_CAS
+
 AS = arm-elf-as
 ASFLAGS = -mcpu=arm7tdmi
 GCC = arm-elf-gcc
@@ -50,7 +52,7 @@ static:
 	cp -f copier.tno res
 
 emulator: loader
-	../tools/FlashEdit/FlashEdit res/$(NSPIRE_HARDWARE)/loader.tns '${NS_EMU_FLASH_PATH}' ${NS_EMU_STRING_RES_OFFSET}
+	../tools/FlashEdit/FlashEdit res/$(NSPIRE_HARDWARE)/loader.tns '${NS_EMU_FLASH_PATH_${NSPIRE_HARDWARE}}' ${NS_EMU_STRING_RES_OFFSET}
 .PHONY: clean
 
 clean: cleanbin cleanapp

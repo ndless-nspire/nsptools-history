@@ -1,6 +1,25 @@
+  .xdef fileExists
   .xdef getFileSize
   .xdef openFileBufferized
   .xdef copyFile
+
+# --------------------------------------------------------------------------
+# Check if a file exists
+#
+# Input:
+#   r0 = File name
+#
+# Output:
+#   0 if the file exists, else -1
+# --------------------------------------------------------------------------
+fileExists:
+  mov     r12, sp
+  stmfd   sp!, {r11-r12, lr, pc}
+  sub     sp, sp, #0x28       @ stat struct size
+  mov     r1, sp
+  oscall  stat
+  add     sp, sp, #0x28
+  ldmfd   sp, {r11, sp, pc}
 
 # --------------------------------------------------------------------------
 # Returns file size

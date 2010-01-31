@@ -23,7 +23,7 @@ dist: all
 	mkdir -p dist/src
 	(cd arm; make clean)
 	cp -r arm dist/src
-	# exclude some resources we don't want to distribute
+	@# exclude some resources we don't want to distribute
 	find dist -name drawString.s -o -name Font8X.bin | xargs rm -rf
 	find dist -name .svn | xargs rm -rf
 

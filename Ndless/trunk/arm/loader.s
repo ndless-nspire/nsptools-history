@@ -38,8 +38,9 @@
   
 _start: .global _start
 # -------------------------------------------------------------------------
+# Move the strings resource backup if necessary.
 # If the file loader.tns exists in ndless folder, install this new loader.
-# Else fork OS addresses (execute_hack).
+# Else fork OS addresses (execute_hook).
 # -------------------------------------------------------------------------
   ldr     sp, =HACK_BASE_ADDRESS
   
@@ -47,15 +48,30 @@ _start: .global _start
   mov     r0, #0xFFFFFFFF
   oscall  TCT_Local_Control_Interrupts
   
-  # Is it the first installation of the hack in OS memory space?
-  adr     r0, fileLoaderInstalled
-  adr     r1, rb
-  oscall  fopen
+  # Move strbackup.tns from Ndless Installer directory to system directory if
+  # it exists (first execution)
+  adr     r4, fileResourceStringsBackupInstaller
+  mov     r0, r4
+  bl      fileExists
   cmp     r0, #0
-  bne     install_hack
+  bne     _res_strings_backed_up
+  adr     r5, fileResourceStringsBackup
+  mov     r0, r5
+  oscall  unlink
+  adr     r0, dirNdlessSys
+  oscall  mkdir
+  mov     r0, r4               @ fileResourceStringsBackupInstaller
+  mov     r1, r5               @ fileResourceStringsBackup
+  oscall  rename
+ 
+_res_strings_backed_up:
+  adr     r0, fileLoaderInstaller
+  bl      fileExists
+  cmp     r0, #0
+  beq     update_loader
 
 # -------------------------------------------------------------------------
-# Fork OS addresses.
+# Fork OS addresses, to re-run the loader.
 # 1) If the key theta is hold down, the resource file 'strings.res' is
 # restored and the hack is removed.
 # 2) Allocate a memory block.
@@ -82,7 +98,7 @@ _is_theta_pressed:
   oscall  memcpy
   
   # Inject buffer address
-  add     r2, r6, #execute_hack       @ call execute_hack
+  add     r2, r6, #execute_hook       @ call execute_hook
   fork_address  OS_OFFSET_HACKED_EXECUTE
   
   # Inject restore_resource address
@@ -97,44 +113,55 @@ _is_theta_pressed:
 restore_resource:
   cmp     r7, #2               
   bne     _restore_resource_continue       @ resource not located into syst folder
-  adr     r0, fileResourceStringsBackup    @ use the resource saved instead of standard resource (hacked) 
- 
+  bl      get_file_res_strings_backup      @ use the resource saved instead of standard resource (hacked) 
 _restore_resource_continue:
   adr     r1, rb
   ldr     pc, =(OS_OFFSET_HACKED_RESTORE + 8)
 
 # -------------------------------------------------------------------------
-# Install hack in the file system.
-# 1) Save loader into the phoenix folder.
-# 2) Erase strings.res by loader.tns (prevent an update of loader)
-# 3) Move strbackup.tns into the phoenix folder.
-# 4) Reboot OS. Force to execute the new loader.
+# Strings: must not be too far from the pc-relative references to avoid the
+# assembler error 'invalid constant (xxx) after fixup'
 # -------------------------------------------------------------------------
-install_hack:
-  # Close file
-  oscall  fclose
-  
-  # Copy loader.tns (usefull to reinstall hack if the user changes language)
-  adr     r0, fileLoaderInstalled
-  adr     r1, fileLoaderBackup
-  bl      copyFile
-  
-  # Erase strings.res (it's probably a new loader)
+fileResourceStringsBackupInstaller:  .string "/documents/ndless/strbackup.tns"
+fileResourceStringsBackup:           .string "/phoenix/ndless/strbackup.tns"
+dirNdlessSys:                        .string "/phoenix/ndless"
+fileResourceStrings:                 .string "/phoenix/syst/locales/en/strings.res"
+filedefaultResourceStringsBackup:    .string "/phoenix/syst/locales/fr/strings.res"
+fileLoaderInstaller:                 .string "/documents/ndless/loader.tns"
+fileHook:                            .string "/documents/ndless/hook.tns"
+
+# -------------------------------------------------------------------------
+# Update the loader with a version in Ndless installer directory.
+# 1) Erase strings.res by loader.tns (prevent an update of loader)
+# 2) Reboot OS. Force to execute the new loader.
+# -------------------------------------------------------------------------
+update_loader:
+  # Erase strings.res
   adr     r0, fileResourceStrings
   oscall  unlink
-  adr     r0, fileLoaderInstalled
+  
+  # install new loader
+  adr     r0, fileLoaderInstaller
   adr     r1, fileResourceStrings
   oscall  rename
   
-  # Move strbackup.tns
-  # TODO : Check if phoenix/strbackup.tns or ndless/strbackup.tns exists
-  adr     r0, fileResourceStringsBackup
-  oscall  unlink
-  adr     r0, fileResourceStringsBackupInstalled
-  adr     r1, fileResourceStringsBackup
-  oscall  rename
   ldr     pc, =OS_BASE_ADDRESS        @ reboot OS. Force to execute the new loader
-  
+ 
+# ------------------------------------------------------------------------------
+# Fall back to another language if the backup cannot be found.
+# ------------------------------------------------------------------------------
+get_file_res_strings_backup:
+  stmfd   sp!, {r4-r12, lr}
+  adr     r4, fileResourceStringsBackup
+  mov     r0, r4
+	bl      fileExists
+	cmp     r0, #0
+	beq     file_res_strings_backup_found
+	adr     r4, filedefaultResourceStringsBackup
+file_res_strings_backup_found:
+	mov     r0, r4
+	ldmfd   sp!, {r4-r12, pc}
+ 
 # -------------------------------------------------------------------------
 # Remove hack from the file system.
 # 1) Remove loader saved into the phoenix folder.
@@ -142,16 +169,16 @@ install_hack:
 # 3) Reboot calculator. Force to install a fresh OS in RAM.
 # -------------------------------------------------------------------------
 remove_hack:
-  # Remove loader
-  adr     r0, fileLoaderBackup
-  oscall  unlink
-
-  # Replace strings.res by strbackup.tns
+  # Replace strings.res by its backup
   adr     r0, fileResourceStrings
   oscall  unlink
-  adr     r0, fileResourceStringsBackup
+  bl      get_file_res_strings_backup
   adr     r1, fileResourceStrings
   oscall  rename
+  adr     r0,dirNdlessSys
+  oscall  NU_Remove_Dir
+break:
+	b break
   bl      rebootCalculator            @ Remove all forked address
 
 # ------------------------------------------------------------------------------
@@ -160,7 +187,7 @@ remove_hack:
 # 2) Else execute the hook installation.
 # 3) Restore OS instructions for a valid execution.
 # ------------------------------------------------------------------------------
-execute_hack:
+execute_hook:
   # Save OS state
   stmfd   sp!, {r0-r12, lr}
 
@@ -189,15 +216,6 @@ _restore_os_state:
   oscall  OS_SHADOWED_CALL_EXECUTE      @ execute OS instructions previously erased by fork_os
   cmp     r0, #0
   ldr     pc, =(OS_OFFSET_HACKED_EXECUTE + 8)
-
-# ??? The order must be preserved, else you will get the following error message
-# 'Error: invalid constant (xxx) after fixup' 
-fileResourceStrings:                 .string "/phoenix/syst/locales/en/strings.res"
-fileLoaderBackup:                    .string "/phoenix/loader.tns"
-fileResourceStringsBackup:           .string "/phoenix/strbackup.tns"
-fileLoaderInstalled:                 .string "/documents/ndless/loader.tns"
-fileResourceStringsBackupInstalled:  .string "/documents/ndless/strbackup.tns"
-fileHook:                            .string "/documents/ndless/hook.tns"
 
 # TODO : Better messages ^^
 #dialogTitle:
