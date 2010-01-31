@@ -141,10 +141,14 @@ public class MainFrame extends JFrame {
 	}
 
 	public static void log(final String str) {
+		log(str, true);
+	}
+
+	public static void log(final String str, final boolean appendNL) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				instance.logtext.setText(instance.logtext.getText() + str
-						+ "\n");
+						+ (appendNL ? "\n" : ""));
 				scrollLogToTheEnd();
 			}
 		});
@@ -175,6 +179,7 @@ public class MainFrame extends JFrame {
 				instance.currentStepProgressBar.setVisible(false);
 				instance.button.setText("Retry");
 				instance.button.setVisible(true);
+				instance.button.requestFocusInWindow();
 			}
 		});
 		instance.button.addActionListener(new ActionListener() {
@@ -206,6 +211,7 @@ public class MainFrame extends JFrame {
 				instance.currentStepProgressBar.setVisible(false);
 				instance.button.setText("Exit");
 				instance.button.setVisible(true);
+				instance.button.requestFocusInWindow();
 			}
 		});
 		instance.button.addActionListener(new ActionListener() {

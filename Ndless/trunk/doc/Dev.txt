@@ -41,4 +41,14 @@ Building
 From Ndless root directory:
 
 * make: builds the artifacts
+* make dist FAST=true: builds the artificats and create a release directory (dist) for development tests.
+   This disables Java obfuscation.
 * make dist: builds the artificats and create a release directory (dist)
+
+Debugging the installer
+=======================
+
+The Eclipse Debug configuration should be configured this way:
+* Arguments -> Working directory -> Other -> <dist in Ndless root directory>
+* Classpath -> User Entries: The Computer Link User Library must be removed
+  to use the version patched at runtime. choose Remove, then Add Projects -> Ndless

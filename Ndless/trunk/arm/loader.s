@@ -49,19 +49,21 @@ _start: .global _start
   oscall  TCT_Local_Control_Interrupts
   
   # Move strbackup.tns from Ndless Installer directory to system directory if
-  # it exists (first execution)
+  # it exists (first execution) and no backup exists in Ndless system directory
+  adr     r5, fileResourceStringsBackup
+  mov     r0, r5
+  bl      fileExists
+  cmp     r0, #0
+  beq     _res_strings_backed_up   @ already a backup
   adr     r4, fileResourceStringsBackupInstaller
   mov     r0, r4
   bl      fileExists
   cmp     r0, #0
-  bne     _res_strings_backed_up
-  adr     r5, fileResourceStringsBackup
-  mov     r0, r5
-  oscall  unlink
+  bne     _res_strings_backed_up   @ no new backup
   adr     r0, dirNdlessSys
   oscall  mkdir
-  mov     r0, r4               @ fileResourceStringsBackupInstaller
-  mov     r1, r5               @ fileResourceStringsBackup
+  mov     r0, r4                   @ fileResourceStringsBackupInstaller
+  mov     r1, r5                   @ fileResourceStringsBackup
   oscall  rename
  
 _res_strings_backed_up:

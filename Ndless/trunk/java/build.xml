@@ -57,7 +57,7 @@ Command-line parameters:
 	</target>
 
 	<target name="noobfuscation" if="noobf">
-		<copy file="dist/install-ndless-original.jar" tofile="dist/install-ndless-original.jar"/>
+		<copy file="dist/install-ndless-original.jar" tofile="dist/install-ndless.jar"/>
 	</target>
 	
 </project>

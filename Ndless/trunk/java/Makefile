@@ -1,5 +1,5 @@
 all:
-	ant
+	ant -Dnoobf=$(FAST)
 
 clean:
 	ant clean

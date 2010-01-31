@@ -32,7 +32,9 @@ import com.ti.eps.util.LoggerUtil;
 
 public class Injector implements CurrentStep {
 	private static final boolean forceOSUpdate = false;
-	private static final String deviceInstallDir = "ndless";
+	private static final String deviceInstallerDir = "ndless";
+	// created once Ndless has been run on the calc
+	private static final String deviceInstalledDir = "/../phoenix/ndless";
 	private static final String resDirPrefix = "res/";
 	private File resDir;
 	private static final String localRequiredOSFilename = "tinspire_1.1.tno";
@@ -55,17 +57,11 @@ public class Injector implements CurrentStep {
 			DeviceInfo deviceInfo = pxConnectApp.connectedDevice()
 					.getDeviceInfo();
 			this.isNonCas = "NonCas".equals(deviceInfo.getDeviceType());
-			this.resDir = new File(resDirPrefix	+ (isNonCas ? "NON_CAS/" : "CAS/"));
+			this.resDir = new File(resDirPrefix
+					+ (isNonCas ? "NON_CAS/" : "CAS/"));
 			Version currentOsVersion = deviceInfo.getOsVersion();
 			this.hadNoOS = hasNoOS(currentOsVersion);
 			downgradeOSIfNeeded(currentOsVersion);
-			
-			MainFrame.log("Preparing required files on the device:");
-			MainFrame.log(" - Creating Ndless installation directory");
-			mkDeviceDocDir(deviceInstallDir);
-			MainFrame.log(" - Backuping overwritten files");
-			copyFileLocallyOnDevice("/../phoenix/syst/locales/en/strings.res",
-					deviceInstallDir + "/strbackup.tns", true);
 
 			// strings.res with shellcode run by buffer overflow at boot time
 			File loaderFile = new File(resDir, "loader.tns");
@@ -74,27 +70,39 @@ public class Injector implements CurrentStep {
 				throw new NdlessException(
 						"Corrupted Ndless directory: missing file '"
 								+ hookFile.getPath() + "'");
-			MainFrame.log(" - Transfering loader");
-			sendFileToDevice(new File(resDir, "loader.tns").getPath(), deviceInstallDir
-					+ "/loader.tns");
-			MainFrame.log(" - Transfering hook");
-			sendFileToDevice(hookFile.getPath(), deviceInstallDir
-					+ "/hook.tns");
 
-			MainFrame.log(" - Deleting copier");
-			deleteFileOnDevice("/../phoenix/syst/locales/copysamples");
-			copyCopier();
-			
-			MainFrame.log(" - Deleting configuration");
-			deleteFileOnDevice("/../phoenix/syst/settings/initialized");
-			
+			MainFrame.log("Creating Ndless installation directory...");
+			MainFrame.log("Checking if Ndless is already installed... ", false);
+			if (isNdlessUpgrade()) {
+				MainFrame.log("Yes, upgrading.");
+				MainFrame.log("Preparing required files on the device:");
+				transferBinaries(loaderFile, hookFile);
+
+			} else {
+				MainFrame.log("No.");
+				MainFrame.log("Preparing required files on the device:");
+				mkDeviceDocDir(deviceInstallerDir);
+				MainFrame.log(" - Backuping overwritten files");
+				copyFileLocallyOnDevice(
+						"/../phoenix/syst/locales/en/strings.res",
+						deviceInstallerDir + "/strbackup.tns", true);
+				transferBinaries(loaderFile, hookFile);
+				MainFrame.log(" - Deleting copier");
+				deleteFileOnDevice("/../phoenix/syst/locales/copysamples");
+				copyCopier();
+
+				MainFrame.log(" - Deleting configuration");
+				deleteFileOnDevice("/../phoenix/syst/settings/initialized");
+
+				rebootDevice(true);
+				waitForDeviceInitialization();
+			} // new installation
+
 			rebootDevice(true);
-			waitForDeviceInitialization();
-			rebootDevice(true);
-			
+
 			MainFrame.log("Cleaning up installation files...");
-			deleteFileOnDevice(deviceInstallDir	+ "/loader.tns");
-			
+			deleteFileOnDevice(deviceInstallerDir + "/loader.tns");
+
 			MainFrame.log("The device is ready!");
 			MainFrame.log("You can now close the installer.");
 			MainFrame.canExit();
@@ -115,8 +123,8 @@ public class Injector implements CurrentStep {
 			conApi = NavnetConnectivityAPI.getInstance();
 		} catch (IllegalNavnetStateException e) {
 			throw new NdlessException(
-					"Another instance of Ndless or TI-Nspire Computer Link is" +
-					" already running");
+					"Another instance of Ndless or TI-Nspire Computer Link is"
+							+ " already running");
 		}
 		pxConnectApp.setConnectAPI(conApi);
 		PXDevice[] devices;
@@ -163,8 +171,8 @@ public class Injector implements CurrentStep {
 						+ currentOsVersion.getMajor() + "."
 						+ currentOsVersion.getMinor() + "."
 						+ currentOsVersion.getBuild());
-			ContinueDialog.ask("Ndless needs to " + action
-					+ " 1.1.\nContinue?");
+			ContinueDialog
+					.ask("Ndless needs to " + action + " 1.1.\nContinue?");
 			requiredOSFile = new File(userFolder, localRequiredOSFilename);
 			if (requiredOSFile.exists()) {
 				MainFrame.log("Using the local OS copy '"
@@ -222,12 +230,11 @@ public class Injector implements CurrentStep {
 		(new Thread() {
 			public void run() {
 				try {
-					Utils
-							.downloadFile(
-									new URL(
-											"http://ti.bank.free.fr/modules/archives/" +
-											"download.php?id=" + (isNonCas ? 1394 : 1395)),
-									requiredOSFile, dlStatus);
+					Utils.downloadFile(new URL(
+							"http://ti.bank.free.fr/modules/archives/"
+									+ "download.php?id="
+									+ (isNonCas ? 1394 : 1395)),
+							requiredOSFile, dlStatus);
 				} catch (Exception e) {
 				} // handled below
 			}
@@ -239,8 +246,8 @@ public class Injector implements CurrentStep {
 		MainFrame.setStepProgressCompleted();
 		if (dlStatus.getException() != null) {
 			MainFrame
-					.log("Ndless can't download the file. You may try to copy it" +
-							"manually to Ndless directory as '"
+					.log("Ndless can't download the file. You may try to copy it"
+							+ "manually to Ndless directory as '"
 							+ new File(userFolder, localRequiredOSFilename)
 									.getPath()
 							+ "' and retry the installation.");
@@ -280,6 +287,24 @@ public class Injector implements CurrentStep {
 		}
 	}
 
+	private boolean isNdlessUpgrade() throws DeviceException, InterruptedException {
+		try {
+			conApi.getFileAttributes(deviceInstalledDir);
+		} catch (DeviceFileNotFoundException e) {
+			return false;
+		}
+		return true;
+	}
+
+	private void transferBinaries(File loaderFile, File hookFile)
+			throws DeviceException, InterruptedException {
+		MainFrame.log(" - Transfering loader");
+		sendFileToDevice(loaderFile.getPath(), deviceInstallerDir
+				+ "/loader.tns");
+		MainFrame.log(" - Transfering hook");
+		sendFileToDevice(hookFile.getPath(), deviceInstallerDir + "/hook.tns");
+	}
+
 	private boolean isUnknownCopySrcException(DeviceException e) {
 		return "Error.DeviceFileXfer.Copy.BadPath".equals(e.getMessage());
 	}
@@ -303,8 +328,8 @@ public class Injector implements CurrentStep {
 				public void run() {
 					try {
 						conApi.copyFile(srcPath, destPath, pxStatus);
-						pxStatus.setOpInProgress(false); // workaround for buggy
-						// status update
+						// workaround for buggy status update
+						pxStatus.setOpInProgress(false); 
 					} catch (GenericCommException e) {
 						// when the source file doesn't exist
 						pxStatus.setOpInProgress(false);
@@ -351,7 +376,7 @@ public class Injector implements CurrentStep {
 			public void run() {
 				try {
 					conApi.sendFile(src, dest, pxStatus);
-					 // workaround for buggy status update
+					// workaround for buggy status update
 					pxStatus.setOpInProgress(false);
 				} catch (DeviceException e) {
 				}
@@ -373,7 +398,7 @@ public class Injector implements CurrentStep {
 			public void run() {
 				try {
 					conApi.getFile(src, dest, pxStatus);
-					 // workaround for buggy status update
+					// workaround for buggy status update
 					pxStatus.setOpInProgress(false);
 				} catch (DeviceException e) {
 					e.printStackTrace();
@@ -414,19 +439,19 @@ public class Injector implements CurrentStep {
 		MainFrame.log(" - Transfering new copier");
 		if (!copierFile.exists())
 			throw new NdlessException(
-				"Corrupted Ndless directory: missing file '"
-						+ copierFile.getPath() + "'");
+					"Corrupted Ndless directory: missing file '"
+							+ copierFile.getPath() + "'");
 		copyFileToDeviceThroughOSUpgrade(copierFile.getPath());
 		// TODO slow after the last USB command, why...?
-		MainFrame.log(" - Checking copier transfer"); 
+		MainFrame.log(" - Checking copier transfer");
 		copyFileLocallyOnDevice("/../phoenix/syst/locales/copysamples",
-				deviceInstallDir + "/copier.tns", true);
+				deviceInstallerDir + "/copier.tns", true);
 		File readCopier = TempFileManager.createTempFile("read-copier.tns");
 		readCopier.delete();
-		getFileFromDevice(deviceInstallDir + "/copier.tns", readCopier
+		getFileFromDevice(deviceInstallerDir + "/copier.tns", readCopier
 				.getPath());
 		MainFrame.log(" - Deleting read copy");
-		deleteFileOnDevice(deviceInstallDir + "/copier.tns");
+		deleteFileOnDevice(deviceInstallerDir + "/copier.tns");
 		if (!Utils.fileContentsEquals(copierFile, readCopier))
 			throw new NdlessException(
 					"Could not write correctly the copier to the device");
@@ -458,13 +483,13 @@ public class Injector implements CurrentStep {
 				Thread.sleep(2000);
 				if (copyFileLocallyOnDevice(
 						"/../phoenix/syst/settings/initialized",
-						deviceInstallDir + "/initialized.tns", false)) {
+						deviceInstallerDir + "/initialized.tns", false)) {
 					initialized = true;
 					break;
 				}
 			}
 		}
-		deleteFileOnDevice(deviceInstallDir + "/initialized.tns");
+		deleteFileOnDevice(deviceInstallerDir + "/initialized.tns");
 		MainFrame.log("Device set up.");
 	}
 
@@ -499,25 +524,26 @@ public class Injector implements CurrentStep {
 				&& System.currentTimeMillis() < startOfOInst + 5000)
 			Thread.sleep(200);
 		pxStatus.cancel();
-		
+
 		// Dummy USB activity to make it reboot
 		try {
-			// this hangs, but with undetermined progress bar, so OK for the user
+			// this hangs, but with undetermined progress bar, so OK for the
+			// user
 			pxConnectApp.enumerateConnectedDevices();
 		} catch (Exception e) {
 		}
-//		try {
-//			File dummyFile = TempFileManager.createTempFile("dummy.tns");
-//			FileOutputStream fos = new FileOutputStream(dummyFile);
-//			byte[] dummy = new byte[10000];
-//			fos.write(dummy);
-//			fos.close();
-//			// TODO abort if too long (i.e. has rebooted)
-//			sendFileToDevice(dummyFile.getPath(), deviceInstallDir
-//					+ "/dummy.tns");
-//		} catch (DeviceException e) {
-//		}
-		
+		// try {
+		// File dummyFile = TempFileManager.createTempFile("dummy.tns");
+		// FileOutputStream fos = new FileOutputStream(dummyFile);
+		// byte[] dummy = new byte[10000];
+		// fos.write(dummy);
+		// fos.close();
+		// // TODO abort if too long (i.e. has rebooted)
+		// sendFileToDevice(dummyFile.getPath(), deviceInstallDir
+		// + "/dummy.tns");
+		// } catch (DeviceException e) {
+		// }
+
 		waitForTheDeviceToReboot(waitForStartup);
 	}
 
@@ -545,8 +571,7 @@ public class Injector implements CurrentStep {
 	private void waitForDeviceToShutdown() throws InterruptedException {
 		MainFrame.log("Waiting for the device to shut down...");
 		boolean deviceHasShutdown = false;
-		for (int waitForShutdownCount = 3; waitForShutdownCount > 0;
-			waitForShutdownCount--) {
+		for (int waitForShutdownCount = 3; waitForShutdownCount > 0; waitForShutdownCount--) {
 			if (!isDeviceStillResponsive()) {
 				deviceHasShutdown = true;
 				break;
@@ -561,8 +586,7 @@ public class Injector implements CurrentStep {
 	private void waitForDeviceToStartup() throws InterruptedException {
 		MainFrame.log("Waiting for the device to start up...");
 		boolean deviceHasStartedup = false;
-		for (int waitForShutdownCount = 18; waitForShutdownCount > 0;
-			waitForShutdownCount--) {
+		for (int waitForShutdownCount = 18; waitForShutdownCount > 0; waitForShutdownCount--) {
 			PXDevice[] devices = pxConnectApp.enumerateConnectedDevices();
 			if (devices.length != 0) {
 				pxConnectApp.connect(devices[0]);
