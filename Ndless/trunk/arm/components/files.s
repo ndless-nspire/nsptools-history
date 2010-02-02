@@ -158,3 +158,4 @@ _copyFile_end:
 
 rb:   .string "rb"
 wb:   .string "wb"
+  .align

@@ -28,27 +28,30 @@ rebootCalculator:
 # --------------------------------------------------------------------------
 showSimpleDialogBox:
   mov     r12, sp
-  stmfd   sp!, {r2, r7-r9, r11-r12, lr, pc}
+  stmfd   sp!, {r2, r6-r8, r11-r12, lr, pc}
   
   mov     r7, r0
   mov     r8, r1
   
   mov     r0, #0x400
   oscall  malloc
-  mov     r9, r0
+  mov     r6, r0
   
   mov     r1, r7
   mov     r2, #0x200
   oscall  ascii2utf16
   
-  add     r0, r9, #0x200
+  add     r0, r6, #0x200
   mov     r1, r8
   mov     r2, #0x200
   oscall  ascii2utf16
   
   mov     r0, #0
-  mov     r1, r9
-  add     r2, r9, #0x200
+  mov     r1, r6
+  add     r2, r6, #0x200
   oscall  show_dialog_box2
   
-  ldmfd   sp, {r2, r7-r9, r11, sp, pc}
+  mov     r0, r6
+  oscall  free
+  
+  ldmfd   sp, {r2, r6-r8, r11, sp, pc}

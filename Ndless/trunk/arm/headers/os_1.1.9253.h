@@ -16,11 +16,13 @@
   .equ create_path_filename,          0x10004BD8
   .equ sprintf,                       0x10182D20
   .equ mkdir,                         0x101888F4
-  .equ set_current_dir,               0x10187A2C
+  .equ rmdir,                         0x102156E0
+  .equ set_current_path,              0x10187A2C
+  .equ purge_directory,               0x1004E678
   .equ power_off,                     0x1004DA1C
-  .equ ascii2utf16,                   0x00000000
-  .equ show_dialog_box,               0x00000000
-  .equ show_dialog_box2,              0x00000000
+  .equ ascii2utf16,                   0x100D09AC
+  .equ show_dialog_box,               0x10011CE0
+  .equ show_dialog_box2,              0x10011B20
   .equ NU_Remove_Dir,                 0x1018B76C
 
 	.macro oscall address

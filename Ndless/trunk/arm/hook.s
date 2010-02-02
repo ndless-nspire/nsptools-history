@@ -128,5 +128,5 @@ _exec_program_exit_error:
 
 prgSignature:       .string "PRG"
 pathFormat:         .string "/documents/%s/%s"
-
+  .align
   .end

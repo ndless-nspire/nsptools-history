@@ -15,8 +15,10 @@
 	.equ stat,                          0x1018A00C
   .equ create_path_filename,          0x10004BC0
   .equ sprintf,                       0x10182A28
-  .equ mkdir,                         0x10184B18
-  .equ set_current_dir,               0x10187734
+  .equ mkdir,                         0x101885FC
+  .equ rmdir,                         0x102157E0
+  .equ set_current_path,              0x10187734
+  .equ purge_directory,               0x1004E62C  
   .equ power_off,                     0x1004D9D0
   .equ ascii2utf16,                   0x100D09DC
   .equ show_dialog_box,               0x10011CB8
