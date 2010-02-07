@@ -7,6 +7,13 @@ import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+
 import ndless.install.common.NdlessException;
 import ndless.install.common.TempFileManager;
 import ndless.install.common.Utils;
@@ -14,6 +21,8 @@ import ndless.install.common.Utils.Status;
 import ndless.install.gui.ContinueDialog;
 import ndless.install.gui.CurrentStep;
 import ndless.install.gui.MainFrame;
+
+import org.xml.sax.SAXException;
 
 import com.ti.eps.navnet.Version;
 import com.ti.eps.pxconnect.app.DeviceException;
@@ -34,7 +43,7 @@ public class Injector implements CurrentStep {
 	private static final boolean forceOSUpdate = false;
 	private static final String deviceInstallerDir = "ndless";
 	// created once Ndless has been run on the calc
-	private static final String deviceInstalledDir = "/../phoenix/ndless";
+	private static final String deviceInstalledDir = "/../phoenix/ndls";
 	private static final String resDirPrefix = "res/";
 	private File resDir;
 	private static final String localRequiredOSFilename = "tinspire_1.1.tno";
@@ -54,6 +63,7 @@ public class Injector implements CurrentStep {
 			MainFrame.setCurrentStep(this);
 			MainFrame.log("Connecting to the device...");
 			setupNavnet();
+
 			DeviceInfo deviceInfo = pxConnectApp.connectedDevice()
 					.getDeviceInfo();
 			this.isNonCas = "NonCas".equals(deviceInfo.getDeviceType());
@@ -195,7 +205,14 @@ public class Injector implements CurrentStep {
 	 * @throws InterruptedException
 	 */
 	private void executeNavNetMethodWithProgress(final Runnable runnable,
-			final int statusUpdatePeriodInMs) throws InterruptedException {
+			final int statusUpdatePeriodInMs, boolean disableProgress)
+			throws InterruptedException {
+		if (disableProgress) {
+			runnable.run();
+			if (pxStatus.errorOccured())
+				throw new NdlessException(pxStatus.getError());
+			return;
+		}
 		MainFrame.initStepProgress();
 		new Thread(runnable).start();
 		while (pxStatus.inProgress()) {
@@ -268,7 +285,7 @@ public class Injector implements CurrentStep {
 			public void run() {
 				pxConnectApp.installOS(requiredOSFile.getPath(), pxStatus);
 			}
-		}, 300);
+		}, 300, false);
 		MainFrame
 				.log("Waiting for the installation of the OS by the device...");
 		waitWithProgress(hadNoOS ? 20000 / 300 : 65000 / 300, 300);
@@ -287,7 +304,8 @@ public class Injector implements CurrentStep {
 		}
 	}
 
-	private boolean isNdlessUpgrade() throws DeviceException, InterruptedException {
+	private boolean isNdlessUpgrade() throws DeviceException,
+			InterruptedException {
 		try {
 			conApi.getFileAttributes(deviceInstalledDir);
 		} catch (DeviceFileNotFoundException e) {
@@ -329,7 +347,7 @@ public class Injector implements CurrentStep {
 					try {
 						conApi.copyFile(srcPath, destPath, pxStatus);
 						// workaround for buggy status update
-						pxStatus.setOpInProgress(false); 
+						pxStatus.setOpInProgress(false);
 					} catch (GenericCommException e) {
 						// when the source file doesn't exist
 						pxStatus.setOpInProgress(false);
@@ -337,7 +355,7 @@ public class Injector implements CurrentStep {
 					} catch (DeviceException e) {
 					}
 				}
-			}, 200);
+			}, 200, false);
 			return anonSharedStr.equals("SRCPATH_EXISTS");
 		} else {
 			try {
@@ -381,18 +399,17 @@ public class Injector implements CurrentStep {
 				} catch (DeviceException e) {
 				}
 			}
-		}, 200);
+		}, 200, false);
 
 	}
 
 	/**
 	 * @param src
-	 *            can't contain ../, use copyFileLocallyOnDevice() with a
-	 *            destination in a document folder
+	 *            can't contain ../, use getSystemFileFromDevice() instead
 	 * @throws InterruptedException
 	 */
-	private void getFileFromDevice(final String src, final String dest)
-			throws DeviceException, InterruptedException {
+	private void getFileFromDevice(final String src, final String dest,
+			boolean withProgress) throws DeviceException, InterruptedException {
 		pxStatus = new PXStatus();
 		executeNavNetMethodWithProgress(new Runnable() {
 			public void run() {
@@ -404,7 +421,26 @@ public class Injector implements CurrentStep {
 					e.printStackTrace();
 				}
 			}
-		}, 200);
+		}, 200, !withProgress);
+	}
+
+	/**
+	 * deviceInstallerDir is used as a temporary folder for the transfer.
+	 * 
+	 * @param src
+	 *            device path, starts with /../
+	 * @param dest
+	 *            computer path
+	 * @throws InterruptedException
+	 * @throws DeviceException
+	 */
+	private void getSystemFileFromDevice(String src, String dest,
+			boolean withProgress) throws DeviceException, InterruptedException {
+		String srcFileName = src.substring(src.lastIndexOf('/') + 1) + ".tns";
+		String tempFileOnDevice = deviceInstallerDir + "/" + srcFileName;
+		copyFileLocallyOnDevice(src, tempFileOnDevice, withProgress);
+		getFileFromDevice(tempFileOnDevice, dest, withProgress);
+		deleteFileOnDevice(tempFileOnDevice);
 	}
 
 	/**
@@ -449,7 +485,7 @@ public class Injector implements CurrentStep {
 		File readCopier = TempFileManager.createTempFile("read-copier.tns");
 		readCopier.delete();
 		getFileFromDevice(deviceInstallerDir + "/copier.tns", readCopier
-				.getPath());
+				.getPath(), true);
 		MainFrame.log(" - Deleting read copy");
 		deleteFileOnDevice(deviceInstallerDir + "/copier.tns");
 		if (!Utils.fileContentsEquals(copierFile, readCopier))
@@ -462,20 +498,22 @@ public class Injector implements CurrentStep {
 	 * Initialization is required for copysamples to execute
 	 */
 	private void waitForDeviceInitialization() throws DeviceException,
-			InterruptedException {
+			InterruptedException, XPathExpressionException, IOException,
+			SAXException, ParserConfigurationException {
 		boolean firstMenu = true;
 		boolean initialized = false;
 		while (!initialized) {
 			MainFrame.setProgressBarVisibility(false);
 			ContinueDialog
-					.ask(firstMenu ? "Now confirm the setup dialogs on the device to\n"
-							+ "bring up the Home Menu, and select 'My Documents'\n"
+					.askFormatted(firstMenu ? "<html>Now confirm the setup dialogs on the device to<br/>"
+							+ "bring up the Home Menu, and select 'My Documents'<br/>"
 							+ "by pressing '6'.\n"
-							+ "You must keep English as the system language.\n"
-							: "It seems I wasn't clear enough.\n"
-									+ "Could you please confirm the setup dialogs on the device\n"
-									+ "to bring up the Home Menu, and then select 'My Documents'\n"
-									+ "by pressing '6'?");
+							+ "You <i>must</i> set 'English' as the system<br/>"
+							+ "language.</html>"
+							: "<html>It seems I wasn't clear enough.<br/>"
+									+ "Could you please confirm the setup dialogs on the device<br/>"
+									+ "to bring up the Home Menu, and then select 'My Documents'<br/>"
+									+ "by pressing '6'?</html>");
 			MainFrame.setProgressBarVisibility(true);
 			if (firstMenu)
 				MainFrame.log("Waiting for the device setup...");
@@ -491,7 +529,44 @@ public class Injector implements CurrentStep {
 			}
 		}
 		deleteFileOnDevice(deviceInstallerDir + "/initialized.tns");
+
+		while (!isCurrentLanguageAsExpected()) {
+			MainFrame.setProgressBarVisibility(false);
+			// We cannot snoop the language change because the check discards any menu
+			ContinueDialog
+					.ask(
+							  "The system language must be kept to English during the\n"
+							+ "installation, you'll be able to change it afterwards.\n"
+							+ "Please set it back in 'System Info' -> System settings'\n"
+							+ "then select 'Yes'.");
+			MainFrame.setProgressBarVisibility(true);
+		}
 		MainFrame.log("Device set up.");
+	}
+
+	/**
+	 * Caution, discards any menu currently displayed on the calculator.
+	 * 
+	 * @return true if the current language is English as expected
+	 */
+	private boolean isCurrentLanguageAsExpected() throws IOException,
+			DeviceException, InterruptedException, XPathExpressionException,
+			SAXException, ParserConfigurationException {
+		String currentSettingsZipFile = TempFileManager.createTempFile(
+				"current.zip").getPath();
+		getSystemFileFromDevice("/../phoenix/syst/settings/current.zip",
+				currentSettingsZipFile, false);
+		File currentSettingsFile = Utils.extractFileFromZip(
+				currentSettingsZipFile, "settings.xml");
+
+		DocumentBuilderFactory domFactory = DocumentBuilderFactory
+				.newInstance();
+		domFactory.setNamespaceAware(true);
+		XPath xpath = XPathFactory.newInstance().newXPath();
+		double lang = (Double) xpath.evaluate("/settings/lang/text()",
+				domFactory.newDocumentBuilder().parse(currentSettingsFile),
+				XPathConstants.NUMBER);
+		return lang == 1;
 	}
 
 	/**

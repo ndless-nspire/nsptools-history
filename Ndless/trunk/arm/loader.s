@@ -11,11 +11,6 @@
  * RCSID $Id$
  ****************************************************************************/
  
-/**
- * TODO:
- * -----
- */
-     
   #include "headers/os.h"
   #include "headers/defines.h"
   #include "bootstrapper.h"
@@ -37,13 +32,20 @@
   
 _start: .global _start
 # -------------------------------------------------------------------------
-# ...
+# The loader is either installed in /phoenix/syst/locales/en/strings.res
+# (by Ndless Installer, first execution), or in
+# /phoenix/ndls/locales/<language>/strings.res (next executions) and run by
+# a buffer overflow.
+# At the first execution, the loader finishes its installation: syst's
+# strings.res is restored, a new component 'ndls' is registered and the
+# loader is installed in ndls's strings.res, to make the hack persist in
+# all languages.
+# The loader may update itself and the hooks from files in the installer
+# directory.
+# The loader then install the OS hooks (hook.s) and continue the OS boot
+# up.
 # -------------------------------------------------------------------------
   ldr     sp, =HACK_BASE_ADDRESS
-  
-  # Desactivate interrupts
-  #mov     r0, #0xFFFFFFFF
-  #oscall  TCT_Local_Control_Interrupts
   
   # Check if Ndless was installed
 _check_is_installed:
@@ -53,7 +55,7 @@ _check_is_installed:
   bne     install_hack
 
   # Check if Ndless must be updated, else fork OS addresses
-  adr     r0, fileLoaderInstalled
+  adr     r0, fileLoaderInstaller
   adr     r1, openFileMode_rb
   oscall  fopen
   cmp     r0, #0
@@ -61,16 +63,16 @@ _check_is_installed:
   oscall  fclose
   
 _update_hack:
-  # Erase strings.res by content of loader.tns for all language
+  # Overwrite strings.res by content of loader.tns for all language
   ldr     r0, =copy_resource_file
   adr     r1, folderNdls
-  adr     r2, fileLoaderInstalled
+  adr     r2, fileLoaderInstaller
   stmfd   sp!, {r1-r2}
   bl      iterate_locale_names_callback
   add     sp, sp, #8
   
   # Remove loader.tns located in user documents
-  adr     r0, fileLoaderInstalled
+  adr     r0, fileLoaderInstaller
   oscall  unlink
   ldr     pc, =OS_BASE_ADDRESS        @ reboot OS (execute the new loader)
 
@@ -95,13 +97,14 @@ openFileMode_rb:                     .string "rb"
 
 # -------------------------------------------------------------------------
 # Remove hack from the file system.
-# ...
-# 3) Reboot calculator. Force to install a fresh OS in RAM.
+# 1) Restore the components file
+# 2) Delete Ndless installation directory
+# 3) Fully reboot the calculator, to install a fresh OS in RAM.
 # -------------------------------------------------------------------------
 remove_hack:
-  # Erase /phoenix/components
+  # Rewrite /phoenix/components
   mov     r0, #0        @ exclude ndls folder
-  bl      erase_components
+  bl      rewrite_components
   
   # Remove ndls folder
   adr     r0, pathNdls
@@ -112,13 +115,16 @@ remove_hack:
   bl      rebootCalculator            @ Remove all forked address
 
 pathNdls:                            .string "/phoenix/ndls"
-fileLoaderInstalled:                 .string "/documents/ndless/loader.tns"
+fileLoaderInstaller:                 .string "/documents/ndless/loader.tns"
   .align
   
 # -------------------------------------------------------------------------
 # Install hack in the file system.
-# ...
-# 4) Reboot OS. Force to execute the new loader.
+# 1) Create the ndls component tree
+# 2) Register the ndls component in the file 'components'
+# 3) Copy the hack in all strings.res of all languages of the ndls component
+# 4) Restore syst's strings.res
+# 5) Fork the OS
 # -------------------------------------------------------------------------
 install_hack:
   # TODO: Check if/documents/ndless/strbackup.tns exists
@@ -137,9 +143,9 @@ install_hack:
   ldr     r0, =mkdir
   bl      iterate_locale_names_callback
   
-  # Erase /phoenix/components
+  # Rewrite /phoenix/components
   mov     r0, #1        @ include ndls folder
-  bl      erase_components
+  bl      rewrite_components
   
   # Copy strings.res (loader) for all language into ndls folder
   ldr     r0, =copy_resource_file
@@ -149,7 +155,7 @@ install_hack:
   bl      iterate_locale_names_callback
   add     sp, sp, #8
   
-  # Erase strings.res (loader) by strbackup.tns
+  # Overwrite strings.res (loader) by strbackup.tns
   adr     r0, fileResourceStrings
   oscall  unlink
   adr     r0, fileResourceStringsBackup
@@ -157,7 +163,7 @@ install_hack:
   oscall  rename
   
   # Remove loader.tns of user documents (avoid to update loader during the next reboot)
-  adr     r0, fileLoaderInstalled
+  adr     r0, fileLoaderInstaller
   oscall  unlink
   
   b       fork_os
@@ -171,8 +177,7 @@ fileResourceStrings:                 .string "/phoenix/syst/locales/en/strings.r
 
 # -------------------------------------------------------------------------
 # Fork OS addresses.
-# 1) If the key theta is hold down, the resource file 'strings.res' is
-# restored and the hack is removed.
+# 1) If the key theta is hold down, the hack is removed.
 # 2) Allocate a memory block.
 # 3) Copy the code of the loader to the memory block.
 # 4) Inject the address of memory block in the memory space of OS.
@@ -197,7 +202,7 @@ _is_theta_pressed:
   oscall  memcpy
   
   # Inject buffer address
-  add     r2, r6, #execute_hack       @ call execute_hack
+  add     r2, r6, #execute_hook       @ call execute_hook
   fork_address  OS_OFFSET_HACKED_EXECUTE
   
   # Inject restore_resource address
@@ -211,7 +216,7 @@ _is_theta_pressed:
 # 2) Else execute the hook installation.
 # 3) Restore OS instructions for a valid execution.
 # ------------------------------------------------------------------------------
-execute_hack:
+execute_hook:
   # Save OS state
   stmfd   sp!, {r0-r12, lr}
 
@@ -237,7 +242,7 @@ _restore_os_state:
   ldmfd   sp!, {r0-r12, lr}
   
   # Restore OS instructions
-  oscall  OS_SHADOWED_CALL_EXECUTE      @ execute OS instructions previously erased by fork_os
+  oscall  OS_SHADOWED_CALL_EXECUTE      @ execute OS instructions previously overwritten by fork_os
   cmp     r0, #0
   ldr     pc, =(OS_OFFSET_HACKED_EXECUTE + 8)
 
@@ -245,14 +250,14 @@ fileHook:                            .string "/documents/ndless/hook.tns"
   .align
 
 # ------------------------------------------------------------------------------
-# Erase the file /phoenix/components which contains the list of components
+# Rewrite the file /phoenix/components which contains the list of components
 #
 # Input:
 #   r0 = 1 include ndls folder, else 0
 #
 # Output:
 # ------------------------------------------------------------------------------
-erase_components:
+rewrite_components:
   mov     r12, sp
   stmfd   sp!, {r1-r4, r11-r12, lr, pc}
   
@@ -268,9 +273,9 @@ erase_components:
   adr     r0, tblComponents
   mov     r1, #45
   cmp     r5, #0
-  beq     _erase_components_continue
+  beq     _rewrite_components_continue
   add     r1, r1, #5
-_erase_components_continue:
+_rewrite_components_continue:
   mov     r2, #1
   mov     r3, r4
   oscall  fwrite

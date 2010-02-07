@@ -1,14 +1,13 @@
 HIGH:
-- Move /documents/ndless/hook.tns to /phoenix/ndless/hook.tns as done for strbackup
-- Fork the OS address used to select the user language, and keep Ndless installed
-  when the language is changed
+- Move /documents/ndless/hook.tns to /phoenix/ndls/hook.tns
 - Unobtrusive installation message. Tells that /documents/ndless/hook.tns is not
   found if it isn't. Indicate the uninstallation shortcut.
+- Fix the missed reboot issue
   
 MEDIUM:
 - Better demo program
-- Installer: check that English is chosen during configuration
-- Fix the missed reboot issue
+- Run programs while keeping the interrupts enabled to be able to use RS232, but
+  avoid the clock to be displayed on the screen.
 - Releasable and robust installer for nspire_emu. There may special support in
   the loader if required.
 

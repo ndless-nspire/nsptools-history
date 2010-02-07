@@ -17,6 +17,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.Arrays;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
@@ -259,6 +260,31 @@ public class Utils {
 		tempFile.delete();
 	}
 
+	/**
+	 * The file is extracted in the temporary directory as 'zipEntryName'
+	 * 
+	 * @return the extracted file
+	 */
+	public static File extractFileFromZip(String zipFilePath, String zipEntryName)
+			throws IOException {
+		ZipFile zipFile = new ZipFile(zipFilePath);
+		BufferedInputStream bis = new BufferedInputStream(zipFile
+				.getInputStream(new ZipEntry(zipEntryName)));
+		int size;
+		byte[] buffer = new byte[2048];
+		final File extractedFile = TempFileManager.createTempFile(zipEntryName);
+		BufferedOutputStream bos = new BufferedOutputStream(
+				new FileOutputStream(extractedFile), buffer.length);
+		while ((size = bis.read(buffer, 0, buffer.length)) != -1) {
+			bos.write(buffer, 0, size);
+		}
+		bos.flush();
+		bos.close();
+		bis.close();
+		zipFile.close();
+		return extractedFile;
+	}
+
 	public static class Status {
 		private int completionPercent = 0;
 		private Exception exception = null;
@@ -458,8 +484,7 @@ public class Utils {
 	public static void copyResource(String resPath, File file)
 			throws IOException {
 		final FileOutputStream target = new FileOutputStream(file);
-		streamCopy(Utils.class.getResourceAsStream(resPath),
-				target);
+		streamCopy(Utils.class.getResourceAsStream(resPath), target);
 		target.close();
 	}
 
