@@ -43,11 +43,12 @@ A demo executable can be found in Ndless package (res/<TI-Nspire model>/demo.tns
 What you need to know as a user
 ===============================
 
-- The Ndless Installer creates files in the documents directory 'ndless'.
-  This directory should not be removed as long as Ndless is installed.
+- The Ndless Installer creates tempory files in the documents directory 'ndless'.
+  You may remove this directory after installation.
 - If the TI-Nspire becomes unusable:
-   * Reboot it while holding the keys ON+Home+Enter+P. To reboot the TI-Nspire, unplug the
-     USB cable, then remove and put back the a battery
+   * Enter the maintenace menu by reboot it while holding the keys ON+Home+Enter+P until
+     half the progress bar. To reboot the TI-Nspire, unplug the USB cable, then remove and
+     put back the a battery.
    * Select '2' to uninstall the current OS. Use the Ndless Installer or TI-Nspire Computer
      Link Software to reinstall an OS.
 - If the Ndless Installer is lost in is installation sequence, restart it. Ndless may get

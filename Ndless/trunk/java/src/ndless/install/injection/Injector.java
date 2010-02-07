@@ -316,10 +316,10 @@ public class Injector implements CurrentStep {
 
 	private void transferBinaries(File loaderFile, File hookFile)
 			throws DeviceException, InterruptedException {
-		MainFrame.log(" - Transfering loader");
+		MainFrame.log(" - Transferring loader");
 		sendFileToDevice(loaderFile.getPath(), deviceInstallerDir
 				+ "/loader.tns");
-		MainFrame.log(" - Transfering hook");
+		MainFrame.log(" - Transferring hook");
 		sendFileToDevice(hookFile.getPath(), deviceInstallerDir + "/hook.tns");
 	}
 
@@ -472,7 +472,7 @@ public class Injector implements CurrentStep {
 	private void copyCopier() throws InterruptedException, DeviceException,
 			IOException {
 		final File copierFile = new File(resDir, "../copier.tno");
-		MainFrame.log(" - Transfering new copier");
+		MainFrame.log(" - Transferring new copier");
 		if (!copierFile.exists())
 			throw new NdlessException(
 					"Corrupted Ndless directory: missing file '"

@@ -1,5 +1,4 @@
 HIGH:
-- Move /documents/ndless/hook.tns to /phoenix/ndls/hook.tns
 - Unobtrusive installation message. Tells that /documents/ndless/hook.tns is not
   found if it isn't. Indicate the uninstallation shortcut.
 - Fix the missed reboot issue
