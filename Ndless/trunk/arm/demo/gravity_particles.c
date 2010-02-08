@@ -1,18 +1,32 @@
+/*****************************************************************************
+ * Copyright (C) 2010 by ANNEHEIM Geoffrey
+ * Contact: geoffrey.anneheim@gmail.com
+ *
+ * Original code by BoneSoft:
+ * http://www.codeproject.com/KB/GDI-plus/FunWithGravity.aspx
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * RCSID $Id$
+ *****************************************************************************/
+
 #include "os.h"
 #include "utils.h"
 #include "gravity_particles.h"
 
-void gravity_particles_construct(t_gravity_particle* t_this, float gravity, int accelerationMultiplier) {
+void gravity_particles_construct(t_gravity_particles* t_this, float gravity, int accelerationMultiplier) {
   particle_system_construct(&(t_this->particleSystem));
   t_this->gravitationalConstant = gravity;
   t_this->accelerationMultiplier = accelerationMultiplier;
 }
 
-void gravity_particles_destruct(t_gravity_particle* t_this) {
+inline void gravity_particles_destruct(t_gravity_particles* t_this) {
   particle_system_destruct(&(t_this->particleSystem));
 }
 
-t_particle* gravity_particles_merge(t_gravity_particle* t_this, t_particle* i, t_particle* j) {
+t_particle* gravity_particles_merge(t_gravity_particles* t_this, t_particle* i, t_particle* j) {
   float newX, newY, newZ;
   t_vector v, vTmp1, vTmp2;
   t_particle* k;
@@ -40,7 +54,7 @@ t_particle* gravity_particles_merge(t_gravity_particle* t_this, t_particle* i, t
   return k;
 }
 
-void gravity_particles_draw(t_gravity_particle* t_this) {
+void gravity_particles_draw(t_gravity_particles* t_this) {
   t_rect ri, rj;
   t_particle *pi, *pj, *pNext;
   t_particle_system* particle_system = &(t_this->particleSystem);
@@ -115,7 +129,9 @@ void gravity_particles_draw(t_gravity_particle* t_this) {
     pi->velocity = vector_add(&(pi->velocity), &ai);
     pi->acceleration = ai;
 
-    particle_draw(pi, WHITE);
+    if (!particle_system->trace) {
+      particle_draw(pi, WHITE);
+    }
 
     particle_update(pi);
 
@@ -138,7 +154,7 @@ void gravity_particles_draw(t_gravity_particle* t_this) {
   }
 }
 
-void add_particle(t_gravity_particle* gravity_particles) {
+void add_particle(t_gravity_particles* gravity_particles) {
   t_particle* p;
   float x, y, vel1, vel2;
   int mass, color;
@@ -147,14 +163,14 @@ void add_particle(t_gravity_particle* gravity_particles) {
   color = ~(gravity_particles->particleSystem.nParticles) & 0x0F;
   if (color == WHITE) color = BLACK;
 
-  mass = rand() % 5;
+  mass = rand() % 7;
   switch (mass) {
     case 0: mass = 5; break;
     case 1: mass = 10; break;
     case 2: mass = 100; break;
-    case 3: mass = 1000; break;
-    /*case 4: mass = 2000; break;
-    case 5: mass = 4000; break;*/
+    case 3: mass = 200; break;
+    case 4: mass = 500; break;
+    case 5: mass = 1000; break;
     default: mass = 1;
   }
 
@@ -177,7 +193,7 @@ void add_particle(t_gravity_particle* gravity_particles) {
   (void) particle_system_addParticle(&(gravity_particles->particleSystem), p);*/
 }
 
-void remove_particle(t_gravity_particle* gravity_particles) {
+void remove_particle(t_gravity_particles* gravity_particles) {
   t_particle* p = gravity_particles->particleSystem.particle_head;
   if (p == NULL) { return; }
 

@@ -1,7 +1,21 @@
+/*****************************************************************************
+ * Copyright (C) 2010 by ANNEHEIM Geoffrey
+ * Contact: geoffrey.anneheim@gmail.com
+ *
+ * Original code by BoneSoft:
+ * http://www.codeproject.com/KB/GDI-plus/FunWithGravity.aspx
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * RCSID $Id$
+ *****************************************************************************/
+
 #include "os.h"
 #include "utils.h"
 
-bool rect_intersect(const t_rect* r1, const t_rect* r2) {
+inline bool rect_intersect(const t_rect* r1, const t_rect* r2) {
   if ((r1->y + r1->h) < r2->y) return false;
   if (r1->y > (r2->y + r2->h)) return false;
   if ((r1->x + r1->w) < r2->x) return false;
@@ -9,21 +23,21 @@ bool rect_intersect(const t_rect* r1, const t_rect* r2) {
   return true;
 }
 
-void clearScreen() {
+inline void clearScreen() {
   memset(SCREEN_BASE_ADDRESS, 0xFF, SCREEN_BYTES_SIZE);
 }
 
-void setPixel(int x, int y, int color) {
+inline void setPixel(int x, int y, int color) {
   unsigned char* p = (unsigned char*)(SCREEN_BASE_ADDRESS + ((x >> 1) + (y * SCREEN_WIDTH >> 1)));
   *p = (x & 1) ? ((*p & 0xF0) | color) : ((*p & 0x0F) | (color << 4));
 }
 
-int getPixel(int x, int y) {
+inline int getPixel(int x, int y) {
   unsigned char* p = (unsigned char*)(SCREEN_BASE_ADDRESS + ((x >> 1) + (y * SCREEN_WIDTH >> 1)));
   return ((x & 1) ? (*p & 0x0F) : (*p >> 4));
 }
 
-int isKeyPressed(t_key key) {
+inline int isKeyPressed(t_key key) {
   return !((*(short*)(KEY_MAP + key.row)) & key.col);
 }
 
@@ -40,11 +54,11 @@ void showSimpleDialogBox(const char* title, const char* msg) {
   char* buffTitle;
   char* buffMsg;
 
-  buffTitle = (char*)malloc(0x400);
-  buffMsg = (char*)malloc(0x400);
+  buffTitle = (char*)malloc(0x200);
+  buffMsg = (char*)malloc(0x800);
 
-  ascii2utf16(buffTitle, title, 0x100);
-  ascii2utf16(buffMsg, msg, 0x100);
+  ascii2utf16(buffTitle, title, 0x80);
+  ascii2utf16(buffMsg, msg, 0x200);
   show_dialog_box2(0, buffTitle, buffMsg);
 
   free(buffTitle);

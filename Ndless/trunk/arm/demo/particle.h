@@ -1,3 +1,19 @@
+/*****************************************************************************
+ * @(#) Ndless - Particle System Demo (Particle class)
+ *
+ * Copyright (C) 2010 by ANNEHEIM Geoffrey
+ * Contact: geoffrey.anneheim@gmail.com
+ *
+ * Original code by BoneSoft:
+ * http://www.codeproject.com/KB/GDI-plus/FunWithGravity.aspx
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * RCSID $Id$
+ *****************************************************************************/
+
 #ifndef _PARTICLE_H_
 #define _PARTICLE_H_
 

@@ -1,9 +1,24 @@
+/*****************************************************************************
+ * Copyright (C) 2010 by ANNEHEIM Geoffrey
+ * Contact: geoffrey.anneheim@gmail.com
+ *
+ * Original code by BoneSoft:
+ * http://www.codeproject.com/KB/GDI-plus/FunWithGravity.aspx
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * RCSID $Id$
+ *****************************************************************************/
+
 #include "os.h"
 #include "particle_system.h"
 
 void particle_system_construct(t_particle_system* t_this) {
   t_this->detectCol = true;
   t_this->running = false;
+  t_this->trace = false;
   t_this->nParticles = 0;
   t_this->particle_head = NULL;
   t_this->particle_tail = NULL;
@@ -19,20 +34,16 @@ void particle_system_destruct(t_particle_system* t_this) {
   }
 }
 
-void particle_system_start(t_particle_system* t_this) {
+inline void particle_system_start(t_particle_system* t_this) {
   t_this->running = true;
 }
 
-void particle_system_stop(t_particle_system* t_this) {
+inline void particle_system_stop(t_particle_system* t_this) {
   t_this->running = false;
 }
 
-bool particle_system_isRunning(t_particle_system* t_this) {
+inline bool particle_system_isRunning(t_particle_system* t_this) {
   return t_this->running;
-}
-
-bool particle_system_detectCollisions(t_particle_system* t_this) {
-  return t_this->detectCol;
 }
 
 bool particle_system_addParticle(t_particle_system* t_this, t_particle* particle) {
