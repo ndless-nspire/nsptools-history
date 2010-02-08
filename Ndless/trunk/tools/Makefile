@@ -1,4 +1,4 @@
-SUBDIRS = FlashEdit LoaderWrapper
+SUBDIRS = FlashEdit LoaderWrapper MakeTNS
 
 all:
 	@for i in $(SUBDIRS); do \
