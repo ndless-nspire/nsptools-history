@@ -6,10 +6,17 @@
  *
  * Original code by BoneSoft:
  * http://www.codeproject.com/KB/GDI-plus/FunWithGravity.aspx
+ * The Code Project Open License (CPOL) 1.02 (see CPOL.html)
  *
  * This program is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
  * or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Changes history:
+ * - Original code was refactored to support C syntax (based on C+ paradigm)
+ * - Removed the feature that drawing boxes of collision, velocity and acceleration.
+ * - Removed the code that manages ghost particles.
+ * - The class 'Particle System' uses a linked list.
  *
  * RCSID $Id$
  *****************************************************************************/
