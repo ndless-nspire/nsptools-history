@@ -28,12 +28,12 @@ inline void clearScreen() {
 }
 
 inline void setPixel(int x, int y, int color) {
-  unsigned char* p = (unsigned char*)(SCREEN_BASE_ADDRESS + ((x >> 1) + (y * SCREEN_WIDTH >> 1)));
+  unsigned char* p = (unsigned char*)(SCREEN_BASE_ADDRESS + ((x >> 1) + (y << 7) + (y << 5)));
   *p = (x & 1) ? ((*p & 0xF0) | color) : ((*p & 0x0F) | (color << 4));
 }
 
 inline int getPixel(int x, int y) {
-  unsigned char* p = (unsigned char*)(SCREEN_BASE_ADDRESS + ((x >> 1) + (y * SCREEN_WIDTH >> 1)));
+  unsigned char* p = (unsigned char*)(SCREEN_BASE_ADDRESS + ((x >> 1) + (y << 7) + (y << 5)));
   return ((x & 1) ? (*p & 0x0F) : (*p >> 4));
 }
 

@@ -76,7 +76,7 @@ int particle_comparer(t_particle* p1, t_particle* p2) {
 void particle_draw(__attribute__((unused)) t_particle* t_this, int color) {
   int x = t_this->xScreen;
   int y = t_this->yScreen;
-  unsigned char* s = (unsigned char*)(SCREEN_BASE_ADDRESS + (x >> 1) + (y * (SCREEN_WIDTH >> 1)));
+  unsigned char* s = (unsigned char*)(SCREEN_BASE_ADDRESS + ((x >> 1) + (y << 7) + (y << 5)));
 
   if ((x < 0) || (x > (SCREEN_WIDTH - 4)) || (y < 0) || (y > (SCREEN_HEIGHT - 4))) {
     return;
