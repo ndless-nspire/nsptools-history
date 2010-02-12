@@ -12,7 +12,6 @@
  *****************************************************************************/
 
   #include "headers/os.h"
-  #include "headers/defines.h"
   #include "bootstrapper.h"
   
   #ifdef CAS
@@ -79,7 +78,7 @@ _exec_program:
   mov     r3, r1
   mov     r0, r9
   adr     r1, pathFormat
-  oscall  sprintf
+  oscall  sprintf_
   
   # Open file
   mov     r0, r9
@@ -91,13 +90,13 @@ _exec_program:
   mov     r10, r0              @ file buffer
   adr     r1, prgSignature
   mov     r2, #PRG_SIGNATURE_BYTES_SIZE
-  oscall  memcmp
+  oscall  memcmp_
   cmp     r0, #0              @ isn't a program (i.e is a TI document)
   bne     _exec_program_exit_error
   
   # Desactivate interrupts
   mov     r0, #0xFFFFFFFF
-  oscall  TCT_Local_Control_Interrupts
+  oscall  TCT_Local_Control_Interrupts_
   mov     r11, r0
   
   # Run code
@@ -110,11 +109,11 @@ _exec_program:
   
   # Restore interrupts
   mov     r0, r11
-  oscall  TCT_Local_Control_Interrupts
+  oscall  TCT_Local_Control_Interrupts_
   
   # Unallocate memory
   mov     r0, r10
-  oscall  free
+  oscall  free_
   mov     r0, #1              @ the program has been executed
   
 _exec_program_exit:

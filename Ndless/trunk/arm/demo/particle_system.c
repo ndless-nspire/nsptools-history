@@ -12,7 +12,7 @@
  * RCSID $Id$
  *****************************************************************************/
 
-#include "os.h"
+#include "../headers/os.h"
 #include "particle_system.h"
 
 void particle_system_construct(t_particle_system* t_this) {

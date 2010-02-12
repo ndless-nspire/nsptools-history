@@ -12,7 +12,7 @@
  * RCSID $Id$
  *****************************************************************************/
 
-#include "os.h"
+#include "../headers/os.h"
 #include "utils.h"
 
 inline bool rect_intersect(const t_rect* r1, const t_rect* r2) {
@@ -35,10 +35,6 @@ inline void setPixel(int x, int y, int color) {
 inline int getPixel(int x, int y) {
   unsigned char* p = (unsigned char*)(SCREEN_BASE_ADDRESS + ((x >> 1) + (y << 7) + (y << 5)));
   return ((x & 1) ? (*p & 0x0F) : (*p >> 4));
-}
-
-inline int isKeyPressed(t_key key) {
-  return !((*(short*)(KEY_MAP + key.row)) & key.col);
 }
 
 int rand() {

@@ -1,15 +1,13 @@
 SOURCES += main.c \
-           utils.c \
-           vector.c \
-           particle.c \
-           particle_system.c \
-           gravity_particles.c
-
-HEADERS += os.h \
-           utils.h \
-           vector.h \
-           particle.h \
-           particle_system.h \
-           gravity_particles.h
-
+    utils.c \
+    vector.c \
+    particle.c \
+    particle_system.c \
+    gravity_particles.c
+HEADERS += ../headers/os.h \
+    utils.h \
+    vector.h \
+    particle.h \
+    particle_system.h \
+    gravity_particles.h
 FORMS += 

@@ -7,10 +7,11 @@ NSPIRE_HARDWARE ?= NON_CAS
 AS = arm-elf-as
 ASFLAGS = -mcpu=arm7tdmi
 GCC = arm-elf-gcc
-GCCFLAGS = -mcpu=arm7tdmi
+GCCFLAGS = -mcpu=arm7tdmi -nostdlib -D GNU_AS -D $(NSPIRE_HARDWARE)
 LD = arm-elf-ld
 LDFLAGS = 
 OBJCOPY = arm-elf-objcopy
+SRC = components/files.S components/utils.S
 
 ifeq ($(NSPIRE_HARDWARE),CAS)
 	NS_EMU_STRING_RES_OFFSET=0x611D60
@@ -20,24 +21,21 @@ endif
 
 all: static loader hook demo
 
-loader: loader.S components/files.s	
-	@rm -rf loader.bin
-	$(GCC) $(GCCFLAGS) -E loader.S -o tmp_loader.S -D $(NSPIRE_HARDWARE)
-	$(AS) $(ASFLAGS) -o loader.o tmp_loader.s components/files.s components/utils.s
-	$(LD) $(LDFLAGS) -Ttext 0x1800E15C -o loader.elf loader.o
-	$(OBJCOPY) -O binary loader.elf loader.bin
-	rm -f tmp_loader.S loader.o loader.elf
-	../tools/LoaderWrapper/LoaderWrapper loader.bin res/$(NSPIRE_HARDWARE)/loader.tns
+loader: loader.S $(SRC)	
+	@rm -rf $@.bin
+	$(GCC) $(GCCFLAGS) -Ttext 0x1800E15C $< $(SRC) -o $@.o
+	$(LD) $(LDFLAGS) -Ttext 0x1800E15C -o $@.elf $@.o
+	$(OBJCOPY) -O binary $@.elf $@.bin
+	rm -f $@.o $@.elf
+	../tools/LoaderWrapper/LoaderWrapper $@.bin res/$(NSPIRE_HARDWARE)/$@.tns
 	
-hook: hook.S components/files.s
-	@rm -rf hook.bin
-	$(GCC) $(GCCFLAGS) -E hook.S -o tmp_hook.S -D $(NSPIRE_HARDWARE)
-	$(AS) $(ASFLAGS) -o hook.o tmp_hook.S components/files.S
-	$(LD) $(LDFLAGS) -o hook.elf hook.o
-	$(OBJCOPY) -O binary hook.elf hook.bin
-	rm -f tmp_hook.S hook.o hook.elf
-	
-	cp -f hook.bin res/$(NSPIRE_HARDWARE)/hook.tns
+hook: hook.S $(SRC)
+	@rm -rf $@.bin
+	$(GCC) $(GCCFLAGS) $< $(SRC) -o $@.o
+	$(LD) $(LDFLAGS) -o $@.elf $@.o
+	$(OBJCOPY) -O binary $@.elf $@.bin
+	rm -f $@.o $@.elf
+	cp -f $@.bin res/$(NSPIRE_HARDWARE)/$@.tns
 
 .PHONY: demo
 demo:

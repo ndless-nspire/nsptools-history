@@ -1,3 +1,5 @@
+#include "../headers/os.h"
+
   .xdef fileExists
   .xdef getFileSize
   .xdef openFileBufferized
@@ -14,12 +16,12 @@
 # --------------------------------------------------------------------------
 fileExists:
   mov     r12, sp
-  stmfd   sp!, {r11-r12, lr, pc}
+  stmfd   sp!, {r1, r11-r12, lr, pc}
   sub     sp, sp, #0x28       @ stat struct size
   mov     r1, sp
-  oscall  stat
+  oscall  stat_
   add     sp, sp, #0x28
-  ldmfd   sp, {r11, sp, pc}
+  ldmfd   sp, {r1, r11, sp, pc}
 
 # --------------------------------------------------------------------------
 # Returns file size
@@ -36,7 +38,7 @@ getFileSize:
   sub     sp, sp, #0x28       @ stat struct size
   mov     r11, sp
   mov     r1, r11
-  oscall  stat
+  oscall  stat_
   cmp     r0, #0
   bne     _getFileSize_error
 
@@ -68,7 +70,7 @@ openFileBufferized:
   
   # Open file
   adr     r1, rb
-  oscall  fopen
+  oscall  fopen_
   cmp     r0, #0
   beq     _openFileBufferized_end
   mov     r6, r0              @ file descriptor
@@ -79,7 +81,7 @@ openFileBufferized:
   mov     r7, r0              @ file size
   
   # Allocate memory
-  oscall  malloc
+  oscall  malloc_
   cmp     r0, #0
   beq     _openFileBufferized_end
   mov     r4, r0              @ buffer address
@@ -88,11 +90,11 @@ openFileBufferized:
   mov     r1, r7
   mov     r2, #1
   mov     r3, r6
-  oscall  fread
+  oscall  fread_
   
   # Close file
   mov     r0, r6
-  oscall  fclose
+  oscall  fclose_
   
   # Return the buffer address
   mov     r0, r4
@@ -126,7 +128,7 @@ copyFile:
   # Open the destination file
   mov     r0, r6
   adr     r1, wb
-  oscall  fopen
+  oscall  fopen_
   mov     r7, r0              @ destination file descriptor
   
   # Get the source file size
@@ -138,14 +140,14 @@ copyFile:
   mov     r0, r4
   mov     r2, #1
   mov     r3, r7
-  oscall  fwrite
+  oscall  fwrite_
   
   mov     r0, r7
-  oscall  fclose
+  oscall  fclose_
   
   # Unallocate memory
   mov     r0, r4
-  oscall  free
+  oscall  free_
   
   mov     r0, #0
   b       _copyFile_end

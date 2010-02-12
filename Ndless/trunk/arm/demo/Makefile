@@ -9,18 +9,17 @@ GCCFLAGS = -mcpu=arm7tdmi -Os -Wall -W -fpic -fno-merge-constants -lm
 LD = arm-elf-ld
 LDFLAGS = 
 OBJCOPY = arm-elf-objcopy
+SRC = main.c syscalls.c utils.c vector.c particle.c particle_system.c gravity_particles.c
 
 all: demo
 
-demo: main.c syscalls.c utils.c vector.c particle.c particle_system.c gravity_particles.c	
-	@rm -rf loader.bin
-	$(GCC) $(GCCFLAGS) -D $(NSPIRE_HARDWARE) main.c syscalls.c utils.c vector.c particle.c particle_system.c gravity_particles.c -o demo.elf
-	$(OBJCOPY) -O binary demo.elf demo.bin
-	../../tools/MakeTNS/MakeTNS demo.bin demo.tns
-	rm -f demo.bin demo.elf
-	mkdir -p ../res/$(NSPIRE_HARDWARE)
-	mv -f demo.tns ../res/$(NSPIRE_HARDWARE)/demo.tns
-	
+demo: $(SRC)	
+	@rm -rf $@.bin
+	$(GCC) $(GCCFLAGS) -D $(NSPIRE_HARDWARE) $(SRC) -o $@.elf
+	$(OBJCOPY) -O binary $@.elf $@.bin
+	../../tools/MakeTNS/MakeTNS $@.bin ../res/$(NSPIRE_HARDWARE)/$@.tns
+	rm -f $@.bin $@.elf
+
 .PHONY: clean
 
 clean: cleanbin

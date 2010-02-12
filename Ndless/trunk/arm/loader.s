@@ -12,7 +12,6 @@
  ****************************************************************************/
  
   #include "headers/os.h"
-  #include "headers/defines.h"
   #include "bootstrapper.h"
   
   #ifdef CAS
@@ -50,7 +49,7 @@ _start: .global _start
   @ Check if Ndless is installed
 _check_is_installed:
   adr     r0, pathNdls
-  oscall  set_current_path
+  oscall  set_current_path_
   cmp     r0, #0
   bne     install_hack
 
@@ -66,19 +65,17 @@ _check_is_installed:
 	
   adr     r0, fileHookInstalled
   mov     r5, r0
-  oscall  unlink
+  oscall  unlink_
   mov     r0, r4                      @ installer
   mov     r1, r5                      @ installed
-  oscall  rename
+  oscall  rename_
  
  @ Check if the loader should be updated, else fork the OS
 _check_update_loader:
   adr     r0, fileLoaderInstaller
-  adr     r1, openFileMode_rb
-  oscall  fopen
+  bl      fileExists
   cmp     r0, #0
-  beq     fork_os
-  oscall  fclose
+  bne     fork_os
   
   @ Overwrite strings.res by content of loader.tns for all language
   ldr     r0, =copy_resource_file
@@ -90,7 +87,7 @@ _check_update_loader:
   
   @ Remove loader.tns located in user documents
   adr     r0, fileLoaderInstaller
-  oscall  unlink
+  oscall  unlink_
  
   ldr     pc, =OS_BASE_ADDRESS        @ reboot OS (execute the new loader)
  
@@ -112,8 +109,8 @@ _restore_resource_continue:
   mov     r0, r6
   adr     r1, openFileMode_rb
   ldr     pc, =(OS_OFFSET_HACKED_RESTORE + 8)
-
-openFileMode_rb:                     .string "rb"
+  
+openFileMode_rb:                      .string "rb"
   .align
 
 @ -------------------------------------------------------------------------
@@ -129,15 +126,15 @@ remove_hack:
   
   @ Remove ndls folder
   adr     r0, pathNdls
-  oscall  purge_directory
+  oscall  purge_directory_
   adr     r0, pathNdls
-  oscall  rmdir
+  oscall  rmdir_
 
   bl      rebootCalculator            @ Remove all forked address
 
 pathNdls:                            .string "/phoenix/ndls"
 fileLoaderInstaller:                 .string "/documents/ndless/loader.tns"
-fileHookInstaller:                    .string "/documents/ndless/hook.tns"
+fileHookInstaller:                   .string "/documents/ndless/hook.tns"
   .align
   
 @ -------------------------------------------------------------------------
@@ -154,16 +151,16 @@ install_hack:
   @ Create localization paths
   mov     r1, #0
   adr     r0, pathPhoenix
-  oscall  set_current_path
+  oscall  set_current_path_
   adr     r0, folderNdls
-  oscall  mkdir
+  oscall  mkdir_
   adr     r0, folderNdls
-  oscall  set_current_path
+  oscall  set_current_path_
   adr     r0, pathLocales
-  oscall  mkdir
+  oscall  mkdir_
   adr     r0, pathLocales
-  oscall  set_current_path
-  ldr     r0, =mkdir
+  oscall  set_current_path_
+  ldr     r0, =mkdir_
   bl      iterate_locale_names_callback
   
   @ Rewrite /phoenix/components
@@ -180,17 +177,20 @@ install_hack:
   
   @ Overwrite strings.res (loader) by strbackup.tns
   adr     r0, fileResourceStrings
-  oscall  unlink
+  oscall  unlink_
   adr     r0, fileResourceStringsBackup
   adr     r1, fileResourceStrings
-  oscall  rename
+  oscall  rename_
   
   @ Move hook.tns from the installer directory to the system directory
   @ if it exists
   adr     r0, fileHookInstaller
   adr     r1, fileHookInstalled
-  oscall  rename
+  oscall  rename_
   
+  @ Remove loader.tns from user documents (avoid to update loader during the next reboot)
+  adr     r0, fileLoaderInstaller
+  oscall  unlink_
   
   b       fork_os
 
@@ -213,19 +213,19 @@ fileResourceStrings:                 .string "/phoenix/syst/locales/en/strings.r
 fork_os:  
   @ Remove hack if key theta is pressed
 _is_theta_pressed:
-  is_key_pressed  0x10, #KEY_NSPIRE_THETA
+  isKeyPressed  KEY_NSPIRE_THETA
   beq     remove_hack
   
   @ Allocate memory
   mov     r5, #HACK_BYTES_SIZE
   mov     r0, r5
-  oscall  malloc
+  oscall  malloc_
   mov     r6, r0
   
   @ Copy loader code
   ldr     r1, =HACK_BASE_ADDRESS
   mov     r2, r5
-  oscall  memcpy
+  oscall  memcpy_
   
   @ Inject buffer address
   add     r2, r6, #execute_hook       @ call execute_hook
@@ -248,7 +248,7 @@ execute_hook:
 
   @ Don't execute the hook if the key PI is pressed
 _is_pi_pressed:  
-  is_key_pressed  0x12, #KEY_NSPIRE_PI
+  isKeyPressed  KEY_NSPIRE_PI
   beq     _restore_os_state
   
   @ Execute the hook installation
@@ -289,7 +289,7 @@ rewrite_components:
   @ Open components file
   adr     r0, fileComponents
   adr     r1, openFileMode_wb
-  oscall  fopen
+  oscall  fopen_
   mov     r4, r0
   
   @ Write components hierarchy
@@ -301,11 +301,11 @@ rewrite_components:
 _rewrite_components_continue:
   mov     r2, #1
   mov     r3, r4
-  oscall  fwrite
+  oscall  fwrite_
   
   @ Close components file
   mov     r0, r4
-  oscall  fclose
+  oscall  fclose_
   
   ldmfd   sp, {r1-r4, r11, sp, pc}
   
@@ -392,7 +392,7 @@ copy_resource_file:
   adr     r1, formatResourcePath
   mov     r3, r0
   mov     r0, r11
-  oscall  sprintf
+  oscall  sprintf_
 
   @ Copy resource file specified into localization folder previously defined
   mov     r0, r4
