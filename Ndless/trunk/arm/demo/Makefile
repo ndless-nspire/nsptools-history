@@ -5,7 +5,7 @@ NSPIRE_HARDWARE ?= NON_CAS
 AS = arm-elf-as
 ASFLAGS = -mcpu=arm7tdmi
 GCC = arm-elf-gcc
-GCCFLAGS = -mcpu=arm7tdmi -Wall -W -fpic -fno-merge-constants -lm
+GCCFLAGS = -mcpu=arm7tdmi -O1 -Wall -W -fpic -fno-merge-constants -lm
 LD = arm-elf-ld
 LDFLAGS = 
 OBJCOPY = arm-elf-objcopy
