@@ -12,7 +12,7 @@
  * RCSID $Id$
  *****************************************************************************/
 
-#include "../headers/os.h"
+#include <os.h>
 #include "utils.h"
 
 inline bool rect_intersect(const t_rect* r1, const t_rect* r2) {

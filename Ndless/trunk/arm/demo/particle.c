@@ -12,7 +12,7 @@
  * RCSID $Id$
  *****************************************************************************/
 
-#include "../headers/os.h"
+#include <os.h>
 #include "utils.h"
 #include "particle.h"
 
