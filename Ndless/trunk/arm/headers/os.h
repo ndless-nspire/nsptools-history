@@ -38,6 +38,7 @@
   #define _oscall(rettype,funcaddr,...) (*((rettype(*)(__VA_ARGS__))(funcaddr)))
 
   #define NULL ((void*)0)
+  typedef enum bool {FALSE = 0, TRUE = 1} BOOL;
   typedef struct{} FILE;
   typedef unsigned long size_t;
 #endif

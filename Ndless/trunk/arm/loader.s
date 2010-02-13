@@ -153,7 +153,7 @@ install_hack:
   adr     r0, pathPhoenix
   oscall  set_current_path
   adr     r0, folderNdls
-  oscall  mkdir_
+  oscall  mkdir
   adr     r0, folderNdls
   oscall  set_current_path
   adr     r0, pathLocales

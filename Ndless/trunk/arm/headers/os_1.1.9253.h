@@ -32,7 +32,7 @@
 #define create_path_filename_          0x10004BD8
 #define sprintf_                       0x10182D20
 #define mkdir_                         0x101888F4
-#define rmdir_                         0x102156E0
+#define rmdir_                         0x1018A168
 #define set_current_path_              0x10187A2C
 #define purge_directory_               0x1004E678
 #define power_off_                     0x1004DA1C
