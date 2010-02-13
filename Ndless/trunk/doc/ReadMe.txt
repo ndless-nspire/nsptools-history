@@ -104,6 +104,7 @@ History
 
 * <unreleased>
  - The language can now be changed after the installation
+ - Particule Demo written in C
 
 * beta 3 - <unreleased>
  - OS hook to run executables from the Documents screen

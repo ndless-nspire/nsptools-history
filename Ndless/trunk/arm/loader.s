@@ -49,7 +49,7 @@ _start: .global _start
   @ Check if Ndless is installed
 _check_is_installed:
   adr     r0, pathNdls
-  oscall  set_current_path_
+  oscall  set_current_path
   cmp     r0, #0
   bne     install_hack
 
@@ -65,10 +65,10 @@ _check_is_installed:
 	
   adr     r0, fileHookInstalled
   mov     r5, r0
-  oscall  unlink_
+  oscall  unlink
   mov     r0, r4                      @ installer
   mov     r1, r5                      @ installed
-  oscall  rename_
+  oscall  rename
  
  @ Check if the loader should be updated, else fork the OS
 _check_update_loader:
@@ -87,7 +87,7 @@ _check_update_loader:
   
   @ Remove loader.tns located in user documents
   adr     r0, fileLoaderInstaller
-  oscall  unlink_
+  oscall  unlink
  
   ldr     pc, =OS_BASE_ADDRESS        @ reboot OS (execute the new loader)
  
@@ -128,7 +128,7 @@ remove_hack:
   adr     r0, pathNdls
   oscall  purge_directory_
   adr     r0, pathNdls
-  oscall  rmdir_
+  oscall  rmdir
 
   bl      rebootCalculator            @ Remove all forked address
 
@@ -151,16 +151,16 @@ install_hack:
   @ Create localization paths
   mov     r1, #0
   adr     r0, pathPhoenix
-  oscall  set_current_path_
+  oscall  set_current_path
   adr     r0, folderNdls
   oscall  mkdir_
   adr     r0, folderNdls
-  oscall  set_current_path_
+  oscall  set_current_path
   adr     r0, pathLocales
-  oscall  mkdir_
+  oscall  mkdir
   adr     r0, pathLocales
-  oscall  set_current_path_
-  ldr     r0, =mkdir_
+  oscall  set_current_path
+  ldr     r0, =mkdir
   bl      iterate_locale_names_callback
   
   @ Rewrite /phoenix/components
@@ -177,20 +177,20 @@ install_hack:
   
   @ Overwrite strings.res (loader) by strbackup.tns
   adr     r0, fileResourceStrings
-  oscall  unlink_
+  oscall  unlink
   adr     r0, fileResourceStringsBackup
   adr     r1, fileResourceStrings
-  oscall  rename_
+  oscall  rename
   
   @ Move hook.tns from the installer directory to the system directory
   @ if it exists
   adr     r0, fileHookInstaller
   adr     r1, fileHookInstalled
-  oscall  rename_
+  oscall  rename
   
   @ Remove loader.tns from user documents (avoid to update loader during the next reboot)
   adr     r0, fileLoaderInstaller
-  oscall  unlink_
+  oscall  unlink
   
   b       fork_os
 
@@ -219,13 +219,13 @@ _is_theta_pressed:
   @ Allocate memory
   mov     r5, #HACK_BYTES_SIZE
   mov     r0, r5
-  oscall  malloc_
+  oscall  malloc
   mov     r6, r0
   
   @ Copy loader code
   ldr     r1, =HACK_BASE_ADDRESS
   mov     r2, r5
-  oscall  memcpy_
+  oscall  memcpy
   
   @ Inject buffer address
   add     r2, r6, #execute_hook       @ call execute_hook
@@ -301,11 +301,11 @@ rewrite_components:
 _rewrite_components_continue:
   mov     r2, #1
   mov     r3, r4
-  oscall  fwrite_
+  oscall  fwrite
   
   @ Close components file
   mov     r0, r4
-  oscall  fclose_
+  oscall  fclose
   
   ldmfd   sp, {r1-r4, r11, sp, pc}
   
@@ -392,7 +392,7 @@ copy_resource_file:
   adr     r1, formatResourcePath
   mov     r3, r0
   mov     r0, r11
-  oscall  sprintf_
+  oscall  sprintf
 
   @ Copy resource file specified into localization folder previously defined
   mov     r0, r4

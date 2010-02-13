@@ -78,7 +78,7 @@ _exec_program:
   mov     r3, r1
   mov     r0, r9
   adr     r1, pathFormat
-  oscall  sprintf_
+  oscall  sprintf
   
   # Open file
   mov     r0, r9
@@ -90,13 +90,13 @@ _exec_program:
   mov     r10, r0              @ file buffer
   adr     r1, prgSignature
   mov     r2, #PRG_SIGNATURE_BYTES_SIZE
-  oscall  memcmp_
+  oscall  memcmp
   cmp     r0, #0              @ isn't a program (i.e is a TI document)
   bne     _exec_program_exit_error
   
   # Desactivate interrupts
   mov     r0, #0xFFFFFFFF
-  oscall  TCT_Local_Control_Interrupts_
+  oscall  TCT_Local_Control_Interrupts
   mov     r11, r0
   
   # Run code
@@ -113,7 +113,7 @@ _exec_program:
   
   # Unallocate memory
   mov     r0, r10
-  oscall  free_
+  oscall  free
   mov     r0, #1              @ the program has been executed
   
 _exec_program_exit:

@@ -52,6 +52,9 @@ emulator: loader
 .PHONY: clean
 
 clean: cleanbin cleanapp
+	@for i in $(SUBDIRS); do \
+	echo "Clearing in $$i..."; \
+	(cd $$i; make clean); done
 
 cleanapp:
 	@rm -rf res

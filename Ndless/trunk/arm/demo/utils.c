@@ -75,7 +75,7 @@ float sqrtf(float num) {
   return c;
 }
 
-void fondu(int n) {
+void fade(int n) {
   int i, color1, color2;
   unsigned char* p = (unsigned char*)SCREEN_BASE_ADDRESS;
 

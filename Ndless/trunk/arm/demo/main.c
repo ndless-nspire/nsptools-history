@@ -50,8 +50,8 @@ int main(void) {
   );
 
   for (i = 0; i < 0x0F; ++i) {
-    fondu(1);
-    WAIT("0x1FFFFF", "fondu");
+    fade(1);
+    WAIT("0x1FFFFF", "fade");
   }
 
   gravity_particles_construct(&gravity_particles, 0.00006672f, 100);
