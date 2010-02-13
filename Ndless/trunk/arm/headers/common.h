@@ -69,12 +69,9 @@
     int row, col;
   } t_key;
 
-  #define ADDR_(addr)     (void*)addr
-  #define KEY_(row, col)  (t_key){row, col}
-
-  static inline int isKeyPressed(t_key k) {
-    return !((*(short*)(KEY_MAP + k.row)) & k.col);
-  }
+  #define ADDR_(addr)             (void*)addr
+  #define KEY_(row, col)          (t_key){row, col}
+  #define isKeyPressed(key)       (!((*(short*)(KEY_MAP + (key).row)) & (key).col))
 #endif
 
 #endif
