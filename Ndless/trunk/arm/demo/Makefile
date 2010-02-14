@@ -5,7 +5,6 @@ ASFLAGS = -mcpu=arm7tdmi
 GCC = arm-elf-gcc
 GCCFLAGS = -mcpu=arm7tdmi -O1 -Wall -W -fpic -fno-merge-constants
 LD = arm-elf-ld
-LDFLAGS = -lm
 OBJCOPY = arm-elf-objcopy
 HEADERSDIR=../headers
 SYSTEMDIR=../system
@@ -19,7 +18,7 @@ all: demo
 
 demo: $(OBJ)
 	@rm -rf $@.bin
-	$(GCC) $(GCCFLAGS) $(LDFLAGS) $(SYSTEMDIR)/crt0.s $^ -o $@.elf
+	$(GCC) $(GCCFLAGS) $(LDFLAGS) -lm -T $(SYSTEMDIR)/ldscript $(SYSTEMDIR)/crt0.s $^ -o $@.elf
 	$(OBJCOPY) -O binary $@.elf $@.bin
 	$(TOOLSDIR)/MakeTNS/MakeTNS $@.bin ../res/$(NSPIRE_HARDWARE)/$@.tns
 	rm -f $@.bin $@.elf
