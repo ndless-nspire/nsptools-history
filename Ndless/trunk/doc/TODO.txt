@@ -12,3 +12,4 @@ MEDIUM:
 LOW:
 - Support startup programs configuration, run at OS boot time
 - ELF executables loader
+- MakeTNS crashes when target contains a non-existent parent directory

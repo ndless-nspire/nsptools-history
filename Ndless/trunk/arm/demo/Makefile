@@ -20,7 +20,8 @@ demo: $(OBJ)
 	@rm -rf $@.bin
 	$(GCC) $(GCCFLAGS) $(LDFLAGS) -lm -T $(SYSTEMDIR)/ldscript $(SYSTEMDIR)/crt0.s $^ -o $@.elf
 	$(OBJCOPY) -O binary $@.elf $@.bin
-	$(TOOLSDIR)/MakeTNS/MakeTNS $@.bin ../res/$(NSPIRE_HARDWARE)/$@.tns
+	mkdir -p ../../res/$(NSPIRE_HARDWARE)
+	$(TOOLSDIR)/MakeTNS/MakeTNS $@.bin ../../res/$(NSPIRE_HARDWARE)/$@.tns
 	rm -f $@.bin $@.elf
 
 .PHONY: clean

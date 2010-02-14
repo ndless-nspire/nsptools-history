@@ -27,7 +27,7 @@ loader: loader.S $(SRC)
 	$(LD) $(LDFLAGS) -Ttext 0x1800E15C -o $@.elf $@.o
 	$(OBJCOPY) -O binary $@.elf $@.bin
 	rm -f $@.o $@.elf
-	../tools/LoaderWrapper/LoaderWrapper $@.bin res/$(NSPIRE_HARDWARE)/$@.tns
+	../tools/LoaderWrapper/LoaderWrapper $@.bin ../res/$(NSPIRE_HARDWARE)/$@.tns
 	
 hook: hook.S $(SRC)
 	@rm -rf $@.bin
@@ -35,20 +35,18 @@ hook: hook.S $(SRC)
 	$(LD) $(LDFLAGS) -o $@.elf $@.o
 	$(OBJCOPY) -O binary $@.elf $@.bin
 	rm -f $@.o $@.elf
-	cp -f $@.bin res/$(NSPIRE_HARDWARE)/$@.tns
+	cp -f $@.bin ../res/$(NSPIRE_HARDWARE)/$@.tns
 
 .PHONY: demo
 demo:
 	cd demo; make all
 	
 static:
-	mkdir -p res/$(NSPIRE_HARDWARE)
-	mkdir -p res/$(NSPIRE_HARDWARE)/userfiles
-	cp -f copier.tno res/copier.tno
-	cp -f copier.tno res/copier.tns
+	mkdir -p ../res/$(NSPIRE_HARDWARE)
+	cp -f copier.tno ../res/copier.tno
 
 emulator: loader
-	../tools/FlashEdit/FlashEdit res/$(NSPIRE_HARDWARE)/loader.tns '$(NS_EMU_FLASH_PATH_$(NSPIRE_HARDWARE))' $(NS_EMU_STRING_RES_OFFSET)
+	../tools/FlashEdit/FlashEdit ../res/$(NSPIRE_HARDWARE)/loader.tns '$(NS_EMU_FLASH_PATH_$(NSPIRE_HARDWARE))' $(NS_EMU_STRING_RES_OFFSET)
 .PHONY: clean
 
 clean: cleanbin cleanapp
@@ -57,7 +55,7 @@ clean: cleanbin cleanapp
 	(cd $$i; make clean); done
 
 cleanapp:
-	@rm -rf res
+	@rm -rf ../res
 
 cleanbin:
 	@rm -rf loader.bin hook.bin

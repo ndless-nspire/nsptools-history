@@ -15,16 +15,15 @@ subdirs:
 
 dist: all
 	rm -rf dist
-	mkdir -p dist/res
+	mkdir dist
+	cp -r res dist
 	cp java/dist/install-ndless.jar dist/res
-	cp -r arm/res/* dist/res
 	cp java/install-ndless.bat dist
 	cp doc/ReadMe.txt dist
 	mkdir dist/tools
-	cp -r tools/FlashEdit dist/tools
-	mkdir dist/src
+	cp -r tools/FlashEdit tools/MakeTNS dist/tools
 	(cd arm; make clean)
-	cp -r arm dist/src
+	cp -r arm dist
 	@# exclude some resources we don't want to distribute
 	find dist -name drawString.s -o -name Font8X.bin | xargs rm -rf
 	find dist -name .svn | xargs rm -rf
