@@ -2,13 +2,12 @@ HIGH:
 - Unobtrusive installation message. Tells that /documents/ndless/hook.tns is not
   found if it isn't. Indicate the uninstallation shortcut.
 - Fix the missed reboot issue
-  
-MEDIUM:
-- Better demo program
 - Run programs while keeping the interrupts enabled to be able to use RS232, but
   avoid the clock to be displayed on the screen.
-- Releasable and robust installer for nspire_emu. There may special support in
-  the loader if required.
+
+MEDIUM:
+- Better nspire_emu installation: write all the required files directly to the
+  filesystem to avoid manual steps.
 
 LOW:
 - Support startup programs configuration, run at OS boot time

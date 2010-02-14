@@ -5,8 +5,9 @@ REM CAS or NON_CAS
 set HARDWARE=NON_CAS
 REM ##########################
 
-if "%HARDWARE%" == "CAS") (
-  set OFFSET=0x611D60
+if "%HARDWARE%" == "CAS" (
+  set OFFSET=0x5DC990
+  echo "here"
 ) else (
   set OFFSET=0x613830
 )

@@ -83,7 +83,8 @@ Installing Ndless on nspire_emu
 Ndless can be installed on the third-party TI-Nspire emulator 'nspire_emu' with a
 specific installation process.
 
-- Create a new OS 1.1 flash image
+- Create a new OS 1.1 flash image, run it once with nspire_emu. Choose 'English'
+  as system language and save the image.
 - Edit the file tools\FlashEdit\install-ndless-nspire_emu.bat and set the variables
   NSPIRE_EMU_FLASH_IMAGE_PATH and HARDWARE.
 - Run install-ndless-nspire_emu.bat and follow the steps.
