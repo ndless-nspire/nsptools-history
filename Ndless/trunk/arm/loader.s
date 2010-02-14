@@ -101,8 +101,7 @@ fileHookInstalled:                    .string "/phoenix/ndls/hook.tns"
 restore_resource:
   cmp     r7, #1               
   bne     _restore_resource_continue       @ resource not located into ndls folder
-  add     sp, sp, #0x1500                  @ exit load resource OS call
-  add     sp, sp, #0x24
+  sub     sp, r11, #0x28                   @ exit load resource OS call
   ldmfd   sp, {r4-r11, sp, pc}
  
 _restore_resource_continue:
@@ -110,7 +109,7 @@ _restore_resource_continue:
   adr     r1, openFileMode_rb
   ldr     pc, =(OS_OFFSET_HACKED_RESTORE + 8)
   
-openFileMode_rb:                      .string "rb"
+openFileMode_rb:                     .string "rb"
   .align
 
 @ -------------------------------------------------------------------------
@@ -136,7 +135,7 @@ pathNdls:                            .string "/phoenix/ndls"
 fileLoaderInstaller:                 .string "/documents/ndless/loader.tns"
 fileHookInstaller:                   .string "/documents/ndless/hook.tns"
   .align
-  
+    
 @ -------------------------------------------------------------------------
 @ Install hack in the file system.
 @ 1) Create the ndls component tree
