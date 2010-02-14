@@ -1,5 +1,5 @@
--injars dist\install-ndless-original.jar
--outjars dist\install-ndless.jar
+-injars dist/install-ndless-original.jar
+-outjars ../res/install-ndless.jar
 
 -libraryjars 'C:\Program Files\Java\jre6\lib\rt.jar'
 -libraryjars 'C:\Program Files\TI Education\TI-Nspire Computer Link\lib\upgrade\upgrade.jar'

@@ -20,9 +20,11 @@ Command-line parameters:
 
 	<target name="clean">
 		<delete dir="dist" />
+		<delete file="../res/install-ndless.jar" />
 	</target>
 
 	<target name="build">
+	  <mkdir dir="../res" />
 		<mkdir dir="dist" />
 		<mkdir dir="dist/classes" />
 		<javac srcdir="src" destdir="dist/classes">
@@ -57,7 +59,7 @@ Command-line parameters:
 	</target>
 
 	<target name="noobfuscation" if="noobf">
-		<copy file="dist/install-ndless-original.jar" tofile="dist/install-ndless.jar"/>
+		<copy file="dist/install-ndless-original.jar" tofile="../res/install-ndless.jar"/>
 	</target>
 	
 </project>
