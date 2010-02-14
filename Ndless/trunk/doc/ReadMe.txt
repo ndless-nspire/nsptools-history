@@ -77,14 +77,28 @@ The executable format and conventions are currently being defined and prone to c
 - Development information and resources are or will be available on Hackspire: 
     http://hackspire.unsads.com
 
-What you can't currently do, but should soon I be able to
+Installing Ndless on nspire_emu
+===============================
+
+Ndless can be installed on the third-party TI-Nspire emulator 'nspire_emu' with a
+specific installation process.
+
+- Create a new OS 1.1 flash image
+- Edit the file tools\FlashEdit\install-ndless-nspire_emu.bat and set the variables
+  NSPIRE_EMU_FLASH_IMAGE_PATH and HARDWARE.
+- Run install-ndless-nspire_emu.bat and follow the steps.
+
+You should then be able to send executables and run them as on a real calculator.
+
+What we hope you will be able to see in the next releases
 =========================================================
 
-- Upgrade to a more recent version of the OS and keep Ndless installed
-- Build with a comprehensive toolchain
-- Use a fully-fledged executable runner, with relocation and library support, an exception
+- Ndless installation on recent OS versions
+- A comprehensive development toolchain
+- A fully-fledged executable runner, with relocation and library support, an exception
   handler, version-independent OS calls, ...
-- Run executables with the TI-84+ keyboard of the TI-Nspire
+- More user-friendly installation on nspire_emu
+- Support for the TI-84+ keypad
 - Mac support
 
 Known issues
@@ -115,6 +129,7 @@ History
 * <unreleased>
  - The language can now be changed after the installation
  - Particle Demo written in C
+ - Installation steps for nspire_emu
 
 * beta 3 - <unreleased>
  - OS hook to run executables from the Documents screen

@@ -7,7 +7,7 @@ This file describes the prerequisites and setup steps for a Windows development 
 C
 =
 
-- Cygwin, with GCC and GNU Make - http://www.cygwin.com
+- MSYS with MinGW: http://www.mingw.org/wiki/msys
 
 * Copy Ndless/Makefile.config.tpl to Ndless/Makefile.config and configure the latter
 

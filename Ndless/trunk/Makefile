@@ -20,7 +20,9 @@ dist: all
 	cp -r arm/res/* dist/res
 	cp java/install-ndless.bat dist
 	cp doc/ReadMe.txt dist
-	mkdir -p dist/src
+	mkdir dist/tools
+	cp -r tools/FlashEdit dist/tools
+	mkdir dist/src
 	(cd arm; make clean)
 	cp -r arm dist/src
 	@# exclude some resources we don't want to distribute
