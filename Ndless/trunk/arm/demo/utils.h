@@ -20,7 +20,7 @@
     "ldr r0, ="n"\n" \
     "_loop_"name":\n" \
     "cmp r0, #0\n" \
-    "sub r0, #1\n" \
+    "sub r0, r0, #1\n" \
     "bne _loop_"name"\n" \
     "stmfd sp!, {r0}\n" \
   );
