@@ -7,7 +7,7 @@ NSPIRE_HARDWARE ?= NON_CAS
 AS = arm-elf-as
 ASFLAGS = -mcpu=arm7tdmi
 GCC = arm-elf-gcc
-GCCFLAGS = -mcpu=arm7tdmi -nostdlib -D GNU_AS -D $(NSPIRE_HARDWARE)
+GCCFLAGS = -mcpu=arm7tdmi -Os -nostdlib -D GNU_AS -D $(NSPIRE_HARDWARE)
 LD = arm-elf-ld
 LDFLAGS = 
 OBJCOPY = arm-elf-objcopy
@@ -16,7 +16,7 @@ SRC = components/files.S components/utils.S
 ifeq ($(NSPIRE_HARDWARE),CAS)
 	NS_EMU_STRING_RES_OFFSET=0x611D60
 else
-	NS_EMU_STRING_RES_OFFSET=0x613830
+	NS_EMU_STRING_RES_OFFSET=0x691320
 endif
 
 all: static loader hook demo
@@ -39,7 +39,7 @@ hook: hook.S $(SRC)
 
 .PHONY: demo
 demo:
-	cd demo; make all
+	cd demo; make clean; make all
 	
 static:
 	mkdir -p ../res/$(NSPIRE_HARDWARE)
