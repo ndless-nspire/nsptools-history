@@ -18,7 +18,7 @@ distbin: all
 	mkdir -p dist
 	cp -r res dist
 	cp install-ndless.bat dist
-	cp doc/ReadMe.txt dist
+	cp doc/ReadMe.txt doc/ndless-particle-demo.gif dist
 	rm -rf dist/tools
 	mkdir -p dist/tools
 	cp -r tools/FlashEdit tools/MakeTNS dist/tools
