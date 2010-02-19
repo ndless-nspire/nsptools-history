@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -73,20 +74,15 @@ public class Injector implements CurrentStep {
 			this.hadNoOS = hasNoOS(currentOsVersion);
 			downgradeOSIfNeeded(currentOsVersion);
 
-			// strings.res with shellcode run by buffer overflow at boot time
-			File loaderFile = new File(resDir, "loader.tns");
-			File hookFile = new File(resDir, "hook.tns");
-			if (!loaderFile.exists() || !hookFile.exists())
-				throw new NdlessException(
-						"Corrupted Ndless directory: missing file '"
-								+ hookFile.getPath() + "'");
+			File[] resFiles = getResFiles(new String[] { "loader.tns",
+					"hook.tns", "demo.tns" });
 
 			MainFrame.log("Creating Ndless installation directory...");
 			MainFrame.log("Checking if Ndless is already installed... ", false);
 			if (isNdlessUpgrade()) {
 				MainFrame.log("Yes, upgrading.");
 				MainFrame.log("Preparing required files on the device:");
-				transferBinaries(loaderFile, hookFile);
+				transferBinaries(resFiles);
 
 			} else {
 				MainFrame.log("No.");
@@ -96,7 +92,7 @@ public class Injector implements CurrentStep {
 				copyFileLocallyOnDevice(
 						"/../phoenix/syst/locales/en/strings.res",
 						deviceInstallerDir + "/strbackup.tns", true);
-				transferBinaries(loaderFile, hookFile);
+				transferBinaries(resFiles);
 				MainFrame.log(" - Deleting copier");
 				deleteFileOnDevice("/../phoenix/syst/locales/copysamples");
 				copyCopier();
@@ -120,6 +116,19 @@ public class Injector implements CurrentStep {
 			throw new NdlessException(ResourceManagement.getRes().getString(
 					de.getMessage()));
 		}
+	}
+
+	private File[] getResFiles(String[] filenames) {
+		ArrayList<File> resFiles = new ArrayList<File>();
+		for (String filename : filenames) {
+			File resFile = new File(resDir, filename);
+			if (!resFile.exists())
+				throw new NdlessException(
+						"Corrupted Ndless directory: missing file '"
+								+ resFile.getPath() + "'");
+			resFiles.add(resFile);
+		}
+		return (File[]) resFiles.toArray(new File[] {});
 	}
 
 	private void setupNavnet() throws InterruptedException, IOException {
@@ -314,13 +323,15 @@ public class Injector implements CurrentStep {
 		return true;
 	}
 
-	private void transferBinaries(File loaderFile, File hookFile)
-			throws DeviceException, InterruptedException {
-		MainFrame.log(" - Transferring loader");
-		sendFileToDevice(loaderFile.getPath(), deviceInstallerDir
-				+ "/loader.tns");
-		MainFrame.log(" - Transferring hook");
-		sendFileToDevice(hookFile.getPath(), deviceInstallerDir + "/hook.tns");
+	private void transferBinaries(File[] resFiles) throws DeviceException,
+			InterruptedException {
+		for (File resFile : resFiles) {
+			String filename = resFile.getName();
+			MainFrame.log(" - Transferring "
+					+ filename.substring(0, filename.indexOf(".tns")));
+			sendFileToDevice(resFile.getPath(), deviceInstallerDir + "/"
+					+ filename);
+		}
 	}
 
 	private boolean isUnknownCopySrcException(DeviceException e) {
@@ -532,10 +543,10 @@ public class Injector implements CurrentStep {
 
 		while (!isCurrentLanguageAsExpected()) {
 			MainFrame.setProgressBarVisibility(false);
-			// We cannot snoop the language change because the check discards any menu
+			// We cannot snoop the language change because the check discards
+			// any menu
 			ContinueDialog
-					.ask(
-							  "The system language must be kept to English during the\n"
+					.ask("The system language must be kept to English during the\n"
 							+ "installation, you'll be able to change it afterwards.\n"
 							+ "Please set it back in 'System Info' -> System settings'\n"
 							+ "then select 'Yes'.");

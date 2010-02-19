@@ -40,7 +40,8 @@ Executables have the extension .tns as standard documents.
 - Transfer the executable with a linking program to any folder of the TI-Nspire
 - Run the executable from the Documents screen
 
-A demo executable can be found in Ndless package (res/<TI-Nspire model>/demo.tns).
+A demo executable is automatically transferred by the installer to the documents folder
+'ndless' you may want to try.
 
 How do I uninstall it?
 ======================
@@ -51,8 +52,8 @@ the clock is displayed. The calculator will perform a full reboot.
 What you need to know as a user
 ===============================
 
-- The Ndless Installer creates tempory files in the documents directory 'ndless'.
-  You may remove this directory after installation.
+- The Ndless Installer creates tempory files in the documents folder 'ndless'.
+  You may remove this folder after installation.
 - If the TI-Nspire becomes unusable:
    * Enter the maintenace menu by reboot it while holding the keys ON+Home+Enter+P until
      half the progress bar. To reboot the TI-Nspire, unplug the USB cable, then remove and
