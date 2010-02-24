@@ -1,6 +1,6 @@
 include ../Makefile.config
 
-SUBDIRS = demo
+SUBDIRS = demo system
 
 NSPIRE_HARDWARE ?= NON_CAS
 
@@ -19,7 +19,12 @@ else
 	NS_EMU_STRING_RES_OFFSET=0x691320
 endif
 
-all: static loader hook demo
+all: static loader hook demo subdirs
+
+subdirs:
+	@for i in $(SUBDIRS); do \
+	echo "make all in $$i..."; \
+  (cd $$i; make all); done
 
 loader: loader.S $(SRC)	
 	@rm -rf $@.bin

@@ -1,5 +1,5 @@
 ===============================
-= Ndless for TI-Nspire beta 3 =
+= Ndless for TI-Nspire beta 4 =
 ===============================
 
 What is it?
@@ -71,6 +71,9 @@ What you need to know as a developer
 
 The executable format and conventions are currently being defined and prone to change.
 
+- The YAGARTO GNU ARM toolchain is a good choice for C and assembly:
+  http://www.yagarto.de
+  An example of build script can be found in src\arm\demo\Makefile
 - Executables must be position independent: don't use absolute addresses
 - Executable files must start with the 4-bytes-long header 'PRG\0'. The utility 'MakeTNS'
   available in the tools directory may be used to add this header to a binary file.
@@ -128,7 +131,7 @@ the development of Ndless. Thank you for your support.
 History
 =======
 
-* <unreleased>
+* beta 4 - <unreleased> 
  - The language can now be changed after the installation
  - Particle Demo written in C
  - Installation steps for nspire_emu
