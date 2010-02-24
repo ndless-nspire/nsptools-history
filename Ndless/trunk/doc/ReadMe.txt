@@ -1,5 +1,5 @@
 ===============================
-= Ndless for TI-Nspire beta 4 =
+= Ndless for TI-Nspire beta ? =
 ===============================
 
 What is it?
@@ -128,8 +128,21 @@ Geoffrey Anneheim aka geogeo - < geoffrey dot anneheim at free dot fr >
 We will gladly accept PayPal donations for the hardware expenses that were required for
 the development of Ndless. Thank you for your support.
 
+Legal stuff
+===========
+
+Most of the work is covered by the Mozilla Public License, version 1.1 (MPL).
+Please read careful the file "Mozilla Public License v1.1.html" before the distribution of
+any part of Ndless, with or without modification.
+
+Some parts are covered by other licenses. Others are in the public domain.
+These parts are identified by the files LICENSE.txt or LICENSE.html in the sub-directory.
+
 History
 =======
+
+* <unreleased>
+ - The work is now covered by Open Source licenses
 
 * beta 4 - <unreleased> 
  - The language can now be changed after the installation

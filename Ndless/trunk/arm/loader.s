@@ -1,14 +1,25 @@
 /****************************************************************************
  * @(#) Ndless hack loader
  *
- * Copyright (C) 2010 by ANNEHEIM Geoffrey and ARMAND Olivier
- * Contact: geoffrey.anneheim@gmail.com / olivier.calc@gmail.com
+ * The contents of this file are subject to the Mozilla Public
+ * License Version 1.1 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of
+ * the License at http://www.mozilla.org/MPL/
  *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.
+ * Software distributed under the License is distributed on an "AS
+ * IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * rights and limitations under the License.
  *
- * RCSID $Id$
+ * The Original Code is Ndless code.
+ *
+ * The Initial Developer of the Original Code is Geoffrey ANNEHEIM
+ * <geoffrey.anneheim@gmail.com>.
+ * Portions created by the Initial Developer are Copyright (C) 2010
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s): 
+ *                 Olivier ARMAND <olivier.calc@gmail.com>
  ****************************************************************************/
  
   #include "headers/os.h"
