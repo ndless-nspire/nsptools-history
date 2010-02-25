@@ -86,6 +86,7 @@ Installing Ndless on nspire_emu
 
 Ndless can be installed on the third-party TI-Nspire emulator 'nspire_emu' with a
 specific installation process.
+This feature is currently in development and may be unstable.
 
 - Create a new OS 1.1 flash image, run it once with nspire_emu. Choose 'English'
   as system language and save the image.
@@ -95,6 +96,11 @@ specific installation process.
 
 You should then be able to send executables and run them as on a real calculator.
 
+If you are getting a "System Error" at boot time on nspire_emu, you are out of luck
+and should wait for future versions of Ndless with better support (or even contribute
+as a developer).
+
+
 What we hope you will be able to see in the next releases
 =========================================================
 
@@ -102,7 +108,7 @@ What we hope you will be able to see in the next releases
 - A comprehensive development toolchain
 - A fully-fledged executable runner, with relocation and library support, an exception
   handler, version-independent OS calls, ...
-- More user-friendly installation on nspire_emu
+- More stable and user-friendly installation on nspire_emu
 - Support for the TI-84+ keypad
 - Mac support
 
