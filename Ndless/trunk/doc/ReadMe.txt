@@ -149,6 +149,7 @@ History
 
 * <unreleased>
  - The work is now covered by Open Source licenses
+ - Fixed a potential endless OS reboot after a system language change
 
 * beta 4 - <unreleased> 
  - The language can now be changed after the installation

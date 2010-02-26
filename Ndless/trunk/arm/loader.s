@@ -159,7 +159,8 @@ fileHookInstaller:                   .string "/documents/ndless/hook.tns"
 install_hack:
   @ TODO: Check if/documents/ndless/strbackup.tns exists
   
-  @ Rewrite /phoenix/syst/locales/copysamples
+  @ Rewrite /phoenix/syst/locales/copysamples, which may be re-interpreted
+  @ after a system language change
   bl      rewrite_copysamples
   
   @ Create localization paths
