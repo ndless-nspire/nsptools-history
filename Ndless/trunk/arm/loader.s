@@ -139,9 +139,6 @@ remove_hack:
   oscall  purge_directory_
   adr     r0, pathNdls
   oscall  rmdir
-  
-  @ Rewrite copysamples
-  bl      rewrite_copysamples
 
   bl      rebootCalculator            @ Remove all forked address
 
@@ -161,6 +158,10 @@ fileHookInstaller:                   .string "/documents/ndless/hook.tns"
 @ -------------------------------------------------------------------------
 install_hack:
   @ TODO: Check if/documents/ndless/strbackup.tns exists
+  
+  @ Rewrite /phoenix/syst/locales/copysamples
+  bl      rewrite_copysamples
+  
   @ Create localization paths
   mov     r1, #0
   adr     r0, pathPhoenix
