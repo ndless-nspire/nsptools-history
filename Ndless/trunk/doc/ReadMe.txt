@@ -1,16 +1,15 @@
-===============================
-= Ndless for TI-Nspire beta ? =
-===============================
+=============================
+= Ndless for TI-Nspire v1.0 =
+=============================
 
 What is it?
 ===========
 
-Ndless allows to run executables on the TI-Nspire hardware.
-Ndless comes with an installer to prepare the TI-Nspire and install the executable
-loader from a computer.
+Ndless combines a computer installer, an executable loader and utilities to open the TI-Nspire
+to third-party C and assembly developments.
 
-What do I need to install it?
-=============================
+What do I need to install it on a TI-Nspire?
+============================================
 
 - A TI-Nspire CAS or non-CAS
 - Windows
@@ -52,7 +51,7 @@ the clock is displayed. The calculator will perform a full reboot.
 What you need to know as a user
 ===============================
 
-- The Ndless Installer creates tempory files in the documents folder 'ndless'.
+- The Ndless Installer creates temporary files in the documents folder 'ndless'.
   You may remove this folder after installation.
 - If the TI-Nspire becomes unusable:
    * Enter the maintenace menu by reboot it while holding the keys ON+Home+Enter+P until
@@ -115,7 +114,7 @@ What we hope you will be able to see in the next releases
 Known issues
 ============
 
-- Sometimes the Ndless Installer cannot remote reboot the TI-Nspire, but thinks it has.
+- Sometimes the Ndless Installer cannot remotely reboot the TI-Nspire, but thinks it has.
   In such case, navigate in any menu and the calculator should soon reboot and let you
   finish the installation process.
 
@@ -147,7 +146,7 @@ These parts are identified by the files LICENSE.txt or LICENSE.html in the sub-d
 History
 =======
 
-* <unreleased>
+* v1.0 - 2010/02/26
  - The work is now covered by Open Source licenses
  - Fixed a potential endless OS reboot after a system language change
 
