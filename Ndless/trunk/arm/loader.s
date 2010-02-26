@@ -139,6 +139,9 @@ remove_hack:
   oscall  purge_directory_
   adr     r0, pathNdls
   oscall  rmdir
+  
+  @ Rewrite copysamples
+  bl      rewrite_copysamples
 
   bl      rebootCalculator            @ Remove all forked address
 
@@ -299,7 +302,7 @@ rewrite_components:
   @ Open components file
   adr     r0, fileComponents
   adr     r1, openFileMode_wb
-  oscall  fopen_
+  oscall  fopen
   mov     r4, r0
   
   @ Write components hierarchy
@@ -332,6 +335,52 @@ tblComponents:
           "syst\n" \
           "tblt\n" \
           "ndls\n"
+  .align
+  
+@ ------------------------------------------------------------------------------
+@ Rewrite the file /phoenix/syst/locales/copysamples
+@
+@ Input:
+@
+@ Output:
+@ ------------------------------------------------------------------------------  
+rewrite_copysamples:
+  mov     r12, sp
+  stmfd   sp!, {r0-r4, r11-r12, lr, pc}
+  
+  adr     r0, fileCopysamples
+  adr     r1, openFileMode_wb
+  oscall  fopen
+  cmp     r0, #0
+  beq     _rewrite_copysamples_exit
+  
+  mov     r4, r0
+  adr     r0, dataCopysamples
+  mov     r1, #220                  @ sizeof(dataCopysamples)
+  mov     r2, #1
+  mov     r3, r4
+  oscall  fwrite
+  
+  mov     r0, r4
+  oscall  fclose
+  
+_rewrite_copysamples_exit:
+  ldmfd   sp, {r0-r4, r11, sp, pc}
+
+fileCopysamples:                    .string "/phoenix/syst/locales/copysamples" 
+dataCopysamples:
+  .ascii "da/sample01.tns\n" \
+         "Kom godt i gang.tns\n" \
+         "de/sample01.tns\n" \
+         "Erste Schritte.tns\n" \
+         "en/sample01.tns\n" \
+         "Getting Started.tns\n" \
+         "fr/sample01.tns\n" \
+         "Prise en main rapide.tns\n" \
+         "it/sample01.tns\n" \
+         "Guida introduttiva.tns\n" \
+         "no/sample01.tns\n" \
+         "Komme i gang.tns\n"
   .align
 
 @ ------------------------------------------------------------------------------
@@ -414,5 +463,6 @@ copy_resource_file:
   
 formatResourcePath:                 .string "/phoenix/%s/locales/%s/strings.res"
   .align
+
 
   .end
