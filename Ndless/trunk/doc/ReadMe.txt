@@ -6,7 +6,7 @@ What is it?
 ===========
 
 Ndless combines a computer installer, an executable loader and utilities to open the TI-Nspire
-to third-party C and assembly developments.
+to third-party C and assembly development.
 
 What do I need to install it on a TI-Nspire?
 ============================================
@@ -47,6 +47,8 @@ How do I uninstall it?
 
 To uninstall Ndless, reboot the OS while holding the Theta key (next to the ON key) when
 the clock is displayed. The calculator will perform a full reboot.
+
+Note that you MUST uninstall Ndless to be able to upgrade the OS.
 
 What you need to know as a user
 ===============================
