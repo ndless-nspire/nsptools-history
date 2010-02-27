@@ -41,6 +41,7 @@
 #define show_dialog_box2_              0x10011AF8
 #define NU_Remove_Dir_                 0x1118B474
 #define log_rs232_                     0x1014C530
+#define log_rs232_param2_              0x10522A50
 #define printf_rs232_                  0x10182968
 
 #endif

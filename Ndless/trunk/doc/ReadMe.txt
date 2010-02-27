@@ -88,7 +88,8 @@ and prone to change.
 
 - An example of build script can be found in src\arm\demo\Makefile
 - TI-Nspire-specific header files from Ndless's directory include/ are directly available
-- Executables must be position independent: don't use absolute addresses
+- Executables must be position independent: don't use absolute addresses and static
+  variables
 - Executable files must start with the 4-bytes-long header 'PRG\0', with their entry
   point right after it. The utility 'MakeTNS' available in the tools directory may be
   used to skip newlib's startup code added before this signature.
