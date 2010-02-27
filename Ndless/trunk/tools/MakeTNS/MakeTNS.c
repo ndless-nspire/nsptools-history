@@ -97,7 +97,8 @@ int main(int argc, const char* argv[]) {
 		if (n == 0) {
 			puts("Error: could not find the signature.");
 			fclose(fIn);
-			fclose(fOut);
+		fclose(fOut);
+		unlink(outTns);
 			return 1;
 		}
 		size -= 4;
