@@ -1,10 +1,7 @@
 NSPIRE_HARDWARE ?= NON_CAS
 
-AS = arm-elf-as
-ASFLAGS = -mcpu=arm7tdmi
 GCC = nspire-gcc
 GCCFLAGS = -Os -Wall -W -fpic -fno-merge-constants
-LD = arm-elf-ld
 LDFLAGS = 
 OBJCOPY = arm-elf-objcopy
 OBJ = main.o syscalls.o utils.o vector.o particle.o particle_system.o gravity_particles.o
@@ -12,7 +9,7 @@ OBJ = main.o syscalls.o utils.o vector.o particle.o particle_system.o gravity_pa
 all: demo
 
 .c.o:
-	$(GCC) $(GCCFLAGS) -c  -D $(NSPIRE_HARDWARE) $<
+	$(GCC) $(GCCFLAGS) -c -D $(NSPIRE_HARDWARE) $<
 
 demo: $(OBJ)
 	@rm -rf $@.bin

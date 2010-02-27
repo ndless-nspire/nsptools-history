@@ -89,8 +89,9 @@ and prone to change.
 - An example of build script can be found in src\arm\demo\Makefile
 - TI-Nspire-specific header files from Ndless's directory include/ are directly available
 - Executables must be position independent: don't use absolute addresses
-- Executable files must start with the 4-bytes-long header 'PRG\0'. The utility 'MakeTNS'
-  available in the tools directory may be used to add this header to a binary file.
+- Executable files must start with the 4-bytes-long header 'PRG\0', with their entry
+  point right after it. The utility 'MakeTNS' available in the tools directory may be
+  used to skip newlib's startup code added before this signature.
 - OS functions can be called from the program, see the source code of 'demo'.
 - Development information and resources are or will be available on Hackspire: 
     http://hackspire.unsads.com
@@ -113,7 +114,6 @@ You should then be able to send executables and run them as on a real calculator
 If you are getting a "System Error" at boot time on nspire_emu, you are out of luck
 and should wait for future versions of Ndless with better support (or even contribute
 as a developer).
-
 
 What we hope you will be able to see in the next releases
 =========================================================
