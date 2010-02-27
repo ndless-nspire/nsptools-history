@@ -1,0 +1,11 @@
+2010/02/27: OS reboot relies on undefined MMU behavior
+======================================================
+
+[20:51:51] <+Goplat> ExtendeD: the problem is: Ndless restarts the OS, then the OS recreates the MMU translation table - while the MMU is still on
+[20:53:15] <+Goplat> so there's a time when the OS uses memory that is unmapped in the MMU translation table. It works on a real calculator because the MMU translations are cached in the TLB
+[21:09:06] <+Goplat> The ARM926EJ-S spec says: "Any entry written into the set-associative part of the TLB can be removed at any time. The set-associative part of the TLB must be considered
+[21:10:26] <+Goplat> so yeah, might be a good idea to avoid relying on the TLB, just in case they start making calculators with a new version of the CPU that manages the TLB differently
+[21:12:13] <+Goplat> though be sure to first jump away from 180xxxxx (virtual address only), over to 11Exxxxx (sub pc,pc,0x6200000? heh)
+[21:13:26] <@calc84> you'd need a nop after that
+[21:14:04] <@calc84> because of the whole PC+8 thing
+[21:16:34] <+Goplat> reading PC gives you current instruction +8 rather than +4 like one might expect
