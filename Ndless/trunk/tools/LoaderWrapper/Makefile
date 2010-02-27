@@ -1,9 +1,14 @@
 CC=gcc
 CFLAGS = -W -Wall
+vpath %.exe ../../bin
 
-all: LoaderWrapper
+all: init LoaderWrapper.exe
+
+init:
+	@mkdir -p ../../bin
 
 LoaderWrapper.exe: LoaderWrapper.c
+	$(CC) $(CFLAGS) $< -o ../../bin/LoaderWrapper.exe
 	
 clean:
-	@rm -rf *.exe
+	@rm -rf ../../bin/LoaderWrapper.exe

@@ -22,7 +22,7 @@
  *                 Olivier ARMAND <olivier.calc@gmail.com>
  ****************************************************************************/
  
-  #include "headers/os.h"
+  #include <os.h>
   #include "bootstrapper.h"
   
   #ifdef CAS

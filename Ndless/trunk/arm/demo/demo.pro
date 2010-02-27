@@ -4,7 +4,7 @@ SOURCES += main.c \
     particle.c \
     particle_system.c \
     gravity_particles.c
-HEADERS += ../headers/os.h \
+HEADERS += ../../include/os.h \
     utils.h \
     vector.h \
     particle.h \

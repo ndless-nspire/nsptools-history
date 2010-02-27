@@ -5,8 +5,8 @@
 What is it?
 ===========
 
-Ndless combines a computer installer, an executable loader and utilities to open the TI-Nspire
-to third-party C and assembly development.
+Ndless combines a computer installer, an executable loader and utilities to open the
+TI-Nspire to third-party C and assembly development.
 
 What do I need to install it on a TI-Nspire?
 ============================================
@@ -67,14 +67,27 @@ What you need to know as a user
   "Sorry. Could not open document 'xxx.tns'", Ndless has not been correctly installed.
   Run the installer again.
 
+How do I set up a development environment?
+==========================================
+
+Here is the preferred way for Windows:
+- Add the bin/ folder of Ndless to your PATH environment variable
+- Install MSYS, the lightweight Unix-like shell environment: http://www.mingw.org/wiki/msys
+- Install YAGARTO GNU ARM toolchain - http://www.yagarto.de
+- Add YAGARTO's bin/ directory to your PATH environment variable
+
+You can now build using MSYS, YAGARTO and Ndless.
+Ndless provides a light wrapper to some YAGARTO tools and TI-NSpire-specific C and assembly
+header files
+
 What you need to know as a developer
 ====================================
 
-The executable format and conventions are currently being defined and prone to change.
+The executable format, the conventions and the header files are currently being defined
+and prone to change.
 
-- The YAGARTO GNU ARM toolchain is a good choice for C and assembly:
-  http://www.yagarto.de
-  An example of build script can be found in src\arm\demo\Makefile
+- An example of build script can be found in src\arm\demo\Makefile
+- TI-Nspire-specific header files from Ndless's directory include/ are directly available
 - Executables must be position independent: don't use absolute addresses
 - Executable files must start with the 4-bytes-long header 'PRG\0'. The utility 'MakeTNS'
   available in the tools directory may be used to add this header to a binary file.
@@ -91,7 +104,7 @@ This feature is currently in development and may be unstable.
 
 - Create a new OS 1.1 flash image, run it once with nspire_emu. Choose 'English'
   as system language and save the image.
-- Edit the file tools\FlashEdit\install-ndless-nspire_emu.bat and set the variables
+- Edit the file bin/install-ndless-nspire_emu.bat and set the variables
   NSPIRE_EMU_FLASH_IMAGE_PATH and HARDWARE.
 - Run install-ndless-nspire_emu.bat and follow the steps.
 
@@ -147,6 +160,9 @@ These parts are identified by the files LICENSE.txt or LICENSE.html in the sub-d
 
 History
 =======
+
+* <not yet unreleased >
+ - Building executables made a little easier
 
 * v1.0 - 2010/02/26
  - The work is now covered by Open Source licenses

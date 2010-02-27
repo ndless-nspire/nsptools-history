@@ -1,4 +1,4 @@
-#include "../headers/os.h"
+#include <os.h>
 
   .xdef fileExists
   .xdef getFileSize

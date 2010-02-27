@@ -1,9 +1,14 @@
 CC=gcc
 CFLAGS = -W -Wall
+vpath %.exe ../../bin
 
-all: MakeTNS
+all: init MakeTNS.exe
+
+init:
+	@mkdir -p ../../bin
 
 MakeTNS.exe: MakeTNS.c
+	$(CC) $(CFLAGS) $< -o ../../bin/MakeTNS.exe
 	
 clean:
-	@rm -rf *.exe
+	@rm -rf ../../bin/MakeTNS.exe

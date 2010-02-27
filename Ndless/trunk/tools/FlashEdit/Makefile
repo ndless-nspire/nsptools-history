@@ -1,9 +1,18 @@
 CC=gcc
 CFLAGS = -W -Wall
+SCRIPTS=install-ndless-nspire_emu.bat
+vpath %.exe ../../bin
 
-all: FlashEdit
+all: init FlashEdit.exe scripts
+
+init:
+	@mkdir -p ../../bin
 
 FlashEdit.exe: FlashEdit.c
-	
+	$(CC) $(CFLAGS) $< -o ../../bin/FlashEdit.exe
+
+scripts:
+	@cp $(SCRIPTS) ../../bin
+
 clean:
-	@rm -rf *.exe
+	@cd ../../bin && rm -rf FlashEdit.exe $(SCRIPTS)

@@ -2,7 +2,8 @@
       = Development environment setup =
       =================================
 
-This file describes the prerequisites and setup steps for a Windows development environment.
+This file describes the prerequisites and setup steps for a Windows development environment
+to build Ndless.
 
 C
 =
@@ -14,9 +15,7 @@ C
 ARM
 ===
 
-- YAGARTO GNU ARM toolchain - http://www.yagarto.de
-
-* Add YAGARTO's home directory to your PATH environment variable
+- Set up the toolchain as described in ReadMe.xt
 
 Java
 ====
