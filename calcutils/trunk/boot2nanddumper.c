@@ -1,46 +1,37 @@
-#include "os.h"
+#include <os.h>
 
 #define BOOT2_SIZE 0x140000
-#define SCR_ADDR (void*)0xA4000100
-#define SCR_SIZE 38400
 
-#define read_flash (_oscall(void, read_flash, void* dest, int size, int offset, int, int percent_max, void *progress_cb))
-#define read_flash_addr 0x1015F3A0
+#ifdef CAS
+#define read_nand_ 0x1015F3D0
+#else
+#define read_nand_ 0x1015F3A0
+#endif
+#define read_nand (_oscall(void, read_nand_, void* dest, int size, int offset, int, int percent_max, void *progress_cb))
 
-void fillscr(char c) {
-	memset(SCR_ADDR, c, SCR_SIZE);
-}
-
-void error(void) {
-	fillscr(0b11110000);
-}
-
-void done(void) {
-	fillscr(0);
-}
-
-
+asm(".string \"PRG\"\n");
 int main(void) {
-	FILE *ofile = fopen("/documents/ndless-installation/boot2nand.tns", "wb");
+	TCT_Local_Control_Interrupts(0);
+	FILE *ofile = fopen("/documents/ndless/boot2dump.tns", "wb");
 	if (!ofile) {
-		error();
+		log_rs232("can't open output file");
 		return 1;
 	}
 	void *buf = malloc(BOOT2_SIZE);
 	if (!buf) {
 		fclose(ofile);
-		error();
+		log_rs232("can't malloc");
 		return 1;
 	}
-	read_flash(buf, BOOT2_SIZE, 0x4000, 0, 0, NULL);
+	read_nand(buf, BOOT2_SIZE, 0x4000, 0, 0, NULL);
 	if (fwrite(buf, 1, BOOT2_SIZE, ofile) != BOOT2_SIZE) {
 		free(buf);
 		fclose(ofile);
-		error();
+		log_rs232("can't write output file");
 		return 1;
 	}
 	free(buf);
 	fclose(ofile);
-	done();
+	log_rs232("boot2 dumped!");
 	return 0;
 }
