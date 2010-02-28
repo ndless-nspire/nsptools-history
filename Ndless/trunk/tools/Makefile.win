@@ -1,4 +1,4 @@
-SUBDIRS = build FlashEdit LoaderWrapper MakeTNS
+SUBDIRS = build FlashEdit LoaderWrapper MakeTNS ../system
 
 all:
 	@for i in $(SUBDIRS); do \
