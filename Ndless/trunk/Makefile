@@ -1,4 +1,4 @@
-SUBDIRS = tools java
+SUBDIRS = tools java system
 SUBDIRSCLEAN = $(SUBDIRS) arm
 
 all: subdirs arm

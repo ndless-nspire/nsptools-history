@@ -1,3 +1,6 @@
+/* newlib stub that makes newlib happy. When a function is implemented by both newlib and the TI-Nspire OS,
+ * the OS version should be used. That's why these functions ar empty. */
+
 typedef struct{} _ssize_t;
 struct _reent{};
 struct stat{};

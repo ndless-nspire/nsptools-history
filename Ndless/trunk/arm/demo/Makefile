@@ -1,10 +1,10 @@
 NSPIRE_HARDWARE ?= NON_CAS
 
 GCC = nspire-gcc
+LD = nspire-ld
 GCCFLAGS = -Os -Wall -W -fpic -fno-merge-constants -D $(NSPIRE_HARDWARE)
-LDFLAGS = 
 OBJCOPY = arm-elf-objcopy
-OBJS = main.o syscalls.o utils.o vector.o particle.o particle_system.o gravity_particles.o
+OBJS = main.o utils.o vector.o particle.o particle_system.o gravity_particles.o
 vpath %.tns  ../../res/$(NSPIRE_HARDWARE)
 
 all: demo.tns
@@ -16,7 +16,7 @@ all: demo.tns
 	$(GCC) $(GCCFLAGS) -c $<
 
 demo.tns: $(OBJS)
-	$(GCC) $(GCCFLAGS) $(LDFLAGS) $^ -o $(@:.tns=.elf)
+	$(LD) $^ -o $(@:.tns=.elf)
 	$(OBJCOPY) -O binary $(@:.tns=.elf) $(@:.tns=.bin)
 	MakeTNS $(@:.tns=.bin)
 	rm -f $(@:.tns=.bin)
