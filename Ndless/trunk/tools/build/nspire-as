@@ -11,11 +11,12 @@ DIRNAME=`dirname "$0"`
 # DIRNAME may not be in the toolchain directory if this script was symlinked.
 # try to find the symlink target
 if which readlink &> /dev/null; then
-    DIRNAME=`readlink -n "$0" | xargs dirname`
+  DIRNAME=`readlink -fn "$0" | xargs -d '\n' dirname`
 fi
 
 if $cygwin; then
-	DIRNAME=`cygpath --path --windows "$DIRNAME"`
+  DIRNAME=`cygpath --path --windows "$DIRNAME"`
 fi
 
+# gcc instead of as, to call the C preprocessor
 arm-elf-gcc -mcpu=arm7tdmi -I "$DIRNAME/../include" -D GNU_AS "$@"

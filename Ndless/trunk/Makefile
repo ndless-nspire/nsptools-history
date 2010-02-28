@@ -1,7 +1,9 @@
 SUBDIRS = tools java system
+SUBDIR_NOJAVA = tools system
 SUBDIRSCLEAN = $(SUBDIRS) arm
 
 all: subdirs arm
+all_nojava: subdirs_nojava arm
 
 .PHONY: subdirs arm
 
@@ -11,6 +13,11 @@ arm:
 
 subdirs:
 	@for i in $(SUBDIRS); do \
+	echo "make all in $$i..."; \
+  (cd $$i; make all); done
+
+subdirs_nojava:
+	@for i in $(SUBDIR_NOJAVA); do \
 	echo "make all in $$i..."; \
   (cd $$i; make all); done
 
@@ -32,6 +39,27 @@ distsrc: clean
 	@# exclude some resources we don't want to distribute
 	find dist -name drawString.s -o -name Font8X.bin -o -name build_config.properties \
 	  -o -name proguard -o -name Makefile.config -o -wholename 'dist/src/java/bin/*' | xargs rm -rf
+
+install: all_nojava
+	mkdir -p /usr/local/nspire
+	cp -fR bin /usr/local/nspire
+	cp -fR include /usr/local/nspire
+	cp -fR system /usr/local/nspire
+	ln -sfv /usr/local/nspire/bin/nspire-AS /usr/local/bin
+	ln -sfv /usr/local/nspire/bin/nspire-gcc /usr/local/bin
+	ln -sfv /usr/local/nspire/bin/nspire-ld /usr/local/bin
+	ln -sfv /usr/local/nspire/bin/FlashEdit /usr/local/bin
+	ln -sfv /usr/local/nspire/bin/MakeTNS /usr/local/bin 
+	ln -sfv /usr/local/nspire/bin/LoaderWrapper /usr/local/bin
+
+uninstall:
+	rm -f /usr/local/bin/nspire-as
+	rm -f /usr/local/bin/nspire-gcc
+	rm -f /usr/local/bin/nspire-ld
+	rm -f /usr/local/bin/FlashEdit
+	rm -f /usr/local/bin/MakeTNS
+	rm -f /usr/local/bin/LoaderWrapper
+	rm -Rf /usr/local/nspire
 
 cleandist:
 	rm -rf dist
