@@ -29,14 +29,18 @@
     .set  OS_OFFSET_HACKED_EXECUTE,             0x10008F58
     .set  OS_SHADOWED_CALL_EXECUTE,             0x1004C7B4
     .set  OS_OFFSET_HACKED_RESTORE,             0x10052084
+    .set  OS_INTEGRITY_CHECK,                   0x1004EF98
   #elif NON_CAS
     .set  OS_OFFSET_HACKED_EXECUTE,             0x10008F88
     .set  OS_SHADOWED_CALL_EXECUTE,             0x1004C800
     .set  OS_OFFSET_HACKED_RESTORE,             0x100520D0
+    .set  OS_INTEGRITY_CHECK,                   0x1004EFE4
   #endif
   
   .set  HACK_BASE_ADDRESS,                    0x1800E15C
   .set  HACK_BYTES_SIZE,                      5120
+  
+  .set  OPCODE_NOP,                           0xE1A00000   @ mov r0, r0
     
   .text
   
@@ -89,7 +93,7 @@ _check_update_loader:
   bne     fork_os
   
   @ Overwrite strings.res by content of loader.tns for all language
-  ldr     r0, =copy_resource_file
+  adr     r0, copy_resource_file
   adr     r1, folderNdls
   adr     r2, fileLoaderInstaller
   stmfd   sp!, {r1-r2}
@@ -183,7 +187,7 @@ install_hack:
   bl      rewrite_components
   
   @ Copy strings.res (loader) for all language into ndls folder
-  ldr     r0, =copy_resource_file
+  adr     r0, copy_resource_file
   adr     r1, folderNdls
   adr     r2, fileResourceStrings
   stmfd   sp!, {r1-r2}
@@ -249,6 +253,12 @@ _is_theta_pressed:
   @ Inject restore_resource address
   add     r2, r6, #restore_resource   @ call restore_resource
   fork_address  OS_OFFSET_HACKED_RESTORE
+  
+  @ Disable OS integrity check, else OS upgrade is refused if OS is patched
+  ldr r0, =OS_INTEGRITY_CHECK
+  ldr r1, =OPCODE_NOP
+  str r1, [r0]
+  
   ldr     pc, =OS_BASE_ADDRESS        @ reboot OS
 
 @ ------------------------------------------------------------------------------

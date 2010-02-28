@@ -114,7 +114,7 @@ int main(int argc, char* argv[]) {
 	fclose(fileInput);
 	fclose(fileOutput);
 	
-	printf("File '%s' successfully created !\n", argv[2]);
+	printf("File '%s' successfully created!\n", argv[2]);
 	
 	return EXIT_SUCCESS;	
 }

@@ -20,9 +20,6 @@ What do I need to install it on a TI-Nspire?
 How do I install/upgrade it?
 ============================
 
-Users of beta version 1 or 2 should uninstall Ndless before the upgrade (see further).
-Other versions can be upgraded directly. 
-
 - If you don't have an Internet connection and OS 1.1 is not currently installed on the
   TI-Nspire, get it and copy it to 'userfiles\tinspire_1.1.tno' (the .tno extension is
   supported by both CAS and non-CAS models)
@@ -47,8 +44,6 @@ How do I uninstall it?
 
 To uninstall Ndless, reboot the OS while holding the Theta key (next to the ON key) when
 the clock is displayed. The calculator will perform a full reboot.
-
-Note that you MUST uninstall Ndless to be able to upgrade the OS.
 
 What you need to know as a user
 ===============================
@@ -162,8 +157,9 @@ These parts are identified by the files LICENSE.txt or LICENSE.html in the sub-d
 History
 =======
 
-* <not yet unreleased >
- - Building executables made a little easier
+* <not yet released>
+ - Building executables made a little easier. See the demo's Makefile.
+ - Fixed: the OS could not be upgraded while Ndless was installed
 
 * v1.0 - 2010/02/26
  - The work is now covered by Open Source licenses
