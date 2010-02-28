@@ -4,8 +4,9 @@ SUBDIRS = demo
 
 NSPIRE_HARDWARE ?= NON_CAS
 
+AS = nspire-as
 GCC = nspire-gcc
-GCCFLAGS = -Os -nostdlib -D GNU_AS -D $(NSPIRE_HARDWARE)
+GCCFLAGS = -Os -D $(NSPIRE_HARDWARE) -nostdlib
 LD = nspire-ld
 LDFLAGS = -nostdlib
 OBJCOPY = arm-elf-objcopy
@@ -30,7 +31,7 @@ subdirs:
 	$(GCC) $(GCCFLAGS) -c $<
 
 %.o: %.s
-	$(GCC) $(GCCFLAGS) -c $<
+	$(AS) $(GCCFLAGS) -c $<
 
 %.elf: %.o
 	$(LD) $(LDFLAGS) $^ -o $@
@@ -40,10 +41,10 @@ subdirs:
 	mv  $@ $(DISTDIR)
 
 loader.o: loader.S $(SRC)
-	$(GCC) $(GCCFLAGS) $< $(SRC) -o $@
+	$(AS) $(GCCFLAGS) $< $(SRC) -o $@
 
 hook.o: hook.S $(SRC)
-	$(GCC) $(GCCFLAGS) $< $(SRC) -o $@
+	$(AS) $(GCCFLAGS) $< $(SRC) -o $@
 
 loader.tns: loader.elf
 	$(OBJCOPY) -O binary $< $(@:.tns=.bin)
