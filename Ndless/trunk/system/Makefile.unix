@@ -1,9 +1,0 @@
-AS = arm-elf-as
-CC = arm-elf-gcc
-
-all: crt0.o syscalls.o
-	$(CC) -c crt0.s
-	$(CC) -c syscalls.c
-
-clean:
-	rm -rf *.o

@@ -1,12 +1,7 @@
-OS ?= `uname -s`
-ifeq ($(OS),Windows_NT)
-  MAKEFILE_NAME = Makefile.win
-else
-  MAKEFILE_NAME = Makefile.unix
-endif
+AS = arm-elf-as
+CC = arm-elf-gcc
 
-all:
-	make -f $(MAKEFILE_NAME) all
-  
+all: crt0.o syscalls.o
+
 clean:
-	make -f $(MAKEFILE_NAME) clean
+	rm -rf *.o

@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-W -Wall
-SCRIPTS=nspire-gcc nspire-ld
+SCRIPTS=nspire-gcc.bat nspire-ld.bat nspire-gcc nspire-ld
 vpath ../../bin
 
 all: init scripts
