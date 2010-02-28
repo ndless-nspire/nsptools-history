@@ -1,11 +1,25 @@
 #!/bin/sh
+
+cygwin=false
+case "`uname`" in
+  CYGWIN* )
+    cygwin=true
+    ;; 
+esac
+
 DIRNAME=`dirname "$0"`
+
+if $cygwin; then
+	DIRNAME=`cygpath --path --windows "$DIRNAME"`
+fi
+
+nostdlib=false
 for arg in "$@" args; do
 	if [ $arg = -nostdlib ] ; then
 		nostdlib=true
 	fi
 done
-if [ "$nostdlib" != true ] ; then
+if [ $nostdlib = false ] ; then
 	set "$@" "$DIRNAME/../system/crt0.o" "$DIRNAME/../system/syscalls.o"
 fi
 # some newlib symbols are not found if ld is used...
