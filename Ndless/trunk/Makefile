@@ -45,7 +45,7 @@ install: all_tools
 	cp -fR bin /usr/local/nspire
 	cp -fR include /usr/local/nspire
 	cp -fR system /usr/local/nspire
-	ln -sfv /usr/local/nspire/bin/nspire-AS /usr/local/bin
+	ln -sfv /usr/local/nspire/bin/nspire-as /usr/local/bin
 	ln -sfv /usr/local/nspire/bin/nspire-gcc /usr/local/bin
 	ln -sfv /usr/local/nspire/bin/nspire-ld /usr/local/bin
 	ln -sfv /usr/local/nspire/bin/FlashEdit /usr/local/bin
