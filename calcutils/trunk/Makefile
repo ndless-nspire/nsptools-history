@@ -1,6 +1,7 @@
 NSPIRE_HARDWARE ?= NON_CAS
 
 GCC = nspire-gcc
+LD = nspire-ld
 GCCFLAGS = -Os -Wall -W -fpic -fno-merge-constants -D $(NSPIRE_HARDWARE)
 LDFLAGS = -nostdlib
 OBJCOPY = arm-elf-objcopy
@@ -14,7 +15,7 @@ all: boot2nanddumper.tns osreboot.tns
 	$(GCC) $(GCCFLAGS) -c $<
 
 %.elf: %.o
-	$(GCC) $(GCCFLAGS) $(LDFLAGS) $^ -o $@
+	$(LD) $(LDFLAGS) $^ -o $@
 
 %.tns: %.elf
 	$(OBJCOPY) -O binary $< $(@:.tns=.bin)
