@@ -1,9 +1,9 @@
 SUBDIRS = tools java system
-SUBDIR_NOJAVA = tools system
+SUBDIR_TOOLS = tools system
 SUBDIRSCLEAN = $(SUBDIRS) arm
 
 all: subdirs arm
-all_nojava: subdirs_nojava arm
+all_tools: subdirs_tools
 
 .PHONY: subdirs arm
 
@@ -16,8 +16,8 @@ subdirs:
 	echo "make all in $$i..."; \
   (cd $$i; make all); done
 
-subdirs_nojava:
-	@for i in $(SUBDIR_NOJAVA); do \
+subdirs_tools:
+	@for i in $(SUBDIR_TOOLS); do \
 	echo "make all in $$i..."; \
   (cd $$i; make all); done
 
@@ -40,7 +40,7 @@ distsrc: clean
 	find dist -name drawString.s -o -name Font8X.bin -o -name build_config.properties \
 	  -o -name proguard -o -name Makefile.config -o -wholename 'dist/src/java/bin/*' | xargs rm -rf
 
-install: all_nojava
+install: all_tools
 	mkdir -p /usr/local/nspire
 	cp -fR bin /usr/local/nspire
 	cp -fR include /usr/local/nspire
