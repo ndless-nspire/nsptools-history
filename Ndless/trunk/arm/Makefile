@@ -4,7 +4,7 @@ SUBDIRS = demo
 
 NSPIRE_HARDWARE ?= NON_CAS
 
-GCC = nspire-gcc
+GCC = arm-elf-gcc
 GCCFLAGS = -Os -nostdlib -D GNU_AS -D $(NSPIRE_HARDWARE)
 LD = arm-elf-ld
 LDFLAGS = 

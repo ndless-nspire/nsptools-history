@@ -1,12 +1,18 @@
-SUBDIRS = build FlashEdit LoaderWrapper MakeTNS
+OS ?= `uname -s`
+ifeq ($(OS),Windows_NT)
+  MAKEFILE_NAME = Makefile.win
+else
+  MAKEFILE_NAME = Makefile.unix
+endif
 
 all:
-	@for i in $(SUBDIRS); do \
-	echo "make all in $$i..."; \
-  (cd $$i; make all); done
+	make -f $(MAKEFILE_NAME) all
+
+install:
+	make -f $(MAKEFILE_NAME) install
+
+uninstall:
+	make -f $(MAKEFILE_NAME) uninstall
   
 clean:
-	@for i in $(SUBDIRS); do \
-	echo "Clearing in $$i..."; \
-	(cd $$i; make clean); done
-	rm -rf ../bin
+	make -f $(MAKEFILE_NAME) clean
