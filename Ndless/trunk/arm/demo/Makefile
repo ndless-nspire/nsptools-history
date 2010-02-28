@@ -26,4 +26,4 @@ demo.tns: $(OBJS)
 .PHONY: clean
 
 clean:
-	@rm -rf *.bin *.elf *.o *.tns ../../res/$(NSPIRE_HARDWARE)/demo.tns
+

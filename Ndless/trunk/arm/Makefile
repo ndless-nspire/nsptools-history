@@ -4,12 +4,14 @@ SUBDIRS = demo
 
 NSPIRE_HARDWARE ?= NON_CAS
 
-GCC = arm-elf-gcc
+GCC = nspire-gcc
 GCCFLAGS = -Os -nostdlib -D GNU_AS -D $(NSPIRE_HARDWARE)
-LD = arm-elf-ld
-LDFLAGS = 
+LD = nspire-ld
+LDFLAGS = -nostdlib
 OBJCOPY = arm-elf-objcopy
 SRC = components/files.S components/utils.S
+DISTDIR = ../res/$(NSPIRE_HARDWARE)
+vpath %.tns  ../res/$(NSPIRE_HARDWARE)
 
 ifeq ($(NSPIRE_HARDWARE),CAS)
 	NS_EMU_STRING_RES_OFFSET=0x611D60
@@ -17,36 +19,41 @@ else
 	NS_EMU_STRING_RES_OFFSET=0x691320
 endif
 
-all: static loader hook demo subdirs
+all: static loader.tns hook.tns subdirs
 
 subdirs:
 	@for i in $(SUBDIRS); do \
 	echo "make all in $$i..."; \
   (cd $$i; make all); done
 
-loader: loader.S $(SRC)	
-	@rm -rf $@.bin
-	$(GCC) $(GCCFLAGS) -Ttext 0x1800E15C $< $(SRC) -o $@.o
-	$(LD) $(LDFLAGS) -Ttext 0x1800E15C -o $@.elf $@.o
-	$(OBJCOPY) -O binary $@.elf $@.bin
-	rm -f $@.o $@.elf
-	LoaderWrapper $@.bin ../res/$(NSPIRE_HARDWARE)/$@.tns
-	
-hook: hook.S $(SRC)
-	@rm -rf $@.bin
-	$(GCC) $(GCCFLAGS) $< $(SRC) -o $@.o
-	$(LD) $(LDFLAGS) -o $@.elf $@.o
-	$(OBJCOPY) -O binary $@.elf $@.bin
-	rm -f $@.o $@.elf
-	cp -f $@.bin ../res/$(NSPIRE_HARDWARE)/$@.tns
+%.o: %.c
+	$(GCC) $(GCCFLAGS) -c $<
 
-.PHONY: demo
-demo:
-	cd demo; make clean; make all
-	
+%.o: %.s
+	$(GCC) $(GCCFLAGS) -c $<
+
+%.elf: %.o
+	$(LD) $(LDFLAGS) $^ -o $@
+
+%.tns: %.elf
+	$(OBJCOPY) -O binary $< $@
+	mv  $@ $(DISTDIR)
+
+loader.o: loader.S $(SRC)
+	$(GCC) $(GCCFLAGS) $< $(SRC) -o $@
+
+hook.o: hook.S $(SRC)
+	$(GCC) $(GCCFLAGS) $< $(SRC) -o $@
+
+loader.tns: loader.elf
+	$(OBJCOPY) -O binary $< $(@:.tns=.bin)
+	LoaderWrapper $(@:.tns=.bin) $@
+	rm $(@:.tns=.bin)
+	mv  $@ $(DISTDIR)
+
 static:
-	mkdir -p ../res/$(NSPIRE_HARDWARE)
-	cp -f copier.tno ../res/copier.tno
+	@mkdir -p ../res/$(NSPIRE_HARDWARE)
+	@cp -f copier.tno ../res/copier.tno
 
 emulator: loader
 	FlashEdit ../res/$(NSPIRE_HARDWARE)/loader.tns '$(NS_EMU_FLASH_PATH_$(NSPIRE_HARDWARE))' $(NS_EMU_STRING_RES_OFFSET)
@@ -62,4 +69,4 @@ cleanapp:
 	@rm -rf ../res/CAS ../res/NON_CAS
 
 cleanbin:
-	@rm -rf loader.bin hook.bin
+	@rm -rf loader.bin hook.bin *.o *.elf

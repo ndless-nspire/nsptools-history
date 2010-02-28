@@ -8,6 +8,11 @@ case "`uname`" in
 esac
 
 DIRNAME=`dirname "$0"`
+# DIRNAME may not be in the toolchain directory if this script was symlinked.
+# try to find the symlink target
+if which readlink &> /dev/null; then
+    DIRNAME=`readlink -f "$0" | xargs dirname`
+fi
 
 if $cygwin; then
 	DIRNAME=`cygpath --path --windows "$DIRNAME"`
@@ -20,7 +25,7 @@ for arg in "$@" args; do
 	fi
 done
 if [ $nostdlib = false ] ; then
-	set "$@" "$DIRNAME/../nspire/system/crt0.o" "$DIRNAME/../nspire/system/syscalls.o"
+	set "$@" "$DIRNAME/../system/crt0.o" "$DIRNAME/../system/syscalls.o"
 fi
 # some newlib symbols are not found if ld is used...
-arm-elf-gcc -T "$DIRNAME/../nspire/system/ldscript" "$@"
+arm-elf-gcc -T "$DIRNAME/../system/ldscript" "$@"

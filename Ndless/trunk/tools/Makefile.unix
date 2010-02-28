@@ -7,9 +7,9 @@ all:
   
 install:
 	mkdir -p /usr/local/nspire
-	cp -R ../bin /usr/local/nspire
-	cp -R ../include /usr/local/nspire
-	cp -R ../system /usr/local/nspire
+	cp -fR ../bin /usr/local/nspire
+	cp -fR ../include /usr/local/nspire
+	cp -fR ../system /usr/local/nspire
 	ln -sfv /usr/local/nspire/bin/nspire-gcc /usr/local/bin
 	ln -sfv /usr/local/nspire/bin/nspire-ld /usr/local/bin
 	ln -sfv /usr/local/nspire/bin/FlashEdit /usr/local/bin
