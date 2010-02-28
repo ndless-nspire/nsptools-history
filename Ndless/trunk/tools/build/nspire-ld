@@ -11,7 +11,7 @@ DIRNAME=`dirname "$0"`
 # DIRNAME may not be in the toolchain directory if this script was symlinked.
 # try to find the symlink target
 if which readlink &> /dev/null; then
-    DIRNAME=`readlink -f "$0" | xargs dirname`
+    DIRNAME=`readlink -n "$0" | xargs dirname`
 fi
 
 if $cygwin; then
