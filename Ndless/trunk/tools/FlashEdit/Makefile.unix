@@ -1,0 +1,14 @@
+CC=gcc
+CFLAGS = -W -Wall
+vpath ../../bin
+
+all: init FlashEdit
+
+init:
+	@mkdir -p ../../bin
+
+FlashEdit: FlashEdit.c
+	$(CC) $(CFLAGS) $< -o ../../bin/FlashEdit
+
+clean:
+	@cd ../../bin && rm -rf FlashEdit $(SCRIPTS)

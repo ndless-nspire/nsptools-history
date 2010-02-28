@@ -1,0 +1,12 @@
+SUBDIRS = build FlashEdit LoaderWrapper MakeTNS
+
+all:
+	@for i in $(SUBDIRS); do \
+	echo "make -f Makefile.win all in $$i..."; \
+  (cd $$i; make -f Makefile.win all); done
+  
+clean:
+	@for i in $(SUBDIRS); do \
+	echo "Clearing in $$i..."; \
+	(cd $$i; make -f Makefile.win clean); done
+	rm -rf ../bin

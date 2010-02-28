@@ -1,0 +1,31 @@
+SUBDIRS = build FlashEdit LoaderWrapper MakeTNS
+
+all:
+	@for i in $(SUBDIRS); do \
+	echo "make -f Makefile.unix all in $$i..."; \
+  (cd $$i; make -f Makefile.unix all); done
+  
+install:
+	mkdir -p /usr/local/nspire
+	cp -R ../bin /usr/local/nspire
+	cp -R ../include /usr/local/nspire
+	cp -R ../system /usr/local/nspire
+	ln -sfv /usr/local/nspire/bin/nspire-gcc /usr/local/bin
+	ln -sfv /usr/local/nspire/bin/nspire-ld /usr/local/bin
+	ln -sfv /usr/local/nspire/bin/FlashEdit /usr/local/bin
+	ln -sfv /usr/local/nspire/bin/MakeTNS /usr/local/bin 
+	ln -sfv /usr/local/nspire/bin/LoaderWrapper /usr/local/bin
+
+uninstall:
+	rm -f /usr/local/bin/nspire-gcc
+	rm -f /usr/local/bin/nspire-ld
+	rm -f /usr/local/bin/FlashEdit
+	rm -f /usr/local/bin/MakeTNS
+	rm -f /usr/local/bin/LoaderWrapper
+	rm -Rf /usr/local/nspire
+
+clean:
+	@for i in $(SUBDIRS); do \
+	echo "Clearing in $$i..."; \
+	(cd $$i; make -f Makefile.unix clean); done
+	rm -rf ../bin
