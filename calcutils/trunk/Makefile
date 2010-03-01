@@ -6,7 +6,7 @@ GCCFLAGS = -Os -Wall -W -fpic -fno-merge-constants -D $(NSPIRE_HARDWARE)
 LDFLAGS = -nostdlib
 OBJCOPY = arm-elf-objcopy
 
-all: boot2nanddumper.tns osreboot.tns
+all: boot2nanddumper.tns osreboot.tns diagsdumper.tns
 
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<
@@ -24,6 +24,7 @@ all: boot2nanddumper.tns osreboot.tns
 
 boot2nanddumper.tns: boot2nanddumper.o
 osreboot.tns: osreboot.o
+diagsdumper.tns: diagsdumper.o
 
 clean:
 	@rm -rf *.bin *.elf *.o *.tns
