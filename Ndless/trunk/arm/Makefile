@@ -25,7 +25,7 @@ all: static loader.tns hook.tns subdirs
 subdirs:
 	@for i in $(SUBDIRS); do \
 	echo "make all in $$i..."; \
-  (cd $$i; make all); done
+  (cd $$i; make all) || exit 1; done
 
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<

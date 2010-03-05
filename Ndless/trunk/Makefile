@@ -14,12 +14,12 @@ arm:
 subdirs:
 	@for i in $(SUBDIRS); do \
 	echo "make all in $$i..."; \
-  (cd $$i; make all); done
+  (cd $$i; make all) || exit 1; done
 
 subdirs_tools:
 	@for i in $(SUBDIR_TOOLS); do \
 	echo "make all in $$i..."; \
-  (cd $$i; make all); done
+  (cd $$i; make all) || exit 1; done
 
 # Incremental binary dist for development
 distbin: all
