@@ -40,6 +40,7 @@ import ndless.install.common.Utils;
 import ndless.install.gui.MainFrame;
 
 public class ConnectivitySetup {
+	private static final String NAVNET_TEMP_SUBDIR = "navnet";
 	private File clInstallDir;
 
 	public void setup() throws IOException {
@@ -55,20 +56,25 @@ public class ConnectivitySetup {
 	}
 
 	/**
-	 * @param copyToTempDir
-	 *            the file will be copied to the temporary directory with the
-	 *            same name
+	 * @param copyParentTempDir
+	 *            relative path to the parent directory to which the file is
+	 *            copied before being patched. <i>null</i> to patch the original
+	 *            file without making a copy.
 	 * @param replacedSequence
 	 *            should be of the same length as searchedSequence
 	 * @param patchAlignment
 	 *            1: no alignment. N: search for N-bytes aligned sequences
+	 * @param optionalPatch
+	 *            if false, fails if the file cannot be pached because of a
+	 *            version issue
 	 */
-	private void makePatchedFile(File origFile, boolean copyToTempDir,
-			byte[] searchedSequence, byte[] patchSequence, int patchAlignment)
-			throws IOException {
+	private void makePatchedFile(File origFile, String copyParentTempDir,
+			byte[] searchedSequence, byte[] patchSequence, int patchAlignment,
+			boolean optionalPatch) throws IOException {
 		if (!origFile.exists())
 			throw new NdlessException(origFile.getName() + "' not found");
-		File patchedFile = copyToTempDir ? Utils.copyToTempDir(origFile) : origFile;
+		File patchedFile = copyParentTempDir != null ? Utils.copyToSubTempDir(
+				origFile, copyParentTempDir) : origFile;
 		RandomAccessFile ra = new RandomAccessFile(patchedFile, "rw");
 		byte[] chunkRead = new byte[searchedSequence.length];
 		boolean patched = false;
@@ -86,12 +92,11 @@ public class ConnectivitySetup {
 					patched = true;
 				} else {
 					// point back after the chunk read
-					ra
-							.seek(ra.getFilePointer() - chunkRead.length
-									+ patchAlignment);
+					ra.seek(ra.getFilePointer() - chunkRead.length
+							+ patchAlignment);
 				}
 			}
-			if (!patched)
+			if (!patched && !optionalPatch)
 				throw new NdlessException("Unknown version of '"
 						+ origFile.getName() + "'");
 		} finally {
@@ -103,14 +108,26 @@ public class ConnectivitySetup {
 	 * Removes the filter which forbids '..' in file path parameters
 	 */
 	private void makePatchedNavnetLib() throws IOException {
-		makePatchedFile(new File(clInstallDir, "lib" + File.separator
-				+ "navnet" + File.separator + "navnet.dll"), true, new byte[] {
-				'\\', '.', '.', 0, '/', '.', '.', 0 }, new byte[] { '/', '/',
-				'/', 0, '/', '/', '/', 0 }, 2);
+		// Windows specific
+		makePatchedFile(
+				new File(getNavnetDir(), File.separator + "navnet.dll"),
+				NAVNET_TEMP_SUBDIR, new byte[] { '\\', '.', '.', 0, '/', '.',
+						'.', 0 }, new byte[] { '/', '/', '/', 0, '/', '/', '/',
+						0 }, 2, false);
 	}
 
 	private File getNavnetDir() {
-		return new File(clInstallDir, "lib" + File.separator + "navnet");
+		// Windows specific
+		File navNetDir = new File(System.getenv().get("CommonProgramFiles")
+				+ "/TI Shared/CommLib/1/NavNet");
+		if (navNetDir.exists())
+			return navNetDir;
+		// For Computer Link < 1.4
+		navNetDir = new File(clInstallDir, "lib" + File.separator + "navnet");
+		if (navNetDir.exists())
+			return navNetDir;
+		else
+			throw new NdlessException("NavNet directory not found");
 	}
 
 	/**
@@ -120,8 +137,8 @@ public class ConnectivitySetup {
 	 * @throws IOException
 	 */
 	private void makePatchedNavnetJar() throws IOException {
-		final File navnetFile = Utils.copyToTempDir(new File(getNavnetDir(),
-				"navnet.jar"));
+		final File navnetFile = Utils.copyToSubTempDir(new File(getNavnetDir(),
+				"navnet.jar"), NAVNET_TEMP_SUBDIR);
 		JarFile jar = new JarFile(navnetFile);
 		JarEntry jarEntry = jar.getJarEntry("com/ti/eps/navnet/NavNet.class");
 		if (jarEntry == null)
@@ -134,10 +151,12 @@ public class ConnectivitySetup {
 		fos.close();
 		is.close();
 		jar.close();
-		// the conditions based on the 'file' protocol will fail, and the
-		// java.library.path-based DLL loading will be used.
-		makePatchedFile(extractedFile, false, new byte[] { 4, 'f', 'i', 'l',
-				'e' }, new byte[] { 4, ' ', ' ', ' ', ' ' }, 1);
+		// On Computer Link Software < 1.4, NavNet loads itself the DLL.
+		// With this patch the conditions based on the 'file' protocol will fail,
+		// and the java.library.path-based DLL loading will be used.
+		makePatchedFile(extractedFile, null,
+				new byte[] { 4, 'f', 'i', 'l', 'e' }, new byte[] { 4, ' ', ' ',
+						' ', ' ' }, 1, true);
 		Utils.addFilesToExistingZip(navnetFile,
 				new Utils.FileToZip[] { new Utils.FileToZip(extractedFile,
 						jarEntry.getName()) });
@@ -147,17 +166,25 @@ public class ConnectivitySetup {
 		if (!origConnectorsDir.exists())
 			throw new NdlessException(
 					"Folder 'connectors' of TI-Nspire Computer Link Software not found");
-		Utils.copyToTempDir(origConnectorsDir);
+		Utils.copyToSubTempDir(origConnectorsDir, NAVNET_TEMP_SUBDIR);
+		// a JRE is run as an RMI server in Computer Link Software >= 1.4
+		// For these versions, just copy the bin/java.exe wrapper that will
+		// redirect the execution to NavNet's shared JRE
+		if (new File(getNavnetDir(), "../jre").exists()) {
+			Utils.copyToSubTempDir(new File("bin/java.exe"), "jre/bin");
+		}
 	}
 
 	private void loadNavnetLibs() throws IOException {
 		// our patch
-		ClassPathHacker.addFile(TempFileManager.createTempFile("navnet.jar"));
+		ClassPathHacker.addFile(TempFileManager
+				.createTempFile(NAVNET_TEMP_SUBDIR + "/navnet.jar"));
 		// the standard CL jars
 		for (File clJarFile : DirScanner.scan(new File(clInstallDir, "lib"),
 				"*.jar", "-navnet.jar"))
 			ClassPathHacker.addFile(clJarFile);
 		// make our copy of navnet.dll load
-		LibPathHacker.addDir(TempFileManager.getTempDir().getAbsolutePath());
+		LibPathHacker.addDir(TempFileManager.createTempFile(NAVNET_TEMP_SUBDIR)
+				.getAbsolutePath());
 	}
 }

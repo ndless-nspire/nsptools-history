@@ -197,6 +197,7 @@ public class MainFrame extends JFrame {
 		instance.aborted = true;
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
+				instance.currentStepProgressBar.setIndeterminate(true);
 				instance.currentStepProgressBar.setVisible(false);
 				instance.button.setText("Retry");
 				instance.button.setVisible(true);
@@ -215,6 +216,7 @@ public class MainFrame extends JFrame {
 	public static void setProgressBarVisibility(final boolean visible) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
+				instance.currentStepProgressBar.setIndeterminate(true);
 				instance.currentStepProgressBar.setVisible(visible);
 				instance.pack(); // validate() doesn't seem to work...
 			}
@@ -229,6 +231,7 @@ public class MainFrame extends JFrame {
 		instance.aborted = true;
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
+				instance.currentStepProgressBar.setIndeterminate(true);
 				instance.currentStepProgressBar.setVisible(false);
 				instance.button.setText("Exit");
 				instance.button.setVisible(true);

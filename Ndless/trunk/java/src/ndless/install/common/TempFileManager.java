@@ -76,11 +76,20 @@ public class TempFileManager {
 	}
 	
 	/**
-	 * Creates a temporary file with a static name
-	 * @throws IOException 
+	 * Creates a temporary file with a static name. <i>name</i> can be a relative path. 
 	 */
 	public static File createTempFile(String name) throws IOException {
 		return new File(getTempDir(), name);
+	}
+	
+	/**
+	 * Creates a new sub-directory in the temporary directory . <i>dirname</i> can be a relative path.
+	 * @throws IOException 
+	 */
+	public static File createTempSubDir(String dirname) throws IOException {
+		File dir = new File(getTempDir(), dirname);
+		dir.mkdir();
+		return dir;
 	}
 	
 	public static File getTempDir() throws IOException {

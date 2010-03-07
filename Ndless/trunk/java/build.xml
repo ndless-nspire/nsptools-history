@@ -6,8 +6,10 @@ Command-line parameters:
 <project name="Ndless" default="default">
 	<description>Ndless</description>
 
+	<property environment="env"/>
 	<property file="build_config.properties" />
 	<property name="computer_link_lib" location="${computer_link_path}/lib" />
+	<property name="navnet_dir" location="${env.COMMONPROGRAMFILES}//TI Shared/CommLib/1/NavNet" />
 
 	<taskdef resource="proguard/ant/task.properties" classpath="tools/proguard/lib/proguard.jar" />
 
@@ -30,7 +32,7 @@ Command-line parameters:
 		<javac srcdir="src" destdir="dist/classes">
 			<classpath>
 				<pathelement location="${computer_link_lib}/pxconnect.jar" />
-				<pathelement location="${computer_link_lib}/navnet/navnet.jar" />
+				<pathelement location="${navnet_dir}/navnet.jar" />
 			</classpath>
 		</javac>
 		  <copy todir="dist/classes">

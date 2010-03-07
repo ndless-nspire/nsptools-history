@@ -25,6 +25,7 @@ Java
 - Subclipse (SVN plug-in for Eclipse) - http://subclipse.tigris.org/
 - Apache Ant - http://ant.apache.org/bindownload.cgi
 - ProGuard - http://proguard.sourceforge.net/
+- TI Computer Link Software >= 1.4 - http://education.ti.com/educationportal/sites/US/productDetail/us_nspire_computerlink.html
 
 * Add Apache Ant's home directory to your PATH environment variable
 * Unzip ProGuard to Ndles/java/tools/proguard (there will be bin/ and README in this directory)

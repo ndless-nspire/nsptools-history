@@ -133,18 +133,15 @@ public class Utils {
 	public static void copyFiles(File src, File dest) throws IOException {
 		// Check to ensure that the source is valid...
 		if (!src.exists()) {
-			throw new IOException("copyFiles: Can not find source: "
+			throw new IOException("copyFiles: Cannot find source: "
 					+ src.getAbsolutePath() + ".");
 		} else if (!src.canRead()) { // check to ensure we have rights to the
 			// source...
 			throw new IOException("copyFiles: No right to source: "
 					+ src.getAbsolutePath() + ".");
 		}
-		// is this a directory copy?
 		if (src.isDirectory()) {
-			if (!dest.exists()) { // does the destination already exist?
-				// if not we need to make it exist if possible (note this is
-				// mkdirs not mkdir)
+			if (!dest.exists()) {
 				if (!dest.mkdirs()) {
 					throw new IOException(
 							"copyFiles: Could not create direcotry: "
@@ -160,7 +157,14 @@ public class Utils {
 				copyFiles(src1, dest1);
 			}
 		} else {
-			// This was not a directory, so lets just copy the file
+			final File parentDir = new File(dest.getParent());
+			if (!parentDir.exists()) {
+				if (!parentDir.mkdirs()) {
+					throw new IOException(
+							"copyFiles: Could not create direcotry: "
+									+ parentDir.getAbsolutePath() + ".");
+				}
+			}
 			FileInputStream fin = null;
 			FileOutputStream fout = null;
 			byte[] buffer = new byte[4096]; // Buffer 4K at a time (you can
@@ -203,6 +207,19 @@ public class Utils {
 		final File tempFile = TempFileManager.createTempFile(src.getName());
 		copyFiles(src, tempFile);
 		return tempFile;
+	}
+	
+	/**
+	 * Copy a file or directory to a sub-directory of the temporary directory.
+	 * The target directory is created if required.
+	 * 
+	 * @return the new file or directory
+	 */
+	public static File copyToSubTempDir(File src, String destDirName) throws IOException {
+		final File subDir = TempFileManager.createTempSubDir(destDirName);
+		final File destDir = new File(subDir, src.getName());
+		copyFiles(src, destDir);
+		return destDir;
 	}
 
 	public static class FileToZip {

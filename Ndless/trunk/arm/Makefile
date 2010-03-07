@@ -64,7 +64,7 @@ emulator: loader
 clean: cleanbin cleanapp
 	@for i in $(SUBDIRS); do \
 	echo "Clearing in $$i..."; \
-	(cd $$i; make clean); done
+	(cd $$i; make clean) || exit 1; done
 
 cleanapp:
 	@rm -rf ../res/CAS ../res/NON_CAS

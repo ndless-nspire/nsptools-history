@@ -27,6 +27,8 @@ How do I install/upgrade it?
 - Run install-ndless.bat
 - Follow the steps on the screen. Installing Ndless should take less than 2 minutes with
   few manual steps.
+- During the installation you may need to ignore, accept or discard the Windows firewall
+  (or your personal firewall) warning for the program "Java(TM) Platform SE binary".
 
 How do I run an executable?
 ===========================
@@ -50,14 +52,19 @@ What you need to know as a user
 
 - The Ndless Installer creates temporary files in the documents folder 'ndless'.
   You may remove this folder after installation.
-- If the TI-Nspire becomes unusable:
+
+Troubleshooting
+===============
+
+- If the TI-Nspire becomes unusable or hangs:
    * Enter the maintenace menu by reboot it while holding the keys ON+Home+Enter+P until
      half the progress bar. To reboot the TI-Nspire, unplug the USB cable, then remove and
      put back the a battery.
    * Select '2' to uninstall the current OS. Use the Ndless Installer or TI-Nspire Computer
      Link Software to reinstall an OS.
-- If the Ndless Installer is lost in is installation sequence, restart it. Ndless may get
-  installed before the end of the second sequence.
+- If the Ndless Installer is lost in is installation sequence, or the USB connection is
+  lost, restart the installer. Ndless may then get installed before the end of the second
+  sequence, but this shouldn't be a problem.
 - If running an executable from the documents screen displays the following message:
   "Sorry. Could not open document 'xxx.tns'", Ndless has not been correctly installed.
   Run the installer again.
@@ -158,6 +165,7 @@ History
 =======
 
 * <not yet released>
+ - Compatible with Computer Link Software 1.4
  - Building executables made a little easier. See the demo's Makefile.
  - Fixed: the OS could not be upgraded while Ndless was installed
 

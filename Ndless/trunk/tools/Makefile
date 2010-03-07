@@ -1,4 +1,4 @@
-SUBDIRS = build FlashEdit LoaderWrapper MakeTNS
+SUBDIRS = build FlashEdit InstallerTools LoaderWrapper MakeTNS
 
 all:
 	@for i in $(SUBDIRS); do \
@@ -8,5 +8,5 @@ all:
 clean:
 	@for i in $(SUBDIRS); do \
 	echo "Clearing in $$i..."; \
-	(cd $$i; make clean); done
+	(cd $$i; make clean) || exit 1; done
 	rm -rf ../bin

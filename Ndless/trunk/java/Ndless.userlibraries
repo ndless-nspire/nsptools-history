@@ -2,6 +2,6 @@
 <eclipse-userlibraries version="2">
     <library name="TI-Nspire Computer Link BuildTime" systemlibrary="false">
         <archive path="C:/Program Files/TI Education/TI-Nspire Computer Link/lib/pxconnect.jar"/>
-        <archive path="C:/Program Files/TI Education/TI-Nspire Computer Link/lib/navnet/navnet.jar"/>
+        <archive path="C:/Program Files/Fichiers communs/TI Shared/CommLib/1/NavNet/navnet.jar"/>
     </library>
 </eclipse-userlibraries>

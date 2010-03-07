@@ -4,7 +4,7 @@
 -libraryjars 'C:\Program Files\Java\jre6\lib\rt.jar'
 -libraryjars 'C:\Program Files\TI Education\TI-Nspire Computer Link\lib\upgrade\upgrade.jar'
 -libraryjars 'C:\Program Files\TI Education\TI-Nspire Computer Link\lib\pxconnect.jar'
--libraryjars 'C:\Program Files\TI Education\TI-Nspire Computer Link\lib\navnet\navnet.jar'
+-libraryjars 'C:\Program Files\Fichiers communs\TI Shared\CommLib\1\NavNet\navnet.jar'
 -libraryjars 'C:\Program Files\TI Education\TI-Nspire Computer Link\lib\fileconverter\appinterface.jar'
 
 

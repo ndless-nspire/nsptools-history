@@ -68,4 +68,4 @@ clean: cleandist
 	rm -rf res
 	@for i in $(SUBDIRSCLEAN); do \
 	echo "Clearing in $$i..."; \
-	(cd $$i; make clean); done
+	(cd $$i; make clean) || exit 1; done

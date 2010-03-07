@@ -88,6 +88,8 @@ public class Injector implements CurrentStep {
 
 			DeviceInfo deviceInfo = pxConnectApp.connectedDevice()
 					.getDeviceInfo();
+			if (deviceInfo == null)
+				throw new NdlessException("Cannot get device information");
 			this.isNonCas = "NonCas".equals(deviceInfo.getDeviceType());
 			this.resDir = new File(resDirPrefix
 					+ (isNonCas ? "NON_CAS/" : "CAS/"));
@@ -127,16 +129,25 @@ public class Injector implements CurrentStep {
 
 			rebootDevice(true);
 
-			MainFrame.log("Cleaning up installation files...");
-			deleteFileOnDevice(deviceInstallerDir + "/loader.tns");
-
 			MainFrame.log("The device is ready!");
 			MainFrame.log("You can now close the installer.");
 			MainFrame.canExit();
 		} catch (DeviceException de) {
-			throw new NdlessException(ResourceManagement.getRes().getString(
-					de.getMessage()));
+			throw new NdlessException(deviceExceptionToErrorMsg(de));
 		}
+	}
+
+	private String deviceExceptionToErrorMsg(DeviceException de) {
+		return ResourceManagement.getRes().getString(de.getMessage());
+	}
+
+	/**
+	 * Workaround to buggy status update sometimes
+	 * 
+	 * @return
+	 */
+	private void updatePxStatusWithException(DeviceException de) {
+		pxStatus.setError(deviceExceptionToErrorMsg(de));
 	}
 
 	private File[] getResFiles(String[] filenames) {
@@ -244,8 +255,9 @@ public class Injector implements CurrentStep {
 			return;
 		}
 		MainFrame.initStepProgress();
-		new Thread(runnable).start();
-		while (pxStatus.inProgress()) {
+		final Thread thread = new Thread(runnable);
+		thread.start();
+		while (pxStatus.inProgress() && thread.isAlive()) {
 			MainFrame.updateStepProgress(pxStatus.progressPercentage());
 			Thread.sleep(statusUpdatePeriodInMs);
 		}
@@ -385,6 +397,7 @@ public class Injector implements CurrentStep {
 						pxStatus.setOpInProgress(false);
 						anonSharedStr = "SRCPATH_DOESNT_EXIST";
 					} catch (DeviceException e) {
+						updatePxStatusWithException(e);
 					}
 				}
 			}, 200, false);
@@ -429,6 +442,7 @@ public class Injector implements CurrentStep {
 					// workaround for buggy status update
 					pxStatus.setOpInProgress(false);
 				} catch (DeviceException e) {
+					updatePxStatusWithException(e);
 				}
 			}
 		}, 200, false);
@@ -450,7 +464,7 @@ public class Injector implements CurrentStep {
 					// workaround for buggy status update
 					pxStatus.setOpInProgress(false);
 				} catch (DeviceException e) {
-					e.printStackTrace();
+					updatePxStatusWithException(e);
 				}
 			}
 		}, 200, !withProgress);
@@ -640,17 +654,6 @@ public class Injector implements CurrentStep {
 			pxConnectApp.enumerateConnectedDevices();
 		} catch (Exception e) {
 		}
-		// try {
-		// File dummyFile = TempFileManager.createTempFile("dummy.tns");
-		// FileOutputStream fos = new FileOutputStream(dummyFile);
-		// byte[] dummy = new byte[10000];
-		// fos.write(dummy);
-		// fos.close();
-		// // TODO abort if too long (i.e. has rebooted)
-		// sendFileToDevice(dummyFile.getPath(), deviceInstallDir
-		// + "/dummy.tns");
-		// } catch (DeviceException e) {
-		// }
 
 		waitForTheDeviceToReboot(waitForStartup);
 	}
@@ -678,13 +681,23 @@ public class Injector implements CurrentStep {
 
 	private void waitForDeviceToShutdown() throws InterruptedException {
 		MainFrame.log("Waiting for the device to shut down...");
-		boolean deviceHasShutdown = false;
-		for (int waitForShutdownCount = 3; waitForShutdownCount > 0; waitForShutdownCount--) {
+		boolean deviceNotResponsive = false, deviceHasShutdown = false;
+		for (int waitForNonResponsiveCount = 3; waitForNonResponsiveCount > 0; waitForNonResponsiveCount--) {
 			if (!isDeviceStillResponsive()) {
-				deviceHasShutdown = true;
+				deviceNotResponsive = true;
 				break;
 			}
 			Thread.sleep(3000);
+		}
+		if (deviceNotResponsive) {
+			for (int waitForShutdownCount = 20; waitForShutdownCount > 0; waitForShutdownCount--) {
+				PXDevice[] devices = pxConnectApp.enumerateConnectedDevices();
+				if (devices.length == 0) {
+					deviceHasShutdown = true;
+					break;
+				}
+				Thread.sleep(3000);
+			}
 		}
 		if (!deviceHasShutdown)
 			throw new NdlessException("The device did not shut down");
@@ -694,7 +707,7 @@ public class Injector implements CurrentStep {
 	private void waitForDeviceToStartup() throws InterruptedException {
 		MainFrame.log("Waiting for the device to start up...");
 		boolean deviceHasStartedup = false;
-		for (int waitForShutdownCount = 18; waitForShutdownCount > 0; waitForShutdownCount--) {
+		for (int waitForStartupCount = 25; waitForStartupCount > 0; waitForStartupCount--) {
 			PXDevice[] devices = pxConnectApp.enumerateConnectedDevices();
 			if (devices.length != 0) {
 				pxConnectApp.connect(devices[0]);
@@ -729,4 +742,5 @@ public class Injector implements CurrentStep {
 			}
 		}
 	}
+
 }
