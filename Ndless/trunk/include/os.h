@@ -44,7 +44,7 @@
 #endif
 
 #define fopen             (_oscall(FILE*, fopen_, const char* filename, const char* mode))
-#define fread             (_oscall(size_t, fread_, void *restrict ptr, size_t size, size_t nitems, FILE *restrict stream))
+#define fread             (_oscall(size_t, fread_, void* ptr, size_t size, size_t nitems, FILE* stream))
 #define fwrite            (_oscall(size_t, fwrite_, const void* ptr, size_t size, size_t count, FILE* stream))
 #define fclose            (_oscall(int, fclose_, FILE* stream))
 #define malloc            (_oscall(void*, malloc_, size_t size))
