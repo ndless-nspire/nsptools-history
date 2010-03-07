@@ -118,12 +118,13 @@ public class ConnectivitySetup {
 
 	private File getNavnetDir() {
 		// Windows specific
-		File navNetDir = new File(System.getenv().get("CommonProgramFiles")
-				+ "/TI Shared/CommLib/1/NavNet");
-		if (navNetDir.exists())
-			return navNetDir;
+		File navNetDir;
 		// For Computer Link < 1.4
 		navNetDir = new File(clInstallDir, "lib" + File.separator + "navnet");
+		if (navNetDir.exists())
+			return navNetDir;
+		navNetDir = new File(System.getenv().get("CommonProgramFiles")
+				+ "/TI Shared/CommLib/1/NavNet");
 		if (navNetDir.exists())
 			return navNetDir;
 		else
