@@ -1,4 +1,4 @@
-@ symbols required by newlib
+@ startup code
 
-_exit: .global _exit
-	b _exit
+_nspire_start: .global _nspire_start
+	b main

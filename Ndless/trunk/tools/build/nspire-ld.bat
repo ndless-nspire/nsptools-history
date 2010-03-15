@@ -10,6 +10,6 @@ shift
 goto argloop
 :argloopdone
 
-if not "%nostdlib%"=="true" set ARGS=%ARGS% "%DIRNAME%/../system/crt0.o" "%DIRNAME%/../system/syscalls.o"
+if not "%nostdlib%"=="true" set ARGS=%ARGS% "%DIRNAME%/../system/stdlibsym.o" "%DIRNAME%/../system/syscalls.o"
 
-arm-elf-gcc -T "%DIRNAME%/../system/ldscript" %ARGS%
+arm-elf-gcc -T "%DIRNAME%/../system/ldscript" "%DIRNAME%/../system/crt0.o" %ARGS%

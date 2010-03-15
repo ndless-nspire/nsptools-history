@@ -85,7 +85,6 @@ public class Injector implements CurrentStep {
 			MainFrame.setCurrentStep(this);
 			MainFrame.log("Connecting to the device...");
 			setupNavnet();
-
 			DeviceInfo deviceInfo = pxConnectApp.connectedDevice()
 					.getDeviceInfo();
 			if (deviceInfo == null)
@@ -101,6 +100,7 @@ public class Injector implements CurrentStep {
 					"hook.tns", "demo.tns" });
 
 			MainFrame.log("Creating Ndless installation directory...");
+			mkDeviceDocDir(deviceInstallerDir);
 			MainFrame.log("Checking if Ndless is already installed... ", false);
 			if (isNdlessUpgrade()) {
 				MainFrame.log("Yes, upgrading.");
@@ -110,7 +110,6 @@ public class Injector implements CurrentStep {
 			} else {
 				MainFrame.log("No.");
 				MainFrame.log("Preparing required files on the device:");
-				mkDeviceDocDir(deviceInstallerDir);
 				MainFrame.log(" - Backuping overwritten files");
 				copyFileLocallyOnDevice(
 						"/../phoenix/syst/locales/en/strings.res",
@@ -178,6 +177,10 @@ public class Injector implements CurrentStep {
 							+ " already running");
 		}
 		pxConnectApp.setConnectAPI(conApi);
+		connectToDevice();
+	}
+
+	private void connectToDevice() throws InterruptedException {
 		PXDevice[] devices;
 		// required before NavNet.init and enumeration, else
 		// no device would be found
@@ -209,8 +212,7 @@ public class Injector implements CurrentStep {
 	private void downgradeOSIfNeeded(Version currentOsVersion)
 			throws Exception, InterruptedException {
 		if (forceOSUpdate || currentOsVersion.getMajor() != 1
-				|| currentOsVersion.getMinor() != 1
-				|| currentOsVersion.getBuild() != 9253) {
+				|| currentOsVersion.getMinor() != 1) {
 			String action = "downgrade the OS to version";
 			String direction = "Downgrading";
 			if (hadNoOS) {
@@ -661,8 +663,10 @@ public class Injector implements CurrentStep {
 	private void waitForTheDeviceToReboot(boolean waitForStartup)
 			throws InterruptedException {
 		waitForDeviceToShutdown();
-		if (waitForStartup)
+		if (waitForStartup) {
 			waitForDeviceToStartup();
+			connectToDevice();
+		}
 	}
 
 	/**
@@ -680,6 +684,7 @@ public class Injector implements CurrentStep {
 	}
 
 	private void waitForDeviceToShutdown() throws InterruptedException {
+		PXDevice[] devices;
 		MainFrame.log("Waiting for the device to shut down...");
 		boolean deviceNotResponsive = false, deviceHasShutdown = false;
 		for (int waitForNonResponsiveCount = 3; waitForNonResponsiveCount > 0; waitForNonResponsiveCount--) {
@@ -691,7 +696,7 @@ public class Injector implements CurrentStep {
 		}
 		if (deviceNotResponsive) {
 			for (int waitForShutdownCount = 20; waitForShutdownCount > 0; waitForShutdownCount--) {
-				PXDevice[] devices = pxConnectApp.enumerateConnectedDevices();
+				devices = pxConnectApp.enumerateConnectedDevices();
 				if (devices.length == 0) {
 					deviceHasShutdown = true;
 					break;
@@ -699,9 +704,18 @@ public class Injector implements CurrentStep {
 				Thread.sleep(3000);
 			}
 		}
-		if (!deviceHasShutdown)
-			throw new NdlessException("The device did not shut down");
-		MainFrame.log("Connection lost, the device has probably shut down.");
+		if (!deviceHasShutdown) {
+			do {
+				ContinueDialog.ask(
+						"The device could not be remotely rebooted and is in an unstable state.\n" +
+						"Either enter any menu to make it reboot, or remove and insert back a\n" +
+						"battery with USB unplugged.\n\n" +
+						"Select 'Yes' once the device starts up and is replugged, 'No' to abort.");
+				devices = pxConnectApp.enumerateConnectedDevices();
+			} while (devices.length != 0);
+		}
+		else
+			MainFrame.log("Connection lost, the device has probably shut down.");
 	}
 
 	private void waitForDeviceToStartup() throws InterruptedException {

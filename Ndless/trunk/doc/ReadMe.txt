@@ -56,7 +56,7 @@ What you need to know as a user
 Troubleshooting
 ===============
 
-- If the TI-Nspire becomes unusable or hangs:
+- If the TI-Nspire becomes unusable, hangs or loops at reboot time:
    * Enter the maintenance menu by reboot it while holding the keys ON+Home+Enter+P until
      half the progress bar. To reboot the TI-Nspire, unplug the USB cable, then remove and
      put back the a battery.
@@ -129,18 +129,12 @@ What we hope you will be able to see in the next releases
 - Support for the TI-84+ keypad
 - Mac support
 
-Known issues
-============
-
-- Sometimes the Ndless Installer cannot remotely reboot the TI-Nspire, but thinks it has.
-  In such case, navigate in any menu and the calculator should soon reboot and let you
-  finish the installation process.
-
 Many thanks to
 ==============
 
 calc84maniac (GB/GBC emulator), Goplat (TI-Nspire emulator, HW info), hwti (OS info, 64-bit
-support), squalyl (Hackspire and development tools hosting), TI-Bank (data hosting)
+support), squalyl (Hackspire and development tools hosting), TI-Bank (data hosting), and
+all the beta testers.
 
 Development team
 ================
@@ -165,9 +159,14 @@ History
 =======
 
 * <not yet released>
- - Compatible with Computer Link Software 1.4
- - Building executables made a little easier. See the demo's Makefile.
- - Fixed: the OS could not be upgraded while Ndless was installed
+ Installer:
+  - Compatible with Computer Link Software 1.4
+  - New manual step to work around missed reboots
+  - FIX: Some transfer errors were not correctly reported
+ Loader:
+  - FIX: the OS could not be upgraded while Ndless was installed
+ Tools:
+  - Building executables made a little easier. See the demo's Makefile.
 
 * v1.0 - 2010/02/26
  - The work is now covered by Open Source licenses
