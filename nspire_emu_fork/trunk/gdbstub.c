@@ -1,9 +1,10 @@
 /*
  * TODO:
  * - 'Fail to bind' when restarting CPU from the menu
- * - Trap exceptions (trap_low, handle_exception defined but not used, set_mem_fault_trap, trap...)
+ * - Cleanup (set_mem_fault_trap, trap...)
  * - Explicitely supports the endianness (set/get_registers). Currently the host must be little-endian
  *   as ARM is.
+ * - Support disconnection
  * 
  */
 
@@ -146,8 +147,8 @@ static const char hexchars[]="0123456789abcdef";
 enum regnames {R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, SP, LR, PC,
 	F0, F1, F2, F3, F4, F5, F6, F7, FPS, CPSR};
 
-// see GDB's gdb/signal.h
-enum target_signal {SIGNAL_TRAP = 5};
+// see GDB's include/gdb/signals.h
+enum target_signal {SIGNAL_ILL_INSTR = 4, SIGNAL_TRAP = 5};
 
 /* Convert ch from a hex digit to an int */
 static int hex(unsigned char ch) {
@@ -354,27 +355,17 @@ void send_signal_reply(int signal) {
 
 extern void breakinst();
 
-void handle_exception(void) {
-	send_signal_reply(SIGNAL_TRAP);
-}
-
 void gdbstub_loop(void) {
 	int addr;
 	int length;
 	char *ptr;
 	void *ramaddr;
 	unsigned long regbuf[NUMREGS];
-	static bool first_pkt_received = 0;
-	
-	if (first_pkt_received)
-		send_signal_reply(SIGNAL_TRAP);
-	cpu_events &= ~EVENT_DEBUG_STEP;
 	
 	while (1)	{
 		remcomOutBuffer[0] = 0;
 
 		ptr = getpacket();
-		first_pkt_received = 1;
 		switch (*ptr++) 	{
 			case '?':
 				send_signal_reply(SIGNAL_TRAP);
@@ -498,6 +489,30 @@ parse_new_pc:
 	}
 }
 
+void gdbstub_exception(int type) {
+	int gdb_type;
+	switch (type) {
+		case EX_UNDEFINED: 
+			gdb_type = SIGNAL_ILL_INSTR;
+			break;
+		default:
+			gdb_type = SIGNAL_TRAP;
+	}
+	send_signal_reply(gdb_type);
+	gdbstub_loop();
+}
+
 void gdbstub_init(int port) {
 	wait_gdb_connection(port);
+}
+
+void gdbstub_debugger(void) {
+	static bool first_pkt_received = 0;
+	
+	if (first_pkt_received)
+		send_signal_reply(SIGNAL_TRAP);
+	else
+		first_pkt_received = 1;
+	cpu_events &= ~EVENT_DEBUG_STEP;
+	gdbstub_loop();
 }

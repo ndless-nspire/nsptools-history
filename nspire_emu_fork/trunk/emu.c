@@ -139,7 +139,7 @@ int main(int argc, char **argv) {
 						printf("Invalid listen port for GDB stub%s%s\n", *arg ? ": " : "", arg);
 						exit(1);
 					}
-					gdb_debugger = true;
+					is_gdb_debugger = true;
 					break;
 				case 'K':
 					if (*arg) goto usage;
@@ -312,7 +312,7 @@ reset:
 		memcpy(RAM_PTR(0xA4000000), RAM_PTR(0x00000000), 0x40);
 	}
 
-	if (gdb_debugger)
+	if (is_gdb_debugger)
 		gdbstub_init(gdb_port);
 
 	while (!exiting) {

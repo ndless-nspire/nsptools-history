@@ -109,7 +109,7 @@ void cpu_irq_check();
 /* Declarations for debug.c */
 
 extern FILE *debugger_stdin;
-extern bool gdb_debugger;
+extern bool is_gdb_debugger;
 
 void backtrace(u32 fp);
 void debugger();
@@ -129,7 +129,8 @@ void flash_initialize(char *preload_boot2, char *preload_diags, char *preload_os
 /* Declarations for gdbstub.c */
 
 void gdbstub_init(int port);
-void gdbstub_loop(void);
+void gdbstub_debugger(void);
+void gdbstub_exception(int type);
 
 /* Declarations for gui.c */
 

@@ -1,3 +1,4 @@
+#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 #include "emu.h"
@@ -124,6 +125,45 @@ static inline void set_nz_flags_64(u64 value) {
 	arm.cpsr_z = value == 0;
 }
 
+void cpu_exception(int type) {
+	static const u8 flags[] = {
+		MODE_SVC | 0xC0, /* Reset */
+		MODE_UND | 0x80, /* Undefined instruction */
+		MODE_SVC | 0x80, /* Software interrupt */
+		MODE_ABT | 0x80, /* Prefetch abort */
+		MODE_ABT | 0x80, /* Data abort */
+		0,               /* Reserved */
+		MODE_IRQ | 0x80, /* IRQ */
+		MODE_FIQ | 0xC0, /* FIQ */
+	};
+	
+	/* GDB relies on some exceptions, for example for soft breakpoints */
+	if (type == EX_UNDEFINED && is_gdb_debugger) {
+		gdbstub_exception(type);
+		return;
+	}
+
+	/* Switch mode, disable interrupts */
+	u32 old_cpsr = get_cpsr();
+	set_cpsr_full((old_cpsr & ~0x3F) | flags[type]);
+	set_spsr_full(old_cpsr);
+
+	/* Branch-and-link to exception handler.
+	 * Note: Exception handlers should really be at 0x00000000, not 0xA4000000,
+	 * but the MMU is used to remap the former to the latter. Until the MMU is
+	 * implemented, this should suffice. */
+	arm.reg[14] = arm.reg[15];
+	arm.reg[15] = 0xA4000000 | type << 2;
+}
+
+void cpu_exception_warn(int type, char *fmt, ...) {
+	va_list va;
+	va_start(va, fmt);
+	warn(fmt, va);
+	va_end(va);
+	cpu_exception(type);
+}
+
 u32 calc_address(u32 insn, int base_reg, u32 offset) {
 	u32 addr = get_reg_pc(base_reg);
 
@@ -167,14 +207,17 @@ static int get_shifted_immed(int insn, int setcc) {
 	return val;
 }
 
-static int get_shifted_reg(int insn, int setcc) {
+/* Return -1 if an exception occurs */
+static int get_shifted_reg(int *ret, int insn, int setcc) {
 	u32 res = get_reg_pc(insn & 15);
 	int type = insn >> 5 & 3;
 	int count; 
 
 	if (insn & (1 << 4)) {
-		if (insn & (1 << 7))
-			error("shift by reg, bit 7 set");
+		if (insn & (1 << 7)) {
+			cpu_exception_warn(EX_UNDEFINED, "shift by reg, bit 7 set");
+			return -1;
+		}
 		count = get_reg(insn >> 8 & 15) & 0xFF;
 	} else {
 		count = insn >> 7 & 31;
@@ -184,9 +227,9 @@ static int get_shifted_reg(int insn, int setcc) {
 				case 1: /* LSR #32 */ count = 32; break;
 				case 2: /* ASR #32 */ count = 32; break;
 				case 3: /* RRX */ {
-					u32 ret = arm.cpsr_c << 31 | res >> 1;
+					*ret = arm.cpsr_c << 31 | res >> 1;
 					if (setcc) arm.cpsr_c = res & 1;
-					return ret;
+					return 0;
 				}
 			}
 		}
@@ -194,7 +237,8 @@ static int get_shifted_reg(int insn, int setcc) {
 
 	if (count == 0) {
 		/* For all types, a count of 0 does nothing and does not affect carry. */
-		return res;
+		*ret = res;
+		return 0;
 	}
 
 	switch (type) {
@@ -202,6 +246,7 @@ static int get_shifted_reg(int insn, int setcc) {
 		case 0: /* LSL */
 			if (count >= 32) {
 				if (setcc) arm.cpsr_c = (count == 32) ? (res & 1) : 0;
+				*ret = 0;
 				return 0;
 			}
 			if (setcc) arm.cpsr_c = res >> (32 - count) & 1;
@@ -209,10 +254,12 @@ static int get_shifted_reg(int insn, int setcc) {
 		case 1: /* LSR */
 			if (count >= 32) {
 				if (setcc) arm.cpsr_c = (count == 32) ? (res >> 31) : 0;
+				*ret = 0;
 				return 0;
 			}
 			if (setcc) arm.cpsr_c = res >> (count - 1) & 1;
-			return res >> count;
+			*ret = res >> count;
+			return 0;
 		case 2: /* ASR */
 			if (count >= 32) {
 				count = 31;
@@ -223,34 +270,10 @@ static int get_shifted_reg(int insn, int setcc) {
 			return (s32)res >> count;
 		case 3: /* ROR */
 			count &= 31;
-			return res >> count | res << (32 - count);
+			*ret = res >> count | res << (32 - count);
+			return 0;
 			if (setcc) arm.cpsr_c = res >> 31;
 	}
-}
-
-void cpu_exception(int type) {
-	static const u8 flags[] = {
-		MODE_SVC | 0xC0, /* Reset */
-		MODE_UND | 0x80, /* Undefined instruction */
-		MODE_SVC | 0x80, /* Software interrupt */
-		MODE_ABT | 0x80, /* Prefetch abort */
-		MODE_ABT | 0x80, /* Data abort */
-		0,               /* Reserved */
-		MODE_IRQ | 0x80, /* IRQ */
-		MODE_FIQ | 0xC0, /* FIQ */
-	};
-
-	/* Switch mode, disable interrupts */
-	u32 old_cpsr = get_cpsr();
-	set_cpsr_full((old_cpsr & ~0x3F) | flags[type]);
-	set_spsr_full(old_cpsr);
-
-	/* Branch-and-link to exception handler.
-	 * Note: Exception handlers should really be at 0x00000000, not 0xA4000000,
-	 * but the MMU is used to remap the former to the latter. Until the MMU is
-	 * implemented, this should suffice. */
-	arm.reg[14] = arm.reg[15];
-	arm.reg[15] = 0xA4000000 | type << 2;
 }
 
 void cpu_interpret_instruction(u32 insn) {
@@ -264,7 +287,11 @@ void cpu_interpret_instruction(u32 insn) {
 		case 5:  /* GE/LT */ exec = arm.cpsr_n == arm.cpsr_v; break;
 		case 6:  /* GT/LE */ exec = !arm.cpsr_z && arm.cpsr_n == arm.cpsr_v; break;
 		default: /* AL/-- */ exec = 1;
-		                     if (insn & (1 << 28)) error("Invalid condition code"); break;
+		                     if (insn & (1 << 28)) {
+		                     	cpu_exception_warn(EX_UNDEFINED, "Invalid condition code");
+		                     	return;
+		                     }
+		                     break;
 	}
 	if (!(exec ^ (insn >> 28 & 1)))
 		return;
@@ -288,8 +315,10 @@ void cpu_interpret_instruction(u32 insn) {
 				u32 reg_lo = insn >> 12 & 15;
 				u32 reg_hi = insn >> 16 & 15;
 
-				if (reg_lo == reg_hi)
-					error("RdLo and RdHi cannot be same for 64-bit multiply");
+				if (reg_lo == reg_hi) {
+					cpu_exception_warn(EX_UNDEFINED, "RdLo and RdHi cannot be same for 64-bit multiply");
+					return;
+				}
 
 				u64 res;
 				if (insn & 0x0400000) res = (s64)(s32)left * (s32)right;
@@ -333,7 +362,10 @@ void cpu_interpret_instruction(u32 insn) {
 			} else if (type == 1) { /* STRH */
 				write_half(addr, get_reg(data_reg));
 			} else {
-				if (data_reg & 1) error("LDRD/STRD with odd-numbered data register");
+				if (data_reg & 1) {
+					cpu_exception_warn(EX_UNDEFINED, "LDRD/STRD with odd-numbered data register");
+					return;
+				}
 				if (type == 2) { /* LDRD */
 					set_reg(data_reg,     read_word(addr));
 					set_reg(data_reg + 1, read_word(addr + 4));
@@ -390,8 +422,10 @@ void cpu_interpret_instruction(u32 insn) {
 				u32 reg_lo = insn >> 12 & 15;
 				u32 reg_hi = insn >> 16 & 15;
 				s64 sum;
-				if (reg_lo == reg_hi)
-					error("RdLo and RdHi cannot be same for 64-bit accumulate");
+				if (reg_lo == reg_hi) {
+					cpu_exception_warn(EX_UNDEFINED, "RdLo and RdHi cannot be same for 64-bit accumulate");
+					return;
+				}
 				sum = product + ((u64)get_reg(reg_hi) << 32 | get_reg(reg_lo));
 				set_reg(reg_lo, sum);
 				set_reg(reg_hi, sum >> 32);
@@ -463,7 +497,8 @@ void cpu_interpret_instruction(u32 insn) {
 		if (insn & (1 << 25))
 			right = get_shifted_immed(insn, setcc);
 		else
-			right = get_shifted_reg(insn, setcc);
+			if (get_shifted_reg(&right, insn, setcc) == -1)
+				return;
 
 		switch (opcode) {
 			default: /* not used, obviously - here to shut up gcc warning */
@@ -486,8 +521,10 @@ void cpu_interpret_instruction(u32 insn) {
 		}
 
 		if ((opcode & 12) == 8) {
-			if (dest_reg != 0)
-				error("Compare instruction has nonzero destination reg");
+			if (dest_reg != 0) {
+				cpu_exception_warn(EX_UNDEFINED, "Compare instruction has nonzero destination reg");
+				return;
+			}
 		} else {
 			set_reg_pc(dest_reg, res);
 		}
@@ -502,9 +539,12 @@ void cpu_interpret_instruction(u32 insn) {
 
 		u32 offset;
 		if (insn & (1 << 25)) {
-			if (insn & (1 << 4))
-				error("Cannot shift memory offset by register");
-			offset = get_shifted_reg(insn, 0);
+			if (insn & (1 << 4)) {
+				cpu_exception_warn(EX_UNDEFINED, "Cannot shift memory offset by register");
+				return;
+			}
+			if (get_shifted_reg(&offset, insn, 0) == -1)
+				return;
 		} else {
 			offset = insn & 0xFFF;
 		}
@@ -578,6 +618,6 @@ void cpu_interpret_instruction(u32 insn) {
 		cpu_exception(EX_SWI);
 	} else {
 bad_insn:
-		error("Unrecognized instruction %08x\n", insn);
+		cpu_exception_warn(EX_UNDEFINED, "Unrecognized instruction %08x\n", insn);
 	}
 }

@@ -70,7 +70,7 @@ static void set_debug_next(u32 next) {
 	debug_next = next;
 }
 
-bool gdb_debugger = false;
+bool is_gdb_debugger = false;
 
 FILE *debugger_stdin;
 
@@ -346,8 +346,8 @@ readstdin:
 }
 
 void debugger(void) {
-	if (gdb_debugger)
-		gdbstub_loop();
+	if (is_gdb_debugger)
+		gdbstub_debugger();
 	else
 		native_debugger();
 }
