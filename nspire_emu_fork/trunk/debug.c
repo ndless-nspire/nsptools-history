@@ -128,7 +128,7 @@ readstdin:
 				"n - continue until next instruction\n"
 				"q - quit\n"
 				"r - show registers\n"
-				"rs <regnum> <value> - change register value\n"
+				"rs <regnum|pc> <value> - change register value\n"
 				"s - step instruction\n"
 				"t+ - enable instruction translation\n"
 				"t- - disable instruction translation\n"
@@ -166,9 +166,24 @@ readstdin:
 				printf(" spsr=%08x", get_spsr());
 			printf("\n");
 		} else if (!stricmp(cmd, "rs")) {
-			int reg = atoi(strtok(NULL, " \n"));
-			if (reg >= 0 && reg < 15)
-				arm.reg[reg] = strtoul(strtok(NULL, " \n"), NULL, 16);
+		  char *reg = strtok(NULL, " \n");
+		  if (!reg)
+		    printf("Parameters are missing.\n");
+		  else {
+		    char *value = strtok(NULL, " \n");
+		    if (!value)
+		      printf("Missing value parameter.\n");
+		    else {
+    			int regi = atoi(reg);
+    			int valuei = strtoul(value, NULL, 16);
+    			if (!strcmp(reg, "pc"))
+    			  arm.reg[15] = valuei;
+  			  else if (regi >= 0 && regi < 15)
+  				  arm.reg[regi] = valuei;
+  			  else
+  			    printf("Invalid register.\n");
+  			}
+  		}
 		} else if (!stricmp(cmd, "k")) {
 			char *addr_str = strtok(NULL, " \n");
 			char *flag_str = strtok(NULL, " \n");
