@@ -1,0 +1,16 @@
+CC=gcc
+CFLAGS = -W -Wall
+
+all: MakeLoader
+
+MakeLoader: MakeLoader.c
+	$(CC) $(CFLAGS) $< -o $@
+
+package:
+	./MakeLoader ../loader.bin Document.xml
+	@rm -f ../loader.tns
+	7za a loader.zip Document.xml
+	@mv loader.zip loader.tns
+
+clean:
+	rm -rf MakeLoader
