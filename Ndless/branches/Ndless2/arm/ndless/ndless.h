@@ -1,5 +1,5 @@
 /****************************************************************************
- * @(#) Ndless - OS Calls
+ * @(#) Ndless - Ndless header
  *
  * Copyright (C) 2010 by ANNEHEIM Geoffrey and ARMAND Olivier
  * Contact: geoffrey.anneheim@gmail.com / olivier.calc@gmail.com
@@ -11,13 +11,13 @@
  * RCSID $Id$
  ****************************************************************************/
 
-#ifndef _OS_H_
-#define _OS_H_
+#ifndef _NDLESS_H_
+#define _NDLESS_H_
 
-#ifndef OS_FUNC
-  #define __OS_FUNC(f, v)   f ## _ ## v
-  #define _OS_FUNC(f, v)    __OS_FUNC(f, v)
-  #define OS_FUNC(f)        _OS_FUNC(f, OS_VERSION)
-#endif
+#define OS_FLAGS_COUNT                6
+#define OS_FLAGS_TABLE_BYTES_SIZE     (OS_FLAGS_COUNT * 8)
+
+#define PRG_SIGNATURE_BYTES_SIZE      4
+
 
 #endif

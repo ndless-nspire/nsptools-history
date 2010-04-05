@@ -34,7 +34,8 @@ install_vector_swi:
 # -------------------------------------------------------------------------  
 syscalls_table_pointer:
   .long 0
-  
+
+# TODO: Find a better code  
 vector_swi:
   stmfd   sp!, {r0-r2, r12, lr}
   mrs     r2, cpsr
@@ -47,6 +48,7 @@ vector_swi:
   ldr     r0, [r1, r0, lsl #2]
   str     r0, [sp, #12]
   msr     cpsr_cf, r2
+  mov     lr, pc
   ldmfd   sp!, {r0-r2, pc}
   ldmfd   sp!, {pc}^
   

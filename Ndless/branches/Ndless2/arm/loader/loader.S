@@ -12,6 +12,7 @@
  ****************************************************************************/
  
   #include "loader.h"
+  #include "../../include/os.h"
   #include "../../include/syscalls/syscalls.h"
 
   .text
@@ -46,7 +47,7 @@ _start: .global _start
   # TODO: Syscalls index invalid
   
   ldr     r1, =SYSCALLS_TABLE_BYTES_SIZE
-  adr     r2, basic_syscalls_table_begin
+  adr     r2, basic_syscalls_table
   bl      install_vector_swi
   
   # Desactivate interrupts
@@ -72,10 +73,10 @@ _start: .global _start
   ldr     pc, =MEMSPACE_BASE_ADDRESS
 
 fileMode_rb:          .string "rb"
-fileNdless:           .string "/documents/ndless/demo.tns"
+fileNdless:           .string "/documents/ndless/ndless.tns"
   .align    
 
-basic_syscalls_table_begin:
+basic_syscalls_table:
   #include "../../include/syscalls/syscalls_table.S"
   .align
 
