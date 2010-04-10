@@ -44,3 +44,10 @@
   #undef OS_VERSION
   #include "Both/os_2.0.1188.h"
   #include "syscalls_table.h"
+
+/************
+ * 2.0.1.60 *
+ ************/
+  #undef OS_VERSION
+  #include "Both/os_2.0.1.60.h"
+  #include "syscalls_table.h"

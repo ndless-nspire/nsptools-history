@@ -180,6 +180,9 @@ os_hook_addresses_table:
   
   @ OS 2.0.1188
   .long 0x00000000, 0x00000000
+  
+  @ OS 2.0.1.60
+  .long 0x00000000, 0x00000000
 
   .align
 
@@ -234,6 +237,18 @@ restore_os_flags_table:
   .long 0x00000000, 0x00000000
   .long 0x00000000, 0x00000000
   .long 0x00000000, 0x00000000
+  
+  # NOP instructions, avoid to clear memory pool
+  .long 0x00000000, 0x00000000
+  .long 0x00000000, 0x00000000
+  .long 0x00000000, 0x00000000
+  
+  @ OS 2.0.1.60
+  # Flags
+  .long 0x10001340, 0x00000000
+  .long 0x10752D64, 0x00000001
+  .long 0x10752CE8, 0x00000001
+  #.long 0x10733DA8, 0x00000100
   
   # NOP instructions, avoid to clear memory pool
   .long 0x00000000, 0x00000000

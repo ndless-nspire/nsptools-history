@@ -4,7 +4,7 @@
   .xdef get_os_syscalls_index
   #.xdef show_dialog_box2_ascii
 
-  #define OS_VERSION_COUNT      4
+  #define OS_VERSION_COUNT      5
 
 # --------------------------------------------------------------------------
 # Get OS version index
@@ -47,6 +47,7 @@ _os_version_table_begin:
   .long 0x1014A9C0  @ 1.1.9253
   .long 0x10211290  @ 1.7.2741
   .long 0x1024FF00  @ 2.0.1188
+  .long 0x10266030  @ 2.0.1.60
 _os_version_table_end:
   .align
 
@@ -83,6 +84,7 @@ _get_os_syscalls_index_table_begin:
   .byte 0xFF  @ 1.1.9253
   .byte 0x00  @ 1.7.2741
   .byte 0x01  @ 2.0.1188
+  .byte 0x02  @ 2.0.1.60
 _get_os_syscalls_index_table_end:
   .align
 
