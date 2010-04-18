@@ -1,10 +1,10 @@
 /*
  * TODO:
  * - 'Fail to bind' when restarting CPU from the menu
- * - Cleanup (set_mem_fault_trap, trap...)
+ * - Cleanup (set_mem_fault_trap, trap.... hex2mem/mem2hex should return void)
  * - Explicitely supports the endianness (set/get_registers). Currently the host must be little-endian
  *   as ARM is.
- * - Support disconnection
+ * - Support disconnection and double connection by GDB
  * 
  */
 
@@ -151,7 +151,7 @@ enum regnames {R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, SP, LR, PC
 enum target_signal {SIGNAL_ILL_INSTR = 4, SIGNAL_TRAP = 5};
 
 /* Convert ch from a hex digit to an int */
-static int hex(unsigned char ch) {
+static int hex(char ch) {
 	if (ch >= 'a' && ch <= 'f')
 		return ch-'a'+10;
 	if (ch >= '0' && ch <= '9')
@@ -163,6 +163,7 @@ static int hex(unsigned char ch) {
 
 static char remcomInBuffer[BUFMAX];
 static char remcomOutBuffer[BUFMAX];
+static char databuffer[BUFMAX / 2];
 
 /* scan for the sequence $<data>#<checksum> */
 unsigned char *getpacket(void) {
@@ -191,11 +192,11 @@ retry:
 			ch = get_debug_char();
 			if (ch == '$')
 				goto retry;
+			buffer[count] = ch;
+			count = count + 1;
 			if (ch == '#')
 				break;
 			checksum = checksum + ch;
-			buffer[count] = ch;
-			count = count + 1;
 		}
 		buffer[count] = 0;
 
@@ -231,7 +232,7 @@ static void putpacket(unsigned char *buffer) {
 	int count;
 	unsigned char ch;
 
-	/*  $<packet info>#<checksum>. */
+	/*  $<packet info>#<checksum> */
 	do {
 			put_debug_char('$');
 			checksum = 0;
@@ -261,7 +262,7 @@ static volatile int mem_err = 0;
  * If MAY_FAULT is non-zero, then we will handle memory faults by returning
  * a 0, else treat a fault like any other fault in the stub.
  */
-static unsigned char * mem2hex(unsigned char *mem, unsigned char *buf, int count, int may_fault) {
+static unsigned char *mem2hex(unsigned char *mem, unsigned char *buf, int count, int may_fault) {
 	unsigned char ch;
 
 	set_mem_fault_trap(may_fault);
@@ -278,14 +279,18 @@ static unsigned char * mem2hex(unsigned char *mem, unsigned char *buf, int count
 }
 
 /* convert the hex array pointed to by buf into binary to be placed in mem
- * return a pointer to the character AFTER the last byte written */
-static char *hex2mem(unsigned char *buf, unsigned char *mem, int count, int may_fault) {
+ * return a pointer to the character AFTER the last byte written.
+ * If count is null stops at the first non hex digit */
+static char *hex2mem(char *buf, unsigned char *mem, int count, int may_fault) {
 	int i;
-	unsigned char ch;
+	char ch;
 
 	set_mem_fault_trap(may_fault);
-	for (i=0; i<count; i++) {
-		ch = hex(*buf++) << 4;
+	for (i = 0; i < count || !count; i++) {
+		ch = hex(*buf++);
+		if (ch == -1)
+			return mem;
+		ch <<= 4;
 		ch |= hex(*buf++);
 		*mem++ = ch;
 		if (mem_err)
@@ -335,6 +340,35 @@ static void set_registers(const unsigned long regbuf[NUMREGS]) {
 	set_cpsr_full(regbuf[NUMREGS-1]);
 }
 
+/* GDB Host I/O */
+
+/* returns the fd */
+static int remote_open(char *pathname, int flags) {
+	return 0;
+}
+
+/* returns 0 if successful */
+static int remote_close(int fd) {
+	return 0;
+}
+
+/* Writes the data read to databuffer.
+ * returns the number of target bytes read */
+static int remote_read(int fd, int count, int offset) {
+	return 0;
+}
+
+/* returns the number of bytes written */
+static int remote_write(int fd, int offset, char *data) {
+	return 0;
+}
+
+/* returns 0 if successful */
+static int remote_unlink(char *pathname) {
+	puts(pathname);
+	return 0;
+}
+
 #define append_hex_char(ptr,ch) do {*ptr++ = hexchars[(ch) >> 4]; *ptr++ = hexchars[(ch) & 0xf];} while (0)
 
 void send_signal_reply(int signal) {
@@ -358,7 +392,11 @@ extern void breakinst();
 void gdbstub_loop(void) {
 	int addr;
 	int length;
-	char *ptr;
+	int ret;
+	int datasize;
+	char *ptr, *ptr1, *ptr2, *ptr3;
+	int i, j;
+	char *data;
 	void *ramaddr;
 	unsigned long regbuf[NUMREGS];
 	
@@ -419,7 +457,7 @@ void gdbstub_loop(void) {
 					strcpy(remcomOutBuffer,"E01");
 				break;
 		
-			case 'M': /* MAA..AA,LLLL: Write LLLL bytes at address AA.AA return OK */
+			case 'M': /* MAA..AA,LLLL: Write LLLL bytes at address AA..AA  */
 				/* Try to read '%x,%x:' */
 				if (hexToInt(&ptr, &addr)
 				    && *ptr++ == ','
@@ -465,7 +503,7 @@ parse_new_pc:
 					strcat(remcomOutBuffer, "cs"); /* supports these actions */
 				}
 				else if (!strcmp("Cont", ptr)) {
-					ptr = strtok(NULL, ""); /* [action[:thread-id];]* */
+					ptr = strtok(NULL, ""); /* remaining strin: [action[:thread-id];]* */
 					while (ptr && *ptr) {
 						char action = *ptr++;
 						ptr = strtok(ptr, ";");
@@ -479,6 +517,76 @@ parse_new_pc:
 							}
 						}
 						ptr = strtok(NULL, ";"); 
+					}
+				}
+				else if (!strcmp("File", ptr)) { /* vFile:operation:parameter... */
+					ptr = strtok(NULL, ":"); /* operation */
+					if (!ptr) {
+						strcpy(remcomOutBuffer,"E01");
+						break;
+					}
+					ptr1 = strtok(NULL, ","); /* arg1 */
+					ptr2 = strtok(NULL, ","); /* arg1 */
+					ptr3 = strtok(NULL, ","); /* arg3 */
+					data = NULL;
+					datasize = 0;
+					ret = 0;
+					if (!strcmp("open", ptr)) { /* pathname, flags, mode */
+						if (!ptr1 || !ptr2 || !ptr3 || !hexToInt(&ptr2, &i))  {
+							strcpy(remcomOutBuffer,"E02");
+							break;
+						}
+						*hex2mem(ptr1, databuffer, 0, 0) = '\0'; /* to string */
+						
+						ret = remote_open(databuffer, i);
+					}
+					else if (!strcmp("close", ptr)) { /* fd */
+						if (!ptr1 || !hexToInt(&ptr1, &i))  {
+							strcpy(remcomOutBuffer,"E02");
+							break;
+						}
+						ret = remote_close(i);
+					}
+					else if (!strcmp("pread", ptr)) { /* fd, count, offset */
+						if (   !ptr1 || !ptr2 || !ptr3 || !hexToInt(&ptr1, &i)
+							  || !hexToInt(&ptr2, &datasize) || !hexToInt(&ptr3, &j)) {
+							strcpy(remcomOutBuffer,"E02");
+							break;
+						}
+						if (datasize > (int)sizeof(databuffer)) {
+							strcpy(remcomOutBuffer,"E03");
+							break;
+						}
+						ret = remote_read(i, datasize, j);
+						data = databuffer;
+						datasize = ret;
+					}
+					else if (!strcmp("pwrite", ptr)) { /* fd, offset, data */
+						if (!ptr1 || !ptr2 || !ptr3 || !hexToInt(&ptr1, &i) || !hexToInt(&ptr2, &j))  {
+							strcpy(remcomOutBuffer,"E02");
+							break;
+						}
+						hex2mem(ptr3, databuffer, 0, 0);
+						ret = remote_write(i, j, databuffer);
+					}
+					else if (!strcmp("unlink", ptr)) { /* pathname */
+						if (!ptr1)  {
+							strcpy(remcomOutBuffer,"E02");
+							break;
+						}
+						*hex2mem(ptr1, databuffer, 0, 0) = '\0'; /* to string */
+						ret = remote_unlink(databuffer);
+					}
+					/* response: F result [, errno] [; attachment] */
+					ptr = remcomOutBuffer;
+					sprintf(ptr, "F%x", ret);
+					if (ret)
+						strcat(ptr, ",270F"); /* EUNKNOWN=9999 */
+					else
+						strcat(ptr, ",0"); /* success */
+					if (data) {
+						strcat(ptr, ";");
+						mem2hex(data, ptr + strlen(ptr), datasize, 0);
 					}
 				}
 				break;
