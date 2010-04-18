@@ -1,5 +1,6 @@
 /*
  * TODO:
+ * - Fix missing answer to "$Hc-1#09" and "$?#3" commands on startup
  * - 'Fail to bind' when restarting CPU from the menu
  * - Cleanup (set_mem_fault_trap, trap.... hex2mem/mem2hex should return void)
  * - Explicitely supports the endianness (set/get_registers). Currently the host must be little-endian
@@ -325,6 +326,43 @@ static int hexToInt(char **ptr, int *intValue) {
 	return (numChars);
 }
 
+/* See Appendix D - GDB Remote Serial Protocol - Overview.
+ * A null character is appended. */
+static void binary_escape(char *in, int insize, char *out, int outsize) {
+	while (insize-- > 0 && outsize > 1) {
+		if (*in == '#' || *in == '$' || *in == '}' || *in == 0x2A) {
+			if (outsize < 3)
+				break;
+			*out++ = '}';
+			*out++ = (0x20 ^ *in++);
+			outsize -= 2;
+		}
+		else {
+			*out++ = *in++;
+			outsize--;
+		}
+	}
+	*out = '\0';
+}
+
+/* See Appendix D - GDB Remote Serial Protocol - Overview.
+ * Returns the unescaped data size. */
+static int binary_unescape(char *in, int insize, char *out, int outsize) {
+	int unsize = 0;;
+	while (insize-- > 0 && outsize > 0) {
+		if (*in == '}') {
+			in++;
+			*out++ = (0x20 ^ *in++);
+			insize -= 2;
+		}
+		else 
+			*out++ = *in++;
+		outsize--;
+		unsize++;
+	}
+	return unsize;
+}
+
 /* From emu to GDB. Returns regbuf. */
 static unsigned long *get_registers(unsigned long regbuf[NUMREGS]) {
 	// GDB's format in arm-tdep.c/arm_register_names
@@ -355,12 +393,17 @@ static int remote_close(int fd) {
 /* Writes the data read to databuffer.
  * returns the number of target bytes read */
 static int remote_read(int fd, int count, int offset) {
-	return 0;
+	strcpy(databuffer, "a$a"); // test
+	return 2;
 }
 
 /* returns the number of bytes written */
-static int remote_write(int fd, int offset, char *data) {
-	return 0;
+static int remote_write(int fd, int offset, char *data, int size) {
+	printf("remote_write: ");
+	int i;
+	for (i = 0; i < size; i++)
+		printf("%2x", (int)data[i]);
+	return size;
 }
 
 /* returns 0 if successful */
@@ -393,7 +436,7 @@ void gdbstub_loop(void) {
 	int addr;
 	int length;
 	int ret;
-	int datasize;
+	int datasize, size;
 	char *ptr, *ptr1, *ptr2, *ptr3;
 	int i, j;
 	char *data;
@@ -566,8 +609,8 @@ parse_new_pc:
 							strcpy(remcomOutBuffer,"E02");
 							break;
 						}
-						hex2mem(ptr3, databuffer, 0, 0);
-						ret = remote_write(i, j, databuffer);
+						size = binary_unescape(ptr3, strchr(ptr3, '#') - ptr3, databuffer, sizeof(databuffer));
+						ret = remote_write(i, j, databuffer, size);
 					}
 					else if (!strcmp("unlink", ptr)) { /* pathname */
 						if (!ptr1)  {
@@ -580,13 +623,14 @@ parse_new_pc:
 					/* response: F result [, errno] [; attachment] */
 					ptr = remcomOutBuffer;
 					sprintf(ptr, "F%x", ret);
-					if (ret)
+					if (ret < 0)
 						strcat(ptr, ",270F"); /* EUNKNOWN=9999 */
 					else
 						strcat(ptr, ",0"); /* success */
 					if (data) {
 						strcat(ptr, ";");
-						mem2hex(data, ptr + strlen(ptr), datasize, 0);
+						ptr += strlen(ptr);
+						binary_escape(data, datasize, ptr, remcomOutBuffer + sizeof(remcomOutBuffer) - ptr);
 					}
 				}
 				break;
