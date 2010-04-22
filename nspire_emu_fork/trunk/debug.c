@@ -58,16 +58,17 @@ static void dump(u32 addr) {
 	}
 }
 
-u32 debug_next;
-static void set_debug_next(u32 next) {
-	if (debug_next != 0)
-		RAM_FLAGS(ram_ptr(debug_next, 4)) &= ~RF_EXEC_DEBUG_NEXT;
-	if (next != 0) {
-		if (RAM_FLAGS(ram_ptr(next, 4)) & RF_CODE_TRANSLATED)
+u32 debug_next_brkpt_adr;
+/* if next_adr is null, simply clears the 'next' breakpoint */
+void debug_set_next_brkpt(u32 next_adr) {
+	if (debug_next_brkpt_adr != 0)
+		RAM_FLAGS(ram_ptr(debug_next_brkpt_adr, 4)) &= ~RF_EXEC_DEBUG_NEXT;
+	if (next_adr != 0) {
+		if (RAM_FLAGS(ram_ptr(next_adr, 4)) & RF_CODE_TRANSLATED)
 			flush_translations();
-		RAM_FLAGS(ram_ptr(next, 4)) |= RF_EXEC_DEBUG_NEXT;
+		RAM_FLAGS(ram_ptr(next_adr, 4)) |= RF_EXEC_DEBUG_NEXT;
 	}
-	debug_next = next;
+	debug_next_brkpt_adr = next_adr;
 }
 
 bool is_gdb_debugger = false;
@@ -80,8 +81,8 @@ static void native_debugger(void) {
 	bool show_insn = false;
 
 	// Did we hit the "next" breakpoint?
-	if (arm.reg[15] == debug_next) {
-		set_debug_next(0);
+	if (arm.reg[15] == debug_next_brkpt_adr) {
+		debug_set_next_brkpt(0);
 		show_insn = 1;
 	}
 
@@ -240,7 +241,7 @@ readstdin:
 			cpu_events |= EVENT_DEBUG_STEP;
 			break;
 		} else if (!stricmp(cmd, "n")) {
-			set_debug_next(arm.reg[15] + 4);
+			debug_set_next_brkpt(arm.reg[15] + 4);
 			break;
 		} else if (!stricmp(cmd, "d")) {
 			char *arg = strtok(NULL, " \n");

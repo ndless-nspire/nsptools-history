@@ -110,9 +110,11 @@ void cpu_irq_check();
 
 extern FILE *debugger_stdin;
 extern bool is_gdb_debugger;
+u32 debug_next_brkpt_adr;
 
 void backtrace(u32 fp);
-void debugger();
+void debugger(void);
+void debug_set_next_brkpt(u32 next_adr);
 
 /* Declarations for flash.c */
 
@@ -243,6 +245,28 @@ void __attribute__((fastcall)) write_word(u32 addr, u32 value);
 /* Declarations for shifts.S */
 
 extern u32 arm_shift_proc[2][4];
+
+/* Declarations for armsnippets.S */
+
+enum SNIPPETS {
+	SNIPPET_file_open, SNIPPET_file_read, SNIPPET_file_write, SNIPPET_file_close, SNIPPET_file_unlink
+};
+extern char binary_snippets_bin_start[];
+extern char binary_snippets_bin_end[];
+enum ARMLOADER_PARAM_TYPE {ARMLOADER_PARAM_VAL, ARMLOADER_PARAM_PTR};
+struct armloader_load_params {
+	enum ARMLOADER_PARAM_TYPE t;
+	union {
+		struct p {
+			void *ptr;
+			unsigned int size;
+		} p;
+		u32 v; // simple value
+	};
+};
+void armloader_restore_state(void);
+int armloader_load_snippet(enum SNIPPETS snippet, struct armloader_load_params params[],
+	                         unsigned params_num);
 
 /* Declarations for translate.c */
 

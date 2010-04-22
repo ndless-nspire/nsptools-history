@@ -378,10 +378,44 @@ static void set_registers(const unsigned long regbuf[NUMREGS]) {
 	set_cpsr_full(regbuf[NUMREGS-1]);
 }
 
+/* Called to finish request processing and send the response */
+void (*packhandler_cb)(void) = NULL;
+
 /* GDB Host I/O */
+
+static void remote_vfile_cb(int result) {
+	char *ptr;
+	armloader_restore_state();
+		/* response: F result [, errno] [; attachment] */
+	ptr = remcomOutBuffer;
+	sprintf(ptr, "F%x", result);
+	if (result < 0)
+		strcat(ptr, ",270F"); /* EUNKNOWN=9999 */
+	else
+		strcat(ptr, ",0"); /* success */
+/*	if (data) {
+		strcat(ptr, ";");
+		ptr += strlen(ptr);
+		binary_escape(data, datasize, ptr, remcomOutBuffer + sizeof(remcomOutBuffer) - ptr);
+	}
+	*/
+	putpacket(remcomOutBuffer);
+}
+
+static void remote_open_cb(void) {
+	remote_vfile_cb(arm.reg[0]);
+}
 
 /* returns the fd */
 static int remote_open(char *pathname, int flags) {
+	struct armloader_load_params params[2];
+	params[0].t = ARMLOADER_PARAM_PTR;
+	params[0].p.ptr = pathname;
+	params[0].p.size= strlen(pathname) + 1;
+	params[1].t = ARMLOADER_PARAM_VAL;
+	params[1].v = flags;
+	armloader_load_snippet(SNIPPET_file_open, params, 2);
+	packhandler_cb = remote_open_cb;
 	return 0;
 }
 
@@ -430,8 +464,6 @@ void send_signal_reply(int signal) {
 	putpacket(remcomOutBuffer);
 }
 
-extern void breakinst();
-
 void gdbstub_loop(void) {
 	int addr;
 	int length;
@@ -442,11 +474,13 @@ void gdbstub_loop(void) {
 	char *data;
 	void *ramaddr;
 	unsigned long regbuf[NUMREGS];
+	bool reply;
 	
 	while (1)	{
 		remcomOutBuffer[0] = 0;
 
 		ptr = getpacket();
+		reply = true;
 		switch (*ptr++) 	{
 			case '?':
 				send_signal_reply(SIGNAL_TRAP);
@@ -580,8 +614,9 @@ parse_new_pc:
 							break;
 						}
 						*hex2mem(ptr1, databuffer, 0, 0) = '\0'; /* to string */
-						
 						ret = remote_open(databuffer, i);
+						reply = false;
+						return; // remote_vfile_cb will finish processing
 					}
 					else if (!strcmp("close", ptr)) { /* fd */
 						if (!ptr1 || !hexToInt(&ptr1, &i))  {
@@ -589,6 +624,8 @@ parse_new_pc:
 							break;
 						}
 						ret = remote_close(i);
+						reply = false;
+						return;
 					}
 					else if (!strcmp("pread", ptr)) { /* fd, count, offset */
 						if (   !ptr1 || !ptr2 || !ptr3 || !hexToInt(&ptr1, &i)
@@ -603,6 +640,8 @@ parse_new_pc:
 						ret = remote_read(i, datasize, j);
 						data = databuffer;
 						datasize = ret;
+						reply = false;
+						return;
 					}
 					else if (!strcmp("pwrite", ptr)) { /* fd, offset, data */
 						if (!ptr1 || !ptr2 || !ptr3 || !hexToInt(&ptr1, &i) || !hexToInt(&ptr2, &j))  {
@@ -611,6 +650,8 @@ parse_new_pc:
 						}
 						size = binary_unescape(ptr3, strchr(ptr3, '#') - ptr3, databuffer, sizeof(databuffer));
 						ret = remote_write(i, j, databuffer, size);
+						reply = false;
+						return;
 					}
 					else if (!strcmp("unlink", ptr)) { /* pathname */
 						if (!ptr1)  {
@@ -619,25 +660,16 @@ parse_new_pc:
 						}
 						*hex2mem(ptr1, databuffer, 0, 0) = '\0'; /* to string */
 						ret = remote_unlink(databuffer);
-					}
-					/* response: F result [, errno] [; attachment] */
-					ptr = remcomOutBuffer;
-					sprintf(ptr, "F%x", ret);
-					if (ret < 0)
-						strcat(ptr, ",270F"); /* EUNKNOWN=9999 */
-					else
-						strcat(ptr, ",0"); /* success */
-					if (data) {
-						strcat(ptr, ";");
-						ptr += strlen(ptr);
-						binary_escape(data, datasize, ptr, remcomOutBuffer + sizeof(remcomOutBuffer) - ptr);
+						reply = false;
+						return;
 					}
 				}
 				break;
 		}			/* switch */
 
 		/* reply to the request */
-		putpacket(remcomOutBuffer);
+		if (reply)
+			putpacket(remcomOutBuffer);
 	}
 }
 
@@ -661,10 +693,19 @@ void gdbstub_init(int port) {
 void gdbstub_debugger(void) {
 	static bool first_pkt_received = 0;
 	
+	cpu_events &= ~EVENT_DEBUG_STEP;
+	if (arm.reg[15] == debug_next_brkpt_adr) { // 'next' breakpoint hit: used by the stub for ARM snippets implementing commands
+		debug_set_next_brkpt(0);
+		if (packhandler_cb) {
+			packhandler_cb();
+			packhandler_cb = NULL;
+			return;
+		}
+	}
+
 	if (first_pkt_received)
 		send_signal_reply(SIGNAL_TRAP);
 	else
-		first_pkt_received = 1;
-	cpu_events &= ~EVENT_DEBUG_STEP;
-	gdbstub_loop();
+	first_pkt_received = 1;
+		gdbstub_loop();
 }
