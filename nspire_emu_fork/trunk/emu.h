@@ -208,6 +208,11 @@ extern void *ram_ptr(u32 addr, u32 size);
 
 #define RFS_TRANSLATION_INDEX 7
 
+#define OS_VERSION (*(u32 *)RAM_PTR(0xA4000020))
+#define OS_VERSION_1_4_BOOT2 0x1181F220
+#define OS_VERSION_1_7_CAS 0x102132A0
+#define OS_VERSION_1_7_NON_CAS 0x10211290
+
 u8 bad_read_byte(u32 addr);
 u16 bad_read_half(u32 addr);
 u32 bad_read_word(u32 addr);
@@ -253,6 +258,8 @@ enum SNIPPETS {
 };
 extern char binary_snippets_bin_start[];
 extern char binary_snippets_bin_end[];
+#define SNIPPETS_EP_OSCALLS_TABLE 0
+#define SNIPPETS_EP_LOAD 1
 enum ARMLOADER_PARAM_TYPE {ARMLOADER_PARAM_VAL, ARMLOADER_PARAM_PTR};
 struct armloader_load_params {
 	enum ARMLOADER_PARAM_TYPE t;

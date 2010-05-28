@@ -266,22 +266,22 @@ void usblink_hook_submit_write_buffer() {
 }
 
 void usblink_connect() {
-	switch (*(u32 *)RAM_PTR(0xA4000020)) {
-		case 0x1181F220: /* 1.4 BOOT2 */
+	switch (OS_VERSION) {
+		case OS_VERSION_1_4_BOOT2:
 			usblink_addr_set_event           = 0x11808490;
 			usblink_addr_schedule            = 0x1181FDB4;
 			usblink_addr_submit_read_buffer  = 0x11842AC8;
 			usblink_addr_submit_write_buffer = 0x11842B74;
 			usblink_addr_nav_user            = *(u32 *)RAM_PTR(0x11987EDC);
 			break;
-		case 0x102132A0: /* 1.7 CAS OS */
+		case OS_VERSION_1_7_CAS:
 			usblink_addr_set_event           = 0x101A62B4;
 			usblink_addr_schedule            = 0x10213E54;
 			usblink_addr_submit_read_buffer  = 0x1028E98C;
 			usblink_addr_submit_write_buffer = 0x1028EA38;
 			usblink_addr_nav_user            = *(u32 *)RAM_PTR(0x1072751C);
 			break;
-		case 0x10211290: /* 1.7 Non-CAS OS */
+		case OS_VERSION_1_7_NON_CAS:
 			usblink_addr_set_event           = 0x101A429C;
 			usblink_addr_schedule            = 0x10211E44;
 			usblink_addr_submit_read_buffer  = 0x1028C97C;
