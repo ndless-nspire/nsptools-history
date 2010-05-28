@@ -5,8 +5,6 @@
  * - Cleanup (set_mem_fault_trap, trap.... hex2mem/mem2hex should return void)
  * - Explicitely supports the endianness (set/get_registers). Currently the host must be little-endian
  *   as ARM is.
- * - Support disconnection and double connection by GDB
- * 
  */
 
 /*
@@ -28,8 +26,11 @@
 
 #include "emu.h"
 
+static void wait_gdb_connection(void);
+
 // #define TRACE_PACKETS 1
 
+static int listen_socket_fd;
 static int socket_fd;
 
 static void log_socket_error(const char *msg) {
@@ -68,25 +69,25 @@ static void put_debug_char(char c) {
 static char get_debug_char(void) {
 	char c;
 	int r;
-#if TRACE_PACKETS
-	printf("%c", c);
-#endif
-	r = recv(socket_fd, &c, 1, 0);
-	if (r == -1) {
-		log_socket_error("Failed to recv from GDB stub socket");
-		// TODO disconnect
-	} else if(r == 0) {
-		// TODO disconnect
-		puts("GDB disconnected.");
-		return -1;
+	while (1) {
+		r = recv(socket_fd, &c, 1, 0);
+	#if TRACE_PACKETS
+		printf("%c", c);
+	#endif
+		if (r == -1) {
+			log_socket_error("Failed to recv from GDB stub socket");
+			wait_gdb_connection();
+		} else if(r == 0) {
+			puts("GDB disconnected.");
+			wait_gdb_connection();
+		}
+		return c;
 	}
-	return c;
 }
 
-static void wait_gdb_connection(int port) {
-	int listen_socket_fd;
+static void gdbstub_bind(int port) {
 	struct sockaddr_in sockaddr;
-	int r, on;
+	int r;
 	
 #ifdef __MINGW32__
 	WORD wVersionRequested = MAKEWORD(2, 0);
@@ -115,12 +116,17 @@ static void wait_gdb_connection(int port) {
 	if (r == -1) {
 		log_socket_error("Failed to listen on GDB stub socket");
 	}
+}
+
+static void wait_gdb_connection(void) {
+	int r, on;
+	
 	puts("Waiting for GDB to connect...");
 	socket_fd = accept(listen_socket_fd, NULL, NULL);
 	if (socket_fd == -1) {
 		log_socket_error("Failed to accept on GDB stub socket");
+		exit(1);
 	}
-	close(listen_socket_fd);
 	/* Disable Nagle for low latency */
 	on = 1;
 #ifdef __MINGW32__
@@ -687,7 +693,8 @@ void gdbstub_exception(int type) {
 }
 
 void gdbstub_init(int port) {
-	wait_gdb_connection(port);
+	gdbstub_bind(port);
+	wait_gdb_connection();
 }
 
 void gdbstub_debugger(void) {
