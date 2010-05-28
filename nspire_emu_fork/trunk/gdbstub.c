@@ -30,8 +30,8 @@ static void wait_gdb_connection(void);
 
 // #define TRACE_PACKETS 1
 
-static int listen_socket_fd;
-static int socket_fd;
+static int listen_socket_fd = 0;
+static int socket_fd = 0;
 
 static void log_socket_error(const char *msg) {
 #ifdef __MINGW32__
@@ -122,6 +122,8 @@ static void wait_gdb_connection(void) {
 	int r, on;
 	
 	puts("Waiting for GDB to connect...");
+	if (socket_fd)
+		closesocket(socket_fd);
 	socket_fd = accept(listen_socket_fd, NULL, NULL);
 	if (socket_fd == -1) {
 		log_socket_error("Failed to accept on GDB stub socket");
