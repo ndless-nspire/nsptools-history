@@ -6,14 +6,14 @@
 #include <os.h>
 
 #define STACK_PTR_BASE_ADDR           0x1800E000
-#define OS_BASE_ADDR                  0x10000000
 #define OS_END_ADDR                   0x11000000
 #define MIN_VER_NAND_START            0x150000
 #define MIN_VER_NAND_END              0x15FFFF
+#define NEW_MIN_OS_VERSION            0x01010000
 #define CPU_RESET_PORT                0x900A0008
 
-#define _TCT_Local_Control_Interrupts 0
-#define _nand_erase_range  1
+#define _nand_erase_range  0
+#define _add_min_os_version_to_nand 1
 #define _unlink  2
 
 @ portable oscall: scans the OS code with the corresponding signature
@@ -31,11 +31,19 @@ main:
   
   ldr     sp, =STACK_PTR_BASE_ADDR
   mov r0, #0xFFFFFFFF
-	pt_oscall _TCT_Local_Control_Interrupts
+	bl _TCT_Local_Control_Interrupts
+	
+	ldr r0, =SCREEN_BASE_ADDRESS
+	mov r1, #0xFFFFFFFF
+	ldr r2, =SCREEN_BYTES_SIZE
+	@bl _memset
 	
 	ldr r0, =MIN_VER_NAND_START
 	ldr r1, =MIN_VER_NAND_END
 	pt_oscall _nand_erase_range @ clear all the min versions
+	
+	ldr r0, =NEW_MIN_OS_VERSION
+	pt_oscall _add_min_os_version_to_nand @ add a dummy version: without it, diags software may be loaded by boot1 at next reboot
 	
 	adr r0, os_file
 	pt_oscall _unlink @ uninstall the OS (the version is written by boot 2 each time the OS is load)
@@ -46,15 +54,22 @@ main:
 
 syscalls_signatures:
 @ entry format: signature size, signature
-@ TCT_Local_Control_Interrupts
-	.word 32
-	.byte 0x00, 0x30, 0x0F, 0xE1, 0xC0, 0x10, 0x00, 0xE2, 0xC0, 0x20, 0xC3, 0xE3, 0x01, 0x20, 0x82, 0xE1, 0x02, 0xF0, 0x2F, 0xE1, 0xC0, 0x00, 0x13, 0xE2, 0x00, 0x00, 0xE0, 0x13, 0x00, 0x00, 0xA0, 0x03
-@nand_erase_range
+@ nand_erase_range
 	.word 32
 	.byte 0x0D, 0xC0, 0xA0, 0xE1, 0x30, 0xD8, 0x2D, 0xE9, 0x04, 0xB0, 0x4C, 0xE2, 0x01, 0x40, 0xA0, 0xE1, 0x10, 0xFE, 0xFF, 0xEB, 0x00, 0x50, 0xA0, 0xE1, 0x04, 0x00, 0xA0, 0xE1, 0x0D, 0xFE, 0xFF, 0xEB
+@ add_min_os_version_to_nand
+  .word 28
+  .byte 0x0D, 0xC0, 0xA0, 0xE1, 0x30, 0xD8, 0x2D, 0xE9, 0x04, 0xB0, 0x4C, 0xE2, 0x02, 0xDC, 0x4D, 0xE2, 0x85, 0x4F, 0x4B, 0xE2, 0x00, 0x50, 0xA0, 0xE1, 0x04, 0x00, 0xA0, 0xE1
 @ unlink
 	.word 20
 	.byte 0x0D, 0xC0, 0xA0, 0xE1, 0x70, 0xD8, 0x2D, 0xE9, 0x04, 0xB0, 0x4C, 0xE2, 0x4B, 0xDF, 0x4D, 0xE2, 0x00, 0x50, 0xA0, 0xE1
+
+@ supports only word-aligned pointers and size
+_memset:
+	str r1, [r0], #4
+	subs r2, r2, #4
+	bne _memset
+	bx lr
 
 @ supports only word-aligned pointers
 @ destroys r0-r4
@@ -88,7 +103,7 @@ get_sig_loop:
 sig_found:
 	ldr r7, [r1], #4 @ signature size
 	mov r5, r1 @ signature
-	ldr r6, =OS_BASE_ADDR-4
+	ldr r6, =OS_BASE_ADDRESS-4
 scan_sig_loop:
 	add r6, r6, #4
 	cmp r6, #OS_END_ADDR
@@ -106,5 +121,14 @@ scan_sig_loop:
 
 break:
 	b break
+
+_TCT_Local_Control_Interrupts:
+	MRS     R3, CPSR
+	AND     R1, R0, #0xC0
+	BIC     R2, R3, #0xC0
+	ORR     R2, R2, R1
+	MSR     CPSR_cxsf, R2
+	BX      LR
+
 
 os_file: .asciz "/phoenix/install/TI-Nspire.tnc"
