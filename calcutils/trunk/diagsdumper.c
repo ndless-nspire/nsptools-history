@@ -1,5 +1,3 @@
-/* Unfortunately there doesn't appear to be any diags image on the TI-Nspire sold :( */
-
 #include <os.h>
 
 #define NAND_PAGE_SIZE 512
