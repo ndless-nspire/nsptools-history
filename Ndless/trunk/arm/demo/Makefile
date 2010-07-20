@@ -12,7 +12,7 @@ all: demo.tns
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<
 
-%.o: %.s
+%.o: %.S
 	$(GCC) $(GCCFLAGS) -c $<
 
 demo.tns: $(OBJS)

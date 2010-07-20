@@ -1,5 +1,5 @@
 =============================
-= Ndless for TI-Nspire v1.0 =
+= Ndless for TI-Nspire v1.1 =
 =============================
 
 What is it?
@@ -85,19 +85,40 @@ header files
 What you need to know as a developer
 ====================================
 
-The executable format, the conventions and the header files are currently being defined
-and prone to change.
-
-- An example of build script can be found in src\arm\demo\Makefile
+- An example of build script can be found in src/arm/demo/Makefile
 - TI-Nspire-specific header files from Ndless's directory include/ are directly available
 - Executables must be position independent: don't use absolute addresses and static
   variables
 - Executable files must start with the 4-bytes-long header 'PRG\0', with their entry
   point right after it. The utility 'MakeTNS' available in the tools directory may be
   used to skip newlib's startup code added before this signature.
+- Pure-assembly programs must define the global symbol "main" after the header:
+	.string "PRG"
+main: .global main
+	<...main code...>
+- Make sure that the assembly files extensions are in uppercase (.S) to make them
+  be preprocessed by the C preprocessor on which Ndless include files are built
 - OS functions can be called from the program, see the source code of 'demo'.
 - Development information and resources are or will be available on Hackspire: 
     http://hackspire.unsads.com
+
+Upgrading your developments
+===========================
+
+The executable format, the conventions and the header files are currently being defined
+and prone to change. This section describes the upgrade steps between the different
+releases of Ndless.
+
+* From v1.0 to v1.1:
+
+C and assembly programs:
+ - Install the toolchain as described above. Your project doesn't need to follow the
+   Ndless file tree anymore.
+ - Adapt your Makefile based on src/arm/Makefile or src/arm/demo/Makefile
+Pure-assembly programs:
+ - Make sure that the file extensions is in uppercase (.S)
+ - Add the "main" symbol as described in the previous section
+ - You do not need to define the symbol "_start" anymore
 
 Installing Ndless on nspire_emu
 ===============================
@@ -166,7 +187,8 @@ History
  Loader:
   - FIX: the OS could not be upgraded while Ndless was installed
  Tools:
-  - Building executables made a little easier. See the demo's Makefile.
+  - Building executables made a little easier. See the demo's Makefile and "How do I set up
+    a development environment?" section above.
 
 * v1.0 - 2010/02/26
  - The work is now covered by Open Source licenses

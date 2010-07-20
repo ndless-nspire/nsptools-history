@@ -44,7 +44,7 @@
     
   .text
   
-_start: .global _start
+main: .global main
 @ -------------------------------------------------------------------------
 @ The loader is either installed in /phoenix/syst/locales/en/strings.res
 @ (by Ndless Installer, first execution), or in

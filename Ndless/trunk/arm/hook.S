@@ -37,7 +37,7 @@
     
   .text
 
-_start: .global _start
+main: .global main
   mov     r0, pc
   b       install_hook
   b       open_document

@@ -13,6 +13,7 @@ OBJCOPY = arm-elf-objcopy
 SRC = components/files.S components/utils.S
 DISTDIR = ../res/$(NSPIRE_HARDWARE)
 vpath %.tns  ../res/$(NSPIRE_HARDWARE)
+vpath %.S  components
 
 ifeq ($(NSPIRE_HARDWARE),CAS)
 	NS_EMU_STRING_RES_OFFSET=0x611D60
@@ -30,7 +31,7 @@ subdirs:
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<
 
-%.o: %.s
+%.o: %.S
 	$(AS) $(GCCFLAGS) -c $<
 
 %.elf: %.o
@@ -40,11 +41,8 @@ subdirs:
 	$(OBJCOPY) -O binary $< $@
 	mv  $@ $(DISTDIR)
 
-loader.o: loader.S $(SRC)
-	$(AS) $(GCCFLAGS) $< $(SRC) -o $@
-
-hook.o: hook.S $(SRC)
-	$(AS) $(GCCFLAGS) $< $(SRC) -o $@
+loader.elf: loader.o files.o utils.o
+hook.elf: hook.o files.o utils.o
 
 loader.tns: loader.elf
 	$(OBJCOPY) -O binary $< $(@:.tns=.bin)
