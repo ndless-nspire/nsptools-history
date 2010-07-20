@@ -123,8 +123,13 @@ public class ConnectivitySetup {
 		navNetDir = new File(clInstallDir, "lib" + File.separator + "navnet");
 		if (navNetDir.exists())
 			return navNetDir;
+		String sharedSuffix = "/TI Shared/CommLib/1/NavNet";
 		navNetDir = new File(System.getenv().get("CommonProgramFiles")
-				+ "/TI Shared/CommLib/1/NavNet");
+				+ sharedSuffix);
+		if (navNetDir.exists())
+			return navNetDir;
+		navNetDir = new File(System.getenv().get("COMMONPROGRAMFILES")
+				+ sharedSuffix);
 		if (navNetDir.exists())
 			return navNetDir;
 		else
