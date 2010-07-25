@@ -25,7 +25,7 @@ nleash.tns: nleash.o
 	$(LD) -nostdlib $^ -o $(@:.tns=.elf)
 	$(OBJCOPY) -O binary $(@:.tns=.elf) $(@:.tns=.bin)
 	mkdir -p bin/$(NSPIRE_HARDWARE)
-	#cd MakeLoader && make loader && mv nleash.tns ../bin/$(NSPIRE_HARDWARE)
+	cd MakeLoader && make loader && mv nleash.tns ../bin/$(NSPIRE_HARDWARE)
 
 .PHONY: clean
 
