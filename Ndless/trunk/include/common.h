@@ -8,7 +8,6 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
  * or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * RCSID $Id$
  ****************************************************************************/
 
 #ifndef _COMMON_H_
@@ -62,6 +61,10 @@
     ldrh    r0, [r0]
     tst     r0, \col
   .endm
+  
+  .macro halt
+halt\@: b halt\@
+  .endm
 
 /** GNU C Compiler */
 #else
@@ -72,6 +75,21 @@
   #define ADDR_(addr)             (void*)addr
   #define KEY_(row, col)          (t_key){row, col}
   #define isKeyPressed(key)       (!((*(short*)(KEY_MAP + (key).row)) & (key).col))
-#endif
+
+/***********************************
+ * Misc inline functions
+ ***********************************/
+
+static inline void HALT(void) {
+  asm volatile("0: b 0b");
+}
+
+/* switch to low-power state until next interrupt */
+static inline void idle(void) {
+  unsigned int sbz = 0;
+  asm volatile ("mcr p15, 0, %0, c7, c0, 4" : "=r"(sbz) );
+}
+ 
+#endif /* GCC */
 
 #endif
