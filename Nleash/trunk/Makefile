@@ -14,6 +14,7 @@ dist: cleantmp
 	make cleantmp
 	make NSPIRE_HARDWARE=CAS
 	make cleantmp
+	cp ReadMe.txt bin
 
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<
