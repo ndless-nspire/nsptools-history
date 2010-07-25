@@ -49,7 +49,7 @@ If the TI-Nspire becomes unusable:
 Many thanks to
 ==============
 
-critor (extensive testing), Goplat (TI-Nspire emulator, hardware information),
+critor (extensive testing), Goplat (TI-Nspire emulator, OS information),
 squalyl (Hackspire and development tools hosting).
 
 Development team
