@@ -9,11 +9,11 @@ vpath %.tns  bin/$(NSPIRE_HARDWARE)
 
 all: nleash.tns
 
-dist:
+dist: cleantmp
 	make NSPIRE_HARDWARE=NON_CAS
-	make clean
+	make cleantmp
 	make NSPIRE_HARDWARE=CAS
-	make clean
+	make cleantmp
 
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<
@@ -29,5 +29,8 @@ nleash.tns: nleash.o
 
 .PHONY: clean
 
-clean:
-	rm -rf bin *.bin *.elf *.o
+cleantmp:
+	rm -rf *.bin *.elf *.o
+
+clean: cleantmp
+	rm -rf bin
