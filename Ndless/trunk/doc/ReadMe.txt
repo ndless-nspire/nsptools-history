@@ -59,7 +59,7 @@ Troubleshooting
 - If the TI-Nspire becomes unusable, hangs or loops at reboot time:
    * Enter the maintenance menu by rebooting it while holding the keys ON+Home+Enter+P
      until half the progress bar. To reboot the TI-Nspire, unplug the USB cable, then
-     remove and put back the a battery.
+     remove and put back a battery.
    * Select '2' to uninstall the current OS. Use the Ndless Installer or TI-Nspire Computer
      Link Software to reinstall an OS.
 - If the Ndless Installer is lost in is installation sequence, or the USB connection is
