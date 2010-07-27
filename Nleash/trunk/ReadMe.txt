@@ -77,5 +77,5 @@ Nleash is provided "as is" without warranty of any kind.
 Changelog
 =========
 
-* v1.0 - 2010/07/??
+* v1.0 - 2010/07/27
  - Public release
