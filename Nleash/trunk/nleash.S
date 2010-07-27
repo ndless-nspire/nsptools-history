@@ -71,9 +71,11 @@ syscall_ptr_found:
 	ldr r1, =MIN_OS_VER_MARKER
 	str r1, [r0],  #4
 	ldr r1, =NEW_MIN_OS_VERSION
-	str r1, [r0], #12
+	str r1, [r0], #4
 	mov r1, #0
-	str r1, [r0], #2 @ disable diags loading at boot time
+	str r1, [r0], #4 @ bytes controlling the press-to-test mode are somewhere there
+	str r1, [r0], #4 @ bytes controlling the press-to-test mode are somewhere there
+	str r1, [r0] @ disable diags loading at boot time
 	mov r0, sp
 	@oscall 0x1004C5E0
 	syscall _write_min_os_version_to_nand

@@ -37,20 +37,26 @@ models.
 Troubleshooting
 ===============
 
-If the calculator freezes or reboots with the original OS, you have probably
-missed something. Check the versions of both Nleash and the OS.
+- If the calculator freezes on the documents screen, remove and put back a
+  battery to reboot the calculator, and follow the installation procedure from
+  the beginning.
 
-If the TI-Nspire becomes unusable:
+- If the calculator reboots with the original OS, you have probably missed
+  something. Check the versions of both Nleash and the OS.
+
+- If the TI-Nspire becomes unusable:
  * Enter the maintenance menu by rebooting it while holding the keys
    ON+Home+Enter+P until half the progress bar. To reboot the TI-Nspire, unplug
-   the USB cable, then remove and put back the a battery.
+   the USB cable, then remove and put back a battery.
  * Select '2' to uninstall the current OS. Reinstall it when asked to.
 
 Many thanks to
 ==============
 
-critor (extensive testing), Goplat (TI-Nspire emulator, OS information),
-squalyl (Hackspire and development tools hosting).
+critor for his very extensive testing.
+
+Goplat (TI-Nspire emulator, OS information) and squalyl (Hackspire and development
+tools hosting).
 
 Development team
 ================
@@ -71,5 +77,5 @@ Nleash is provided "as is" without warranty of any kind.
 Changelog
 =========
 
-* v1.0 - 2010/07/25
+* v1.0 - 2010/07/??
  - Public release
