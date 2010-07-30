@@ -156,8 +156,8 @@ Many thanks to
 ==============
 
 calc84maniac (GB/GBC emulator), Goplat (TI-Nspire emulator, HW info), hwti (OS info, 64-bit
-support), squalyl (Hackspire and development tools hosting), TI-Bank (data hosting), and
-all the beta testers.
+support), squalyl (Hackspire and development tools hosting), TI-Bank (data hosting), all
+the contributors to the include files and all the beta testers.
 
 Development team
 ================
@@ -183,17 +183,17 @@ History
 
 * v1.1 - <not yet released>
  Installer:
-  - Compatible with Computer Link Software 1.4
-  - New manual step to work around missed reboots
+  - NEW: Compatible with Computer Link Software 1.4
+  - NEW: Possible manual step to work around missed reboots
   - FIX: Some transfer errors were not correctly reported
  Loader:
-  - FIX: the OS could not be upgraded while Ndless was installed
+  - FIX: The OS could not be upgraded while Ndless was installed
  Tools:
-  - Building executables made a little easier. See the demo's Makefile and "How do I set up
-    a development environment?" section above.
+  - NEW: Building executables made a little easier. See the demo's Makefile and "How do I 
+     set up a development environment?" section above.
  Include files:
-  - Added fgets, stdin, stdout, stderr (thanks bsl)
-  - 
+  - NEW: Added fgets, stdin, stdout, stderr (thanks bsl)
+  - NEW: Exhaustive key constants (thanks bwang)
 
 * v1.0 - 2010/02/26
  - The work is now covered by Open Source licenses
