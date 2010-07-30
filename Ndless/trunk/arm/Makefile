@@ -51,8 +51,8 @@ loader.tns: loader.elf
 	mv  $@ $(DISTDIR)
 
 static:
-	@mkdir -p ../res/$(NSPIRE_HARDWARE)
-	@cp -f copier.tno ../res/copier.tno
+	mkdir -p ../res/$(NSPIRE_HARDWARE)
+	cp -f copier.tno ../res/copier.tno
 
 emulator: loader
 	FlashEdit ../res/$(NSPIRE_HARDWARE)/loader.tns '$(NS_EMU_FLASH_PATH_$(NSPIRE_HARDWARE))' $(NS_EMU_STRING_RES_OFFSET)
@@ -65,7 +65,7 @@ clean: cleanbin cleanapp
 	(cd $$i; make clean) || exit 1; done
 
 cleanapp:
-	@rm -rf ../res/CAS ../res/NON_CAS
+	rm -rf ../res/$(NSPIRE_HARDWARE)
 
 cleanbin:
-	@rm -rf loader.bin hook.bin *.o *.elf
+	rm -rf loader.bin hook.bin *.o *.elf
