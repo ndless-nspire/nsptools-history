@@ -204,6 +204,8 @@ History
   - NEW: Added fgets, stdin, stdout, stderr (thanks bsl)
   - NEW: Added printf, fprintf (thanks bwang)
   - NEW: Exhaustive key constants (thanks bwang)
+  - NEW: added halt, idle
+  - NEW: (ARM) added halt
 
 * v1.0 - 2010/02/26
  - The work is now covered by Open Source licenses

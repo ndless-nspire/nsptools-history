@@ -205,7 +205,7 @@ halt\@: b halt\@
  * Misc inline functions
  ***********************************/
 
-static inline void HALT(void) {
+static inline void halt(void) {
   asm volatile("0: b 0b");
 }
 
