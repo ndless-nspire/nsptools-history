@@ -79,10 +79,18 @@ Here is the preferred way for Windows:
 - Install MSYS, the lightweight Unix-like shell environment: http://www.mingw.org/wiki/msys
 - Install YAGARTO GNU ARM toolchain - http://www.yagarto.de
 - Add YAGARTO's bin/ directory to your PATH environment variable
-
 You can now build using MSYS, YAGARTO and Ndless.
+
+To setup the developement environment on Linux:
+- Install the GNU ARM toolchain (this procedure may help:
+  http://blog.nutaksas.com/2009/05/installing-gnuarm-arm-toolchain-on.html )
+- Add the bin/ folder of Ndless to your PATH environment variable
+  (http://www.troubleshooters.com/linux/prepostpath.htm)
+
 Ndless provides a light wrapper to some YAGARTO tools and TI-NSpire-specific C and assembly
-header files
+header files.
+
+
 
 What you need to know as a developer
 ====================================
@@ -191,6 +199,7 @@ History
  Tools:
   - NEW: Building executables made a little easier. See the demo's Makefile and "How do I 
      set up a development environment?" section above.
+  - FIX: MakeTNS: better error checking
  Include files:
   - NEW: Added fgets, stdin, stdout, stderr (thanks bsl)
   - NEW: Added printf, fprintf (thanks bwang)
