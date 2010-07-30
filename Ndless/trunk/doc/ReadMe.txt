@@ -193,6 +193,7 @@ History
      set up a development environment?" section above.
  Include files:
   - NEW: Added fgets, stdin, stdout, stderr (thanks bsl)
+  - NEW: Added printf, fprintf (thanks bwang)
   - NEW: Exhaustive key constants (thanks bwang)
 
 * v1.0 - 2010/02/26

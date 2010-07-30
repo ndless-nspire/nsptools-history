@@ -30,7 +30,9 @@
 #define free_                          0x101817D0
 #define stat_                          0x1018A00C
 #define create_path_filename_          0x10004BC0
+#define printf_                        0x10182968
 #define sprintf_                       0x10182A28
+#define fprintf_                       0x100ce25c
 #define mkdir_                         0x101885FC
 #define rmdir_                         0x10189E70
 #define set_current_path_              0x10187734
