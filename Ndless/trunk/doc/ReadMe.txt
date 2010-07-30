@@ -125,7 +125,8 @@ C and assembly programs:
  - Install the toolchain as described above. Your project doesn't need to follow the
    Ndless file tree anymore.
  - Adapt your Makefile based on src/arm/Makefile or src/arm/demo/Makefile
- - You may upgrade to the latest version of YAGARTO
+ - You may upgrade to the latest version of YAGARTO. Don't forget to delete any
+   remaining *.o file before rebuilding a project.
 Pure-assembly programs:
  - Make sure that the file extensions is in uppercase (.S)
  - Add the "main" symbol as described in the previous section
