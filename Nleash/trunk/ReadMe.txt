@@ -15,6 +15,8 @@ How do I use it?
 ================
 
 First make sure OS v2.1 is installed on your TI-Nspire.
+If your TI-Nspire is a TouchPad, you *must* have a ClickPad keypad available
+to use an OS 1.x. The TouchPad CAS does not support the ClickPad keypad.
 
 Choose the right 'nleash.tns' file for your TI-Nspire model and send it as a
 document with your favorite linking program. Bring up the documents screen on
@@ -45,9 +47,12 @@ Troubleshooting
   something. Check the versions of both Nleash and the OS.
 
 - If the TI-Nspire becomes unusable:
- * Enter the maintenance menu by rebooting it while holding the keys
-   ON+Home+Enter+P until half the progress bar. To reboot the TI-Nspire, unplug
-   the USB cable, then remove and put back a battery.
+ * Reboot the TI-Nspire, by unplugging the USB cable, then removing and putting
+   back a battery.
+ * Enter the maintenance menu by turning it on while holding the following keys
+   until half the progress bar:
+     with the ClickPad keypad: Home+Enter+P then ON
+     with the TouchPad keypad: Doc+Enter+EE then ON
  * Select '2' to uninstall the current OS. Reinstall it when asked to.
 
 Many thanks to
