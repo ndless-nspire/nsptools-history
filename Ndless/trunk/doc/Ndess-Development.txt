@@ -2,8 +2,14 @@
       = Development environment setup =
       =================================
 
+
+This document is intended for maintainers of Ndless.
+
 This file describes the prerequisites and setup steps for a Windows development environment
 to build Ndless.
+
+You *don't* need to follow this procedure to set up a C/ARM development environment to
+build TI-Nspire programs. This setup is described in ReadMe.txt.
 
 C
 =
