@@ -242,16 +242,16 @@ _is_theta_pressed:
   mov     r6, r0
   
   @ Copy loader code
-  ldr     r1, =HACK_BASE_ADDRESS
+  adr     r1, main
   mov     r2, r5
   oscall  memcpy
   
   @ Inject buffer address
-  add     r2, r6, #execute_hook       @ call execute_hook
+  add     r2, r6, #execute_hook-main   @ call execute_hook
   fork_address  OS_OFFSET_HACKED_EXECUTE
   
   @ Inject restore_resource address
-  add     r2, r6, #restore_resource   @ call restore_resource
+  add     r2, r6, #restore_resource-main @ call restore_resource
   fork_address  OS_OFFSET_HACKED_RESTORE
   
   @ Disable OS integrity check, else OS upgrade is refused if OS is patched
