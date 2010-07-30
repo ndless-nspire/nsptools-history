@@ -26,4 +26,4 @@ demo.tns: $(OBJS)
 .PHONY: clean
 
 clean:
-
+	rm -f *.o *.elf
