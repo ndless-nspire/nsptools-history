@@ -18,4 +18,6 @@ if $cygwin; then
 	DIRNAME=`cygpath --path --windows "$DIRNAME"`
 fi
 
-arm-elf-gcc -mcpu=arm7tdmi -I "$DIRNAME/../include" "$@"
+GCC=`which arm-elf-gcc 2>/dev/null`
+GCC=${GCC:=arm-none-eabi-gcc}
+"$GCC" -mcpu=arm7tdmi -I "$DIRNAME/../include" "$@"

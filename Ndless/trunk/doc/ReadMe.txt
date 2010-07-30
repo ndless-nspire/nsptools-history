@@ -112,8 +112,8 @@ main: .global main
 - Development information and resources are or will be available on Hackspire: 
     http://hackspire.unsads.com
 
-Upgrading your developments
-===========================
+Upgrading your developments and scripts
+=======================================
 
 The executable format, the conventions and the header files are currently being defined
 and prone to change. This section describes the upgrade steps between the different
@@ -125,6 +125,7 @@ C and assembly programs:
  - Install the toolchain as described above. Your project doesn't need to follow the
    Ndless file tree anymore.
  - Adapt your Makefile based on src/arm/Makefile or src/arm/demo/Makefile
+ - You may upgrade to the latest version of YAGARTO
 Pure-assembly programs:
  - Make sure that the file extensions is in uppercase (.S)
  - Add the "main" symbol as described in the previous section
@@ -199,6 +200,7 @@ History
  Tools:
   - NEW: Building executables made a little easier. See the demo's Makefile and "How do I 
      set up a development environment?" section above.
+  - NEW: Supports YAGARTO v4.5.0
   - FIX: MakeTNS: better error checking
  Include files:
   - NEW: Added fgets, stdin, stdout, stderr (thanks bsl)

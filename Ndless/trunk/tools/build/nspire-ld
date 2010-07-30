@@ -28,4 +28,6 @@ if [ $nostdlib = false ] ; then
 	set -- "$DIRNAME/../system/stdlibsym.o" "$DIRNAME/../system/syscalls.o" "$@"
 fi
 # some newlib symbols are not found if ld is used...
-arm-elf-gcc -T "$DIRNAME/../system/ldscript" -e _nspire_start "$DIRNAME/../system/crt0.o" "$@"
+GCC=`which arm-elf-gcc 2>/dev/null`
+GCC=${GCC:=arm-none-eabi-gcc}
+"$GCC" -T "$DIRNAME/../system/ldscript" -e _nspire_start "$DIRNAME/../system/crt0.o" "$@"
