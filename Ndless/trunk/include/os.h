@@ -47,6 +47,7 @@
 #define fread             (_oscall(size_t, fread_, void* ptr, size_t size, size_t nitems, FILE* stream))
 #define fwrite            (_oscall(size_t, fwrite_, const void* ptr, size_t size, size_t count, FILE* stream))
 #define fclose            (_oscall(int, fclose_, FILE* stream))
+#define fgets             (_oscall(char* ,fgets_, const char* ptr, size_t count, FILE* stream))
 #define malloc            (_oscall(void*, malloc_, size_t size))
 #define free              (_oscall(void, free_, void* ptr))
 #define memset            (_oscall(void*, memset_, void* ptr, int value, size_t num))

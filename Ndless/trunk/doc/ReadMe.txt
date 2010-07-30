@@ -181,7 +181,7 @@ These parts are identified by the files LICENSE.txt or LICENSE.html in the sub-d
 History
 =======
 
-* <not yet released>
+* v1.1 - <not yet released>
  Installer:
   - Compatible with Computer Link Software 1.4
   - New manual step to work around missed reboots
@@ -191,6 +191,9 @@ History
  Tools:
   - Building executables made a little easier. See the demo's Makefile and "How do I set up
     a development environment?" section above.
+ Include files:
+  - Added fgets, stdin, stdout, stderr (thanks bsl)
+  - 
 
 * v1.0 - 2010/02/26
  - The work is now covered by Open Source licenses

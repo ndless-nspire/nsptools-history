@@ -44,4 +44,8 @@
 #define log_rs232_param2_              0x1054EA50
 #define printf_rs232_                  0x10182C60
 
+#define stdin  ((FILE *)0x105bb5f0)
+#define stdout ((FILE *)0x105bb63c)
+#define stderr ((FILE *)0x105bb688)
+
 #endif
