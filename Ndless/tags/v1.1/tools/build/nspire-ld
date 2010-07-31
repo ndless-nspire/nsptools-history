@@ -1,0 +1,37 @@
+#!/bin/sh
+
+cygwin=false
+case "`uname`" in
+  CYGWIN* )
+    cygwin=true
+    ;; 
+esac
+
+DIRNAME=`dirname "$0"`
+# DIRNAME may not be in the toolchain directory if this script was symlinked.
+# try to find the symlink target
+if which readlink &> /dev/null && readlink "$0" &> /dev/null; then
+    DIRNAME=`readlink "$0"`/..
+fi
+
+if $cygwin; then
+	DIRNAME=`cygpath --path --windows "$DIRNAME"`
+fi
+
+nostdlib=false
+for arg in "$@" args; do
+	if [ $arg = -nostdlib ] ; then
+		nostdlib=true
+	fi
+done
+if [ $nostdlib = false ] ; then
+	set -- "$DIRNAME/../system/stdlibsym.o" "$DIRNAME/../system/syscalls.o" "$@"
+fi
+# some newlib symbols are not found if ld is used...
+GCC=`which arm-elf-gcc 2>/dev/null`
+GCC=${GCC:=arm-none-eabi-gcc}
+# lazy system build: must be built with the same toolchain
+if [ ! -f "$DIRNAME/../system/crt0.o" ]; then
+	(cd "$DIRNAME/../system" && make all)
+fi
+"$GCC" -T "$DIRNAME/../system/ldscript" -e _nspire_start "$DIRNAME/../system/crt0.o" "$@"
