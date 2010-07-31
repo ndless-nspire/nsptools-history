@@ -4,7 +4,7 @@ GCC = nspire-gcc
 LD = nspire-ld
 GCCFLAGS = -Os -Wall -W -fpic -fno-merge-constants -D $(NSPIRE_HARDWARE)
 OBJCOPY := "$(shell which arm-elf-objcopy 2>/dev/null)"
-ifeq (${OBJCOPY},)
+ifeq (${OBJCOPY},"")
 	OBJCOPY := arm-none-eabi-objcopy
 endif
 OBJS = main.o utils.o vector.o particle.o particle_system.o gravity_particles.o

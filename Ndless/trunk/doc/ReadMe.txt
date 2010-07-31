@@ -77,9 +77,16 @@ How do I set up a development environment?
 Here is the preferred way for Windows:
 - Add the bin/ folder of Ndless to your PATH environment variable
 - Install MSYS, the lightweight Unix-like shell environment: http://www.mingw.org/wiki/msys
-- Install YAGARTO GNU ARM toolchain - http://www.yagarto.de
-- Add YAGARTO's bin/ directory to your PATH environment variable
-You can now build using MSYS, YAGARTO and Ndless.
+  The automated installation has been discontinued since MSYS 1.0.11, so you may prefer to
+  use this old version foro an easier installation.
+  Then you may optionally download the indivual component upgrades from
+  http://sourceforge.net/projects/mingw/files/ (MSYS sub-folder) and unpack them in MSYS's
+  installation directory using 7-zip (http://www.7-zip.org/download.html).
+  MinGW is not required by Ndless.
+- Install the YAGARTO GNU ARM toolchain - http://www.yagarto.de . Request YAGARTO's
+  installer to add the bin/ directory to your PATH environment variable.
+- You can now open "MSYS (rxvt)" from the Windows Start menu, and run "make" from the root
+  of a Makefile-based project.
 
 To setup the developement environment on Linux:
 - Install the GNU ARM toolchain (this procedure may help:
@@ -89,8 +96,6 @@ To setup the developement environment on Linux:
 
 Ndless provides a light wrapper to some YAGARTO tools and TI-NSpire-specific C and assembly
 header files.
-
-
 
 What you need to know as a developer
 ====================================
@@ -188,13 +193,14 @@ any part of Ndless, with or without modification.
 Some parts are covered by other licenses. Others are in the public domain.
 These parts are identified by the files LICENSE.txt or LICENSE.html in the sub-directory.
 
-History
-=======
+Changelog
+=========
 
-* v1.1 - <not yet released>
+* v1.1 - 2010/07/31
  Installer:
   - NEW: Compatible with Computer Link Software 1.4
   - NEW: Possible manual step to work around missed reboots
+  - FIX: Installer doesn't force downgrade anymore when already on OS v1.1
   - FIX: Some transfer errors were not correctly reported
  Loader:
   - FIX: The OS could not be upgraded while Ndless was installed
@@ -209,6 +215,7 @@ History
   - NEW: Exhaustive key constants (thanks bwang)
   - NEW: added halt, idle
   - NEW: (ARM) added halt
+  - FIX: log_rs232, fread
 
 * v1.0 - 2010/02/26
  - The work is now covered by Open Source licenses

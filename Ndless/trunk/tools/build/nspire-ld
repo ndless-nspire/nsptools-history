@@ -30,4 +30,8 @@ fi
 # some newlib symbols are not found if ld is used...
 GCC=`which arm-elf-gcc 2>/dev/null`
 GCC=${GCC:=arm-none-eabi-gcc}
+# lazy system build: must be built with the same toolchain
+if [ ! -f "$DIRNAME/../system/crt0.o" ]; then
+	(cd "$DIRNAME/../system" && make all)
+fi
 "$GCC" -T "$DIRNAME/../system/ldscript" -e _nspire_start "$DIRNAME/../system/crt0.o" "$@"

@@ -10,7 +10,7 @@ GCCFLAGS = -Os -D $(NSPIRE_HARDWARE) -nostdlib
 LD = nspire-ld
 LDFLAGS = -nostdlib
 OBJCOPY := "$(shell which arm-elf-objcopy 2>/dev/null)"
-ifeq (${OBJCOPY},)
+ifeq (${OBJCOPY},"")
 	OBJCOPY := arm-none-eabi-objcopy
 endif
 SRC = components/files.S components/utils.S

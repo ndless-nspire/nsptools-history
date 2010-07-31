@@ -1,3 +1,5 @@
+# Must be built on host. Must not be built for release.
+
 AS = nspire-as
 GCC = nspire-gcc
 GCCFLAGS = -Os

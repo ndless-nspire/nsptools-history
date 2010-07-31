@@ -37,7 +37,7 @@ int main(void) {
     "Ndless - Particle System Demo",
     "-------------------------------\n"
     "                Particle System Demo\n" \
-    "      Copyright© 2010 by Ndless Team\n"
+    "  Copyright© 2010 by the Ndless Team\n"
     "-------------------------------\n"
     "+  Add a particle\n"
     "-  Remove a particle\n"
