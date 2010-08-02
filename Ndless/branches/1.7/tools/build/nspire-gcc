@@ -1,0 +1,23 @@
+#!/bin/sh
+
+cygwin=false
+case "`uname`" in
+  CYGWIN* )
+    cygwin=true
+    ;; 
+esac
+
+DIRNAME=`dirname "$0"`
+# DIRNAME may not be in the toolchain directory if this script was symlinked.
+# try to find the symlink target
+if which readlink &> /dev/null && readlink "$0" &> /dev/null; then
+    DIRNAME=`readlink "$0"`/..
+fi
+
+if $cygwin; then
+	DIRNAME=`cygpath --path --windows "$DIRNAME"`
+fi
+
+GCC=`which arm-elf-gcc 2>/dev/null`
+GCC=${GCC:=arm-none-eabi-gcc}
+"$GCC" -mcpu=arm7tdmi -I "$DIRNAME/../include" "$@"
