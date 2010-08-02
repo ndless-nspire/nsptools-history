@@ -1,5 +1,5 @@
 UNAME := $(shell uname)
-SUBDIRS = build MakeTNS
+SUBDIRS = build MakeLoader MakeTNS
 
 all:
 ifneq ($(findstring CYGWIN,$(UNAME)),)
@@ -15,4 +15,4 @@ clean:
 	@for i in $(SUBDIRS); do \
 	echo "Clearing in $$i..."; \
 	(cd $$i; make clean) || exit 1; done
-	rm -rf ../bin
+	@rm -rf ../bin

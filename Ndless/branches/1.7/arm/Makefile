@@ -16,12 +16,6 @@ DISTDIR = ../res/$(NSPIRE_HARDWARE)
 vpath %.tns  ../res/$(NSPIRE_HARDWARE)
 vpath %.S  components
 
-ifeq ($(NSPIRE_HARDWARE),CAS)
-	NS_EMU_STRING_RES_OFFSET=0x611D60
-else
-	NS_EMU_STRING_RES_OFFSET=0x691320
-endif
-
 all: static loader.tns hook.tns subdirs
 
 subdirs:
@@ -47,16 +41,15 @@ hook.elf: hook.o files.o utils.o
 
 loader.tns: loader.elf
 	$(OBJCOPY) -O binary $< $(@:.tns=.bin)
-	LoaderWrapper $(@:.tns=.bin) $@
-	rm $(@:.tns=.bin)
-	mv  $@ $(DISTDIR)
+	../bin/MakeLoader.exe $(@:.tns=.bin) Document.xml
+	rm -f $@ $(@:.tns=.zip)
+	7z a $(@:.tns=.zip) Document.xml
+	mv $(@:.tns=.zip) $(DISTDIR)/$@
+	rm Document.xml
 
 static:
 	mkdir -p ../res/$(NSPIRE_HARDWARE)
 	cp -f copier.tno ../res/copier.tno
-
-emulator: loader
-	FlashEdit ../res/$(NSPIRE_HARDWARE)/loader.tns '$(NS_EMU_FLASH_PATH_$(NSPIRE_HARDWARE))' $(NS_EMU_STRING_RES_OFFSET)
 
 .PHONY: clean
 
@@ -69,4 +62,4 @@ cleanapp:
 	rm -rf ../res/$(NSPIRE_HARDWARE)
 
 cleanbin:
-	rm -rf loader.bin hook.bin *.o *.elf
+	rm -rf loader.bin hook.bin *.o *.elf Document.xml loader.zip

@@ -4,13 +4,13 @@ CC=gcc
 CFLAGS = -W -Wall
 vpath $(VPATH_EXEEXT) ../../bin
 
-all: init MakeTNS$(EXEEXT)
+all: init MakeLoader$(EXEEXT)
 
 init:
 	@mkdir -p ../../bin
 
-MakeTNS$(EXEEXT): MakeTNS.c
+MakeLoader$(EXEEXT): MakeLoader.c
 	$(CC) $(CFLAGS) $< -o ../../bin/$@
 
 clean:
-	@cd ../../bin && rm -rf MakeTNS$(EXEEXT)
+	@cd ../../bin && rm -rf MakeLoader$(EXEEXT)

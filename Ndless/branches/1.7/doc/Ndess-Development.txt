@@ -15,6 +15,9 @@ C
 =
 
 - MSYS with MinGW: http://www.mingw.org/wiki/msys
+- 7-zip: http://www.7-zip.org/download.html
+
+* Add 7-zip's folder to your PATH environment variable
 
 ARM
 ===
