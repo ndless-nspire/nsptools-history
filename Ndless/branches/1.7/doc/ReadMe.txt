@@ -196,6 +196,9 @@ These parts are identified by the files LICENSE.txt or LICENSE.html in the sub-d
 Changelog
 =========
 
+* v1.7 - <unreleased>
+
+
 * v1.1 - 2010/07/31
  Installer:
   - NEW: Compatible with Computer Link Software 1.4

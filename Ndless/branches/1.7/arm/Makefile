@@ -1,5 +1,3 @@
-include ../Makefile.config
-
 SUBDIRS = demo
 
 NSPIRE_HARDWARE ?= NON_CAS

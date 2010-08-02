@@ -1,4 +1,4 @@
-SUBDIRS = tools java
+SUBDIRS = tools
 SUBDIR_TOOLS = tools
 SUBDIRSCLEAN = $(SUBDIRS) arm
 
@@ -39,8 +39,7 @@ distsrc: clean
 	mkdir -p dist/src
 	cp -r `ls | grep -v dist` dist/src
 	@# exclude some resources we don't want to distribute
-	find dist -name drawString.s -o -name Font8X.bin -o -name build_config.properties \
-	  -o -name proguard -o -name Makefile.config -o -wholename 'dist/src/java/bin/*' | xargs rm -rf
+	find dist -name drawString.s -o -name Font8X.bin -o -name build_config.properties | xargs rm -rf
 
 install: all_tools
 	mkdir -p /usr/local/nspire

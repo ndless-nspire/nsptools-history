@@ -1,5 +1,5 @@
 UNAME := $(shell uname)
-SUBDIRS = build FlashEdit InstallerTools LoaderWrapper MakeTNS
+SUBDIRS = build MakeTNS
 
 all:
 ifneq ($(findstring CYGWIN,$(UNAME)),)
