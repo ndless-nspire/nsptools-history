@@ -10,7 +10,7 @@ endif
 OBJS = main.o utils.o vector.o particle.o particle_system.o gravity_particles.o
 vpath %.tns  ../../res/$(NSPIRE_HARDWARE)
 
-all: demo.tns
+all: particles.tns
 
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<
@@ -18,7 +18,7 @@ all: demo.tns
 %.o: %.S
 	$(GCC) $(GCCFLAGS) -c $<
 
-demo.tns: $(OBJS)
+particles.tns: $(OBJS)
 	$(LD) $^ -o $(@:.tns=.elf)
 	$(OBJCOPY) -O binary $(@:.tns=.elf) $(@:.tns=.bin)
 	MakeTNS $(@:.tns=.bin)
@@ -30,3 +30,4 @@ demo.tns: $(OBJS)
 
 clean:
 	rm -f *.o *.elf
+	rm -f ../../res/$(NSPIRE_HARDWARE)/particles.tns

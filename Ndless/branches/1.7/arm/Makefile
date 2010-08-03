@@ -1,5 +1,3 @@
-SUBDIRS = demo
-
 NSPIRE_HARDWARE ?= NON_CAS
 
 AS = nspire-as
@@ -11,17 +9,10 @@ OBJCOPY := "$(shell which arm-elf-objcopy 2>/dev/null)"
 ifeq (${OBJCOPY},"")
 	OBJCOPY := arm-none-eabi-objcopy
 endif
-SRC = components/files.S components/utils.S
 DISTDIR = ../res/$(NSPIRE_HARDWARE)
 vpath %.tns  ../res/$(NSPIRE_HARDWARE)
-vpath %.S  components
 
-all: static loader.tns hook.tns subdirs
-
-subdirs:
-	@for i in $(SUBDIRS); do \
-	echo "make all in $$i..."; \
-  (cd $$i; make all) || exit 1; done
+all: static loader.tns hook.tns
 
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<
@@ -34,10 +25,10 @@ subdirs:
 
 %.tns: %.elf
 	$(OBJCOPY) -O binary $< $@
-	mv  $@ $(DISTDIR)
+	mv $@ $(DISTDIR)
 
-loader.elf: loader.o files.o utils.o
-hook.elf: hook.o files.o utils.o
+loader.elf: loader.o
+hook.elf: hook.o
 
 loader.tns: loader.elf
 	$(OBJCOPY) -O binary $< $(@:.tns=.bin)
@@ -49,15 +40,10 @@ loader.tns: loader.elf
 
 static:
 	mkdir -p ../res/$(NSPIRE_HARDWARE)
-	cp -f copier.tno ../res/copier.tno
 
 .PHONY: clean
 
 clean: cleanbin cleanapp
-	@for i in $(SUBDIRS); do \
-	echo "Clearing in $$i..."; \
-	(cd $$i; make clean) || exit 1; done
-
 cleanapp:
 	rm -rf ../res/$(NSPIRE_HARDWARE)
 

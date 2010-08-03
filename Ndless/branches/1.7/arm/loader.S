@@ -23,7 +23,6 @@
  ****************************************************************************/
  
   #include <os.h>
-  #include "bootstrapper.h"
   
 main: .global main
 	mov r0, r0

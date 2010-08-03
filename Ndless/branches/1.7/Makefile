@@ -1,6 +1,7 @@
-SUBDIRS = tools
+SUBDIRS = samples tools
 SUBDIR_TOOLS = tools
 SUBDIRSCLEAN = $(SUBDIRS) arm
+DISTDIRS = bin include res samples system
 
 all: subdirs arm
 all_tools: subdirs_tools
@@ -26,8 +27,7 @@ distbin: all
 	mkdir -p dist
 	@# system's artefacts shouldn't be distributed
 	(cd system && make clean)
-	cp -r bin include res system dist
-	cp install-ndless.bat dist
+	cp -r $(DISTDIRS) dist
 	cp "Mozilla-Public-License-v1.1.html" doc/ReadMe.txt doc/ndless-particle-demo.gif dist
 	find dist -name .svn -o -name "*~" | xargs rm -rf
 

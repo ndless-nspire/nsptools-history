@@ -1,12 +1,6 @@
-UNAME := $(shell uname)
-SUBDIRS = build MakeLoader MakeTNS
+SUBDIRS = particles
 
 all:
-ifneq ($(findstring CYGWIN,$(UNAME)),)
-	@echo Error: Building with Cygwin creates dependencies to cygwin1.dll. Use MSYS.
-	@false
-endif
-
 	@for i in $(SUBDIRS); do \
 	echo "make all in $$i..."; \
   (cd $$i; make all) || exit 1; done

@@ -84,7 +84,7 @@ Here is the preferred way for Windows:
   installation directory using 7-zip (http://www.7-zip.org/download.html).
   MinGW is not required by Ndless.
 - Install the YAGARTO GNU ARM toolchain - http://www.yagarto.de . Request YAGARTO's
-  installer to add the bin/ directory to your PATH environment variable.
+  installer to add YAGARTO's bin/ directory to your PATH environment variable.
 - You can now open "MSYS (rxvt)" from the Windows Start menu, and run "make" from the root
   of a Makefile-based project.
 
@@ -197,7 +197,8 @@ Changelog
 =========
 
 * v1.7 - <unreleased>
-
+ Samples:
+  - CHG: 'demo' renamed to 'particles' and moved to samples/
 
 * v1.1 - 2010/07/31
  Installer:
