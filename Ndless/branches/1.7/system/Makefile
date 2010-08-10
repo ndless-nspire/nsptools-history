@@ -4,7 +4,7 @@ AS = nspire-as
 GCC = nspire-gcc
 GCCFLAGS = -Os
 
-all: crt0.o syscalls.o stdlibsym.o
+all: crt0.o crt0sym.o syscalls.o stdlibsym.o
 
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<

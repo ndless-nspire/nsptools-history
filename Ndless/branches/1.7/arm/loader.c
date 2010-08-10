@@ -1,5 +1,5 @@
 /****************************************************************************
- * @(#) Ndless hack loader
+ * @(#) Ndless bootstrapper
  *
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
@@ -13,16 +13,15 @@
  *
  * The Original Code is Ndless code.
  *
- * The Initial Developer of the Original Code is Geoffrey ANNEHEIM
- * <geoffrey.anneheim@gmail.com>.
+ * The Initial Developer of the Original Code is Olivier ARMAND
+ * <olivier.calc@gmail.com>.
  * Portions created by the Initial Developer are Copyright (C) 2010
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): 
- *                 Olivier ARMAND <olivier.calc@gmail.com>
+ *                 Geoffrey ANNEHEIM <geoffrey.anneheim@gmail.com>
  ****************************************************************************/
- 
-  #include <os.h>
-  
-main: .global main
-	mov r0, r0
+
+void ld_load(void) {
+	
+}

@@ -17,8 +17,6 @@
  * - Removed the feature that drawing boxes of collision, velocity and acceleration.
  * - Removed the code that manages ghost particles.
  * - The class 'Particle System' uses a linked list.
- *
- * RCSID $Id$
  *****************************************************************************/
 
 #include <os.h>

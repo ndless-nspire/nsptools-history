@@ -12,7 +12,7 @@ endif
 DISTDIR = ../res/$(NSPIRE_HARDWARE)
 vpath %.tns  ../res/$(NSPIRE_HARDWARE)
 
-all: static loader.tns hook.tns
+all: static ndless_installer.tns ndless_resources.tns
 
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<
@@ -23,14 +23,15 @@ all: static loader.tns hook.tns
 %.elf: %.o
 	$(LD) $(LDFLAGS) $^ -o $@
 
-%.tns: %.elf
-	$(OBJCOPY) -O binary $< $@
-	mv $@ $(DISTDIR)
 
-loader.elf: loader.o
-hook.elf: hook.o
+static:
+	@mkdir -p ../res/$(NSPIRE_HARDWARE)
 
-loader.tns: loader.elf
+# bootstrapper.o is the entry point: must be first in the list, and linked with --no-startup 
+ndless_installer.elf: bootstrapper.o loader.o ints.o
+	$(LD) --no-startup $(LDFLAGS) $^ -o $@
+
+ndless_installer.tns: ndless_installer.elf
 	$(OBJCOPY) -O binary $< $(@:.tns=.bin)
 	../bin/MakeLoader.exe $(@:.tns=.bin) Document.xml
 	rm -f $@ $(@:.tns=.zip)
@@ -38,14 +39,13 @@ loader.tns: loader.elf
 	mv $(@:.tns=.zip) $(DISTDIR)/$@
 	rm Document.xml
 
-static:
-	mkdir -p ../res/$(NSPIRE_HARDWARE)
+ndless_resources.tns:
+	
 
 .PHONY: clean
-
 clean: cleanbin cleanapp
 cleanapp:
 	rm -rf ../res/$(NSPIRE_HARDWARE)
 
 cleanbin:
-	rm -rf loader.bin hook.bin *.o *.elf Document.xml loader.zip
+	rm -rf *.bin *.o *.elf *.xml *.zip

@@ -199,6 +199,8 @@ Changelog
 * v1.7 - <unreleased>
  Samples:
   - CHG: 'demo' renamed to 'particles' and moved to samples/
+Tools:
+  - NEW: option --no-startup for nspire-ld
 
 * v1.1 - 2010/07/31
  Installer:
