@@ -35,7 +35,8 @@ void ints_setup_handlers(void) {
 asm (
 "ints_swi_handler:        @ caution: 1) only supports calls from the user mode. 2) destroys the user lr \n"
 " stmfd sp!, {lr} \n"
-" ldmfd sp!, {lr}^        @ ^: move lr_svc (return address) to lr_user \n"
+" ldmfd sp, {lr}^         @ ^: move lr_svc (return address) to lr_user \n"
+" add sp, sp, #4          @ 'sp!' with ^ in the previous instruction is considered to produce an unpredictable result by GAS \n"
 " stmfd sp!, {pc}         @ points to the instruction after the following one \n"
 " ldmfd sp!, {pc}^        @ ^: jump to the next instruction and move spsr to cpsr (get back to the mode of the caller) \n"
 "	stmfd sp!, {r0-r1, r2}  @ r2 is dummy and will be overwritten with the syscall address \n"
