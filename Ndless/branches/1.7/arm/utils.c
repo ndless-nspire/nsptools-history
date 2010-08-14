@@ -24,19 +24,21 @@
 
 #include "ndless.h"
 
-/* Returns a zero-based index identifying the OS version and HW model.
- * May be used for OS-specific arrays of constants (marked with "// OS-specific").
- * Reboots if the OS os unknown. */
-unsigned ut_get_os_version_index(void) {
+unsigned ut_os_version_index;
+
+/* Writes to ut_os_version_index a zero-based index identifying the OS version and HW model.
+ * Should be called only once.
+ * May be used for OS-specific arrays of constants (marked with "// OS-specific"). */
+void ut_read_os_version_index(void) {
 	/* The heuristic is based on the address of INT_Initialize - Thanks Goplat.
 	 * The address is read from the RAM copy and not the real vector which is
 	 * destroyed at installation time */
 	switch (*(unsigned*)0x10000020) {
 		// OS-specific
-		case 0x10211290: return 0; // 1.7 non-CAS
-		case 0x102132A0: return 1; // 1.7 CAS
+		case 0x10211290: ut_os_version_index = 0; break; // 1.7 non-CAS
+		case 0x102132A0: ut_os_version_index = 1; break; // 1.7 CAS
 		default:
-			ut_calc_reboot();		
+			ut_panic("unknown OS version");		
 	}
 }
 
@@ -48,13 +50,21 @@ static unsigned const ut_os_reboot_reset_addrs[][3] = {
 
 void __attribute__ ((noreturn)) ut_os_reboot(void) {
 	unsigned i;
-	unsigned os_version_index = ut_get_os_version_index();
 	for (i = 0; i < sizeof(ut_os_reboot_reset_addrs[0])/sizeof(unsigned); i++)
-		*(unsigned*)(ut_os_reboot_reset_addrs[os_version_index][i]) = 1;
+		*(unsigned*)(ut_os_reboot_reset_addrs[ut_os_version_index][i]) = 1;
 	goto *OS_BASE_ADDRESS;
 }
 
 void __attribute__ ((noreturn)) ut_calc_reboot(void) {
 	*(unsigned*)0x900A0008 = 2; //CPU reset
+	while(1);
+}
+
+/* No error dialog currently implemented, the error message is just kept for debugging */
+static const char *ut_panic_errmsg;
+
+/* Hang with an error message */
+void __attribute__ ((noreturn)) ut_panic(const char * msg) {
+	ut_panic_errmsg = msg;
 	while(1);
 }

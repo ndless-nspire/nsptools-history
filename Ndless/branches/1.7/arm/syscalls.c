@@ -29,7 +29,7 @@ extern unsigned syscalls_ncas_1_7[];
 extern unsigned syscalls_cas_1_7[];
 
 void sc_setup(void) {
-	switch (ut_get_os_version_index()) {
+	switch (ut_os_version_index) {
 		// OS-specific
 		case 0:
 			sc_addrs_ptr = syscalls_ncas_1_7;
@@ -37,7 +37,5 @@ void sc_setup(void) {
 		case 1:
 			sc_addrs_ptr = syscalls_cas_1_7;
 			break;
-		default:
-			sc_addrs_ptr = NULL;
 	}
 }

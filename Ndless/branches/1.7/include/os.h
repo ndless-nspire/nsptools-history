@@ -46,9 +46,17 @@ typedef unsigned long size_t;
   
 _SYSCALL(int, mkdir, char *path, int a, int b, int c, int d) _SYSCALL_ARGS(int, mkdir, path, a, b, c, d)
 _SYSCALL1(void*, malloc, size_t)
+_SYSCALL1(void, free, void *)
+_SYSCALL(void*, memset, void *ptr, int value, size_t num) _SYSCALL_ARGS(void*, memset, ptr, value, num)
+_SYSCALL(void*, memcpy, void *s1, const void *s2, size_t n) _SYSCALL_ARGS(void*, memcpy, s1, s2, n)
+_SYSCALL(int, memcmp, const void *ptr1, const void *ptr2, size_t num) _SYSCALL_ARGS(void*, memcmp, ptr1, ptr2, num)
 _SYSCALLVAR(int __attribute__((__format__(__printf__,1,2))), printf, const char *format, ...)
 _SYSCALL1(int, puts, const char *)
 _SYSCALL1(int, TCT_Local_Control_Interrupts, int)
+_SYSCALL(FILE*, fopen, const char *filename, const char *mode) _SYSCALL_ARGS(FILE*, fopen, filename, mode)
+_SYSCALL(size_t, fread, void *ptr, size_t size, size_t nitems, FILE *stream) _SYSCALL_ARGS(size_t, fread, ptr, size, nitems, stream)
+_SYSCALL(size_t, fwrite, const void *ptr, size_t size, size_t count, FILE *stream) _SYSCALL_ARGS(size_t fwrite, ptr, size, count, stream)
+_SYSCALL1(int, fclose, FILE *)
 
 #endif // GCC C
 #endif

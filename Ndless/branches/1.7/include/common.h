@@ -207,10 +207,6 @@ static inline void idle(void) {
   asm volatile ("mcr p15, 0, %0, c7, c0, 4" : "=r"(sbz) );
 }
 
-static inline __attribute__ ((noreturn)) void os_reboot(void)  {
-	goto *OS_BASE_ADDRESS;
-}
-
 #endif /* GCC C */
 
 #endif
