@@ -24,27 +24,28 @@
 
 #include <os.h>
 
-/* In the 1MB section normally used for boot2 */
-#define STACK_PTR_BASE_ADDR           0x1800E000
-
-/* First set of instructions executed at installation time, as an IRQ handler */  
+ints_vectors:
 	@ Interrupt vectors: jump instructions
  .byte 0x18, 0xF0, 0x9F, 0xE5
  .byte 0x18, 0xF0, 0x9F, 0xE5, 0x18, 0xF0, 0x9F, 0xE5, 0x18, 0xF0, 0x9F, 0xE5
  .byte 0x18, 0xF0, 0x9F, 0xE5, 0x18, 0xF0, 0x9F, 0xE5, 0x18, 0xF0, 0x9F, 0xE5, 0x18, 0xF0, 0x9F, 0xE5
-	@ Interrupt vectors: addresses (used by the jump instructions)
-	@ Reset: our entry point
-	.long main
-	@ default vectors: OS reboot
-	.fill 7, 4, 0
+	@ Interrupt vectors: default addresses (used by the jump instructions)
+	.long ints_halt_handler @ initialize
+	.long ints_halt_handler @ undef instr
+	.long ints_empty_handler4 @ software
+	.long ints_halt_handler @ prefetch abort
+	.long ints_empty_handler4 @ data abort
+	.long ints_halt_handler @ reserved
+ints_irq_addr:
+	.long main @ IRQ - our entry point by default
+	.long ints_empty_handler4 @ FIQ
 
+/* First set of instructions executed at installation time, as an IRQ handler */  
 main:
-	mrs r0, cpsr_all
-  bic r0, r0, #0b00011111  @ clear the mode
-  orr r0, r0, #0b11010000  @ to user mode, and disable the interrupts
-  msr cpsr_all, r0
-	ldr sp, =STACK_PTR_BASE_ADDR
-	halt
+	adr r0, ints_irq_addr
+	ldr r1, =(OS_BASE_ADDRESS+ints_irq_addr-ints_vectors)
+	ldr r1, [r1]
+	str r1, [r0] @ restore the IRQ handler
 	bl ints_setup_handlers
 	bl ld_load
 	@ never reached

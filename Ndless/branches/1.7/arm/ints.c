@@ -32,7 +32,7 @@ void ints_setup_handlers(void) {
  * Check that the swi number is correct
  * Check it is not null; if not, reboot
  */
-asm (
+asm(
 "ints_swi_handler:        @ caution: 1) only supports calls from the user mode. 2) destroys the user lr \n"
 " stmfd sp!, {lr} \n"
 " ldmfd sp, {lr}^         @ ^: move lr_svc (return address) to lr_user \n"
@@ -54,3 +54,16 @@ asm (
  * See http://forums.ps2dev.org/viewtopic.php?p=50638 and http://sources.redhat.com/ml/binutils/2000-06/msg00099.html */
  // its size is SYSCALLS_NUM
  __attribute__ ((section (".text\n\t#"))) unsigned *sc_addrs_ptr;
+
+// Used for any exception for which we choose to halt
+asm(
+"ints_halt_handler: .global ints_halt_handler \n"
+" 0: b 0b"
+);
+
+// Used for any exception for which we want to return back immediatly
+// Only works for exceptions where lr = orig_pc + 4
+asm(
+"ints_empty_handler4: .global ints_empty_handler4 \n"
+" subs pc, lr, #4" 
+);

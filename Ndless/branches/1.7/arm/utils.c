@@ -36,6 +36,25 @@ unsigned ut_get_os_version_index(void) {
 		case 0x10211290: return 0; // 1.7 non-CAS
 		case 0x102132A0: return 1; // 1.7 CAS
 		default:
-			os_reboot();		
+			ut_calc_reboot();		
 	}
+}
+
+// addresses of OS global variables which must be reinitialized for proper OS reboot
+static unsigned const ut_os_reboot_reset_addrs[][3] = {
+	{0x106DAFC4, 0x106F2A0C, 0x106F2AF0},  // 1.7 non-CAS
+	{0, 0, 0} // 1.7 CAS TODO
+};
+
+void __attribute__ ((noreturn)) ut_os_reboot(void) {
+	unsigned i;
+	unsigned os_version_index = ut_get_os_version_index();
+	for (i = 0; i < sizeof(ut_os_reboot_reset_addrs[0])/sizeof(unsigned); i++)
+		*(unsigned*)(ut_os_reboot_reset_addrs[os_version_index][i]) = 1;
+	goto *OS_BASE_ADDRESS;
+}
+
+void __attribute__ ((noreturn)) ut_calc_reboot(void) {
+	*(unsigned*)0x900A0008 = 2; //CPU reset
+	while(1);
 }

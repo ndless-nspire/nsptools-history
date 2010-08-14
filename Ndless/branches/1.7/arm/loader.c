@@ -26,7 +26,5 @@
 
 void ld_load(void) {
 	sc_setup();
-	TCT_Local_Control_Interrupts(0);
-	puts("hello");
-	halt();
+	ut_os_reboot();
 }

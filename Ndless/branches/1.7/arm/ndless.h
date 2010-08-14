@@ -29,6 +29,8 @@
 
 /* utils.c */
 unsigned ut_get_os_version_index(void);
+void __attribute__ ((noreturn)) ut_os_reboot(void);
+void __attribute__ ((noreturn)) ut_calc_reboot(void);
 
 /* ints.h */
 extern unsigned *sc_addrs_ptr;
