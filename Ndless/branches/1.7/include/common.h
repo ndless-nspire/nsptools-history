@@ -1,13 +1,5 @@
 /****************************************************************************
- * @(#) Ndless - Common definitions
- *
- * Copyright (C) 2010 by ANNEHEIM Geoffrey and ARMAND Olivier
- * Contact: geoffrey.anneheim@gmail.com / olivier.calc@gmail.com
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.
- *
+ * Ndless - Common definitions
  ****************************************************************************/
 
 #ifndef _COMMON_H_
@@ -177,9 +169,9 @@
 
 /** GNU AS */
 #ifdef GNU_AS
-  #define DIESE(s)          #
+  #define SHARP(s)          #
   #define ADDR_(addr)       addr
-  #define KEY_(row, col)    row, DIESE(s)##col
+  #define KEY_(row, col)    row, SHARP(s)##col
 
   .macro isKeyPressed row, col
     ldr     r0, =(KEY_MAP + \row)
@@ -214,7 +206,11 @@ static inline void idle(void) {
   unsigned int sbz = 0;
   asm volatile ("mcr p15, 0, %0, c7, c0, 4" : "=r"(sbz) );
 }
- 
-#endif /* GCC */
+
+static inline __attribute__ ((noreturn)) void os_reboot(void)  {
+	goto *OS_BASE_ADDRESS;
+}
+
+#endif /* GCC C */
 
 #endif

@@ -1,5 +1,5 @@
 /****************************************************************************
- * Ndless loader
+ * Definitions
  *
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
@@ -22,11 +22,17 @@
  *                 Geoffrey ANNEHEIM <geoffrey.anneheim@gmail.com>
  ****************************************************************************/
 
-#include "ndless.h"
+#ifndef _NDLESS_H_
+#define _NDLESS_H_
 
-void ld_load(void) {
-	sc_setup();
-	TCT_Local_Control_Interrupts(0);
-	puts("hello");
-	halt();
-}
+#include <OS.h>
+
+/* utils.c */
+unsigned ut_get_os_version_index(void);
+
+/* ints.h */
+extern unsigned *sc_addrs_ptr;
+void ints_setup_handlers(void);
+
+#endif
+

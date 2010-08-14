@@ -1,5 +1,5 @@
 /****************************************************************************
- * Ndless loader
+ * Common functions
  *
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
@@ -24,9 +24,18 @@
 
 #include "ndless.h"
 
-void ld_load(void) {
-	sc_setup();
-	TCT_Local_Control_Interrupts(0);
-	puts("hello");
-	halt();
+/* Returns a zero-based index identifying the OS version and HW model.
+ * May be used for OS-specific arrays of constants (marked with "// OS-specific").
+ * Reboots if the OS os unknown. */
+unsigned ut_get_os_version_index(void) {
+	/* The heuristic is based on the address of INT_Initialize - Thanks Goplat.
+	 * The address is read from the RAM copy and not the real vector which is
+	 * destroyed at installation time */
+	switch (*(unsigned*)0x10000020) {
+		// OS-specific
+		case 0x10211290: return 0; // 1.7 non-CAS
+		case 0x102132A0: return 1; // 1.7 CAS
+		default:
+			os_reboot();		
+	}
 }

@@ -1,5 +1,5 @@
 /****************************************************************************
- * @(#) Ndless bootstrapper
+ * Ndless bootstrapper
  *
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
@@ -22,6 +22,8 @@
  *                 Geoffrey ANNEHEIM <geoffrey.anneheim@gmail.com>
  ****************************************************************************/
 
+#include <os.h>
+
 /* In the 1MB section normally used for boot2 */
 #define STACK_PTR_BASE_ADDR           0x1800E000
 
@@ -33,7 +35,7 @@
 	@ Interrupt vectors: addresses (used by the jump instructions)
 	@ Reset: our entry point
 	.long main
-	@ TODO set interrupt vectors
+	@ default vectors: OS reboot
 	.fill 7, 4, 0
 
 main:
@@ -42,10 +44,7 @@ main:
   orr r0, r0, #0b11010000  @ to user mode, and disable the interrupts
   msr cpsr_all, r0
 	ldr sp, =STACK_PTR_BASE_ADDR
+	halt
 	bl ints_setup_handlers
-halt:
-	b halt
-	swi 0
 	bl ld_load
-halt2:
-	b halt2
+	@ never reached
