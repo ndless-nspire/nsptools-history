@@ -33,7 +33,7 @@ void ints_setup_handlers(void) {
  * Check it is not null; if not, reboot
  */
 asm(
-"ints_swi_handler:        @ caution: 1) only supports calls from the user mode. 2) destroys the user lr \n"
+"ints_swi_handler:        @ caution: 1) only supports calls from the user mode (many syscalls will reboot with TCT_Check_Stack in non-user mode anyway) 2) destroys the user lr \n"
 " stmfd sp!, {lr} \n"
 " ldmfd sp, {lr}^         @ ^: move lr_svc (return address) to lr_user \n"
 " add sp, sp, #4          @ 'sp!' with ^ in the previous instruction is considered to produce an unpredictable result by GAS \n"

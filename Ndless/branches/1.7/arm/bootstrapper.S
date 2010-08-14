@@ -24,6 +24,7 @@
 
 #include <os.h>
 
+/* TODO: we shouldn't break nspire_emu's OS version detection with our vectors */
 ints_vectors:
 	@ Interrupt vectors: jump instructions
  .byte 0x18, 0xF0, 0x9F, 0xE5
@@ -46,6 +47,11 @@ main:
 	ldr r1, =(OS_BASE_ADDRESS+ints_irq_addr-ints_vectors)
 	ldr r1, [r1]
 	str r1, [r0] @ restore the IRQ handler
+	stmfd sp!, {pc}   @ points to the instruction after the following one
+	ldmfd sp!, {pc}^  @ ^: jump to the next instruction and move spsr to cpsr (get back to caller mode: svc)
+	mrs r0, cpsr
+  orr r0, r0, #0b11000000  @ disable the interrupts
+  msr cpsr, r0
 	bl ints_setup_handlers
 	bl ld_load
 	@ never reached

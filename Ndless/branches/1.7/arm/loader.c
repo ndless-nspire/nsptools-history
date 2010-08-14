@@ -49,6 +49,7 @@ static void ld_heap_rebase(unsigned hook_size) {
 
 /* Returns the hook size */
 static unsigned ld_copy_hook(void *hook_dest) {
+	void *p = malloc(100);
 	halt();
 	FILE *hook_file = fopen("ndless_resources.tns", "rb");
 	if (!hook_file)

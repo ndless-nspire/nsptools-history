@@ -38,6 +38,7 @@ void ut_read_os_version_index(void) {
 		case 0x10211290: ut_os_version_index = 0; break; // 1.7 non-CAS
 		case 0x102132A0: ut_os_version_index = 1; break; // 1.7 CAS
 		default:
+			ut_os_version_index = 0xFFFFFFFF;
 			ut_panic("unknown OS version");		
 	}
 }
@@ -50,6 +51,8 @@ static unsigned const ut_os_reboot_reset_addrs[][3] = {
 
 void __attribute__ ((noreturn)) ut_os_reboot(void) {
 	unsigned i;
+	if (ut_os_version_index == 0xFFFFFFFF)
+		ut_calc_reboot();
 	for (i = 0; i < sizeof(ut_os_reboot_reset_addrs[0])/sizeof(unsigned); i++)
 		*(unsigned*)(ut_os_reboot_reset_addrs[ut_os_version_index][i]) = 1;
 	goto *OS_BASE_ADDRESS;
@@ -66,5 +69,5 @@ static const char *ut_panic_errmsg;
 /* Hang with an error message */
 void __attribute__ ((noreturn)) ut_panic(const char * msg) {
 	ut_panic_errmsg = msg;
-	while(1);
+	ut_os_reboot();
 }
