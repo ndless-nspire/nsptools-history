@@ -50,7 +50,7 @@ syscall_ptr_loop:
 	add r10, #(SYSCALLS_NUM+1)*4 @ +1: version
   subs r1, #1
   bne syscall_ptr_loop
-  b reboot @ unsuppoted version
+  b reboot @ unsupported version
 syscall_ptr_found:
 	add r10, #4 @ jump the version
 
