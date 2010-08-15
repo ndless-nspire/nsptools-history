@@ -151,11 +151,6 @@ void debug_reload_state(void *state);
 extern u8 flash_data[0x10000][0x210];
 extern char flash_filename[];
 
-#ifdef EOF
-extern FILE *flash_file;
-#endif
-extern bool flash_writeback;
-
 u32 nand_flash_read_word(u32 addr);
 void nand_flash_write_word(u32 addr, u32 value);
 void flash_save_changes();
@@ -163,6 +158,8 @@ int flash_save_as(void);
 void flash_load(const char *filename);
 void flash_reload(void);
 void flash_initialize(char *preload_boot2, char *preload_diags, char *preload_os);
+void *flash_save_state(size_t *size);
+void flash_reload_state(void *state);
 
 /* Declarations for gui.c */
 

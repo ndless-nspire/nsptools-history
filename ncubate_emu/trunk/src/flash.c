@@ -3,7 +3,7 @@
 #include <string.h>
 #include "emu.h"
 
-struct {
+struct flash {
 	u32 operation;
 	union {
 		u32 full_address;
@@ -29,8 +29,6 @@ struct {
 
 u8 flash_data[NUM_PAGES][PAGE_SIZE];
 u8 flash_block_modified[NUM_BLOCKS];
-
-FILE *flash_file;
 
 static void *ram_ptr_nonull(u32 addr, u32 size) {
 	void *p = phys_mem_ptr(addr, size);
@@ -153,20 +151,22 @@ void nand_flash_write_word(u32 addr, u32 value) {
 char flash_filename[MAX_PATH];
 
 void flash_save_changes() {
-	if (flash_file == NULL) {
-		printf("NAND flash: no file\n");
-		return;
+	FILE *f = fopen(flash_filename, "r+b");
+	if (!f) {
+		printf("NAND flash: could not open ");
+		perror(flash_filename);
+		exit(1);
 	}
 	u32 block, count = 0;
 	for (block = 0; block < NUM_BLOCKS; block++) {
 		if (flash_block_modified[block]) {
-			fseek(flash_file, block * BLOCK_SIZE, SEEK_SET);
-			fwrite(flash_data[block * PAGES_PER_BLOCK], BLOCK_SIZE, 1, flash_file);
+			fseek(f, block * BLOCK_SIZE, SEEK_SET);
+			fwrite(flash_data[block * PAGES_PER_BLOCK], BLOCK_SIZE, 1, f);
 			flash_block_modified[block] = false;
 			count++;
 		}
 	}
-	fflush(flash_file);
+	fclose(f);
 	printf("NAND flash: saved %d modified blocks to file\n", count);
 }
 
@@ -176,19 +176,17 @@ int flash_save_as(void) {
 	if (!f) {
 		printf("NAND flash: could not open ");
 		perror(flash_filename);
-		return 1;
+		exit(1);
 	}
 	if (!fwrite(flash_data, sizeof flash_data, 1, f) || fflush(f)) {
 		fclose(f);
 		remove(flash_filename);
 		printf("NAND flash: could not write to ");
 		perror(flash_filename);
-		return 1;
+		exit(1);
 	}
+	fclose(f);
 	memset(flash_block_modified, 0, sizeof(flash_block_modified));
-	if (flash_file)
-		fclose(flash_file);
-	flash_file = f;
 	printf("Flash image saved.\n");
 	return 0;
 }
@@ -226,17 +224,16 @@ static int preload(int page, char *name, char *filename) {
 
 void flash_load(const char *filename) {
 	strncpy(flash_filename, filename, sizeof(flash_filename));
-	if (flash_file)
-			fclose(flash_file);
-	flash_file = fopen(filename, "r+b");
-	if (!flash_file) {
+	FILE *f = fopen(filename, "r+b");
+	if (!f) {
 		perror(filename);
 		exit(1);
 	}
-	if (!fread(flash_data, sizeof flash_data, 1, flash_file)) {
+	if (!fread(flash_data, sizeof flash_data, 1, f)) {
 		printf("Could not read flash image from %s\n", flash_filename);
 		exit(1);
 	}
+	fclose(f);
 	memset(flash_block_modified, 0, sizeof(flash_block_modified));
 }
 
@@ -261,4 +258,20 @@ void flash_initialize(char *preload_boot2, char *preload_diags, char *preload_os
 	if (preload_boot2) page = preload(page, "***PRELOAD_BOOT2***", preload_boot2);
 	if (preload_diags) page = preload(page, "***PRELOAD_DIAGS***", preload_diags);
 	if (preload_os)    page = preload(page, "***PRELOAD_IMAGE***", preload_os);
+}
+
+struct flash_saved_state {
+	struct flash flash;
+};
+
+void *flash_save_state(size_t *size) {
+	*size = sizeof(struct flash_saved_state);
+	struct flash_saved_state *state = malloc(*size);
+	memcpy(&state->flash, &flash, sizeof(flash));
+	return state;
+}
+
+void flash_reload_state(void *state) {
+	struct flash_saved_state *_state = (struct flash_saved_state *)state;
+	memcpy(&flash, &_state->flash, sizeof(flash));
 }

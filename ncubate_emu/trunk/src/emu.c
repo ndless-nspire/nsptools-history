@@ -156,8 +156,10 @@ void save_state(void) {
 	char state_filename[MAX_PATH+1];
 	get_saved_state_filename(state_filename);
 	FILE *state_file = fopen(state_filename, "wb");
-	if (!state_file)
-		error("cannot open saved state file");
+	if (!state_file) {
+		printf("cannot open saved state file\n");
+		exit(1);
+	}
 	size_t chunk_size, total_size = 0, written_size = 0;
 	void *chunk_data;
 	// format of a chunk: (size_t)data size, data
@@ -175,14 +177,18 @@ void save_state(void) {
 	SAVE_STATE_WRITE_CHUNK(cpu);
 	SAVE_STATE_WRITE_CHUNK(apb);
 	SAVE_STATE_WRITE_CHUNK(debug);
+	SAVE_STATE_WRITE_CHUNK(flash);
 	SAVE_STATE_WRITE_CHUNK(lcd);
 	SAVE_STATE_WRITE_CHUNK(link);
 	SAVE_STATE_WRITE_CHUNK(mmu);
+	SAVE_STATE_WRITE_CHUNK(sha256);
 	SAVE_STATE_WRITE_CHUNK(translate);
 	flash_save_changes();
 	fclose(state_file);
-	if (written_size != total_size)
-		error("Could not write saved state file");
+	if (written_size != total_size) {
+		printf("Could not write saved state file\n");
+		exit(1);
+	}
 	printf("State saved.\n");
 }
 
@@ -196,32 +202,40 @@ bool reload_state(void) {
 	if (!state_file) 
 		return false;
 	#define RELOAD_STATE_READ_CHUNK(module) \
-		if (fread(&chunk_size, 1, sizeof(size_t), state_file) != sizeof(size_t))  \
-			error("cannot read saved state file"); \
-		if (chunk_size > 100 * 1024 * 1024) \
-			error("invalid chunk size in state file"); \
+		if (fread(&chunk_size, 1, sizeof(size_t), state_file) != sizeof(size_t)) {  \
+			printf("cannot read saved state file\n"); \
+			exit(1); \
+		} \
+		if (chunk_size > 100 * 1024 * 1024) { \
+			printf("invalid chunk size in state file\n"); \
+			exit(1); \
+		} \
 		chunk_data = malloc(chunk_size); \
-		if (!chunk_data && chunk_size) \
-			error("cannot malloc chunk of saved state"); \
+		if (!chunk_data && chunk_size) { \
+			printf("cannot malloc chunk of saved state\n"); \
+			exit(1); \
+		} \
 		if (fread(chunk_data, 1, chunk_size, state_file) != chunk_size) { \
 			perror("cannot read saved state file"); \
 			exit(1); \
 		} \
 		module##_reload_state(chunk_data); \
 		free(chunk_data)
-		printf("Reloading state...\n");
+	printf("Reloading state...\n");
+	flash_reload();
 	// ordered
 	RELOAD_STATE_READ_CHUNK(emu);
 	RELOAD_STATE_READ_CHUNK(memory);
 	RELOAD_STATE_READ_CHUNK(cpu);
 	RELOAD_STATE_READ_CHUNK(apb);
 	RELOAD_STATE_READ_CHUNK(debug);
+	RELOAD_STATE_READ_CHUNK(flash);
 	RELOAD_STATE_READ_CHUNK(lcd);
 	RELOAD_STATE_READ_CHUNK(link);
 	RELOAD_STATE_READ_CHUNK(mmu);
+	RELOAD_STATE_READ_CHUNK(sha256);
 	RELOAD_STATE_READ_CHUNK(translate);
 	fclose(state_file);
-	flash_reload();
 	printf("State reloaded.\n");
 	return true;
 }
