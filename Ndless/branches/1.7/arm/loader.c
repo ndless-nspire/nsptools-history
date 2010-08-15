@@ -49,15 +49,18 @@ static void ld_heap_rebase(unsigned hook_size) {
 
 /* Returns the hook size */
 static unsigned ld_copy_hook(void *hook_dest) {
-	void *p = malloc(100);
-	halt();
-	FILE *hook_file = fopen("ndless_resources.tns", "rb");
+	FILE *hook_file = fopen("/documents/ndless/ndless_resources.tns", "rb");
 	if (!hook_file)
 		ut_panic("can't find ndless_resources.tns");
-	size_t hook_size = fread(hook_dest, 1, 100000, hook_file); // maximum hook size
+	// TODO stat
+	// we aren't freading directly to hook_dest: fread depends on a valid heap
+	void *buf = malloc(1000);
+	halt();
+	size_t hook_size = fread(buf, 1, 1000, hook_file); // maximum hook size
 	if (!hook_size)
 		ut_panic("can't read ndless_resources.tns");
-	fclose(hook_file);
+	//memcpy(hook_dest, buf, 1000);
+	// no free, no fclose: the beginning of the heap has been overwritten and we are about to reboot
 	return hook_size;
 }
 
@@ -66,5 +69,6 @@ void ld_load(void) {
 	sc_setup();
 	void *hook_block = ld_hook_alloc();
 	ld_heap_rebase(ld_copy_hook(hook_block));
+	puts("Ndless installed!");
 	ut_os_reboot();
 }

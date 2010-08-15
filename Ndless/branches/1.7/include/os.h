@@ -28,13 +28,14 @@
  * - without ellipsis in the SWI function definition, GCC optimizes the call and does not set the input registers
  * - defining a syscall macro for each parameter number as Linux does is cumbersome and is not suitable for more than 4 parameters, for which the stack should be used
  * Our solution is:
- * - to use a SWI variadic function for 2 parameters or more, with a wrapper with typed parameters. This kind of call cannot be inlined by GCC even if declared so.
+ * - to use a SWI variadic function for 2 parameters or more, with a wrapper with typed parameters.
  * - to use specific definitions for syscalls with 0 or 1 parameters.
  * - to use a specific definition for variadic syscalls (which are incompatible with the SWI variadic function) */
-#define _SYSCALL_SWI(rettype, funcname, param1) static inline rettype __attribute__((naked))     funcname##_swi(param1, ...)   {asm(" swi " _XSTRINGIFY(_SYSCALL_ENUM(funcname)) "\n bx lr" ::: "r0", "r1", "r2", "r3");}
-#define _SYSCALL0(rettype, funcname) static inline rettype                                       funcname(void)                {asm(" swi " _XSTRINGIFY(_SYSCALL_ENUM(funcname)) ::: "r0", "r1", "r2", "r3");}
-#define _SYSCALL1(rettype, funcname, type1) static inline rettype                                funcname(type1 __param1)      {register unsigned __r0 asm("r0") = (unsigned)__param1; asm(" swi " _XSTRINGIFY(_SYSCALL_ENUM(funcname)) :: "r" (__r0) :  "r1", "r2", "r3");}
-#define _SYSCALLVAR(rettype, funcname, param1, ...) static inline rettype __attribute__((naked)) funcname(param1, __VA_ARGS__) {asm(" swi " _XSTRINGIFY(_SYSCALL_ENUM(funcname)) "\n bx lr" ::: "r0", "r1", "r2", "r3");}
+// caution, lr is destroyed by our swi calling convention
+#define _SYSCALL_SWI(rettype, funcname, param1) static rettype __attribute__((naked))     funcname##_swi(param1, ...)   {asm(" push {lr}\n swi " _XSTRINGIFY(_SYSCALL_ENUM(funcname)) "\n ldr pc, [sp], #4" ::: "r0", "r1", "r2", "r3");}
+#define _SYSCALL0(rettype, funcname) static inline rettype                                funcname(void)                {asm(" swi " _XSTRINGIFY(_SYSCALL_ENUM(funcname)) ::: "r0", "r1", "r2", "r3");}
+#define _SYSCALL1(rettype, funcname, type1) static inline rettype                         funcname(type1 __param1)      {register unsigned __r0 asm("r0") = (unsigned)__param1; asm(" swi " _XSTRINGIFY(_SYSCALL_ENUM(funcname)) :: "r" (__r0) :  "r1", "r2", "r3");}
+#define _SYSCALLVAR(rettype, funcname, param1, ...) static rettype __attribute__((naked)) funcname(param1, __VA_ARGS__) {asm(" push {lr}\n swi " _XSTRINGIFY(_SYSCALL_ENUM(funcname)) "\n ldr pc, [sp], #4" ::: "r0", "r1", "r2", "r3");}
 #define _SYSCALL(rettype, funcname, param1, ...) _SYSCALL_SWI(rettype, funcname, param1) static inline rettype funcname(param1, __VA_ARGS__)
 // Use in conjunction with _SYSCALL
 #define _SYSCALL_ARGS(rettype, funcname, param1, ...) {return funcname##_swi(param1, __VA_ARGS__);}

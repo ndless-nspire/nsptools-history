@@ -66,8 +66,8 @@ void __attribute__ ((noreturn)) ut_calc_reboot(void) {
 /* No error dialog currently implemented, the error message is just kept for debugging */
 static const char *ut_panic_errmsg;
 
-/* Hang with an error message */
 void __attribute__ ((noreturn)) ut_panic(const char * msg) {
+	puts(msg);
 	ut_panic_errmsg = msg;
 	ut_os_reboot();
 }

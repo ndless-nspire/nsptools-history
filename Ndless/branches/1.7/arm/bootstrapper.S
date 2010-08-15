@@ -49,9 +49,6 @@ main:
 	str r1, [r0] @ restore the IRQ handler
 	stmfd sp!, {pc}   @ points to the instruction after the following one
 	ldmfd sp!, {pc}^  @ ^: jump to the next instruction and move spsr to cpsr (get back to caller mode: svc)
-	mrs r0, cpsr
-  orr r0, r0, #0b11000000  @ disable the interrupts
-  msr cpsr, r0
 	bl ints_setup_handlers
 	bl ld_load
 	@ never reached
