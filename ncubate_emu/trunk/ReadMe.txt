@@ -22,8 +22,11 @@ GUI:
 - NEW: several keyboard shortcuts added
 
 Debugger:
-- NEW: The register PC can be changed with the command 'rs'. This is useful for 
-  example to jump over an halt() call in an Ndless program.
+- NEW: The register PC can be changed with the command 'rs'. 
+- NEW: Command 'j' to jump to the next instruction. This is useful for example 
+  to jump over an halt() call in an Ndless program.
+- CHG: The breakpoint command 'k' takes as parameter a virtual address instead 
+  of a physical address.
 
 Flash:
 - FIX: Flash image closed when synced to disk, for external edition
@@ -46,6 +49,12 @@ Olivier Armand aka ExtendeD  -  < olivier dot calc at gmail dot com >
 
 Changelog
 =========
+
+* v030b - unreleased
+ - ADD: Command 'j'
+ - CHG: Command 'k' uses virtual addresses
+ - FIX: Couldn't save flash after sending a document from another directory when 
+   loading a flash image with a relative path.
 
 * v030a - 2010/08/15
  - First public release

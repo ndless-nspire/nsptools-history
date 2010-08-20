@@ -124,6 +124,7 @@ void debugger() {
 				"b - stack backtrace\n"
 				"c - continue\n"
 				"d <address> - dump memory\n"
+				"jn - set PC to next instruction\n"
 				"k <address> <+r|+w|+x|-r|-w|-x> - add/remove breakpoint\n"
 				"k - show breakpoints\n"
 				"n - continue until next instruction\n"
@@ -191,7 +192,7 @@ void debugger() {
 			char *flag_str = strtok(NULL, " \n");
 			if (addr_str && flag_str) {
 				u32 addr = strtoul(addr_str, 0, 16);
-				void *ptr = phys_mem_ptr(addr & ~3, 4);
+				void *ptr = virt_mem_ptr(addr & ~3, 4);
 				if (ptr) {
 					u32 *flags = &RAM_FLAGS(ptr);
 					bool on = true;
@@ -244,6 +245,10 @@ void debugger() {
 		} else if (!stricmp(cmd, "n")) {
 			if (cur_insn)
 				set_debug_next(cur_insn + 1);
+			break;
+		} else if (!stricmp(cmd, "j")) {
+			arm.reg[15] += 4;
+			set_debug_next(cur_insn + 1);
 			break;
 		} else if (!stricmp(cmd, "d")) {
 			u32 addr = strtoul(strtok(NULL, " \n"), 0, 16);

@@ -171,6 +171,9 @@ void flash_save_changes() {
 }
 
 int flash_save_as(void) {
+	char abs_filename[MAX_PATH];
+	realpath(flash_filename, abs_filename);
+	strcpy(flash_filename, abs_filename);
 	printf("Saving flash image %s...\n", flash_filename);
 	FILE *f = fopen(flash_filename, "wb");
 	if (!f) {
@@ -223,7 +226,7 @@ static int preload(int page, char *name, char *filename) {
 }
 
 void flash_load(const char *filename) {
-	strncpy(flash_filename, filename, sizeof(flash_filename));
+	realpath(filename, flash_filename);
 	FILE *f = fopen(filename, "r+b");
 	if (!f) {
 		perror(filename);

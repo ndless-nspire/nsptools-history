@@ -17,6 +17,10 @@ static inline u32 BSWAP32(u32 x) {
 	asm ("bswap %0" : "=r" (x) : "0" (x)); return x;
 }
 
+#ifdef _WIN32
+#define realpath(N,R) _fullpath((R),(N),_MAX_PATH)
+#endif
+
 /* Declarations for emu.c */
 
 extern u64 cycle_count;
