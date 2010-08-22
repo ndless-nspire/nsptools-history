@@ -204,8 +204,27 @@ static inline void halt(void) {
 /* switch to low-power state until next interrupt */
 static inline void idle(void) {
   unsigned int sbz = 0;
-  asm volatile ("mcr p15, 0, %0, c7, c0, 4" : "=r"(sbz) );
+  asm volatile("mcr p15, 0, %0, c7, c0, 4" : "=r"(sbz) );
 }
+
+#define HOOK_INSTALL(address, hookname) do { \
+	extern unsigned hookname; \
+	extern unsigned __hookname##_end_instrs[4]; /* orig_instrs1; orig_instrs2; ldr pc, [pc, #-4]; .long return_addr */ \
+	__hookname##_end_instrs[3] = (unsigned)(address) + 8; \
+	__hookname##_end_instrs[0] = *(unsigned*)(address); \
+	*(unsigned*)(address) = 0xE51FF004; /* ldr pc, [pc, #-4] */ \
+	__hookname##_end_instrs[1] = *(unsigned*)((address) + 4); \
+	*(unsigned*)((address) + 4) = (unsigned)&hookname; \
+	__hookname##_end_instrs[2] = 0xE51FF004; /* ldr pc, [pc, #-4] */ \
+	} while (0)
+
+#define HOOK_DEFINE(hookname) \
+	unsigned __hookname##_end_instrs[2]; \
+	void __attribute__((naked)) hookname(void)
+
+#define HOOK_END(hookname) do { \
+	asm volatile(" b " _XSTRINGIFY(__hookname##_end_instrs)); \
+	} while (0)
 
 /***********************************
  * Nucleus

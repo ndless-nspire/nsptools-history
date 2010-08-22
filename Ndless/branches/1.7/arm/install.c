@@ -25,7 +25,8 @@
 #include <os.h>
 
 static void ins_install_ploader_hook(void) {
-	//HOOK_INSTALL(TODO_address, plh_hook);
+	halt();
+	HOOK_INSTALL(0x10008F68, plh_hook);
 }
 
 void main(void) {

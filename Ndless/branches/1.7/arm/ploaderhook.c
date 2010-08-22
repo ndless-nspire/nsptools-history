@@ -24,9 +24,7 @@
 
 #include <os.h>
 
-#if 0
 HOOK_DEFINE(plh_hook) {
 	
-HOOK_END
+	HOOK_END(plh_hook);
 }
-#endif
