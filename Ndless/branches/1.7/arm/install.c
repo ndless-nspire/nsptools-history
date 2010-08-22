@@ -24,7 +24,33 @@
 
 #include <os.h>
 
+/* Relocate the program by adapting our own Global Offset Table (GOT).
+   This is required because we are using several global variables. */
+static void relocate(void) {
+	unsigned *gotp;
+	unsigned prgmbase;
+	// Trick to determine the address of the first instruction of the program
+	asm volatile(
+		" sub r0, pc, #4 \n" // Absolute address of  label '0'
+		"0: ldr %0, =0b \n" // Offset from the program base to label '0'
+		" sub %0, r0, %0 \n"
+		: "=r" (prgmbase) :: "r0");
+	// Get the absolute address of the got. See http://www.google.com/codesearch/p?hl=en#FiIujMxKUHU/sites/sources.redhat.com/pub/glibc/snapshots/glibc-ports-latest.tar.bz2%7CDNu48aiJSpY/glibc-ports-20090518/sysdeps/arm/dl-machine.h&q=%22.word%20_GLOBAL_OFFSET_TABLE_%22
+  asm volatile(
+  	"ldr %0, 2f \n"
+  	"1: add %0, pc, %0 \n"
+  	"b 3f \n"
+  	"2: .word _GLOBAL_OFFSET_TABLE_ - (1b+8) \n"
+  	"3:" : "=r" (gotp));
+	while (*gotp) {
+		*gotp += prgmbase;
+		gotp++;
+	}
+}
+
 void main(void) {
+	relocate();
+	ints_setup_handlers();
 	ut_read_os_version_index();
 	sc_setup();	
 	puts("Ndless installed!");

@@ -44,6 +44,6 @@ if [ ! -f "$DIRNAME/../system/crt0.o" ]; then
 	(cd "$DIRNAME/../system" && make all)
 fi
 if [ $nostartup = false ]; then
-	args=("${args[@]}" "$DIRNAME/../system/crt0.o")
+	args=("$DIRNAME/../system/crt0.o" "${args[@]}")
 fi
 "$GCC" -T "$DIRNAME/../system/ldscript" -e _nspire_start "$DIRNAME/../system/crt0sym.o" "${args[@]}"
