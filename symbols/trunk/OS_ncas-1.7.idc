@@ -890,7 +890,7 @@
 	MakeName	(0X102AB764,	"NU_Remove_Dir");
 	MakeName	(0X102AB7C8,	"NU_Get_First");
 	MakeName	(0X102AB860,	"NU_Get_Next");
-	MakeName	(0X102AB8D8,	"Nu_Done");
+	MakeName	(0X102AB8D8,	"NU_Done");
 	MakeName	(0X102ABC80,	"NU_Close_Disk");
 	MakeName	(0X102ABD90,	"NU_Set_Current_Dir");
 	MakeName	(0X102ABE70,	"NU_Current_Dir");
