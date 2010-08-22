@@ -339,9 +339,6 @@ void debugger() {
 				continue;
 			}
 		} else if (!stricmp(cmd, "int")) {
-			extern u32 active_ints;
-			extern u32 enabled_ints[2];
-			extern u32 current_ints[2];
 			printf("active=%08x enabled=%08x,%08x current=%08x,%08x\n",
 				active_ints, enabled_ints[0], enabled_ints[1], current_ints[0], current_ints[1]);
 		} else if (!stricmp(cmd, "int+")) {

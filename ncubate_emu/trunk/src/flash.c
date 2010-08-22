@@ -53,7 +53,7 @@ static void flash_read_page() {
 }
 
 static void flash_erase_block() {
-	u32 page = flash.full_address;
+	u32 page = flash.full_address & 0xffffff;
 	if (page & (-NUM_PAGES | (PAGES_PER_BLOCK - 1)))
 		error("NAND flash: erase nonexistent block %x", page);
 	memset(&flash_data[page][0], 0xFF, BLOCK_SIZE);
@@ -134,6 +134,7 @@ void nand_flash_write_word(u32 addr, u32 value) {
 		case 0x14: flash.page_address_lo = value;  return;
 		case 0x18: flash.page_address_mid = value; return;
 		case 0x1C: flash.page_address_hi = value;  return;
+		case 0x20: return; /* ??? */
 		case 0x24: flash.op_size = value;          return;
 		case 0x28: flash.ram_address = value;      return;
 		case 0x2C: return; /* AHB speed / 2500000 */

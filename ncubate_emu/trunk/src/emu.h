@@ -42,10 +42,10 @@ extern bool turbo_mode;
 extern bool show_speed;
 
 #define NUM_KEYPAD_TYPES 4
-#define KEYPAD_ROWS 10
+#define KEYPAD_ROWS 9
 #define KEYPAD_COLUMNS 16
 extern int keypad_type;
-extern volatile u16 key_map[KEYPAD_ROWS];
+extern volatile u16 key_map[16];
 
 enum { LOG_MISC, LOG_CPU, LOG_IO, LOG_HASH, LOG_FLASH, LOG_INTS, LOG_ICOUNT, LOG_USB, MAX_LOG };
 #define LOG_TYPE_TBL "MCIHFQ#U";
@@ -192,12 +192,8 @@ void lcd_reload_state(void *state);
 
 void send_file(char *filename);
 
-u8 ti84_io_link_read_byte(u32 addr);
-u16 ti84_io_link_read_half(u32 addr);
-u32 ti84_io_link_read_word(u32 addr);
-void ti84_io_link_write_byte(u32 addr, u8 value);
-void ti84_io_link_write_half(u32 addr, u16 value);
-void ti84_io_link_write_word(u32 addr, u32 value);
+u32 ti84_io_link_read(u32 addr);
+void ti84_io_link_write(u32 addr, u32 value);
 void *link_save_state(size_t *size);
 void link_reload_state(void *state);
 
@@ -254,7 +250,9 @@ void bad_write_byte(u32 addr, u8 value);
 void bad_write_half(u32 addr, u16 value);
 void bad_write_word(u32 addr, u32 value);
 
+extern u32 active_ints;
 extern u32 current_ints[2];
+extern u32 enabled_ints[2];
 #define INT_SERIAL 1
 #define INT_USB    8
 #define INT_ADC    11

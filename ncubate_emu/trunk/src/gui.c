@@ -113,7 +113,7 @@ LRESULT CALLBACK keys_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 	RECT rc;
 
 	static const char key_names[NUM_KEYPAD_TYPES][8][11][6] = {
-		{{ "ret", "enter","space","(-)", "Z",   ".",   "Y",   "0",  "X",  "---",  "theta" },
+		{{ "ret", "enter","space","(-)", "Z",   ".",   "Y",   "0",  "X",  "on",   "theta" },
 		 { ",",   "+",    "W",    "3",   "V",   "2",   "U",   "1",  "T",  "e^x",  "pi"    },
 		 { "?",   "-",    "S",    "6",   "R",   "5",   "Q",   "4",  "P",  "10^x", "EE"    },
 		 { ":",   "*",    "O",    "9",   "N",   "8",   "M",   "7",  "L",  "x^2",  "i"     },
@@ -122,7 +122,7 @@ LRESULT CALLBACK keys_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		 { "flag","click","C",    "home","B",   "menu","A",   "esc","|",  "tab",  "---"   },
 		 { "up",  "u+r",  "right","r+d", "down","d+l", "left","l+u","del","ctrl", "="     }},
 
-		{{ "down", "left", "right","up",  "---", "---",  "---",  "---",  "---","---","---" },
+		{{ "down", "left", "right","up",  "---", "---",  "---",  "---",  "---","on", "---" },
 		 { "enter","+",    "-",    "*",   "/",   "^",    "clear","---",  "---","---","---" },
 		 { "(-)",  "3",    "6",    "9",   ")",   "tan",  "vars", "---",  "---","---","---" },
 		 { ".",    "2",    "5",    "8",   "(",   "cos",  "prgm", "stat", "---","---","---" },
@@ -131,7 +131,7 @@ LRESULT CALLBACK keys_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		 { "graph","trace","zoom", "wind","y=",  "2nd",  "mode", "del",  "---","---","---" },
 		 { "---",  "---",  "---",  "---", "---", "---",  "---",  "---",  "---","---","---" }},
 
-		{{ "ret",  "enter","---",  "(-)", "space","Z",   "Y",   "0",  "?!",  "---",  "---"  },
+		{{ "ret",  "enter","---",  "(-)", "space","Z",   "Y",   "0",  "?!",  "on",   "---"  },
 		 { "X",    "W",    "V",    "3",   "U",    "T",   "S",   "1",  "pi",  "trig", "10^x" },
 		 { "R",    "Q",    "P",    "6",   "O",    "N",   "M",   "4",  "EE",  "x^2",  "---"  },
 		 { "L",    "K",    "J",    "9",   "I",    "H",   "G",   "7",  "/",   "e^x",  "---"  },
@@ -140,7 +140,7 @@ LRESULT CALLBACK keys_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		 { "flag", "click","+",    "doc", "2",    "menu","8",   "esc","---", "tab",  "---"  },
 		 { "right","r+u",  "up",   "u+l", "left", "l+d", "down","d+r","del", "ctrl", ","    }},
 
-		{{ "ret",  "enter","---",  "(-)", "space","Z",   "Y",   "0",  "?!",   "---", "---"  },
+		{{ "ret",  "enter","---",  "(-)", "space","Z",   "Y",   "0",  "?!",   "on",  "---"  },
 		 { "X",    "W",    "V",    "3",   "U",    "T",   "S",   "1",  "pi",   "trig","10^x" },
 		 { "R",    "Q",    "P",    "6",   "O",    "N",   "M",   "4",  "EE",   "x^2", "---"  },
 		 { "L",    "K",    "J",    "9",   "I",    "H",   "G",   "7",  "/",    "e^x", "---"  },
@@ -246,8 +246,6 @@ LRESULT CALLBACK keys_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 				const char *str;
 				if (row < 8 && col < 11)
 					str = key_names[keypad_type][row][col];
-				else if (row == 9 && col == 4)
-					str = "on";
 				else
 					str = "---";
 				rc.left = col * KEY_WIDTH; rc.right = rc.left + KEY_WIDTH;
@@ -272,7 +270,7 @@ LRESULT CALLBACK keys_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 	case WM_LBUTTONUP:
 		row = HIWORD(lParam) / KEY_HEIGHT;
 		col = LOWORD(lParam) / KEY_WIDTH;
-		down = wParam & MK_LBUTTON;
+		down = (wParam / MK_LBUTTON) & 1;
 		goto update;
 	case WM_KEYDOWN:
 	case WM_KEYUP: {
@@ -287,20 +285,18 @@ LRESULT CALLBACK keys_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			if (p->vk_code == wParam && p->ext & 1 << (lParam >> 24 & 1)) {
 				row = p->keypad_code[keypad_type] >> 4;
 				col = p->keypad_code[keypad_type] & 15;
-				if (row >= 10)
-					break;
-				down = ~lParam >> 31;
+				down = !(lParam >> 31);
 update:
-				if (down)
-					key_map[row] |= 1 << col;
-				else
-					key_map[row] &= ~(1 << col);
+				if (row >= KEYPAD_ROWS)
+					break;
+				if ((key_map[row] >> col & 1) != down) {
+					key_map[row] ^= 1 << col;
+					PostMessage(hwndMessage, WM_USER + 1, 0, 0);
 
-				PostMessage(hwndMessage, WM_USER + 1, 0, 0);
-
-				rc.left = col * KEY_WIDTH; rc.right = rc.left + KEY_WIDTH;
-				rc.top = row * KEY_HEIGHT; rc.bottom = rc.top + KEY_HEIGHT;
-				InvalidateRect(hWnd, &rc, FALSE);
+					rc.left = col * KEY_WIDTH; rc.right = rc.left + KEY_WIDTH;
+					rc.top = row * KEY_HEIGHT; rc.bottom = rc.top + KEY_HEIGHT;
+					InvalidateRect(hWnd, &rc, FALSE);
+				}
 				break;
 			}
 		}

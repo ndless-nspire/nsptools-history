@@ -351,13 +351,7 @@ static void next_bit() {
 u8 link_input  = 3; /* Lines not pulled down by emulator. */
 u8 link_output = 3; /* Lines not pulled down by calculator. */
 
-u8 ti84_io_link_read_byte(u32 addr) {
-	return bad_read_byte(addr);
-}
-u16 ti84_io_link_read_half(u32 addr) {
-	return bad_read_half(addr);
-}
-u32 ti84_io_link_read_word(u32 addr) {
+u32 ti84_io_link_read(u32 addr) {
 	//printf("read %08x (in=%d out=%d)\n", addr, link_input, link_output);
 	switch (addr & 0xFFFF) {
 		case 0x00: {
@@ -377,13 +371,7 @@ u32 ti84_io_link_read_word(u32 addr) {
 	}
 	return bad_read_word(addr);
 }
-void ti84_io_link_write_byte(u32 addr, u8 value) {
-	bad_write_byte(addr, value);
-}
-void ti84_io_link_write_half(u32 addr, u16 value) {
-	bad_write_half(addr, value);
-}
-void ti84_io_link_write_word(u32 addr, u32 value) {
+void ti84_io_link_write(u32 addr, u32 value) {
 	switch (addr & 0xFFFF) {
 		case 0x00:
 			if (value > 3)

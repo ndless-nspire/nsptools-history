@@ -26,7 +26,7 @@ bool do_translate = true;
 bool emulate_cas;
 
 int keypad_type;
-volatile u16 key_map[KEYPAD_ROWS];
+volatile u16 key_map[16];
 
 bool turbo_mode;
 bool show_speed;
@@ -326,7 +326,7 @@ int main(int argc, char **argv) {
 				default:
 usage:
 					printf(
-						"nspire emulator v0.30\n"
+						"nspire emulator v0.31\n"
 						"  /1=boot1      - location of BOOT1 image\n"
 						"  /B=boot2      - location of decompressed BOOT2 image\n"
 						"  /C            - emulate CAS hardware version\n"
@@ -335,6 +335,7 @@ usage:
 						"  /Kn           - set keypad type (2 = TI-84 Plus, 3 = Touchpad)\n"
 						"  /N            - create new flash image\n"
 						"  /PB=boot2.img - preload flash with BOOT2 (.img file)\n"
+						"  /PD=diags.img - preload flash with DIAGS image\n"
 						"  /PO=osfile    - preload flash with OS (.tnc/.tno file)\n");
 					return 1;
 			}
@@ -403,9 +404,8 @@ usage:
 	if (!reload_state()) {
 reset:
 		memset(&arm, 0, sizeof arm);
-		memset(arm.reg, 0x55, sizeof arm.reg);
 		arm.cpsr_low28 = MODE_SVC | 0xC0;
-		cpu_events &= ~(EVENT_IRQ | EVENT_FIQ | EVENT_RESET);
+		cpu_events &= EVENT_DEBUG_STEP;
 		if (boot2_file) {
 			/* Start from BOOT2. (needs to be re-loaded on each reset since
 			 * it can get overwritten in memory) */
@@ -420,6 +420,9 @@ reset:
 			/* To enter maintenance mode (home+enter+P), address A4012ECC
 			 * must contain an array indicating those keys before BOOT2 starts */
 			memcpy(MEM_PTR(0xA4012ECC), (void *)key_map, 0x12);
+	
+			/* Disable all FIQs (since BOOT2 neglects to do this) */
+			enabled_ints[1] = 0;
 		} else {
 			/* Start from BOOT1. */
 			arm.reg[15] = 0;

@@ -10,7 +10,7 @@ Ncubate Emu is an enhanced of the TI-Nspire emulator nspire_emu.
 Features
 ========
 
-Ncubate adds the following features to nspire_emu v030:
+Ncubate adds the following features to nspire_emu v031:
 
 GUI:
 - NEW: 'File -> Save State' let you save the whole emulator state to a file 
@@ -50,7 +50,8 @@ Olivier Armand aka ExtendeD  -  < olivier dot calc at gmail dot com >
 Changelog
 =========
 
-* v030b - unreleased
+* v031a - unreleased
+ - Migrate to nspire_emu v031
  - ADD: Command 'j'
  - CHG: Command 'k' uses virtual addresses
  - FIX: Couldn't save flash after sending a document from another directory when 

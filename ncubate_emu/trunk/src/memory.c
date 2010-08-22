@@ -99,21 +99,21 @@ void memory_write_word(u32 addr, u32 value) {
 	*ptr = value;
 }
 
-/* 8C000000 */
+/* 8FFF0000 */
 void unknown_8C_write_word(u32 addr, u32 value) {
-	switch (addr) {
-		case 0x8FFF0000: return;
-		case 0x8FFF0004: return;
-		case 0x8FFF0008: return;
-		case 0x8FFF000C: return;
-		case 0x8FFF0010: return;
-		case 0x8FFF0014: return;
+	switch (addr - 0x8FFF0000 ) {
+		case 0x00: return;
+		case 0x04: return;
+		case 0x08: return;
+		case 0x0C: return;
+		case 0x10: return;
+		case 0x14: return;
 	}
 	bad_write_word(addr, value);
 }
 
-/* A8000000 - newly used in OS 2.1 */
-u32 unknown_A8_read_word(u32 addr) {
+/* A9000000: SPI - newly used in OS 2.1 */
+u32 spi_read_word(u32 addr) {
 	switch (addr - 0xA9000000) {
 		case 0x10: return -1; // returning 0 hangs
 		case 0x1C: return 0;
@@ -121,7 +121,7 @@ u32 unknown_A8_read_word(u32 addr) {
 	}
 	return bad_read_word(addr);
 }
-void unknown_A8_write_word(u32 addr, u32 value) {
+void spi_write_word(u32 addr, u32 value) {
 	switch (addr - 0xA9000000) {
 		case 0x0C: return;
 		case 0x1C: return;
@@ -130,21 +130,71 @@ void unknown_A8_write_word(u32 addr, u32 value) {
 	bad_write_word(addr, value);
 }
 
-/* AC000000 */
-u8 unknown_AC_read_byte(u32 addr) {
+/* AC000000: SDIO */
+u8 sdio_read_byte(u32 addr) {
 	switch (addr & 0x3FFFFFF) {
-		case 0x29: return 0;
+		case 0x29: return -1;
 	}
 	return bad_read_byte(addr);
 }
+u16 sdio_read_half(u32 addr) {
+	switch (addr & 0x3FFFFFF) {
+		case 0x10: return -1;
+		case 0x12: return -1;
+		case 0x14: return -1;
+		case 0x16: return -1;
+		case 0x18: return -1;
+		case 0x1A: return -1;
+		case 0x1C: return -1;
+		case 0x1E: return -1;
+		case 0x2C: return -1;
+		case 0x30: return -1;
+	}
+	return bad_read_half(addr);
+}
+u32 sdio_read_word(u32 addr) {
+	switch (addr & 0x3FFFFFF) {
+		case 0x20: return -1;
+	}
+	return bad_read_word(addr);
+}
+void sdio_write_byte(u32 addr, u8 value) {
+	switch (addr & 0x3FFFFFF) {
+		case 0x29: return;
+		case 0x2E: return;
+		case 0x2F: return;
+	}
+	bad_write_byte(addr, value);
+}
+void sdio_write_half(u32 addr, u16 value) {
+	switch (addr & 0x3FFFFFF) {
+		case 0x04: return;
+		case 0x0C: return;
+		case 0x0E: return;
+		case 0x2C: return;
+		case 0x30: return;
+		case 0x32: return;
+		case 0x34: return;
+		case 0x36: return;
+	}
+	bad_write_half(addr, value);
+}
+void sdio_write_word(u32 addr, u32 value) {
+	switch (addr & 0x3FFFFFF) {
+		case 0x00: return;
+		case 0x08: return;
+		case 0x20: return;
+	}
+	bad_write_word(addr, value);
+}
 
-/* B0000000: USB */
+/* B0000000 (and B4000000?): USB */
 u8 usb_read_byte(u32 addr) {
-	if (addr == 0xB0000100) return 0x40; // operational registers start at +40
+	if ((addr & 0x3FFFFFF) == 0x100) return 0x40; // operational registers start at +40
 	return bad_read_byte(addr);
 }
 u16 usb_read_half(u32 addr) {
-	if (addr == 0xB0000102) return 0x0100; // EHCI 1.0
+	if ((addr & 0x3FFFFFF) == 0x102) return 0x0100; // EHCI 1.0
 	return bad_read_half(addr);
 }
 u32 usb_read_word(u32 addr) {
@@ -171,6 +221,8 @@ u32 usb_read_word(u32 addr) {
 }
 void usb_write_word(u32 addr, u32 value) {
 	switch (addr & 0x3FFFFFF) {
+		case 0x080: return; // used by diags
+		case 0x084: return; // used by diags
 		case 0x140: return;
 		case 0x144: return;
 		case 0x148: return;
@@ -196,32 +248,32 @@ u32 unknown_BC_read_word(u32 addr) {
 	return bad_read_word(addr);
 }
 
-/* C4000000: ADC (Analog-to-Digital Converter?) */
+/* C4000000: ADC (Analog-to-Digital Converter) */
 static u32 adc_int_active;
 static u32 adc_int_enable;
 
 static u32 adc_read_word(u32 addr) {
 	if (!(addr & 0x100)) {
 		switch (addr & 0x3FFFFFF) {
-			case 0x00:
+			case 0x00: case 0x04:
 				return adc_int_active;
 			case 0x08:
 				return adc_int_enable;
 		}
 	} else {
-		int n = addr >> 5 & 7;
+		int channel = addr >> 5 & 7;
 		switch (addr & 0x3FFFE1F) {
 			case 0x00:
 				return 0;
 			case 0x10:
-				if (n == 3) {
+				// Scale for channels 1-2:   155 units = 1 volt
+				// Scale for other channels: 310 units = 1 volt
+				if (channel == 3) {
 					// A value from 0 to 20 indicates normal TI-Nspire keypad.
 					// A value from 21 to 42 indicates TI-84+ keypad.
 					return 10 + (keypad_type * 21);
 				} else {
-					// Not sure what these should actually be, but
-					// this gets rid of low battery warning.
-					return 5000; 
+					return 930;
 				}
 		}
 	}
@@ -373,36 +425,16 @@ void __attribute__((fastcall)) slow_write_word(u32 addr, u32 value) {
 void memory_initialize() {
 	int i;
 	for (i = 0; i < 64; i++) {
-		read_byte_map[i] = bad_read_byte;
-		read_half_map[i] = bad_read_half;
-		read_word_map[i] = bad_read_word;
-		write_byte_map[i] = bad_write_byte;
-		write_half_map[i] = bad_write_half;
-		write_word_map[i] = bad_write_word;
+		/* will fallback to bad_* on non-memory addresses */
+		read_byte_map[i] = memory_read_byte;
+		read_half_map[i] = memory_read_half;
+		read_word_map[i] = memory_read_word;
+		write_byte_map[i] = memory_write_byte;
+		write_half_map[i] = memory_write_half;
+		write_word_map[i] = memory_write_word;
 	}
 
-	read_byte_map[0x00 >> 2] = memory_read_byte;
-	read_half_map[0x00 >> 2] = memory_read_half;
-	read_word_map[0x00 >> 2] = memory_read_word;
-	write_byte_map[0x00 >> 2] = memory_write_byte;
-	write_half_map[0x00 >> 2] = memory_write_half;
-	write_word_map[0x00 >> 2] = memory_write_word;
-
-	read_byte_map[0x10 >> 2] = memory_read_byte;
-	read_half_map[0x10 >> 2] = memory_read_half;
-	read_word_map[0x10 >> 2] = memory_read_word;
-	write_byte_map[0x10 >> 2] = memory_write_byte;
-	write_half_map[0x10 >> 2] = memory_write_half;
-	write_word_map[0x10 >> 2] = memory_write_word;
-
-	read_byte_map[0x18 >> 2] = memory_read_byte;
-	read_half_map[0x18 >> 2] = memory_read_half;
-	read_word_map[0x18 >> 2] = memory_read_word;
-	write_byte_map[0x18 >> 2] = memory_write_byte;
-	write_half_map[0x18 >> 2] = memory_write_half;
-	write_word_map[0x18 >> 2] = memory_write_word;
-
-	write_word_map[0x8C >> 2] = unknown_8C_write_word;
+	write_word_map[0x8F >> 2] = unknown_8C_write_word;
 
 	read_byte_map[0x90 >> 2] = apb_read_byte;
 	read_half_map[0x90 >> 2] = apb_read_half;
@@ -411,17 +443,15 @@ void memory_initialize() {
 	write_half_map[0x90 >> 2] = apb_write_half;
 	write_word_map[0x90 >> 2] = apb_write_word;
 
-	read_byte_map[0xA4 >> 2] = memory_read_byte;
-	read_half_map[0xA4 >> 2] = memory_read_half;
-	read_word_map[0xA4 >> 2] = memory_read_word;
-	write_byte_map[0xA4 >> 2] = memory_write_byte;
-	write_half_map[0xA4 >> 2] = memory_write_half;
-	write_word_map[0xA4 >> 2] = memory_write_word;
+	read_word_map[0xA9 >> 2] = spi_read_word;
+	write_word_map[0xA9 >> 2] = spi_write_word;
 
-	read_word_map[0xA8 >> 2] = unknown_A8_read_word;
-	write_word_map[0xA8 >> 2] = unknown_A8_write_word;
-
-	read_byte_map[0xAC >> 2] = unknown_AC_read_byte;
+	read_byte_map[0xAC >> 2] = sdio_read_byte;
+	read_half_map[0xAC >> 2] = sdio_read_half;
+	read_word_map[0xAC >> 2] = sdio_read_word;
+	write_byte_map[0xAC >> 2] = sdio_write_byte;
+	write_half_map[0xAC >> 2] = sdio_write_half;
+	write_word_map[0xAC >> 2] = sdio_write_word;
 
 	read_byte_map[0xB0 >> 2] = usb_read_byte;
 	read_half_map[0xB0 >> 2] = usb_read_half;
