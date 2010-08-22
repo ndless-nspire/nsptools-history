@@ -105,6 +105,10 @@ _SYSCALL4(size_t, fread, void *, size_t, size_t, FILE *)
 _SYSCALL4(size_t, fwrite, const void *, size_t, size_t, FILE *)
 _SYSCALL1(int, fclose, FILE *)
 _SYSCALL2(int, mkdir, const char*, int)
+_SYSCALL2(int, stat, const char *, struct stat *)
+_SYSCALL2(int, NU_Get_First, struct dstat *, const char * /* pattern */)
+_SYSCALL1(int,  NU_Get_Next, struct dstat *)
+_SYSCALL1(void, NU_Done, struct dstat *)
 
 #endif // GCC C
 #endif

@@ -25,7 +25,8 @@
 #include "ndless.h"
 
 // TODO use stat instead
-#define HOOK_MAX_SIZE 10000
+#define NDLESS_RES_FILE "/documents/ndless/ndless_resources.tns"
+
 
 /* OS-specific
  * addresses patched by ld_heap_alloc/ld_heap_patch():
@@ -37,10 +38,10 @@ static unsigned const ld_hook_alloc_patch_addrs[][2] = {
 
 /* Allocate space at the end of the heap for the hook.
  * Returns a pointer to the block allocated. */
-static void *ld_hook_alloc(void) {
+static void *ld_hook_alloc(unsigned hook_size) {
 	return (unsigned*)(ld_hook_alloc_patch_addrs[ut_os_version_index][0] // pool base
 	                   + *(unsigned*)ld_hook_alloc_patch_addrs[ut_os_version_index][1] // pool size
-	                   - HOOK_MAX_SIZE);
+	                   - hook_size);
 }
 
 /* Patch the OS to rebase the heap after the hook block. */
@@ -49,22 +50,23 @@ static void ld_heap_patch(unsigned hook_size) {
 }
 
 /* Returns the hook size */
-static unsigned ld_copy_hook(void *hook_dest) {
-	FILE *hook_file = fopen("/documents/ndless/ndless_resources.tns", "rb");
+static void ld_copy_hook(void *hook_dest, unsigned hook_size) {
+	FILE *hook_file = fopen(NDLESS_RES_FILE, "rb");
 	if (!hook_file)
 		ut_panic("can't find ndless_resources.tns");
-	halt();
-	size_t hook_size = fread(hook_dest, 1, HOOK_MAX_SIZE, hook_file); // TODO stat : maximum hook size
-	if (!hook_size)
+	if (fread(hook_dest, 1, hook_size, hook_file) != hook_size)
 		ut_panic("can't read ndless_resources.tns");
-	return hook_size;
 }
 
 void ld_load(void) {
+	struct stat res_stat;
 	ut_read_os_version_index();
 	sc_setup();
-	void *hook_block = ld_hook_alloc();
-	ld_heap_patch(ld_copy_hook(hook_block));
+	if (stat(NDLESS_RES_FILE, &res_stat))
+		ut_panic("can't open ndless_resources.tns");
+	void *hook_block = ld_hook_alloc(res_stat.st_size);
+	ld_copy_hook(hook_block, res_stat.st_size);
+	ld_heap_patch(res_stat.st_size);
 	puts("Ndless installed!");
 	ut_os_reboot();
 }

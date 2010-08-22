@@ -207,6 +207,85 @@ static inline void idle(void) {
   asm volatile ("mcr p15, 0, %0, c7, c0, 4" : "=r"(sbz) );
 }
 
+/***********************************
+ * Nucleus
+ ***********************************/
+
+#define ARDONLY 0x1     /* MS-DOS File attributes */ 
+#define AHIDDEN 0x2 
+#define ASYSTEM 0x4 
+#define AVOLUME 0x8  
+#define ADIRENT 0x10 
+#define ARCHIVE 0x20 
+#define ANORMAL 0x00 
+
+struct dstat {
+	char unknown1[13];
+  char filepath[266];        /* Null terminated: A:\... */
+  unsigned char fattribute;  /* File attributes: see A* constants above */
+  unsigned short unknown2;
+  unsigned short unknown3;
+  unsigned short unknown4;
+  unsigned short unknown5;
+  unsigned long fsize;      /* File size */
+  void *unknown6, *unknown7;
+  unsigned int unknown8;
+  unsigned short unknown9;
+};
+ 
+/***********************************
+ * POSIX
+ ***********************************/
+
+#define S_IFMT  00170000
+#define S_IFSOCK 0140000
+#define S_IFLNK  0120000
+#define S_IFREG  0100000
+#define S_IFBLK  0060000
+#define S_IFDIR  0040000
+#define S_IFCHR  0020000
+#define S_IFIFO  0010000
+#define S_ISUID  0004000
+#define S_ISGID  0002000
+#define S_ISVTX  0001000
+
+#define S_ISLNK(m)      (((m) & S_IFMT) == S_IFLNK)
+#define S_ISREG(m)      (((m) & S_IFMT) == S_IFREG)
+#define S_ISDIR(m)      (((m) & S_IFMT) == S_IFDIR)
+#define S_ISCHR(m)      (((m) & S_IFMT) == S_IFCHR)
+#define S_ISBLK(m)      (((m) & S_IFMT) == S_IFBLK)
+#define S_ISFIFO(m)     (((m) & S_IFMT) == S_IFIFO)
+#define S_ISSOCK(m)     (((m) & S_IFMT) == S_IFSOCK)
+
+#define S_IRWXU 00700
+#define S_IRUSR 00400
+#define S_IWUSR 00200
+#define S_IXUSR 00100
+
+#define S_IRWXG 00070
+#define S_IRGRP 00040
+#define S_IWGRP 00020
+#define S_IXGRP 00010
+
+#define S_IRWXO 00007
+#define S_IROTH 00004
+#define S_IWOTH 00002
+#define S_IXOTH 00001
+
+struct stat {
+	unsigned short st_dev;
+	unsigned int st_ino; // 0
+	unsigned int st_mode; // see S_ macros above
+	unsigned short st_nlink; // 1
+	unsigned short st_uid; // 0
+	unsigned short st_gid; // 0
+	unsigned short st_rdev; // = st_dev
+	unsigned int st_size;
+	unsigned int st_atime;
+	unsigned int st_mtime;
+	unsigned int st_ctime;
+};
+
 #endif /* GCC C */
 
 #endif

@@ -37,9 +37,13 @@
 #define e_rename 20
 #define e_power_off 21
 #define e_puts 22
+#define e_NU_Get_First 23
+#define e_NU_Get_Next 24
+#define e_NU_Done 25
+
 // END_OF_LIST (always keep this line after the last constant, used by mksyscalls.sh)
 
 // Must be kept up-to-date with the value of the last syscall
-#define SYSCALLS_NUM 22
+#define SYSCALLS_NUM 25
 
 #endif
