@@ -24,27 +24,28 @@
 
 #include "ndless.h"
 
+// TODO use stat instead
+#define HOOK_MAX_SIZE 10000
+
 /* OS-specific
- * addresses patched by ld_hook_alloc():
- * INT_bss_end constant, system dynamic mem pool size constant */
+ * addresses patched by ld_heap_alloc/ld_heap_patch():
+ * sysmem_dm_pool address, system dynamic mem pool size constant */
 static unsigned const ld_hook_alloc_patch_addrs[][2] = {
-	{0x1021121C, 0x100002C0}, // 1.7 non-CAS
+	{0x107957B0, 0x100002C0}, // 1.7 non-CAS
 	{0, 0} // 1.7 CAS TODO
 };
 
-/* Allocate space at the beginning of the heap for the hook.
- * Returns a pointer to the block allocated.
- */
+/* Allocate space at the end of the heap for the hook.
+ * Returns a pointer to the block allocated. */
 static void *ld_hook_alloc(void) {
-	return (unsigned*)ld_hook_alloc_patch_addrs[ut_os_version_index][0];
+	return (unsigned*)(ld_hook_alloc_patch_addrs[ut_os_version_index][0] // pool base
+	                   + *(unsigned*)ld_hook_alloc_patch_addrs[ut_os_version_index][1] // pool size
+	                   - HOOK_MAX_SIZE);
 }
 
-/*
- * Patch the OS to rebase the heap after the hook block.
- */
-static void ld_heap_rebase(unsigned hook_size) {
-	*(unsigned*)ld_hook_alloc_patch_addrs[ut_os_version_index][0] += hook_size; // moves the heap base up
-	*(unsigned*)ld_hook_alloc_patch_addrs[ut_os_version_index][1] -= hook_size; // and ajust the pool size
+/* Patch the OS to rebase the heap after the hook block. */
+static void ld_heap_patch(unsigned hook_size) {
+	*(unsigned*)ld_hook_alloc_patch_addrs[ut_os_version_index][1] -= hook_size; // ajust the pool size
 }
 
 /* Returns the hook size */
@@ -52,16 +53,10 @@ static unsigned ld_copy_hook(void *hook_dest) {
 	FILE *hook_file = fopen("/documents/ndless/ndless_resources.tns", "rb");
 	if (!hook_file)
 		ut_panic("can't find ndless_resources.tns");
-	// we aren't freading directly to hook_dest: fread depends on a valid heap
 	halt();
-	// TODO allocation pas possible car plus de mem. Ndless2 utilise MEMSPACE_BASE_ADDRESS = 0x11E11000
-	// Plutôt en fin de heap ld_hook_alloc_patch_addrs[0] + ld_hook_alloc_patch_addrs[1] - taille_res
-	void *buf = malloc(10000);
-	size_t hook_size = fread(buf, 1, 1000, hook_file); // TODO stat : maximum hook size
+	size_t hook_size = fread(hook_dest, 1, HOOK_MAX_SIZE, hook_file); // TODO stat : maximum hook size
 	if (!hook_size)
 		ut_panic("can't read ndless_resources.tns");
-	//memcpy(hook_dest, buf, 1000);
-	// no free, no fclose: the beginning of the heap has been overwritten and we are about to reboot
 	return hook_size;
 }
 
@@ -69,7 +64,7 @@ void ld_load(void) {
 	ut_read_os_version_index();
 	sc_setup();
 	void *hook_block = ld_hook_alloc();
-	ld_heap_rebase(ld_copy_hook(hook_block));
+	ld_heap_patch(ld_copy_hook(hook_block));
 	puts("Ndless installed!");
 	ut_os_reboot();
 }

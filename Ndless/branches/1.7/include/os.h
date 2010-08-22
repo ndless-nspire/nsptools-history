@@ -29,19 +29,19 @@
  * - A macro fo syscalls with more than 4 parameters. We force GCC to pass the 5+ parameters through
  *   the stack using a variadic function and a wrapper with typed parameters.
  * - A macro for variadic syscalls
- * Caution, lr is destroyed by our swi calling convention */
+ * Caution, lr is destroyed by our swi calling convention (and r0-r3,r12 by the C calling convention of the syscalls) */
 #define _SYSCALL0(rettype, funcname) static inline rettype funcname(void) { \
 	register unsigned __r0 asm("r0"); \
 	asm volatile( \
 		" swi " _XSTRINGIFY(_SYSCALL_ENUM(funcname)) \
-		:"=r" (__r0) :: "r0", "r1", "r2", "r3"); \
+		:"=r" (__r0) :: "r0", "r1", "r2", "r3", "r12", "lr"); \
 	return (rettype)__r0; \
 }
 #define _SYSCALL1(rettype, funcname, type1) static inline rettype funcname(type1 __param1) { \
 	register unsigned __r0 asm("r0") = (unsigned)__param1; \
 	asm volatile( \
 		" swi " _XSTRINGIFY(_SYSCALL_ENUM(funcname)) \
-		: "=r" (__r0) : "r" (__r0) :  "r1", "r2", "r3"); \
+		: "=r" (__r0) : "r" (__r0) :  "r1", "r2", "r3", "r12", "lr"); \
 	return (rettype)__r0; \
 }
 #define _SYSCALL2(rettype, funcname, type1, type2) static inline rettype funcname(type1 __param1, type2 __param2) { \
@@ -49,7 +49,7 @@
 	register unsigned __r1 asm("r1") = (unsigned)__param2; \
 	asm volatile( \
 		" swi " _XSTRINGIFY(_SYSCALL_ENUM(funcname)) \
-		: "=r" (__r0) : "r" (__r0), "r" (__r1) : "r2", "r3"); \
+		: "=r" (__r0) : "r" (__r0), "r" (__r1) : "r2", "r3", "r12", "lr"); \
 	return (rettype)__r0; \
 }
 #define _SYSCALL3(rettype, funcname, type1, type2, type3) static inline rettype funcname(type1 __param1, type2 __param2, type3 __param3) { \
@@ -58,7 +58,7 @@
 	register unsigned __r2 asm("r2") = (unsigned)__param3; \
 	asm volatile( \
 		" swi " _XSTRINGIFY(_SYSCALL_ENUM(funcname)) \
-		: "=r" (__r0) : "r" (__r0), "r" (__r1), "r" (__r2) : "r3"); \
+		: "=r" (__r0) : "r" (__r0), "r" (__r1), "r" (__r2) : "r3", "r12", "lr"); \
 	return (rettype)__r0; \
 }
 #define _SYSCALL4(rettype, funcname, type1, type2, type3, type4) static inline rettype funcname(type1 __param1, type2 __param2,  type3 __param3,  type4 __param4) { \
@@ -68,7 +68,7 @@
 	register unsigned __r3 asm("r3") = (unsigned)__param4; \
 	asm volatile( \
 		" swi " _XSTRINGIFY(_SYSCALL_ENUM(funcname)) \
-		: "=r" (__r0) : "r" (__r0), "r" (__r1), "r" (__r2) , "r" (__r3) :); \
+		: "=r" (__r0) : "r" (__r0), "r" (__r1), "r" (__r2) , "r" (__r3) : "r12", "lr"); \
 	return (rettype)__r0; \
 }
 #define _SYSCALLVAR(rettype, funcname, param1, ...) static rettype __attribute__((naked)) funcname(param1, __VA_ARGS__) { \
