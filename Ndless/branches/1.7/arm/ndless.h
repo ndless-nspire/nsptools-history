@@ -27,6 +27,10 @@
 
 #include <OS.h>
 
+/* ints.h */
+extern unsigned *sc_addrs_ptr;
+void ints_setup_handlers(void);
+
 /* utils.c */
 extern unsigned ut_os_version_index;
 void ut_read_os_version_index(void);
@@ -34,9 +38,8 @@ void __attribute__ ((noreturn)) ut_os_reboot(void);
 void __attribute__ ((noreturn)) ut_calc_reboot(void);
 void __attribute__ ((noreturn)) ut_panic(const char * msg);
 
-/* ints.h */
-extern unsigned *sc_addrs_ptr;
-void ints_setup_handlers(void);
+/* syscalls.c */
+void sc_setup(void);
 
 #endif
 

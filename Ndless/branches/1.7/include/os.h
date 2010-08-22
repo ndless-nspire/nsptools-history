@@ -6,7 +6,11 @@
 #define _OS_H_
 
 #include "common.h"
+#ifdef _SYSCALLS_LIGHT
+#include "syscalls-light.h"
+#else
 #include "syscalls.h"
+#endif
 
 /** GNU AS */
 #ifdef GNU_AS

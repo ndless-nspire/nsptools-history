@@ -24,9 +24,7 @@
 
 #include "ndless.h"
 
-// TODO use stat instead
 #define NDLESS_RES_FILE "/documents/ndless/ndless_resources.tns"
-
 
 /* OS-specific
  * addresses patched by ld_heap_alloc/ld_heap_patch():

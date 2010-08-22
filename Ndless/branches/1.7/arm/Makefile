@@ -11,6 +11,7 @@ ifeq (${OBJCOPY},"")
 endif
 DISTDIR = ../res/$(NSPIRE_HARDWARE)
 # OS-specific
+SYSCALLS_LIGHT_OBJS=syscalls-light_ncas-1.7.o syscalls-light_cas-1.7.o
 SYSCALLS_OBJS=syscalls_ncas-1.7.o syscalls_cas-1.7.o
 vpath %.tns  ../res/$(NSPIRE_HARDWARE)
 
@@ -29,8 +30,9 @@ all: static ndless_installer.tns ndless_resources.tns
 static:
 	@mkdir -p ../res/$(NSPIRE_HARDWARE)
 
+ndless_installer.elf: GCCFLAGS:=$(GCCFLAGS) -D _SYSCALLS_LIGHT
 # bootstrapper.o is the entry point: must be first in the list, and linked with --no-startup 
-ndless_installer.elf: bootstrapper.o loader.o ints.o syscalls.o utils.o $(SYSCALLS_OBJS)
+ndless_installer.elf: bootstrapper.o loader.o ints.o syscalls.o utils.o $(SYSCALLS_LIGHT_OBJS)
 	$(LD) --no-startup $(LDFLAGS) $^ -o $@
 
 ndless_installer.tns: ndless_installer.elf
