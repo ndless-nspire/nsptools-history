@@ -219,7 +219,7 @@ static inline void idle(void) {
 	} while (0)
 
 #define HOOK_DEFINE(hookname) \
-	unsigned __hookname##_end_instrs[2]; \
+	unsigned __hookname##_end_instrs[4]; \
 	void __attribute__((naked)) hookname(void)
 
 #define HOOK_END(hookname) do { \

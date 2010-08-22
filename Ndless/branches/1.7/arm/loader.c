@@ -28,9 +28,10 @@
 
 /* OS-specific
  * addresses patched by ld_heap_alloc/ld_heap_patch():
- * sysmem_dm_pool address, system dynamic mem pool size constant */
-static unsigned const ld_hook_alloc_patch_addrs[][2] = {
-	{0x107957B0, 0x100002C0}, // 1.7 non-CAS
+ * A: sysmem_dm_pool address, B: system dynamic mem pool size constant, C: upper memory cleanup limit calculation
+ * The instruction pointed to by C is sub r3, r3, #0x100000 */
+static unsigned const ld_hook_alloc_patch_addrs[][3] = {
+	{0x107957B0, 0x100002C0, 0x10000088}, // 1.7 non-CAS
 	{0, 0} // 1.7 CAS TODO
 };
 
@@ -45,15 +46,16 @@ static void *ld_hook_alloc(unsigned hook_size) {
 /* Patch the OS to rebase the heap after the hook block. */
 static void ld_heap_patch(unsigned hook_size) {
 	*(unsigned*)ld_hook_alloc_patch_addrs[ut_os_version_index][1] -= hook_size; // ajust the pool size
+	*(unsigned*)ld_hook_alloc_patch_addrs[ut_os_version_index][2] = 0xE2433603; // lower the limit with: sub r3, r3, #0x300000: avoids cleaning up the hook on OS startup
 }
 
 /* Returns the hook size */
 static void ld_copy_hook(void *hook_dest, unsigned hook_size) {
 	FILE *hook_file = fopen(NDLESS_RES_FILE, "rb");
 	if (!hook_file)
-		ut_panic("can't open res");
+		ut_panic("res");
 	if (fread(hook_dest, 1, hook_size, hook_file) != hook_size)
-		ut_panic("can't read res");
+		ut_panic("res");
 }
 
 void ld_load(void) {
@@ -61,7 +63,7 @@ void ld_load(void) {
 	ut_read_os_version_index();
 	sc_setup();
 	if (stat(NDLESS_RES_FILE, &res_stat))
-		ut_panic("can't open res");
+		ut_panic("res");
 	void *hook_block = ld_hook_alloc(res_stat.st_size);
 	ld_copy_hook(hook_block, res_stat.st_size);
 	ld_heap_patch(res_stat.st_size);
