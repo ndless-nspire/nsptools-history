@@ -51,7 +51,7 @@ ndless_installer.tns: ndless_installer.elf
 	mv $(@:.tns=.zip) $(DISTDIR)/$@
 	rm Document.xml
 
-ndless_resources.elf: install.o ints.o syscalls.o utils.o $(SYSCALLS_OBJS)
+ndless_resources.elf: install.o ints.o ploaderhook.o syscalls.o utils.o $(SYSCALLS_OBJS)
 	$(LD) $(LDFLAGS) $^ -o $@
 
 ndless_resources.tns: ndless_resources.elf

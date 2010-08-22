@@ -200,8 +200,9 @@ Changelog
  Samples:
   - CHG: 'demo' renamed to 'particles' and moved to samples/
 Tools:
+  - NEW: startup code relocates the program. You can now use C global variables.
   - NEW: option --no-startup for nspire-ld
-  - FIX: option -fpic had been lost in v1.1 for nspire-gcc
+  - FIX: option -fpic was missing in nspire-gcc from v1.1
 
 * v1.1 - 2010/07/31
  Installer:

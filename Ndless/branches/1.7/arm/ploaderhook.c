@@ -1,5 +1,5 @@
 /****************************************************************************
- * Ndless installation
+ * Ndless program loader hooks
  *
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
@@ -24,15 +24,9 @@
 
 #include <os.h>
 
-static void ins_install_ploader_hook(void) {
-	//HOOK_INSTALL(TODO_address, plh_hook);
+#if 0
+HOOK_DEFINE(plh_hook) {
+	
+HOOK_END
 }
-
-void main(void) {
-	ints_setup_handlers();
-	ut_read_os_version_index();
-	sc_setup();	
-	ins_install_ploader_hook();
-	puts("Ndless installed!");
-	ut_os_reboot();
-}
+#endif
