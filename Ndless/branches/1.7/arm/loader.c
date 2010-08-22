@@ -52,11 +52,12 @@ static unsigned ld_copy_hook(void *hook_dest) {
 	FILE *hook_file = fopen("/documents/ndless/ndless_resources.tns", "rb");
 	if (!hook_file)
 		ut_panic("can't find ndless_resources.tns");
-	// TODO stat
 	// we aren't freading directly to hook_dest: fread depends on a valid heap
-	void *buf = malloc(1000);
 	halt();
-	size_t hook_size = fread(buf, 1, 1000, hook_file); // maximum hook size
+	// TODO allocation pas possible car plus de mem. Ndless2 utilise MEMSPACE_BASE_ADDRESS = 0x11E11000
+	// Plutôt en fin de heap ld_hook_alloc_patch_addrs[0] + ld_hook_alloc_patch_addrs[1] - taille_res
+	void *buf = malloc(10000);
+	size_t hook_size = fread(buf, 1, 1000, hook_file); // TODO stat : maximum hook size
 	if (!hook_size)
 		ut_panic("can't read ndless_resources.tns");
 	//memcpy(hook_dest, buf, 1000);
