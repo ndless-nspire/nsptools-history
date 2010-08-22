@@ -51,9 +51,9 @@ static void ld_heap_patch(unsigned hook_size) {
 static void ld_copy_hook(void *hook_dest, unsigned hook_size) {
 	FILE *hook_file = fopen(NDLESS_RES_FILE, "rb");
 	if (!hook_file)
-		ut_panic("can't find ndless_resources.tns");
+		ut_panic("can't open res");
 	if (fread(hook_dest, 1, hook_size, hook_file) != hook_size)
-		ut_panic("can't read ndless_resources.tns");
+		ut_panic("can't read res");
 }
 
 void ld_load(void) {
@@ -61,10 +61,10 @@ void ld_load(void) {
 	ut_read_os_version_index();
 	sc_setup();
 	if (stat(NDLESS_RES_FILE, &res_stat))
-		ut_panic("can't open ndless_resources.tns");
+		ut_panic("can't open res");
 	void *hook_block = ld_hook_alloc(res_stat.st_size);
 	ld_copy_hook(hook_block, res_stat.st_size);
 	ld_heap_patch(res_stat.st_size);
-	puts("Ndless installed!");
-	ut_os_reboot();
+	halt();
+	((void (*)(void))hook_block)();
 }

@@ -22,3 +22,11 @@
  *                 Geoffrey ANNEHEIM <geoffrey.anneheim@gmail.com>
  ****************************************************************************/
 
+#include <os.h>
+
+void main(void) {
+	ut_read_os_version_index();
+	sc_setup();	
+	puts("Ndless installed!");
+	ut_os_reboot();
+}

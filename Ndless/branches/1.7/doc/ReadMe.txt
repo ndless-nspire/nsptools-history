@@ -201,6 +201,7 @@ Changelog
   - CHG: 'demo' renamed to 'particles' and moved to samples/
 Tools:
   - NEW: option --no-startup for nspire-ld
+  - FIX: option -fpic had been lost in v1.1 for nspire-gcc
 
 * v1.1 - 2010/07/31
  Installer:

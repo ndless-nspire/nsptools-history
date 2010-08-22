@@ -7,6 +7,7 @@
 
 #include "common.h"
 #ifdef _SYSCALLS_LIGHT
+// Use the light version of the syscalls table
 #include "syscalls-light.h"
 #else
 #include "syscalls.h"

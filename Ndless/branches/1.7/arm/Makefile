@@ -13,7 +13,7 @@ DISTDIR = ../res/$(NSPIRE_HARDWARE)
 # OS-specific
 SYSCALLS_LIGHT_OBJS=syscalls-light_ncas-1.7.o syscalls-light_cas-1.7.o
 SYSCALLS_OBJS=syscalls_ncas-1.7.o syscalls_cas-1.7.o
-vpath %.tns  ../res/$(NSPIRE_HARDWARE)
+vpath %.tns  $(DISTDIR)
 
 all: static ndless_installer.tns ndless_resources.tns
 
@@ -28,8 +28,9 @@ all: static ndless_installer.tns ndless_resources.tns
 
 
 static:
-	@mkdir -p ../res/$(NSPIRE_HARDWARE)
+	@mkdir -p $(DISTDIR)
 
+# Build with the light switch, because of the 1kb limit of ndless_installer.tns
 ints_light.o: ints.c
 	$(GCC) $(GCCFLAGS) -D _SYSCALLS_LIGHT -c $< -o $@
 syscalls_light.o: syscalls.c
@@ -50,16 +51,16 @@ ndless_installer.tns: ndless_installer.elf
 	mv $(@:.tns=.zip) $(DISTDIR)/$@
 	rm Document.xml
 
-ndless_resources.elf: ints.o syscalls.o utils.o install.o $(SYSCALLS_OBJS)
-	$(LD) --no-startup $(LDFLAGS) $^ -o $@
+ndless_resources.elf: install.o ints.o syscalls.o utils.o $(SYSCALLS_OBJS)
+	$(LD) $(LDFLAGS) $^ -o $@
 
 ndless_resources.tns: ndless_resources.elf
-	$(OBJCOPY) -O binary $< $@
+	$(OBJCOPY) -O binary $< $(DISTDIR)/$@
 
 clean: cleanbin cleanapp
 cleanapp:
 	@# -: may fail because nspire_emu has a lock on it
-	-rm -rf ../res/$(NSPIRE_HARDWARE)
+	-rm -rf $(DISTDIR)
 
 cleanbin:
 	rm -rf *.o *.bin *.elf *.xml *.zip

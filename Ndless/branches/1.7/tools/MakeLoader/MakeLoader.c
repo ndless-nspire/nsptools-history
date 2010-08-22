@@ -8,7 +8,7 @@
 #define xstr(s) str(s)
 #define str(s) #s
 
-void printUsage() {
+void printUsage(void) {
 	puts("Usage: MakeLoader <loader.bin> <output.xml> [<n blocks>]");	
 }
 
@@ -51,10 +51,9 @@ int main(int argc, const char* argv[]) {
 	int nBlocks = DEFAULT_N_BLOCKS;
   int success = 0;
 	
-	printUsage();
-	
 	if ((argc < 3) || (argc > 4)) {
     printErrorAndExit("Too few or too many arguments specified", 1);
+		printUsage();
 	}
 	
 	// Get parameters
