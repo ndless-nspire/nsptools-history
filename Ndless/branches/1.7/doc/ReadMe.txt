@@ -12,23 +12,14 @@ What do I need to install it on a TI-Nspire?
 ============================================
 
 - A TI-Nspire CAS or non-CAS
-- Windows
-- TI-Nspire Computer Link Software v1.3 or above (previous versions not tested)
-- An Internet connection for automatic OS download if OS 1.1 is not currently installed on
-  the TI-Nspire
+- OS v1.7 installed on it
+- Any linking program such as TI-Nspire Computer Link Software
 
-How do I install/upgrade it?
-============================
+How do I install it?
+====================
 
-- If you don't have an Internet connection and OS 1.1 is not currently installed on the
-  TI-Nspire, get it and copy it to 'userfiles\tinspire_1.1.tno' (the .tno extension is
-  supported by both CAS and non-CAS models)
-- Use the TI-Nspire keypad, and connect the TI-Nspire to the computer
-- Run install-ndless.bat
-- Follow the steps on the screen. Installing Ndless should take less than 2 minutes with
-  few manual steps.
-- During the installation you may need to ignore, accept or discard the Windows firewall
-  (or your personal firewall) warning for the program "Java(TM) Platform SE binary".
+How do I upgrade from v1.0/v1.1?
+================================
 
 How do I run an executable?
 ===========================
@@ -38,20 +29,13 @@ Executables have the extension .tns as standard documents.
 - Transfer the executable with a linking program to any folder of the TI-Nspire
 - Run the executable from the Documents screen
 
-A demo executable is automatically transferred by the installer to the documents folder
-'ndless' you may want to try.
+You may try the particles demo available in TODO.
 
 How do I uninstall it?
 ======================
 
 To uninstall Ndless, reboot the OS while holding the Theta key (next to the ON key) when
 the clock is displayed. The calculator will perform a full reboot.
-
-What you need to know as a user
-===============================
-
-- The Ndless Installer creates temporary files in the documents folder 'ndless'.
-  You may remove this folder after installation.
 
 Troubleshooting
 ===============
@@ -64,12 +48,9 @@ Troubleshooting
       with the ClickPad keypad: Home+Enter+P then ON
       with the TouchPad keypad: Doc+Enter+EE then ON
   * Select '2' to uninstall the current OS. Reinstall it when asked to.
-- If the Ndless Installer is lost in is installation sequence, or the USB connection is
-  lost, restart the installer. Ndless may then get installed before the end of the second
-  sequence, but this shouldn't be a problem.
 - If running an executable from the documents screen displays the following message:
   "Sorry. Could not open document 'xxx.tns'", Ndless has not been correctly installed.
-  Run the installer again.
+  Run ndless_installer again after a reboot.
 
 How do I set up a development environment?
 ==========================================
@@ -100,10 +81,7 @@ header files.
 What you need to know as a developer
 ====================================
 
-- An example of build script can be found in src/arm/demo/Makefile
-- TI-Nspire-specific header files from Ndless's directory include/ are directly available
-- Executables must be position independent: don't use absolute addresses and static
-  variables
+- An example of build script can be found in src/samples/particles/Makefile
 - Executable files must start with the 4-bytes-long header 'PRG\0', with their entry
   point right after it. The utility 'MakeTNS' available in the tools directory may be
   used to skip newlib's startup code added before this signature.
@@ -111,6 +89,8 @@ What you need to know as a developer
 	.string "PRG"
 main: .global main
 	<...main code...>
+- You may find interesting macros, inline functions and syscalls definition in the
+  include/ directory.
 - Make sure that the assembly files extensions are in uppercase (.S) to make them
   be preprocessed by the C preprocessor on which Ndless include files are built
 - OS functions can be called from the program, see the source code of 'demo'.
@@ -123,6 +103,15 @@ Upgrading your developments and scripts
 The executable format, the conventions and the header files are currently being defined
 and prone to change. This section describes the upgrade steps between the different
 releases of Ndless.
+
+* From v1.1 to v1.7:
+C and assembly programs:
+ - The syscall convention has changed, programs built with Ndless < v1.7 need to be
+   rebuilt without any change to the code. This format should be compatible with the new
+   OS versions once supported by Ndless, as long as backward compatibility can be kept.
+ - The program format is not specific to an hardware model anymore. You can now build
+   your programs only once without defining NSPIRE_HARDWARE.
+ - OS v1.1 is not supported anymore. Check that your programs still work on OS v1.7.
 
 * From v1.0 to v1.1:
 
@@ -137,35 +126,16 @@ Pure-assembly programs:
  - Add the "main" symbol as described in the previous section
  - You do not need to define the symbol "_start" anymore
 
-Installing Ndless on nspire_emu
-===============================
-
-Ndless can be installed on the third-party TI-Nspire emulator 'nspire_emu' with a
-specific installation process.
-This feature is currently in development and may be unstable.
-
-- Create a new OS 1.1 flash image, run it once with nspire_emu. Choose 'English'
-  as system language and save the image.
-- Edit the file bin/install-ndless-nspire_emu.bat and set the variables
-  NSPIRE_EMU_FLASH_IMAGE_PATH and HARDWARE.
-- Run install-ndless-nspire_emu.bat and follow the steps.
-
-You should then be able to send executables and run them as on a real calculator.
-
-If you are getting a "System Error" at boot time on nspire_emu, you are out of luck
-and should wait for future versions of Ndless with better support (or even contribute
-as a developer).
-
 What we hope you will be able to see in the next releases
 =========================================================
 
-- Ndless installation on recent OS versions
-- A comprehensive development toolchain
-- A fully-fledged executable runner, with relocation and library support, an exception
-  handler, version-independent OS calls, ...
-- More stable and user-friendly installation on nspire_emu
+- Installation on recent OS versions
+- More syscalls definitions
+- Basic routines as static libraries
+- A fully-fledged executable runner, with library support, an exception handler...
 - Support for the TI-84+ keypad
-- Mac support
+
+We are open to any contribution to these features.
 
 Many thanks to
 ==============
@@ -197,12 +167,19 @@ Changelog
 =========
 
 * v1.7 - <unreleased>
- Samples:
-  - CHG: 'demo' renamed to 'particles' and moved to samples/
-Tools:
+  - NEW: Support of OS v1.7
+  - NEW. A computer (or Nspire8x) isn't required anymore, and the installation is much
+    more easier
+ Hook:
+  - NEW: the program format is not specific to an OS or hardware version anymore
+ Tools:
   - NEW: startup code relocates the program. You can now use C global variables.
   - NEW: option --no-startup for nspire-ld
   - FIX: option -fpic was missing in nspire-gcc from v1.1
+ Samples:
+  - CHG: 'demo' renamed to 'particles' and moved to samples/
+ Include files:
+  - NEW: stat, NU_Get_First, NU_Get_Next, NU_Done
 
 * v1.1 - 2010/07/31
  Installer:
