@@ -23,9 +23,13 @@
  ****************************************************************************/
 
 #include <os.h>
+#include "ndless.h"
+
+// OS-specific
+static unsigned const ins_ploader_hook_addrs[] = {0x10008F68, 0x0};
 
 static void ins_install_ploader_hook(void) {
-	HOOK_INSTALL(0x10008F68, plh_hook);
+	HOOK_INSTALL(ins_ploader_hook_addrs[ut_os_version_index], plh_hook);
 }
 
 void main(void) {

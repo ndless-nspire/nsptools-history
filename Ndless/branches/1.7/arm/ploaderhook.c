@@ -24,7 +24,11 @@
 
 #include <os.h>
 
+// When opening a document
 HOOK_DEFINE(plh_hook) {
+	HOOK_SAVE_STATE();
 	
-	HOOK_END(plh_hook);
+	HOOK_RESTORE_STATE();
+	asm volatile(" mov pc, lr");
+	//HOOK_RETURN(plh_hook);
 }

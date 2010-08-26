@@ -222,7 +222,15 @@ static inline void idle(void) {
 	unsigned __hookname##_end_instrs[4]; \
 	void __attribute__((naked)) hookname(void)
 
-#define HOOK_END(hookname) do { \
+#define HOOK_SAVE_STATE() do { \
+	asm volatile(" stmfd sp!, {r0-r12,lr}"); \
+} while (0)
+
+#define HOOK_RESTORE_STATE() do { \
+	asm volatile(" ldmfd sp!, {r0-r12,lr}"); \
+} while (0)
+
+#define HOOK_RETURN(hookname) do { \
 	asm volatile(" b " _XSTRINGIFY(__hookname##_end_instrs)); \
 	} while (0)
 
