@@ -79,7 +79,8 @@
 #define _SYSCALLVAR(rettype, funcname, param1, ...) static rettype __attribute__((naked)) funcname(param1, __VA_ARGS__) { \
 	asm volatile( \
 		" push {lr}\n swi " _XSTRINGIFY(_SYSCALL_ENUM(funcname)) "\n" \
-		" ldr pc, [sp], #4" ::: "r0", "r1", "r2", "r3"); \
+		" ldr pc, [sp], #4" \
+		::: "r0", "r1", "r2", "r3"); \
 }
 // Force the use of the stack for the parameters
 #define _SYSCALL_SWI(rettype, funcname, param1) static rettype __attribute__((naked)) funcname##_swi(param1, ...) { \
@@ -103,6 +104,7 @@ _SYSCALL3(void*, memset, void *, int, size_t)
 _SYSCALL3(void*, memcpy, void *, const void *, size_t)
 _SYSCALL3(int, memcmp, const void *, const void *, size_t)
 _SYSCALLVAR(int __attribute__((__format__(__printf__,1,2))), printf, const char *format, ...)
+_SYSCALLVAR(int __attribute__((__format__(__printf__,2,3))), sprintf, char *s, const char *format, ...)
 _SYSCALL1(int, puts, const char *)
 _SYSCALL1(int, TCT_Local_Control_Interrupts, int)
 _SYSCALL2(FILE*, fopen, const char *, const char *)

@@ -33,9 +33,9 @@ static void ins_install_ploader_hook(void) {
 }
 
 void main(void) {
-	ints_setup_handlers();
 	ut_read_os_version_index();
 	sc_setup();	
+	ints_setup_handlers();
 	ins_install_ploader_hook();
 	puts("Ndless installed!");
 	ut_os_reboot();

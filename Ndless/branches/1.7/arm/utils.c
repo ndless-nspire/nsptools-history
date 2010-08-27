@@ -63,11 +63,7 @@ void __attribute__ ((noreturn)) ut_calc_reboot(void) {
 	while(1);
 }
 
-/* No error dialog currently implemented, the error message is just kept for debugging */
-static const char *ut_panic_errmsg;
-
 void __attribute__ ((noreturn)) ut_panic(const char * msg) {
 	puts(msg);
-	ut_panic_errmsg = msg;
 	ut_os_reboot();
 }

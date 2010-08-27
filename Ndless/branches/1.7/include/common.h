@@ -209,30 +209,70 @@ static inline void idle(void) {
 
 #define HOOK_INSTALL(address, hookname) do { \
 	extern unsigned hookname; \
-	extern unsigned __hookname##_end_instrs[4]; /* orig_instrs1; orig_instrs2; ldr pc, [pc, #-4]; .long return_addr */ \
-	__hookname##_end_instrs[3] = (unsigned)(address) + 8; \
-	__hookname##_end_instrs[0] = *(unsigned*)(address); \
+	extern unsigned __##hookname##_end_instrs[4]; /* orig_instrs1; orig_instrs2; ldr pc, [pc, #-4]; .long return_addr */ \
+	__##hookname##_end_instrs[3] = (unsigned)(address) + 8; \
+	__##hookname##_end_instrs[0] = *(unsigned*)(address); \
 	*(unsigned*)(address) = 0xE51FF004; /* ldr pc, [pc, #-4] */ \
-	__hookname##_end_instrs[1] = *(unsigned*)((address) + 4); \
+	__##hookname##_end_instrs[1] = *(unsigned*)((address) + 4); \
 	*(unsigned*)((address) + 4) = (unsigned)&hookname; \
-	__hookname##_end_instrs[2] = 0xE51FF004; /* ldr pc, [pc, #-4] */ \
+	__##hookname##_end_instrs[2] = 0xE51FF004; /* ldr pc, [pc, #-4] */ \
 	} while (0)
 
+/* Caution, hooks aren't re-entrant.
+ * A non-inlined body is required because naked function cannot use local variables.
+ * A naked function is required because the return is handled by the hook, and to avoid any
+ * register modification before they are saved */
 #define HOOK_DEFINE(hookname) \
-	unsigned __hookname##_end_instrs[4]; \
-	void __attribute__((naked)) hookname(void)
+	unsigned __##hookname##_end_instrs[4]; \
+	 __attribute__ ((section (".text\n\t#"))) unsigned __##hookname##_saved_sp; /* section hack: see sc_addrs_ptr in ints.c */ \
+	void __##hookname##_body(void); \
+	void __##attribute__((naked)) hookname(void) { \
+		asm volatile(" stmfd sp!, {r0-r12,lr}"); /* used by HOOK_RESTORE_STATE() */ \
+		/* save sp */ \
+		asm volatile( \
+			" stmfd sp!, {r0} \n" \
+			" adr r0," _XSTRINGIFY(__##hookname##_saved_sp) "\n" \
+			" str sp, [r0] \n" \
+			" ldmfd sp!, {r0} \n" \
+		); \
+		 __##hookname##_body(); \
+	} \
+	void __##hookname##_body(void)
 
-#define HOOK_SAVE_STATE() do { \
-	asm volatile(" stmfd sp!, {r0-r12,lr}"); \
+/* Jumps out of the body */
+#define HOOK_RESTORE_SP(hookname) do { \
+	asm volatile( \
+		" stmfd sp!, {lr} \n" \
+		" adr lr," _XSTRINGIFY(__##hookname##_saved_sp) "\n" \
+		" ldr lr, [lr] \n" \
+		" stmfd sp!, {lr} \n" /* trick to restore both saved_sp and r0 */ \
+		" ldmfd sp, {sp, lr} \n" /* lr has been unused instead of r0 to avoid a GAS warning about reg order on this instr */ \
+	); \
 } while (0)
 
 #define HOOK_RESTORE_STATE() do { \
 	asm volatile(" ldmfd sp!, {r0-r12,lr}"); \
 } while (0)
 
+
+/* Call HOOK_RESTORE() alone to return manually with asm(). */
+#define HOOK_RESTORE(hookname) { \
+	HOOK_RESTORE_SP(hookname); \
+	HOOK_RESTORE_STATE(); \
+} while (0)
+
+/* If register values needs to be changed before a hook return, call HOOK_RESTORE(),
+ * set the registers then call HOOK_RETURN. Caution, only assembly without local
+ * variables can between the 2 calls. */
 #define HOOK_RETURN(hookname) do { \
-	asm volatile(" b " _XSTRINGIFY(__hookname##_end_instrs)); \
-	} while (0)
+	asm volatile(" b " _XSTRINGIFY(__##hookname##_end_instrs)); \
+} while (0)
+
+/* Standard hook return */
+#define HOOK_RESTORE_RETURN(hookname) do { \
+	HOOK_RESTORE(hookname); \
+	HOOK_RETURN(hookname); \
+} while (0)
 
 /***********************************
  * Nucleus

@@ -11,8 +11,8 @@ ifeq (${OBJCOPY},"")
 endif
 DISTDIR = ../res/$(NSPIRE_HARDWARE)
 # OS-specific
-SYSCALLS_LIGHT_OBJS=syscalls-light_ncas-1.7.o syscalls-light_cas-1.7.o
-SYSCALLS_OBJS=syscalls_ncas-1.7.o syscalls_cas-1.7.o
+SYSCALLS_LIGHT_OBJS = syscalls-light_ncas-1.7.o syscalls-light_cas-1.7.o
+SYSCALLS_OBJS = syscalls_ncas-1.7.o syscalls_cas-1.7.o
 vpath %.tns  $(DISTDIR)
 
 all: static ndless_installer.tns ndless_resources.tns
@@ -51,7 +51,8 @@ ndless_installer.tns: ndless_installer.elf
 	mv $(@:.tns=.zip) $(DISTDIR)/$@
 	rm Document.xml
 
-ndless_resources.elf: install.o ints.o ploaderhook.o syscalls.o utils.o $(SYSCALLS_OBJS)
+RES_OBJS = install.o ints.o ploaderhook.o syscalls.o utils.o $(SYSCALLS_OBJS)
+ndless_resources.elf: $(RES_OBJS)
 	$(LD) $(LDFLAGS) $^ -o $@
 
 ndless_resources.tns: ndless_resources.elf
@@ -61,6 +62,9 @@ clean: cleanbin cleanapp
 cleanapp:
 	@# -: may fail because nspire_emu has a lock on it
 	-rm -rf $(DISTDIR)
+
+cleanres:
+	rm -rf ndless_resources.elf $(RES_OBJS)
 
 cleanbin:
 	rm -rf *.o *.bin *.elf *.xml *.zip

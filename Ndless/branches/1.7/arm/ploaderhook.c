@@ -26,9 +26,38 @@
 
 // When opening a document
 HOOK_DEFINE(plh_hook) {
-	HOOK_SAVE_STATE();
-	
-	HOOK_RESTORE_STATE();
+	char *docfolder, *filename;
+	char docpath[100];
+	int ret;
+	asm(
+		" mov %0, r0 \n"
+		" mov %1, r1"
+		: "=r"(docfolder), "=r"(filename));
+	// TODO move the 3 following lines to an OS startup hook
+	ut_read_os_version_index();
+	sc_setup();	
+	ints_setup_handlers();
+	// TODO use snprintf
+	sprintf(docpath, "/documents/%s/%s", docfolder, filename);
+	struct stat docstat;
+	ret = stat(docpath, &docstat);
+	FILE *docfile = fopen(docpath, "rb");
+	if (!docfile || !ret) {
+		puts("ploaderhook: can't open doc");
+		HOOK_RESTORE_RETURN(plh_hook);
+	}
+	void *docptr = malloc(docstat.st_size);
+	if (!docptr) {
+		puts("ploaderhook: can't malloc");
+		HOOK_RESTORE_RETURN(plh_hook);
+	}
+	if (!fread(docptr, docstat.st_size, 1, docfile)) {
+		puts("ploaderhook: can't read doc");
+		free(docptr);
+	}
+	fclose(docfile);
+	free(docptr);
+	HOOK_RESTORE(plh_hook);
 	asm volatile(" mov pc, lr");
 	//HOOK_RETURN(plh_hook);
 }
