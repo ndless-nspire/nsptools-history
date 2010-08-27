@@ -76,14 +76,16 @@
 		: "=r" (__r0) : "r" (__r0), "r" (__r1), "r" (__r2) , "r" (__r3) : "r12", "lr"); \
 	return (rettype)__r0; \
 }
-#define _SYSCALLVAR(rettype, funcname, param1, ...) static rettype __attribute__((naked)) funcname(param1, __VA_ARGS__) { \
+/* all parameters must be marked with  __attribute__((unused)) */
+#define _SYSCALLVAR(rettype, funcname, param1, ...) static inline rettype __attribute__((naked)) funcname(param1, __VA_ARGS__) { \
 	asm volatile( \
 		" push {lr}\n swi " _XSTRINGIFY(_SYSCALL_ENUM(funcname)) "\n" \
 		" ldr pc, [sp], #4" \
 		::: "r0", "r1", "r2", "r3"); \
+	return 0; \
 }
 // Force the use of the stack for the parameters
-#define _SYSCALL_SWI(rettype, funcname, param1) static rettype __attribute__((naked)) funcname##_swi(param1, ...) { \
+#define _SYSCALL_SWI(rettype, funcname, param1) static inline rettype __attribute__((naked)) funcname##_swi(param1, ...) { \
 	asm volatile( \
 		" push {lr}\n swi " _XSTRINGIFY(_SYSCALL_ENUM(funcname)) "\n" \
 	  " ldr pc, [sp], #4" \
@@ -103,8 +105,12 @@ _SYSCALL1(void, free, void *)
 _SYSCALL3(void*, memset, void *, int, size_t)
 _SYSCALL3(void*, memcpy, void *, const void *, size_t)
 _SYSCALL3(int, memcmp, const void *, const void *, size_t)
-_SYSCALLVAR(int __attribute__((__format__(__printf__,1,2))), printf, const char *format, ...)
-_SYSCALLVAR(int __attribute__((__format__(__printf__,2,3))), sprintf, char *s, const char *format, ...)
+_SYSCALL2(char *, strcpy, char *, const char *)
+_SYSCALL2(int, strcmp, const char *, const char *)
+_SYSCALL1(int, strlen, const char *)
+_SYSCALL3(char *, strncat, char *, char *, size_t)
+_SYSCALLVAR(int __attribute__((__format__(__printf__,1,2))), printf,  __attribute__((unused)) const char *format, ...)
+_SYSCALLVAR(int __attribute__((__format__(__printf__,2,3))), sprintf,  __attribute__((unused)) char *s,  __attribute__((unused)) const char *format, ...)
 _SYSCALL1(int, puts, const char *)
 _SYSCALL1(int, TCT_Local_Control_Interrupts, int)
 _SYSCALL2(FILE*, fopen, const char *, const char *)
@@ -116,6 +122,10 @@ _SYSCALL2(int, stat, const char *, struct stat *)
 _SYSCALL2(int, NU_Get_First, struct dstat *, const char * /* pattern */)
 _SYSCALL1(int,  NU_Get_Next, struct dstat *)
 _SYSCALL1(void, NU_Done, struct dstat *)
+_SYSCALL3(void, ascii2utf16, void *, const char *, int)
+
+// TODO dummy
+#define show_dialog_box2(a,b,c) do {} while(0)
 
 #endif // GCC C
 #endif

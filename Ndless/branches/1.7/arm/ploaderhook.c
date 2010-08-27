@@ -24,6 +24,9 @@
 
 #include <os.h>
 
+// Marker at the beginning of a program
+#define PRGMSIG "PRG"
+
 // When opening a document
 HOOK_DEFINE(plh_hook) {
 	char *docfolder, *filename;
@@ -42,7 +45,7 @@ HOOK_DEFINE(plh_hook) {
 	struct stat docstat;
 	ret = stat(docpath, &docstat);
 	FILE *docfile = fopen(docpath, "rb");
-	if (!docfile || !ret) {
+	if (!docfile || ret) {
 		puts("ploaderhook: can't open doc");
 		HOOK_RESTORE_RETURN(plh_hook);
 	}
@@ -54,10 +57,22 @@ HOOK_DEFINE(plh_hook) {
 	if (!fread(docptr, docstat.st_size, 1, docfile)) {
 		puts("ploaderhook: can't read doc");
 		free(docptr);
+		HOOK_RESTORE_RETURN(plh_hook);
 	}
 	fclose(docfile);
+	if (strcmp(PRGMSIG, docptr)) { /* not a program */
+		free(docptr);
+		HOOK_RESTORE_RETURN(plh_hook);
+	}
+	int intmask = TCT_Local_Control_Interrupts(-1); /* TODO workaround: disable the interrupts to avoid the clock on the screen */
+	halt();
+	docptr += sizeof(PRGMSIG); /* skip the signature */
+	((void (*)(void))docptr)(); /* run the program */
+	TCT_Local_Control_Interrupts(intmask);
 	free(docptr);
 	HOOK_RESTORE(plh_hook);
-	asm volatile(" mov pc, lr");
+	asm volatile(
+		" mov r0, #1 @ silently return \n"
+		"mov pc, lr @ to the caller of the function hooked to bypass the document opening");
 	//HOOK_RETURN(plh_hook);
 }

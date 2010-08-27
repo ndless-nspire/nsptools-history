@@ -179,7 +179,7 @@ Changelog
  Samples:
   - CHG: 'demo' renamed to 'particles' and moved to samples/
  Include files:
-  - NEW: stat, NU_Get_First, NU_Get_Next, NU_Done
+  - NEW: stat, NU_Get_First, NU_Get_Next, NU_Done, strcpy, strcmp, strlen, strncat
 
 * v1.1 - 2010/07/31
  Installer:
