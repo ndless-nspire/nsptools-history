@@ -33,12 +33,18 @@ void ints_setup_handlers(void) {
  * Check it is not null; if not, reboot
  */
 asm(
-"ints_swi_handler:        @ caution: 1) only supports calls from the user mode (many syscalls will reboot with TCT_Check_Stack in non-user mode anyway) 2) destroys the user lr \n"
-" stmfd sp!, {lr} \n"
+"ints_swi_handler:        @ caution: 1) only supports calls from the svc and user mode (many syscalls will reboot with TCT_Check_Stack in other modes anyway) 2) destroys the caller's mode lr \n"
+" str   r0, [sp, #-4]!    @ push r0 \n"
+" mrs	  r0, spsr \n"
+" ands   r0, #0b1111      @ keep the caller's mode \n"
+" ldr   r0, [sp], #4      @ pop r0 \n"
+" bne   restorespsr       @ non-user mode (=svc mode): the current lr is the caller's lr and doesn't need to bet set \n"
+" str   lr, [sp, #-4]!    @ push lr \n"
 " ldmfd sp, {lr}^         @ ^: move lr_svc (return address) to lr_user \n"
-" add sp, sp, #4          @ 'sp!' with ^ in the previous instruction is considered to produce an unpredictable result by GAS \n"
+" add   sp, sp, #4        @ 'sp!' with ^ in the previous instruction is considered to produce an unpredictable result by GAS \n"
+"restorespsr: \n"
 " stmfd sp!, {pc}         @ points to the instruction after the following one \n"
-" ldmfd sp!, {pc}^        @ ^: jump to the next instruction and move spsr to cpsr (get back to the mode of the caller) \n"
+" ldmfd sp!, {pc}^        @ ^: jump to the next instruction and move spsr to cpsr (get back to the mode of the caller and restore the ints mask) \n"
 "	stmfd sp!, {r0-r1, r2}  @ r2 is dummy and will be overwritten with the syscall address \n"
 " ldr   r1, sc_addrs_ptr \n"
 "	ldr   r0, [lr, #-4]     @ extract the syscall number from the comment field of the swi instruction \n"
