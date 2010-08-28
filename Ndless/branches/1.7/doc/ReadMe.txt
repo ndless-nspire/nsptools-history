@@ -167,7 +167,7 @@ Changelog
 =========
 
 * v1.7 - <unreleased>
-  - NEW: Support of OS v1.7
+  - NEW: Supports OS v1.7
   - NEW. A computer (or Nspire8x) isn't required anymore, and the installation is much
     more easier
  Hook:
@@ -177,9 +177,11 @@ Changelog
   - NEW: option --no-startup for nspire-ld
   - CHG: option -fpic moved to nspire-gcc
  Samples:
+  - NEW: sample 'hello'
   - CHG: 'demo' renamed to 'particles' and moved to samples/
  Include files:
   - NEW: stat, NU_Get_First, NU_Get_Next, NU_Done, strcpy, strcmp, strlen, strncat
+	- FIX: isKeyPressed could sometimes hang in while loops (missing volatile keyword)
 
 * v1.1 - 2010/07/31
  Installer:

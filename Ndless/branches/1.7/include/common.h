@@ -191,7 +191,7 @@ halt\@: b halt\@
 
   #define ADDR_(addr)             (void*)addr
   #define KEY_(row, col)          (t_key){row, col}
-  #define isKeyPressed(key)       (!((*(short*)(KEY_MAP + (key).row)) & (key).col))
+  #define isKeyPressed(key)       (!((*(volatile short*)(KEY_MAP + (key).row)) & (key).col))
 
 /***********************************
  * Misc inline functions
