@@ -5,10 +5,10 @@ OBJCOPY := "$(shell which arm-elf-objcopy 2>/dev/null)"
 ifeq (${OBJCOPY},"")
 	OBJCOPY := arm-none-eabi-objcopy
 endif
-OBJS = main.o utils.o vector.o particle.o particle_system.o gravity_particles.o
+OBJS = hello.o
 vpath %.tns  ../../res
 
-all: particles.tns
+all: hello.tns
 
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<
@@ -16,7 +16,7 @@ all: particles.tns
 %.o: %.S
 	$(GCC) $(GCCFLAGS) -c $<
 
-particles.tns: $(OBJS)
+hello.tns: $(OBJS)
 	$(LD) $^ -o $(@:.tns=.elf)
 	$(OBJCOPY) -O binary $(@:.tns=.elf) $(@:.tns=.bin)
 	MakeTNS $(@:.tns=.bin)
@@ -26,4 +26,4 @@ particles.tns: $(OBJS)
 
 clean:
 	rm -f *.o *.elf
-	rm -f ../../res/particles.tns
+	rm -f ../../res/hello.tns

@@ -230,10 +230,10 @@ static inline void idle(void) {
 		asm volatile(" stmfd sp!, {r0-r12,lr}"); /* used by HOOK_RESTORE_STATE() */ \
 		/* save sp */ \
 		asm volatile( \
-			" stmfd sp!, {r0} \n" \
+			" str r0, [sp, #-4] @ push r0 but don't change sp \n " \
 			" adr r0," _XSTRINGIFY(__##hookname##_saved_sp) "\n" \
 			" str sp, [r0] \n" \
-			" ldmfd sp!, {r0} \n" \
+			" ldr r0, [sp, #-4] @ pop r0 but don't change sp \n" \
 		); \
 		 __##hookname##_body(); \
 	} \
@@ -242,10 +242,10 @@ static inline void idle(void) {
 /* Jumps out of the body */
 #define HOOK_RESTORE_SP(hookname) do { \
 	asm volatile( \
-		" stmfd sp!, {lr} \n" \
+		" str lr, [sp, #-4]! @ push lr \n" \
 		" adr lr," _XSTRINGIFY(__##hookname##_saved_sp) "\n" \
 		" ldr lr, [lr] \n" \
-		" stmfd sp!, {lr} \n" /* trick to restore both saved_sp and r0 */ \
+		" str lr, [sp, #-4]! \n" /* push lr=saved_sp. trick to restore both saved_sp and the original lr */ \
 		" ldmfd sp, {sp, lr} \n" /* lr has been unused instead of r0 to avoid a GAS warning about reg order on this instr */ \
 	); \
 } while (0)

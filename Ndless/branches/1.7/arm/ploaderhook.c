@@ -65,14 +65,11 @@ HOOK_DEFINE(plh_hook) {
 		HOOK_RESTORE_RETURN(plh_hook);
 	}
 	int intmask = TCT_Local_Control_Interrupts(-1); /* TODO workaround: disable the interrupts to avoid the clock on the screen */
-	halt();
-	docptr += sizeof(PRGMSIG); /* skip the signature */
-	((void (*)(void))docptr)(); /* run the program */
+	((void (*)(void))(docptr + sizeof(PRGMSIG)))(); /* run the program */
 	TCT_Local_Control_Interrupts(intmask);
 	free(docptr);
 	HOOK_RESTORE(plh_hook);
 	asm volatile(
 		" mov r0, #1 @ silently return \n"
 		"mov pc, lr @ to the caller of the function hooked to bypass the document opening");
-	//HOOK_RETURN(plh_hook);
 }
