@@ -6,7 +6,8 @@ ifeq (${OBJCOPY},"")
 	OBJCOPY := arm-none-eabi-objcopy
 endif
 OBJS = hello.o
-vpath %.tns  ../../res
+DISTDIR = ../../calcbin/samples
+vpath %.tns $(DISTDIR)
 
 all: hello.tns
 
@@ -21,9 +22,9 @@ hello.tns: $(OBJS)
 	$(OBJCOPY) -O binary $(@:.tns=.elf) $(@:.tns=.bin)
 	MakeTNS $(@:.tns=.bin)
 	rm -f $(@:.tns=.bin)
-	mkdir -p ../../res
-	mv $@ ../../res
+	mkdir -p $(DISTDIR)
+	mv $@ $(DISTDIR)
 
 clean:
 	rm -f *.o *.elf
-	rm -f ../../res/hello.tns
+	rm -f $(DISTDIR)/hello.tns
