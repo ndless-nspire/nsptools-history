@@ -1,4 +1,6 @@
-/* This ldscript avoids the useless default padding between sections */
+/* See http://sourceware.org/binutils/docs-2.20/ld/Scripts.html#Scripts */
+
+/* Avoid the useless default padding between sections */
 SECTIONS
 {
   . = 0x0;

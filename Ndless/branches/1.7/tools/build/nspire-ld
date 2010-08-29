@@ -46,4 +46,5 @@ fi
 if [ $nostartup = false ]; then
 	args=("$DIRNAME/../system/crt0.o" "${args[@]}")
 fi
-"$GCC" -T "$DIRNAME/../system/ldscript" -e _nspire_start "$DIRNAME/../system/crt0sym.o" "${args[@]}"
+# -nostartfiles: avoids newlib startup which would be added before ours
+"$GCC" -nostartfiles -T "$DIRNAME/../system/ldscript" -e _nspire_start "$DIRNAME/../system/crt0sym.o" "${args[@]}"

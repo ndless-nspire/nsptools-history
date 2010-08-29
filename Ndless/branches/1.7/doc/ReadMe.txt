@@ -179,8 +179,8 @@ Changelog
 
 * v1.7 - <unreleased>
   - NEW: Supports OS v1.7
-  - NEW: A computer (or Nspire8x) isn't required anymore, and the installation 
-         is much more easier
+  - NEW: A computer (or Nspire8x) isn't required anymore, the installation 
+         is much more easier and compatible with nspire_emu.
  Hook:
   - NEW: the program format is not specific to an OS or hardware version anymore
  Tools:
