@@ -152,6 +152,8 @@ static void get_saved_state_filename(char out_filename[MAX_PATH]) {
 		strcat(pFile, ".sav");
 }
 
+/* increment each time the save file format is changed */
+#define SAVE_STATE_VERSION 1
 void save_state(void) {
 	char state_filename[MAX_PATH+1];
 	get_saved_state_filename(state_filename);
@@ -170,6 +172,8 @@ void save_state(void) {
 		written_size += fwrite(chunk_data, 1, chunk_size, state_file); \
 		free(chunk_data)
 	printf("Saving state...\n");
+	const u32 save_state_version = SAVE_STATE_VERSION;
+	fwrite(&save_state_version, 1, sizeof(save_state_version), state_file);
 	// ordered in reload order
 	SAVE_STATE_WRITE_CHUNK(emu);
 	flush_translations();
@@ -202,6 +206,16 @@ bool reload_state(void) {
 	FILE *state_file = fopen(state_filename, "rb");
 	if (!state_file) 
 		return false;
+	u32 save_state_version;
+	if (fread(&save_state_version, 1, sizeof(save_state_version), state_file) != sizeof(save_state_version)) {
+		printf("cannot read saved state file\n");
+		exit(1);
+	}
+	if (save_state_version != SAVE_STATE_VERSION) {
+		printf("The version of this save file is not supported.");
+		fclose(state_file);
+		return false;
+	}
 	#define RELOAD_STATE_READ_CHUNK(module) \
 		if (fread(&chunk_size, 1, sizeof(size_t), state_file) != sizeof(size_t)) {  \
 			printf("cannot read saved state file\n"); \

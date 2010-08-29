@@ -54,6 +54,7 @@ Changelog
 
 * v031a - unreleased
  - Migrate to nspire_emu v031
+ - ADD: State file version tracking
  - ADD: Debugger command 'j'
  - ADD: Debugger command 'ww'
  - CHG: Debugger command 'k' uses virtual addresses
