@@ -26,12 +26,16 @@ Debugger:
 - NEW: Command 'j' to jump to the next instruction. This is useful for example 
   to jump over an halt() call in an Ndless program.
 - NEW: Command 'ww' to write a word to an address.
+- NEW: "+x" is the default flag for the breakpint command 'k' 
 - CHG: The breakpoint command 'k' takes as parameter a virtual address instead 
   of a physical address.
 - FIX: Command 'd' doesn't crash if the parameter is missing
 
 Flash:
 - FIX: Flash image closed when synced to disk, for external edition
+
+Memory:
+- CHG: Remove log "Wrote to translated code..."
 
 Build:
 - NEW: Makefile.config for custom compilation flags
@@ -58,8 +62,10 @@ Changelog
  - ADD: Link target folder saved to save files
  - ADD: Debugger command 'j'
  - ADD: Debugger command 'ww'
- - CHG: Debugger command 'k' uses virtual addresses
+ - ADD: "+x" is the default flag for command 'k' 
+ - CHG: Command 'k' uses virtual addresses
  - CHG: Add shortcut for link connect, change shortcut to send a document
+ - CHG: Remove log "Wrote to translated code..."
  - FIX: Couldn't save flash after sending a document from another directory when 
    loading a flash image with a relative path.
  - FIX: Command 'd' doesn't crash if the parameter is missing

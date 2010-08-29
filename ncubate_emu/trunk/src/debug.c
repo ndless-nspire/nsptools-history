@@ -125,7 +125,7 @@ void debugger() {
 				"c - continue\n"
 				"d <address> - dump memory\n"
 				"jn - set PC to next instruction\n"
-				"k <address> <+r|+w|+x|-r|-w|-x> - add/remove breakpoint\n"
+				"k <address> <+r|+w|+x(default)|-r|-w|-x> - add/remove breakpoint\n"
 				"k - show breakpoints\n"
 				"n - continue until next instruction\n"
 				"q - quit\n"
@@ -191,10 +191,12 @@ void debugger() {
 		} else if (!stricmp(cmd, "k")) {
 			char *addr_str = strtok(NULL, " \n");
 			char *flag_str = strtok(NULL, " \n");
-			if (addr_str && flag_str) {
+			if (addr_str) {
 				u32 addr = strtoul(addr_str, 0, 16);
 				void *ptr = virt_mem_ptr(addr & ~3, 4);
 				if (ptr) {
+					if (!flag_str)
+						flag_str = "+x";
 					u32 *flags = &RAM_FLAGS(ptr);
 					bool on = true;
 					for (; *flag_str; flag_str++) {

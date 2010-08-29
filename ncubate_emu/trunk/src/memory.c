@@ -48,7 +48,6 @@ void write_action(u32 *flags, u32 addr) {
 		debugger();
 	}
 	if (*flags & RF_CODE_TRANSLATED) {
-		printf("Wrote to translated code at %08x. Deleting translations.\n", addr);
 		invalidate_translation(*flags >> RFS_TRANSLATION_INDEX);
 	} else {
 		*flags &= ~RF_CODE_NO_TRANSLATE;
