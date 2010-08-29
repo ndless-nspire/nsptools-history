@@ -39,7 +39,7 @@ void ut_read_os_version_index(void) {
 		case 0x102132A0: ut_os_version_index = 1; break; // 1.7 CAS
 		default:
 			ut_os_version_index = 0xFFFFFFFF;
-			ut_panic("unknown OS version");		
+			ut_panic("OS ver?");		
 	}
 }
 

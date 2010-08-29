@@ -67,5 +67,5 @@ void ld_load(void) {
 	void *hook_block = ld_hook_alloc(res_stat.st_size);
 	ld_copy_hook(hook_block, res_stat.st_size);
 	ld_heap_patch(res_stat.st_size);
-	((void (*)(void))hook_block)();
+	((void (*)(void))(char*)(hook_block + sizeof("PRG")))();
 }

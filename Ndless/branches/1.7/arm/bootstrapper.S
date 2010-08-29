@@ -24,7 +24,6 @@
 
 #include <os.h>
 
-/* TODO: we shouldn't break nspire_emu's OS version detection with our vectors */
 ints_vectors:
 	@ Interrupt vectors: jump instructions
  .byte 0x18, 0xF0, 0x9F, 0xE5
@@ -50,5 +49,6 @@ main:
 	stmfd sp!, {pc}   @ points to the instruction after the following one
 	ldmfd sp!, {pc}^  @ ^: jump to the next instruction and move spsr to cpsr (get back to caller mode: svc)
 	bl ints_setup_handlers
-	bl ld_load
+	ldr r0, =ld_load @ no relocation required, 0 is the base address
+	bx r0 @ and switch to thumb mode
 	@ never reached

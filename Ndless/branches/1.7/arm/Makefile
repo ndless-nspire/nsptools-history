@@ -28,15 +28,17 @@ all: static ndless_installer.tns ndless_resources.tns
 static:
 	@mkdir -p $(DISTDIR)
 
-# Build with the light switch (included temporary included in $GCCFLAGS), because of the 1kb limit of ndless_installer.tns
+# Build with the light switch (temporarily added to $GCCFLAGS), and in thumb mode,
+# because of the 1kb limit of ndless_installer.tns
 ints_light.o: ints.c
-	$(GCC) $(GCCFLAGS) -c $< -o $@
+	$(GCC) $(GCCFLAGS) -mthumb -c $< -o $@
 syscalls_light.o: syscalls.c
-	$(GCC) $(GCCFLAGS) -c $< -o $@
+	$(GCC) $(GCCFLAGS) -mthumb -c $< -o $@
 utils_light.o: utils.c
-	$(GCC) $(GCCFLAGS) -c $< -o $@
+	$(GCC) $(GCCFLAGS) -mthumb -c $< -o $@
 
-ndless_installer.elf: GCCFLAGS:=$(GCCFLAGS) -D _SYSCALLS_LIGHT
+loader.o: GCCFLAGS:=$(GCCFLAGS) -D _SYSCALLS_LIGHT -mthumb-interwork -mthumb
+ndless_installer.elf: GCCFLAGS:=$(GCCFLAGS) -D _SYSCALLS_LIGHT -mthumb-interwork
 # bootstrapper.o is the entry point: must be first in the list, and linked with --no-startup 
 ndless_installer.elf: bootstrapper.o loader.o ints_light.o syscalls_light.o utils_light.o $(SYSCALLS_LIGHT_OBJS)
 	$(LD) --no-startup $(LDFLAGS) $^ -o $@
