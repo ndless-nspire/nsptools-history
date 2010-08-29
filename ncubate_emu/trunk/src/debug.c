@@ -135,7 +135,8 @@ void debugger() {
 				"t+ - enable instruction translation\n"
 				"t- - disable instruction translation\n"
 				"u[a|t] [address] - disassemble memory\n"
-				"w <file> <start> <size> - write memory to file\n");
+				"w <file> <start> <size> - write memory to file\n"
+				"ww <address> <value> - write a word to memory\n");
 		} else if (!stricmp(cmd, "b")) {
 			char *fp = strtok(NULL, " \n");
 			backtrace(fp ? strtoul(fp, 0, 16) : arm.reg[11]);
@@ -251,8 +252,13 @@ void debugger() {
 			set_debug_next(cur_insn + 1);
 			break;
 		} else if (!stricmp(cmd, "d")) {
-			u32 addr = strtoul(strtok(NULL, " \n"), 0, 16);
-			dump(addr);
+			char *arg = strtok(NULL, " \n");
+			if (!arg)
+				printf("Missing address parameter.\n");
+			else {
+				u32 addr = strtoul(arg, 0, 16);
+				dump(addr);
+			}
 		} else if (!stricmp(cmd, "u")) {
 			disasm(disasm_insn);
 		} else if (!stricmp(cmd, "ua")) {
@@ -338,6 +344,25 @@ void debugger() {
 				perror(filename);
 				continue;
 			}
+		} else if (!stricmp(cmd, "ww")) {
+			char *arg = strtok(NULL, " \n");
+			if (!arg) {
+				printf("Missing address parameter.\n");
+				continue;
+			}
+			u32 addr = strtoul(arg, 0, 16);
+			arg = strtok(NULL, " \n");
+			if (!arg) {
+				printf("Missing value parameter.\n");
+				continue;
+			}
+			u32 val = strtoul(arg, 0, 16);
+			void *ram = virt_mem_ptr(addr, 4);
+			if (!ram) {
+				printf("Address is not in RAM.\n");
+				continue;
+			}
+			*(u32*)ram = val;
 		} else if (!stricmp(cmd, "int")) {
 			printf("active=%08x enabled=%08x,%08x current=%08x,%08x\n",
 				active_ints, enabled_ints[0], enabled_ints[1], current_ints[0], current_ints[1]);

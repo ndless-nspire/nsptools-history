@@ -25,8 +25,10 @@ Debugger:
 - NEW: The register PC can be changed with the command 'rs'. 
 - NEW: Command 'j' to jump to the next instruction. This is useful for example 
   to jump over an halt() call in an Ndless program.
+- NEW: Command 'ww' to write a word to an address.
 - CHG: The breakpoint command 'k' takes as parameter a virtual address instead 
   of a physical address.
+- FIX: Command 'd' doesn't crash if the parameter is missing
 
 Flash:
 - FIX: Flash image closed when synced to disk, for external edition
@@ -52,10 +54,12 @@ Changelog
 
 * v031a - unreleased
  - Migrate to nspire_emu v031
- - ADD: Command 'j'
- - CHG: Command 'k' uses virtual addresses
+ - ADD: Debugger command 'j'
+ - ADD: Debugger command 'ww'
+ - CHG: Debugger command 'k' uses virtual addresses
  - FIX: Couldn't save flash after sending a document from another directory when 
    loading a flash image with a relative path.
+ - FIX: Command 'd' doesn't crash if the parameter is missing
 
 * v030a - 2010/08/15
  - First public release
