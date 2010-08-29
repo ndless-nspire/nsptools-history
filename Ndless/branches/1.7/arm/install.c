@@ -26,7 +26,8 @@
 #include "ndless.h"
 
 // OS-specific
-static unsigned const ins_ploader_hook_addrs[] = {0x10008F68, 0x0};
+// Call to dialog box display saying that the format isn't recognized
+static unsigned const ins_ploader_hook_addrs[] = {0x1000921C, 0x0};
 
 static void ins_install_ploader_hook(void) {
 	HOOK_INSTALL(ins_ploader_hook_addrs[ut_os_version_index], plh_hook);

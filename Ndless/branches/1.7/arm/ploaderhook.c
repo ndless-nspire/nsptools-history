@@ -29,19 +29,16 @@
 
 // When opening a document
 HOOK_DEFINE(plh_hook) {
-	char *docfolder, *filename;
+	char *halfpath; // docfolder/file.tns
 	char docpath[100];
 	int ret;
-	asm(
-		" mov %0, r0 \n"
-		" mov %1, r1"
-		: "=r"(docfolder), "=r"(filename));
 	// TODO move the 3 following lines to an OS startup hook
 	ut_read_os_version_index();
 	sc_setup();	
 	ints_setup_handlers();
+	halfpath =  (char*)(HOOK_SAVED_REGS(plh_hook)[11] /* r11 */ - 0x124); // on the stack
 	// TODO use snprintf
-	sprintf(docpath, "/documents/%s/%s", docfolder, filename);
+	sprintf(docpath, "/documents/%s", halfpath);
 	struct stat docstat;
 	ret = stat(docpath, &docstat);
 	FILE *docfile = fopen(docpath, "rb");
@@ -68,8 +65,5 @@ HOOK_DEFINE(plh_hook) {
 	((void (*)(void))(docptr + sizeof(PRGMSIG)))(); /* run the program */
 	TCT_Local_Control_Interrupts(intmask);
 	free(docptr);
-	HOOK_RESTORE(plh_hook);
-	asm volatile(
-		" mov r0, #1 @ silently return \n"
-		"mov pc, lr @ to the caller of the function hooked to bypass the document opening");
+	HOOK_RESTORE_RETURN_SKIP(plh_hook, 4); // skip the error dialog about the unrecognized format
 }

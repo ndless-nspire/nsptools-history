@@ -239,7 +239,7 @@ static inline void idle(void) {
 	} \
 	void __##hookname##_body(void)
 
-/* Jumps out of the body */
+/* Jump out of the body */
 #define HOOK_RESTORE_SP(hookname) do { \
 	asm volatile( \
 		" str lr, [sp, #-4]! @ push lr \n" \
@@ -249,6 +249,9 @@ static inline void idle(void) {
 		" ldmfd sp, {sp, lr} \n" /* lr has been unused instead of r0 to avoid a GAS warning about reg order on this instr */ \
 	); \
 } while (0)
+
+/* May be used to access the values that had the registers when the hook was called: {r0-r12,lr} */
+#define HOOK_SAVED_REGS(hookname) ((unsigned*) __##hookname##_saved_sp)
 
 #define HOOK_RESTORE_STATE() do { \
 	asm volatile(" ldmfd sp!, {r0-r12,lr}"); \
@@ -272,6 +275,26 @@ static inline void idle(void) {
 #define HOOK_RESTORE_RETURN(hookname) do { \
 	HOOK_RESTORE(hookname); \
 	HOOK_RETURN(hookname); \
+} while (0)
+
+/* Hook return skipping instructions */
+#define HOOK_RESTORE_RETURN_SKIP(hookname, offset) do { \
+	volatile unsigned __end_instrs_skip##offset[4]; \
+	/* Copy the default end instructions */ \
+	memcpy((void*)__end_instrs_skip##offset, __##hookname##_end_instrs, sizeof(__end_instrs_skip##offset)); \
+	/* Patch the final jump to skip instructions */ \
+	__end_instrs_skip##offset[3] += offset; \
+	/* Patch the next asm() to branch to this copy */ \
+	asm volatile( \
+		" adr r0, " _XSTRINGIFY(__##hookname##_end_instrs_jump_offset_skip##offset) "\n" \
+		"	str %0, [r0] \n" \
+		:: "r"(&__end_instrs_skip##offset) : "r0"); \
+	HOOK_RESTORE(hookname); \
+	/* Branch to the end instrs copy */ \
+	asm volatile( \
+		" ldr pc, [pc, #-4] \n" \
+	_XSTRINGIFY(__##hookname##_end_instrs_jump_offset_skip##offset) ":" \
+		" .long 0"); \
 } while (0)
 
 /***********************************
