@@ -400,7 +400,7 @@ void *usblink_save_state(size_t *size) {
 	state->usblink_sending = usblink_sending;
 	state->usblink_reading = usblink_reading;
 	state->usblink_read_buffer = usblink_read_buffer;
-	state->usblink_addr_set_event = usblink_addr_set_event;
+	state->usblink_read_size = usblink_read_size;
 	state->usblink_addr_set_event = usblink_addr_set_event;
 	state->usblink_addr_schedule = usblink_addr_schedule;
 	state->usblink_addr_submit_read_buffer = usblink_addr_submit_read_buffer;
@@ -416,7 +416,7 @@ void usblink_reload_state(void *state) {
 	usblink_sending = _state->usblink_sending;
 	usblink_reading = _state->usblink_reading;
 	usblink_read_buffer = _state->usblink_read_buffer;
-	usblink_addr_set_event = _state->usblink_addr_set_event;
+	usblink_read_size = _state->usblink_read_size;
 	usblink_addr_set_event = _state->usblink_addr_set_event;
 	usblink_addr_schedule = _state->usblink_addr_schedule;
 	usblink_addr_submit_read_buffer = _state->usblink_addr_submit_read_buffer;

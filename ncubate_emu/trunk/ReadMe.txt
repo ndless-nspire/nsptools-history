@@ -59,6 +59,7 @@ Changelog
  - ADD: Debugger command 'j'
  - ADD: Debugger command 'ww'
  - CHG: Debugger command 'k' uses virtual addresses
+ - CHG: Add shortcut for link connect, change shortcut to send a document
  - FIX: Couldn't save flash after sending a document from another directory when 
    loading a flash image with a relative path.
  - FIX: Command 'd' doesn't crash if the parameter is missing
