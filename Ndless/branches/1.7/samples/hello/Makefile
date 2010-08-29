@@ -19,11 +19,8 @@ all: hello.tns
 
 hello.tns: $(OBJS)
 	$(LD) $^ -o $(@:.tns=.elf)
-	$(OBJCOPY) -O binary $(@:.tns=.elf) $(@:.tns=.bin)
-	MakeTNS $(@:.tns=.bin)
-	rm -f $(@:.tns=.bin)
 	mkdir -p $(DISTDIR)
-	mv $@ $(DISTDIR)
+	$(OBJCOPY) -O binary $(@:.tns=.elf) $(DISTDIR)/$@
 
 clean:
 	rm -f *.o *.elf

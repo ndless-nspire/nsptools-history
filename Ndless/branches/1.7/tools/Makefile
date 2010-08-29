@@ -1,5 +1,5 @@
 UNAME := $(shell uname)
-SUBDIRS = build MakeLoader MakeTNS
+SUBDIRS = build MakeLoader
 
 all:
 ifneq ($(findstring CYGWIN,$(UNAME)),)

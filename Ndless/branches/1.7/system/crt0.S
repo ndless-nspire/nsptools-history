@@ -1,5 +1,8 @@
 @ startup code
 
+	@ signature identifying a program
+	.asciz "PRG"
+
 base:
 
 	@ GOT-based relocation, required for C global variables. The program must be built with the GCC option -fpic.

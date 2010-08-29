@@ -23,8 +23,6 @@
 #include "utils.h"
 #include "gravity_particles.h"
 
-asm(".string \"PRG\"\n");
-
 int main(void) {
   t_gravity_particles gravity_particles;
   t_particle_system* particle_system;

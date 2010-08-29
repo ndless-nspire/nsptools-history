@@ -83,13 +83,8 @@ and assembly header files.
 What you need to know as a developer
 ====================================
 
-- An example of build script can be found in src/samples/demo/Makefile
-- Executable files must start with the 4-bytes-long header 'PRG\0', with their 
-  entry point right after it. The 'MakeTNS' utility available in the bin/ 
-  directory is be used to skip newlib's startup code added before this 
-  signature.
+- An example of build script can be found in src/samples/hello/Makefile
 - Pure-assembly programs must define the global symbol "main" after the header:
-  .string "PRG"
 main: .global main
   <...main code...>
 - You may find interesting macros, inline functions and syscalls definition in 
@@ -116,6 +111,9 @@ C and assembly programs:
    be rebuilt without any change to the code. This format should be compatible 
    with the new OS versions once supported by Ndless, as long as backward 
    compatibility can be kept.
+ - The "PRG\0" signature before main() isn't required anymore, you can remove ir
+ - MakeTNS doesn't exist anymore. You must objcopy directly to the .tns file in 
+   your Makefile.
  - The program format is not specific to an hardware model anymore. You can now 
    build your programs only once without defining NSPIRE_HARDWARE.
  - OS v1.1 is not supported anymore. Check that your programs still work on OS 
@@ -187,8 +185,9 @@ Changelog
   - NEW: startup code relocates the program. You can now use C global variables.
   - NEW: option --no-startup for nspire-ld
   - CHG: option -fpic moved to nspire-gcc
+  - CHG: MakeTNS removed
  Samples:
-  - NEW: sample 'hello'
+  - NEW: sample program 'hello'
   - CHG: 'demo' renamed to 'particles' and moved to samples/
  Includes:
   - NEW: stat, NU_Get_First, NU_Get_Next, NU_Done, strcpy, strcmp, strlen, 
