@@ -172,6 +172,8 @@ void get_messages();
 #ifdef _WINUSER_H
 extern HWND hwndMain;
 #endif
+void *gui_save_state(size_t *size);
+void gui_reload_state(void *state);
 
 /* Declarations for sha256.c */
 

@@ -520,3 +520,20 @@ void get_messages() {
 	while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		DispatchMessage(&msg);
 }
+
+
+struct gui_saved_state {
+	char target_folder[256];
+};
+
+void *gui_save_state(size_t *size) {
+	*size = sizeof(struct gui_saved_state);
+	struct gui_saved_state *state = malloc(*size);
+	memcpy(&state->target_folder, target_folder, sizeof(target_folder));
+	return state;
+}
+
+void gui_reload_state(void *state) {
+	struct gui_saved_state *_state = (struct gui_saved_state *)state;
+	memcpy(target_folder, &_state->target_folder, sizeof(target_folder));
+}
