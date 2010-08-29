@@ -183,6 +183,7 @@ void save_state(void) {
 	SAVE_STATE_WRITE_CHUNK(mmu);
 	SAVE_STATE_WRITE_CHUNK(sha256);
 	SAVE_STATE_WRITE_CHUNK(translate);
+	SAVE_STATE_WRITE_CHUNK(usblink);
 	flash_save_changes();
 	fclose(state_file);
 	if (written_size != total_size) {
@@ -235,6 +236,7 @@ bool reload_state(void) {
 	RELOAD_STATE_READ_CHUNK(mmu);
 	RELOAD_STATE_READ_CHUNK(sha256);
 	RELOAD_STATE_READ_CHUNK(translate);
+	RELOAD_STATE_READ_CHUNK(usblink);
 	fclose(state_file);
 	printf("State reloaded.\n");
 	return true;

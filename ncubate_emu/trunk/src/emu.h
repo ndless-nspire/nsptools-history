@@ -340,3 +340,6 @@ extern u32 usblink_addr_submit_write_buffer;
 void usblink_hook_schedule();
 void usblink_hook_submit_read_buffer();
 void usblink_hook_submit_write_buffer();
+
+void *usblink_save_state(size_t *size);
+void usblink_reload_state(void *state);

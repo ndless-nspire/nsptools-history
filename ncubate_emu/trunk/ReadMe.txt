@@ -60,6 +60,7 @@ Changelog
  - FIX: Couldn't save flash after sending a document from another directory when 
    loading a flash image with a relative path.
  - FIX: Command 'd' doesn't crash if the parameter is missing
+ - FIX: "disconnect" not required anymore after a state reload before connecting
 
 * v030a - 2010/08/15
  - First public release

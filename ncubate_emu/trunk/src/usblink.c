@@ -377,3 +377,49 @@ void usblink_disconnect() {
 	RAM_FLAGS(MEM_PTR(usblink_addr_submit_read_buffer))  &= ~RF_EXEC_HACK;
 	RAM_FLAGS(MEM_PTR(usblink_addr_submit_write_buffer)) &= ~RF_EXEC_HACK;
 }
+
+struct usblink_saved_state {
+	u8 prev_seqno;
+	u32 usblink_events;
+	bool usblink_sending;
+	bool usblink_reading;
+	u32 usblink_read_buffer;
+	u32 usblink_read_size;
+	u32 usblink_addr_set_event;
+	u32 usblink_addr_schedule;
+	u32 usblink_addr_submit_read_buffer;
+	u32 usblink_addr_submit_write_buffer;
+	u32 usblink_addr_nav_user;
+};
+
+void *usblink_save_state(size_t *size) {
+	*size = sizeof(struct usblink_saved_state);
+	struct usblink_saved_state *state = malloc(*size);
+	state->prev_seqno = prev_seqno;
+	state->usblink_events = usblink_events;
+	state->usblink_sending = usblink_sending;
+	state->usblink_reading = usblink_reading;
+	state->usblink_read_buffer = usblink_read_buffer;
+	state->usblink_addr_set_event = usblink_addr_set_event;
+	state->usblink_addr_set_event = usblink_addr_set_event;
+	state->usblink_addr_schedule = usblink_addr_schedule;
+	state->usblink_addr_submit_read_buffer = usblink_addr_submit_read_buffer;
+	state->usblink_addr_submit_write_buffer = usblink_addr_submit_write_buffer;
+	state->usblink_addr_nav_user = usblink_addr_nav_user;
+	return state;
+}
+
+void usblink_reload_state(void *state) {
+	struct usblink_saved_state *_state = (struct usblink_saved_state *)state;
+	prev_seqno = _state->prev_seqno;
+	usblink_events = _state->usblink_events;
+	usblink_sending = _state->usblink_sending;
+	usblink_reading = _state->usblink_reading;
+	usblink_read_buffer = _state->usblink_read_buffer;
+	usblink_addr_set_event = _state->usblink_addr_set_event;
+	usblink_addr_set_event = _state->usblink_addr_set_event;
+	usblink_addr_schedule = _state->usblink_addr_schedule;
+	usblink_addr_submit_read_buffer = _state->usblink_addr_submit_read_buffer;
+	usblink_addr_submit_write_buffer = _state->usblink_addr_submit_write_buffer;
+	usblink_addr_nav_user = _state->usblink_addr_nav_user;
+}
