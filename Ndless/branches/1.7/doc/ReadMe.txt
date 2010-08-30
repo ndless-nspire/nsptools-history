@@ -18,8 +18,21 @@ What do I need to install it on a TI-Nspire?
 How do I install it?
 ====================
 
+Make sure OS v1.7 is installed.
+
+Send with the linking program the documents 'ndless_installer.tns' and 
+'ndless_resources.tns' from the calcbin/ directory of Ndless to any directory of 
+the calculator. The two documents must be in the same directory.
+
+Open 'ndless_installer' from the Documents screen of the calculator, and let it 
+hot-reboot. Ndless is now installed.
+
+You will need to reinstall Ndless after each reboot.
+
 How do I upgrade from v1.0/v1.1?
 ================================
+
+Install OS v1.7, then follow the installation steps above.
 
 How do I run an executable?
 ===========================
@@ -29,12 +42,15 @@ Executables have the extension .tns as standard documents.
 - Transfer the executable with a linking program to any folder of the TI-Nspire 
 - Run the executable from the Documents screen
 
-You may try the particles demo available in the samples/ directory.
+You may try the particles demo available in the calcbin/samples/ directory.
 
 How do I uninstall it?
 ======================
 
-
+Make sure the documents 'ndless_installer.tns' and 'ndless_resources.tns' are 
+still in the 'ndless' directory on the calculator.
+Then open the 'ndless_installer' from the Documents screen. A full reboot will 
+be initiated.
 
 Troubleshooting
 ===============
@@ -71,7 +87,7 @@ Here is the preferred way for Windows:
 - You can now open "MSYS (rxvt)" from the Windows Start menu, and run "make" 
   from the root of a Makefile-based project.
 
-To setup the developement environment on Linux:
+To set up the development environment on Linux:
 - Install the GNU ARM toolchain (this procedure may help:
   http://blog.nutaksas.com/2009/05/installing-gnuarm-arm-toolchain-on.html)
 - Add the sdk/bin/ directory to your PATH environment variable
@@ -92,8 +108,8 @@ main: .global main
 - Make sure that the assembly files extensions are in uppercase (.S) to make 
   them be preprocessed by the C preprocessor on which Ndless include files are 
   built
-- OS functions can be called from the program, see source code of the sample 
-  programs in src/samples.
+- OS functions ("syscalls") can be called, see the source code of the sample 
+  programs in src/samples. Calling syscalls in thumb state is supported.
 - Development information and resources are or will be available on Hackspire: 
     http://hackspire.unsads.com
 
@@ -181,6 +197,7 @@ Changelog
          is much more easier and compatible with nspire_emu.
  Hook:
   - NEW: the program format is not specific to an OS or hardware version anymore
+  - NEW: syscalls can be called in thumb state
  Tools:
   - NEW: startup code relocates the program. You can now use C global variables.
   - NEW: option --no-startup for nspire-ld

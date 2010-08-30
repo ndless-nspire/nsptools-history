@@ -24,10 +24,7 @@
 
 #include "ndless.h"
 
-#define NDLESS_RES_FILE "/documents/ndless/ndless_resources.tns"
-
-/* OS-specific
- * addresses patched by ld_heap_alloc/ld_heap_patch():
+/* OS-specific: addresses patched by ld_heap_alloc/ld_heap_patch():
  * A: sysmem_dm_pool address, B: system dynamic mem pool size constant, C: upper memory cleanup limit calculation
  * The instruction pointed to by C is sub r3, r3, #0x100000 */
 static unsigned const ld_hook_alloc_patch_addrs[][3] = {
@@ -49,9 +46,13 @@ static void ld_heap_patch(unsigned hook_size) {
 	*(unsigned*)ld_hook_alloc_patch_addrs[ut_os_version_index][2] = 0xE2433603; // lower the limit with: sub r3, r3, #0x300000: avoids cleaning up the hook on OS startup
 }
 
+/* OS-specific: addresses of the name of the directory containing the documen
+ * being opened */
+static unsigned const ld_currentdocdir_addr[] = {0x10669A9C, 0x0};
+
 /* Returns the hook size */
-static void ld_copy_hook(void *hook_dest, unsigned hook_size) {
-	FILE *hook_file = fopen(NDLESS_RES_FILE, "rb");
+static void ld_copy_hook(void *hook_dest, unsigned hook_size, const char *respath) {
+	FILE *hook_file = fopen(respath, "rb");
 	if (!hook_file)
 		ut_panic("res");
 	if (fread(hook_dest, 1, hook_size, hook_file) != hook_size)
@@ -60,12 +61,15 @@ static void ld_copy_hook(void *hook_dest, unsigned hook_size) {
 
 void __attribute__((noreturn)) ld_load(void) {
 	struct stat res_stat;
+	char respath[0x300 + 40];
 	ut_read_os_version_index();
 	sc_setup();
-	if (stat(NDLESS_RES_FILE, &res_stat))
+	sprintf(respath, "/documents/%s/ndless_resources.tns",
+	        (char*)ld_currentdocdir_addr[ut_os_version_index]);
+	if (stat(respath, &res_stat))
 		ut_panic("res");
 	void *hook_block = ld_hook_alloc(res_stat.st_size);
-	ld_copy_hook(hook_block, res_stat.st_size);
+	ld_copy_hook(hook_block, res_stat.st_size, respath);
 	ld_heap_patch(res_stat.st_size);
 	((void (*)(void))(char*)(hook_block + sizeof("PRG")))();
 	while(1); // noreturn attribute isn't available for function pointers...

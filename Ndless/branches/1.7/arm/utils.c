@@ -55,7 +55,8 @@ void __attribute__ ((noreturn)) ut_os_reboot(void) {
 		ut_calc_reboot();
 	for (i = 0; i < sizeof(ut_os_reboot_reset_addrs[0])/sizeof(unsigned); i++)
 		*(unsigned*)(ut_os_reboot_reset_addrs[ut_os_version_index][i]) = 1;
-	goto *OS_BASE_ADDRESS;
+	asm volatile(" bx %0" :: "r"(OS_BASE_ADDRESS)); /* and switch to ARM state */
+	while(1);
 }
 
 void __attribute__ ((noreturn)) ut_calc_reboot(void) {

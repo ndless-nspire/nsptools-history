@@ -2,6 +2,7 @@
 unsigned syscalls_light_ncas_1_7[] = {
 	  0X102A4CBC
 	, 0X102A4EB0
+	, 0X102A280C
 	, 0X102A274C
 	, 0X102AA2CC
 	, 0X102A54C4
