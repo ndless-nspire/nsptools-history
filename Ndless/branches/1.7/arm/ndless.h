@@ -25,7 +25,7 @@
 #ifndef _NDLESS_H_
 #define _NDLESS_H_
 
-#include <OS.h>
+#include <os.h>
 
 /* ints.h */
 extern unsigned *sc_addrs_ptr;

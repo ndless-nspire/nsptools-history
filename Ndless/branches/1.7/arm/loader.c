@@ -58,7 +58,7 @@ static void ld_copy_hook(void *hook_dest, unsigned hook_size) {
 		ut_panic("res");
 }
 
-void ld_load(void) {
+void __attribute__((noreturn)) ld_load(void) {
 	struct stat res_stat;
 	ut_read_os_version_index();
 	sc_setup();
@@ -68,4 +68,5 @@ void ld_load(void) {
 	ld_copy_hook(hook_block, res_stat.st_size);
 	ld_heap_patch(res_stat.st_size);
 	((void (*)(void))(char*)(hook_block + sizeof("PRG")))();
+	while(1); // noreturn attribute isn't available for function pointers...
 }
