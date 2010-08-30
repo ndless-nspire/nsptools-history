@@ -1,6 +1,6 @@
 AS = nspire-as
 GCC = nspire-gcc
-GCCFLAGS = -Os -nostdlib -I "../include"
+GCCFLAGS = -Os -nostdlib
 LD = nspire-ld
 LDFLAGS = -nostdlib
 OBJCOPY := "$(shell which arm-elf-objcopy 2>/dev/null)"
