@@ -56,7 +56,7 @@ Olivier Armand aka ExtendeD  -  < olivier dot calc at gmail dot com >
 Changelog
 =========
 
-* v031a - unreleased
+* v031a - 2010/08/30
  - Migrate to nspire_emu v031
  - ADD: State file version tracking
  - ADD: Link target folder saved to save files
