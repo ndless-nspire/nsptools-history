@@ -34,7 +34,6 @@ done
 if [ $nostdlib = false ]; then
 	args=("${args[@]}" "$DIRNAME/../system/stdlibsym.o" "$DIRNAME/../system/syscalls.o")
 fi
-echo "${args[@]}"
 
 # some newlib symbols are not found if ld is used...
 GCC=`which arm-elf-gcc 2>/dev/null`
