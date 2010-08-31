@@ -12,19 +12,13 @@
 #else
 #include "syscalls.h"
 #endif
-
-/** GNU AS */
+/* GNU AS */
 #ifdef GNU_AS
-  .macro oscall address
-      mov	lr,pc
-      ldr pc,=\address
-  .endm
+// unfortunately using a GAS macro for this is not possible
+#define syscall(syscall_name) swi e_##syscall_name
 
-#define _oscall(rettype,funcaddr,...) funcaddr
-
-/** GNU C Compiler */
+/* GNU C Compiler */
 #else
-#define _oscall(rettype,funcaddr,...) (*((rettype(*)(__VA_ARGS__))(funcaddr)))
 #define _STRINGIFY(s) #s
 #define _XSTRINGIFY(s) _STRINGIFY(s)
 #define _SYSCALL_ENUM(syscall_name) e_##syscall_name

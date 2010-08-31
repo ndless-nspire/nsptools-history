@@ -1,4 +1,4 @@
-SUBDIRS = hello particles
+SUBDIRS = hella hello particles
 
 all:
 	@for i in $(SUBDIRS); do \

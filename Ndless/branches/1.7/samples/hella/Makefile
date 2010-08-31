@@ -1,24 +1,23 @@
-GCC = nspire-gcc
+AS = nspire-as
 LD = nspire-ld
-GCCFLAGS = -Os -Wall -W
 OBJCOPY := "$(shell which arm-elf-objcopy 2>/dev/null)"
 ifeq (${OBJCOPY},"")
 	OBJCOPY := arm-none-eabi-objcopy
 endif
-OBJS = hello.o
+OBJS = hella.o
 DISTDIR = ../../calcbin/samples
 vpath %.tns $(DISTDIR)
 
-all: hello.tns
+all: hella.tns
 
-%.o: %.c
-	$(GCC) $(GCCFLAGS) -c $<
+%.o: %.S
+	$(AS) -c $<
 
-hello.tns: $(OBJS)
+hella.tns: $(OBJS)
 	$(LD) $^ -o $(@:.tns=.elf)
 	mkdir -p $(DISTDIR)
 	$(OBJCOPY) -O binary $(@:.tns=.elf) $(DISTDIR)/$@
 
 clean:
 	rm -f *.o *.elf
-	rm -f $(DISTDIR)/hello.tns
+	rm -f $(DISTDIR)/hella.tns
