@@ -101,8 +101,7 @@ What you need to know as a developer
 
 - An example of build script can be found in src/samples/hello/Makefile
 - Pure-assembly programs must define the global symbol "main" after the header:
-main: .global main
-  <...main code...>
+  see src/samples/hella/hella.S
 - You may find interesting macros, inline functions and syscalls definition in 
   the include/ directory.
 - Make sure that the assembly files extensions are in uppercase (.S) to make 
@@ -134,6 +133,9 @@ C and assembly programs:
    build your programs only once without defining NSPIRE_HARDWARE.
  - OS v1.1 is not supported anymore. Check that your programs still work on OS 
    v1.7.
+Assembly programs:
+ - The way to call syscalls has chanded: replace 'oscall <os_function>' with 
+   'syscall(<os_function>)'
 
 * From v1.0 to v1.1:
 
