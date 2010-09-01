@@ -22,10 +22,21 @@
  *                 Geoffrey ANNEHEIM <geoffrey.anneheim@gmail.com>
  ****************************************************************************/
 
+#include "ndless.h"
+
+extern void *next_descriptor_ptr;
 extern void ints_swi_handler(void);
 
 void ints_setup_handlers(void) {
-	*(void**)0x28 = &ints_swi_handler; // replace the address for the swi jump instruction
+ *(void**)INTS_SWI_HANDLER_ADDR = &ints_swi_handler;
+}
+
+/* similar to ints_setup_handlers(), but:
+ * - on the OS copy of the vectors, for installation at next reboot
+ * - sets the next_descriptor pointer */
+void ints_hook_handlers(void) {
+	*(void**)(OS_BASE_ADDRESS + INTS_SWI_HANDLER_ADDR) = &ints_swi_handler;
+ 	next_descriptor_ptr = &ut_next_descriptor;
 }
 
 /* TODO:
@@ -34,6 +45,9 @@ void ints_setup_handlers(void) {
  */
 asm(
 " .arm \n"
+" @ N-ext convention: a signature and a pointer to the descriptor, before the SWI handler address in the OS copy of the vectors \n"
+" .long " XSTRINGIFY(NEXT_SIGNATURE) "\n"
+"next_descriptor_ptr: .long 0 \n"
 "ints_swi_handler:        @ caution: 1) only supports calls from the svc and user mode (many syscalls will reboot with TCT_Check_Stack in other modes anyway) 2) destroys the caller's mode lr \n"
 " str   r0, [sp, #-4]!    @ push r0 \n"
 " mrs	  r0, spsr \n"

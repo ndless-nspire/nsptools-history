@@ -19,8 +19,7 @@
 
 /* GNU C Compiler */
 #else
-#define _STRINGIFY(s) #s
-#define _XSTRINGIFY(s) _STRINGIFY(s)
+
 #define _SYSCALL_ENUM(syscall_name) e_##syscall_name
 /* The SWI calling convention is the C calling convention for the parameters.
  * We define:
@@ -32,14 +31,14 @@
 #define _SYSCALL0(rettype, funcname) static inline rettype funcname(void) { \
 	register unsigned __r0 asm("r0"); \
 	asm volatile( \
-		" swi " _XSTRINGIFY(_SYSCALL_ENUM(funcname)) \
+		" swi " XSTRINGIFY(_SYSCALL_ENUM(funcname)) \
 		:"=r" (__r0) :: "r0", "r1", "r2", "r3", "r12", "lr"); \
 	return (rettype)__r0; \
 }
 #define _SYSCALL1(rettype, funcname, type1) static inline rettype funcname(type1 __param1) { \
 	register unsigned __r0 asm("r0") = (unsigned)__param1; \
 	asm volatile( \
-		" swi " _XSTRINGIFY(_SYSCALL_ENUM(funcname)) \
+		" swi " XSTRINGIFY(_SYSCALL_ENUM(funcname)) \
 		: "=r" (__r0) : "r" (__r0) :  "r1", "r2", "r3", "r12", "lr"); \
 	return (rettype)__r0; \
 }
@@ -47,7 +46,7 @@
 	register unsigned __r0 asm("r0") = (unsigned)__param1; \
 	register unsigned __r1 asm("r1") = (unsigned)__param2; \
 	asm volatile( \
-		" swi " _XSTRINGIFY(_SYSCALL_ENUM(funcname)) \
+		" swi " XSTRINGIFY(_SYSCALL_ENUM(funcname)) \
 		: "=r" (__r0) : "r" (__r0), "r" (__r1) : "r2", "r3", "r12", "lr"); \
 	return (rettype)__r0; \
 }
@@ -56,7 +55,7 @@
 	register unsigned __r1 asm("r1") = (unsigned)__param2; \
 	register unsigned __r2 asm("r2") = (unsigned)__param3; \
 	asm volatile( \
-		" swi " _XSTRINGIFY(_SYSCALL_ENUM(funcname)) \
+		" swi " XSTRINGIFY(_SYSCALL_ENUM(funcname)) \
 		: "=r" (__r0) : "r" (__r0), "r" (__r1), "r" (__r2) : "r3", "r12", "lr"); \
 	return (rettype)__r0; \
 }
@@ -66,7 +65,7 @@
 	register unsigned __r2 asm("r2") = (unsigned)__param3; \
 	register unsigned __r3 asm("r3") = (unsigned)__param4; \
 	asm volatile( \
-		" swi " _XSTRINGIFY(_SYSCALL_ENUM(funcname)) \
+		" swi " XSTRINGIFY(_SYSCALL_ENUM(funcname)) \
 		: "=r" (__r0) : "r" (__r0), "r" (__r1), "r" (__r2) , "r" (__r3) : "r12", "lr"); \
 	return (rettype)__r0; \
 }
@@ -74,7 +73,7 @@
 #define _SYSCALLVAR(rettype, funcname, param1, ...) static inline rettype __attribute__((naked)) funcname(param1, __VA_ARGS__) { \
 	asm volatile( \
 		" push {lr} \n" \
-		" swi " _XSTRINGIFY(_SYSCALL_ENUM(funcname)) "\n" \
+		" swi " XSTRINGIFY(_SYSCALL_ENUM(funcname)) "\n" \
 		" pop {pc}" \
 		::: "r0", "r1", "r2", "r3"); \
 	return 0; \
@@ -83,7 +82,7 @@
 #define _SYSCALL_SWI(rettype, funcname, param1) static inline rettype __attribute__((naked)) funcname##_swi(param1, ...) { \
 	asm volatile( \
 		" push {lr} \n" \
-		" swi " _XSTRINGIFY(_SYSCALL_ENUM(funcname)) "\n" \
+		" swi " XSTRINGIFY(_SYSCALL_ENUM(funcname)) "\n" \
 	  " pop {pc}" \
 		::: "r0", "r1", "r2", "r3"); \
 	}
@@ -91,11 +90,6 @@
 // Use in conjunction with _SYSCALL for 5+ parameters
 #define _SYSCALL_ARGS(rettype, funcname, param1, ...) {return funcname##_swi(param1, __VA_ARGS__);}
 
-#define NULL ((void*)0)
-typedef enum bool {FALSE = 0, TRUE = 1} BOOL;
-typedef struct{} FILE;
-typedef unsigned long size_t;
-  
 _SYSCALL1(void*, malloc, size_t)
 _SYSCALL1(void, free, void *)
 _SYSCALL3(void*, memset, void *, int, size_t)

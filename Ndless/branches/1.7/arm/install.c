@@ -37,6 +37,17 @@ void main(void) {
 	ut_read_os_version_index();
 	sc_setup();	
 	ints_setup_handlers();
+	halt();
+	struct next_descriptor *installed_next_descriptor = ut_get_next_descriptor();
+	if (installed_next_descriptor) {
+		if (*(unsigned*)installed_next_descriptor->ext_name == 0x4E444C53) { // 'NDLS'
+			puts("uninstalling");
+			ut_calc_reboot();
+		}
+		else
+			ut_panic("unknown N-ext");
+	}
+	ints_hook_handlers();
 	ins_install_ploader_hook();
 	puts("Ndless installed!");
 	ut_os_reboot();

@@ -185,6 +185,14 @@ halt\@: b halt\@
 
 /** GNU C Compiler */
 #else
+
+#define STRINGIFY(s) #s
+#define XSTRINGIFY(s) STRINGIFY(s)
+#define NULL ((void*)0)
+typedef enum bool {FALSE = 0, TRUE = 1} BOOL;
+typedef struct{} FILE;
+typedef unsigned long size_t;
+
   typedef struct {
     int row, col;
   } t_key;
@@ -231,7 +239,7 @@ static inline void idle(void) {
 		/* save sp */ \
 		asm volatile( \
 			" str r0, [sp, #-4] @ push r0 but don't change sp \n " \
-			" adr r0," _XSTRINGIFY(__##hookname##_saved_sp) "\n" \
+			" adr r0," XSTRINGIFY(__##hookname##_saved_sp) "\n" \
 			" str sp, [r0] \n" \
 			" ldr r0, [sp, #-4] @ pop r0 but don't change sp \n" \
 		); \
@@ -243,7 +251,7 @@ static inline void idle(void) {
 #define HOOK_RESTORE_SP(hookname) do { \
 	asm volatile( \
 		" str lr, [sp, #-4]! @ push lr \n" \
-		" adr lr," _XSTRINGIFY(__##hookname##_saved_sp) "\n" \
+		" adr lr," XSTRINGIFY(__##hookname##_saved_sp) "\n" \
 		" ldr lr, [lr] \n" \
 		" str lr, [sp, #-4]! \n" /* push lr=saved_sp. trick to restore both saved_sp and the original lr */ \
 		" ldmfd sp, {sp, lr} \n" /* lr has been unused instead of r0 to avoid a GAS warning about reg order on this instr */ \
@@ -268,7 +276,7 @@ static inline void idle(void) {
  * set the registers then call HOOK_RETURN. Caution, only assembly without local
  * variables can between the 2 calls. */
 #define HOOK_RETURN(hookname) do { \
-	asm volatile(" b " _XSTRINGIFY(__##hookname##_end_instrs)); \
+	asm volatile(" b " XSTRINGIFY(__##hookname##_end_instrs)); \
 } while (0)
 
 /* Standard hook return */
@@ -286,14 +294,14 @@ static inline void idle(void) {
 	__end_instrs_skip##offset[3] += offset; \
 	/* Patch the next asm() to branch to this copy */ \
 	asm volatile( \
-		" adr r0, " _XSTRINGIFY(__##hookname##_end_instrs_jump_offset_skip##offset) "\n" \
+		" adr r0, " XSTRINGIFY(__##hookname##_end_instrs_jump_offset_skip##offset) "\n" \
 		"	str %0, [r0] \n" \
 		:: "r"(&__end_instrs_skip##offset) : "r0"); \
 	HOOK_RESTORE(hookname); \
 	/* Branch to the end instrs copy */ \
 	asm volatile( \
 		" ldr pc, [pc, #-4] \n" \
-	_XSTRINGIFY(__##hookname##_end_instrs_jump_offset_skip##offset) ":" \
+	  XSTRINGIFY(__##hookname##_end_instrs_jump_offset_skip##offset) ":" \
 		" .long 0"); \
 } while (0)
 

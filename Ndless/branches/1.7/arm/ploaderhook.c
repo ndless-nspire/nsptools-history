@@ -32,10 +32,6 @@ HOOK_DEFINE(plh_hook) {
 	char *halfpath; // docfolder/file.tns
 	char docpath[100];
 	int ret;
-	// TODO move the 3 following lines to an OS startup hook
-	ut_read_os_version_index();
-	sc_setup();	
-	ints_setup_handlers();
 	halfpath =  (char*)(HOOK_SAVED_REGS(plh_hook)[11] /* r11 */ - 0x124); // on the stack
 	// TODO use snprintf
 	sprintf(docpath, "/documents/%s", halfpath);

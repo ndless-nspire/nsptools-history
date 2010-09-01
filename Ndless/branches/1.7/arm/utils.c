@@ -24,6 +24,12 @@
 
 #include "ndless.h"
 
+struct next_descriptor ut_next_descriptor = {
+	.next_version = 0x00010000,
+	.ext_name = "NDLS",
+	.ext_version = 0x00010007 // will be incremented only if new functionnalities exposed to third-party tools
+};
+
 unsigned ut_os_version_index;
 
 /* Writes to ut_os_version_index a zero-based index identifying the OS version and HW model.
@@ -33,7 +39,7 @@ void ut_read_os_version_index(void) {
 	/* The heuristic is based on the address of INT_Initialize - Thanks Goplat.
 	 * The address is read from the RAM copy and not the real vector which is
 	 * destroyed at installation time */
-	switch (*(unsigned*)0x10000020) {
+	switch (*(unsigned*)(OS_BASE_ADDRESS + 0x20)) {
 		// OS-specific
 		case 0x10211290: ut_os_version_index = 0; break; // 1.7 non-CAS
 		case 0x102132A0: ut_os_version_index = 1; break; // 1.7 CAS
