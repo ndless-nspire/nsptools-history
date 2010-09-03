@@ -49,8 +49,8 @@ How do I uninstall it?
 
 Make sure the documents 'ndless_installer.tns' and 'ndless_resources.tns' are 
 still in the 'ndless' directory on the calculator.
-Then open the 'ndless_installer' from the Documents screen. A full reboot will 
-be initiated.
+Then open 'ndless_installer' from the Documents screen. A full reboot will be 
+initiated.
 
 Troubleshooting
 ===============
@@ -100,6 +100,8 @@ What you need to know as a developer
 ====================================
 
 - An example of build script can be found in src/samples/hello/Makefile
+- BSS sections are not allocated dynamically: global variables will make your
+  programs bigger.
 - Pure-assembly programs must define the global symbol "main" after the header:
   see src/samples/hella/hella.S
 - You may find interesting macros, inline functions and syscalls definition in 

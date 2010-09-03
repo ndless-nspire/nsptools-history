@@ -37,7 +37,6 @@ void main(void) {
 	ut_read_os_version_index();
 	sc_setup();	
 	ints_setup_handlers();
-	halt();
 	struct next_descriptor *installed_next_descriptor = ut_get_next_descriptor();
 	if (installed_next_descriptor) {
 		if (*(unsigned*)installed_next_descriptor->ext_name == 0x4E444C53) { // 'NDLS'

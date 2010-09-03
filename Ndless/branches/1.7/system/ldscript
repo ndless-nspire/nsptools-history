@@ -4,10 +4,15 @@
 SECTIONS
 {
   . = 0x0;
-  .text : { *(.text) }
-  .data : { *(.data) }
-  .bss : { *(.bss) }
-  /* required by newlib */
-  __bss_start__ = .;
-  __bss_end__ = . ;
+  .text : { *(.text); }
+  .bss : { *(.bss); } /* doesn't generate any output, only headers, because the bss sections have the flag "ALLOC"
+  /* do not insert anything here */
+  .data : {
+  	/* symbol required by newlib */
+  	__bss_start__ = .;
+  	/* hack to allocate space for the BSS sections in the output file, because our loader doesn't support section allocation */
+  	. += SIZEOF(.bss);
+  	__bss_end__ = .;
+  	*(.data);
+  }
 }
