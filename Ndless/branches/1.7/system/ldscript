@@ -16,3 +16,4 @@ SECTIONS
   	*(.data);
   }
 }
+__got_size = SIZEOF(.got) / 4;

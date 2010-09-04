@@ -45,7 +45,7 @@ void ut_read_os_version_index(void) {
 		case 0x102132A0: ut_os_version_index = 1; break; // 1.7 CAS
 		default:
 			ut_os_version_index = 0xFFFFFFFF;
-			ut_panic("OS ver?");		
+			ut_panic("v?");		
 	}
 }
 
@@ -70,7 +70,23 @@ void __attribute__ ((noreturn)) ut_calc_reboot(void) {
 	while(1);
 }
 
-void __attribute__ ((noreturn)) ut_panic(const char * msg) {
+void __attribute__ ((noreturn)) ut_panic(const char *msg) {
 	puts(msg);
 	ut_os_reboot();
 }
+
+extern int __base;
+
+#ifndef _SYSCALLS_LIGHT
+/* Our lightweight relocation support unfortunately cannot handle 
+ * initializers with relocation (for example arrays of function pointers).
+ * data.rel and data.rel.ro sections are created, but may contain both
+ * non-relocable and relocable data, for which we have no clue.
+ * This function allows to relocate an array of pointers. */
+void ut_reloc_reldata(unsigned *dataptr, unsigned size) {
+	unsigned i;
+	for (i = size; i > 0; i--) {
+		*dataptr++ += (unsigned)&__base;
+	}
+}
+#endif

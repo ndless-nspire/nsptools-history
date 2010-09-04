@@ -54,9 +54,9 @@ static unsigned const ld_currentdocdir_addr[] = {0x10669A9C, 0x0};
 static void ld_copy_hook(void *hook_dest, unsigned hook_size, const char *respath) {
 	FILE *hook_file = fopen(respath, "rb");
 	if (!hook_file)
-		ut_panic("res");
+		ut_panic("rs");
 	if (fread(hook_dest, 1, hook_size, hook_file) != hook_size)
-		ut_panic("res");
+		ut_panic("rs");
 }
 
 void __attribute__((noreturn)) ld_load(void) {
@@ -67,7 +67,7 @@ void __attribute__((noreturn)) ld_load(void) {
 	sprintf(respath, "/documents/%s/ndless_resources.tns",
 	        (char*)ld_currentdocdir_addr[ut_os_version_index]);
 	if (stat(respath, &res_stat))
-		ut_panic("res");
+		ut_panic("rs");
 	void *hook_block = ld_hook_alloc(res_stat.st_size);
 	ld_copy_hook(hook_block, res_stat.st_size, respath);
 	ld_heap_patch(res_stat.st_size);

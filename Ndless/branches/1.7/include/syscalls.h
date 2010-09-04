@@ -5,7 +5,8 @@
 #ifndef _SYSCALLS_H_
 #define _SYSCALLS_H_
 
-/* The syscall's name must be prefixed with e_.
+/* OS syscalls.
+ * The syscall's name must be prefixed with e_.
  * NEVER change the value of these constants for backward compatibility.
  * Append new syscalls at the end of the list, and increment the enumeration.
  * Don't try to sort the symbols.
@@ -47,6 +48,17 @@
 // END_OF_LIST (always keep this line after the last constant, used by mksyscalls.sh)
 
 // Must be kept up-to-date with the value of the last syscall
-#define SYSCALLS_NUM 29
+#define __SYSCALLS_LAST 29
+
+// Flag: higher bit of the 3-bytes comment field of the swi instruction
+#define __SYSCALLS_ISEXT 0x800000
+/* Ndless extensions.
+ * Not automatically parsed. Starts from 0. The recommandations for the standard syscalls enumeration apply.
+ * Must always be or-ed with __SYSCALLS_ISEXT
+ * The extensions cannot be called in thumb state (the swi number is too high for the swi thumb instruction */
+#define e_nl_osvalue (__SYSCALLS_ISEXT | 0)
+
+// Must be kept up-to-date with the value of the last syscalls extension without __SYSCALLS_ISEXT
+#define __SYSCALLS_LASTEXT 0
 
 #endif

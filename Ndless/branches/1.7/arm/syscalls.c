@@ -1,5 +1,5 @@
 /****************************************************************************
- * Ndless syscalls handler
+ * Ndless syscalls setup and handlers
  *
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
@@ -25,11 +25,22 @@
 #include <os.h>
 #include "ndless.h"
 
-
 #ifndef _SYSCALLS_LIGHT
 // OS-specific
 extern unsigned syscalls_ncas_1_7[];
 extern unsigned syscalls_cas_1_7[];
+
+/* Ndless extensions exposed as syscalls */
+int sc_nl_osvalue(const int *values, unsigned size) {
+	// TODO doc. Returns 0. Which OS version.
+	if (ut_os_version_index >= size)
+		return 0;
+	return values[ut_os_version_index];
+}
+
+unsigned sc_ext_table[] = {
+	(unsigned)sc_nl_osvalue, (unsigned)sc_nl_osvalue
+};
 
 void sc_setup(void) {
 	switch (ut_os_version_index) {
@@ -41,6 +52,7 @@ void sc_setup(void) {
 			sc_addrs_ptr = syscalls_cas_1_7;
 			break;
 	}
+	ut_reloc_reldata(sc_ext_table, sizeof(sc_ext_table)/sizeof(unsigned));
 }
 
 #else
@@ -60,4 +72,5 @@ void sc_setup(void) {
 			break;
 	}
 }
+
 #endif // ndef _SYSCALLS_LIGHT

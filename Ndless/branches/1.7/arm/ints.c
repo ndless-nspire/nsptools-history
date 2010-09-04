@@ -39,14 +39,15 @@ void ints_hook_handlers(void) {
  	next_descriptor_ptr = &ut_next_descriptor;
 }
 
-/* TODO:
+/* All the code run with _SYSCALLS_LIGHT defined must be PC-relative (the loader is not relocated)
+ * TODO:
  * Check that the swi number is correct
  * Check it is null; if not null, reboot
  */
 asm(
 " .arm \n"
 " @ N-ext convention: a signature and a pointer to the descriptor, before the SWI handler address in the OS copy of the vectors \n"
-" .long " XSTRINGIFY(NEXT_SIGNATURE) "\n"
+" .long " STRINGIFY(NEXT_SIGNATURE) "\n"
 "next_descriptor_ptr: .long 0 \n"
 "ints_swi_handler:        @ caution: 1) only supports calls from the svc and user mode (many syscalls will reboot with TCT_Check_Stack in other modes anyway) 2) destroys the caller's mode lr \n"
 " str   r0, [sp, #-4]!    @ push r0 \n"
@@ -66,25 +67,37 @@ asm(
 "restorespsr: \n"
 " stmfd sp!, {pc}         @ points to the instruction after the following one \n"
 " ldmfd sp!, {pc}^        @ ^: jump to the next instruction and move spsr to cpsr (get back to the mode of the caller and restore the ints mask) \n"
-"	stmfd sp!, {r0-r1, r2}  @ r2 is dummy and will be overwritten with the syscall address \n"
-" ldr   r1, sc_addrs_ptr \n"
+"	stmfd sp!, {r0-r2, r3}  @ r3 is dummy and will be overwritten with the syscall address. Caution, update the offset below if reg list changed. \n"
 "@ extract the syscall number from the comment field of the swi instruction \n"
 " tst   lr, #1            @ was the caller in thumb state? \n"
 "	ldreq r0, [lr, #-4]     @ ARM state \n"
 " biceq r0, r0, #0xFF000000 \n"
-" ldrneh r0, [lr, #-3]     @ thumb state (-2-1, because of the previous +1) \n"
+" ldrneh r0, [lr, #-3]    @ thumb state (-2-1, because of the previous +1) \n"
 " bicne r0, r0, #0xFF00 \n"
+#ifndef _SYSCALLS_LIGHT // syscalls extension support
+" mov   r1, #" STRINGIFY(__SYSCALLS_ISEXT) "\n"
+" tst   r0, r1 \n"
+" bic   r0, r1            @ clear the flag \n"
+" ldreq r1, sc_addrs_ptr  @ OS syscalls table \n"
+" ldrne r1, get_ext_table_reloc @ from here...\n"
+" ldrne r2, get_ext_table_reloc+4 \n"
+"get_ext_table: \n"
+" addne r1, pc \n"
+" ldrne r1, [r1, r2]      @ ...to there: GOT-based access to sc_ext_table (defined in another .o). TODO: Could be optimized with http://gcc.gnu.org/bugzilla/show_bug.cgi?id=43129 once available? \n"
+#else
+" ldr   r1, sc_addrs_ptr \n"
+#endif
 " ldr   r0, [r1, r0, lsl #2] @ syscall address \n"
-" str   r0, [sp, #8]      @ overwrite the dummy r2 previously saved \n"
-" ldmfd sp!, {r0-r1, pc}  @ restore the regs and jump to the syscall. lr is still the return address \n"
-);
+" str   r0, [sp, #12]      @ overwrite the dummy register previously saved \n"
+" ldmfd sp!, {r0-r2, pc}  @ restore the regs and jump to the syscall. lr is still the return address \n"
 
-/* The global var is defined, and placed in a .text section to be able to use 'adr' in ints_swi_handler
- * from the same section).
- * The \n\t is an ugly hack to avoid GCC's warning "ignoring changed section attributes for .text"
- * See http://forums.ps2dev.org/viewtopic.php?p=50638 and http://sources.redhat.com/ml/binutils/2000-06/msg00099.html */
- // its size is SYSCALLS_NUM
- __attribute__ ((section (".text\n\t#"))) unsigned *sc_addrs_ptr;
+"sc_addrs_ptr: .global sc_addrs_ptr @ defined here because accessed with pc-relative instruction \n"
+" .long 0 \n"
+#ifndef _SYSCALLS_LIGHT
+"get_ext_table_reloc: .long _GLOBAL_OFFSET_TABLE_-(get_ext_table+8) \n"
+" .long sc_ext_table(GOT) \n"
+#endif
+);
 
 // Used for any exception for which we choose to halt
 asm(

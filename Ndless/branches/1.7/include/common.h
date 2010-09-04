@@ -186,8 +186,8 @@ halt\@: b halt\@
 /** GNU C Compiler */
 #else
 
-#define STRINGIFY(s) #s
-#define XSTRINGIFY(s) STRINGIFY(s)
+#define _STRINGIFY(s) #s
+#define STRINGIFY(s) _STRINGIFY(s)
 #define NULL ((void*)0)
 typedef enum bool {FALSE = 0, TRUE = 1} BOOL;
 typedef struct{} FILE;
@@ -232,14 +232,15 @@ static inline void idle(void) {
  * register modification before they are saved */
 #define HOOK_DEFINE(hookname) \
 	unsigned __##hookname##_end_instrs[4]; \
-	 __attribute__ ((section (".text\n\t#"))) unsigned __##hookname##_saved_sp; /* section hack: see sc_addrs_ptr in ints.c */ \
+	extern unsigned __##hookname##_saved_sp; \
+	asm(STRINGIFY(__##hookname##_saved_sp) ": .long 0"); /* accessed with pc-relative instruction */ \
 	void __##hookname##_body(void); \
-	void __##attribute__((naked)) hookname(void) { \
+	void __attribute__((naked)) hookname(void) { \
 		asm volatile(" stmfd sp!, {r0-r12,lr}"); /* used by HOOK_RESTORE_STATE() */ \
 		/* save sp */ \
 		asm volatile( \
 			" str r0, [sp, #-4] @ push r0 but don't change sp \n " \
-			" adr r0," XSTRINGIFY(__##hookname##_saved_sp) "\n" \
+			" adr r0," STRINGIFY(__##hookname##_saved_sp) "\n" \
 			" str sp, [r0] \n" \
 			" ldr r0, [sp, #-4] @ pop r0 but don't change sp \n" \
 		); \
@@ -251,7 +252,7 @@ static inline void idle(void) {
 #define HOOK_RESTORE_SP(hookname) do { \
 	asm volatile( \
 		" str lr, [sp, #-4]! @ push lr \n" \
-		" adr lr," XSTRINGIFY(__##hookname##_saved_sp) "\n" \
+		" adr lr," STRINGIFY(__##hookname##_saved_sp) "\n" \
 		" ldr lr, [lr] \n" \
 		" str lr, [sp, #-4]! \n" /* push lr=saved_sp. trick to restore both saved_sp and the original lr */ \
 		" ldmfd sp, {sp, lr} \n" /* lr has been unused instead of r0 to avoid a GAS warning about reg order on this instr */ \
@@ -276,7 +277,7 @@ static inline void idle(void) {
  * set the registers then call HOOK_RETURN. Caution, only assembly without local
  * variables can between the 2 calls. */
 #define HOOK_RETURN(hookname) do { \
-	asm volatile(" b " XSTRINGIFY(__##hookname##_end_instrs)); \
+	asm volatile(" b " STRINGIFY(__##hookname##_end_instrs)); \
 } while (0)
 
 /* Standard hook return */
@@ -294,14 +295,14 @@ static inline void idle(void) {
 	__end_instrs_skip##offset[3] += offset; \
 	/* Patch the next asm() to branch to this copy */ \
 	asm volatile( \
-		" adr r0, " XSTRINGIFY(__##hookname##_end_instrs_jump_offset_skip##offset) "\n" \
+		" adr r0, " STRINGIFY(__##hookname##_end_instrs_jump_offset_skip##offset) "\n" \
 		"	str %0, [r0] \n" \
 		:: "r"(&__end_instrs_skip##offset) : "r0"); \
 	HOOK_RESTORE(hookname); \
 	/* Branch to the end instrs copy */ \
 	asm volatile( \
 		" ldr pc, [pc, #-4] \n" \
-	  XSTRINGIFY(__##hookname##_end_instrs_jump_offset_skip##offset) ":" \
+	  STRINGIFY(__##hookname##_end_instrs_jump_offset_skip##offset) ":" \
 		" .long 0"); \
 } while (0)
 

@@ -14,7 +14,7 @@ all: hella.tns
 	$(AS) -c $<
 
 hella.tns: $(OBJS)
-	$(LD) $^ -o $(@:.tns=.elf)
+	$(LD) -nostdlib $^ -o $(@:.tns=.elf)
 	mkdir -p $(DISTDIR)
 	$(OBJCOPY) -O binary $(@:.tns=.elf) $(DISTDIR)/$@
 
