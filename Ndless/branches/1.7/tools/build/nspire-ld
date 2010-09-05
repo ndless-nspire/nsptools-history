@@ -32,7 +32,7 @@ for arg in "$@"; do
 	esac
 done
 if [ $nostdlib = false ]; then
-	args=("${args[@]}" "$DIRNAME/../system/stdlibsym.o" "$DIRNAME/../system/syscalls.o")
+	args=("${args[@]}" "$DIRNAME/../system/osstub.o")
 fi
 
 # some newlib symbols are not found if ld is used...

@@ -74,19 +74,3 @@ void __attribute__ ((noreturn)) ut_panic(const char *msg) {
 	puts(msg);
 	ut_os_reboot();
 }
-
-extern int __base;
-
-#ifndef _NDLS_LIGHT
-/* Our lightweight relocation support unfortunately cannot handle 
- * initializers with relocation (for example arrays of function pointers).
- * data.rel and data.rel.ro sections are created, but may contain both
- * non-relocable and relocable data, for which we have no clue.
- * This function allows to relocate an array of pointers. */
-void ut_reloc_reldata(unsigned *dataptr, unsigned size) {
-	unsigned i;
-	for (i = size; i > 0; i--) {
-		*dataptr++ += (unsigned)&__base;
-	}
-}
-#endif

@@ -1,3 +1,4 @@
+SUBDIRS = tests
 AS = nspire-as
 GCC = nspire-gcc
 GCCFLAGS = -Os -nostdlib
@@ -13,7 +14,7 @@ SYSCALLS_LIGHT_OBJS = syscalls-light_ncas-1.7.o syscalls-light_cas-1.7.o
 SYSCALLS_OBJS = syscalls_ncas-1.7.o syscalls_cas-1.7.o
 vpath %.tns $(DISTDIR)
 
-all: static ndless_installer.tns ndless_resources.tns
+all: static ndless_installer.tns ndless_resources.tns subdirs
 
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<
@@ -57,6 +58,11 @@ ndless_resources.elf: $(RES_OBJS)
 
 ndless_resources.tns: ndless_resources.elf
 	$(OBJCOPY) -O binary $< $(DISTDIR)/$@
+
+subdirs:
+	@for i in $(SUBDIRS); do \
+	echo "make all in $$i..."; \
+  (cd $$i; make all) || exit 1; done
 
 clean: cleanbin cleanapp
 cleanapp:

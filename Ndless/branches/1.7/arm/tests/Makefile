@@ -1,27 +1,24 @@
 GCC = nspire-gcc
 LD = nspire-ld
-GCCFLAGS = -Os -Wall -W -nostdlib
+GCCFLAGS = -Os -Wall -W
 OBJCOPY := "$(shell which arm-elf-objcopy 2>/dev/null)"
 ifeq (${OBJCOPY},"")
 	OBJCOPY := arm-none-eabi-objcopy
 endif
-OBJS = main.o utils.o vector.o particle.o particle_system.o gravity_particles.o
-DISTDIR = ../../calcbin/samples
+OBJS = tests.o
+DISTDIR = ../../calcbin
 vpath %.tns $(DISTDIR)
 
-all: particles.tns
+all: ndless_tests.tns
 
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<
 
-%.o: %.S
-	$(GCC) $(GCCFLAGS) -c $<
-
-particles.tns: $(OBJS)
+ndless_tests.tns: $(OBJS)
 	$(LD) $^ -o $(@:.tns=.elf)
-	@mkdir -p $(DISTDIR)
+	mkdir -p $(DISTDIR)
 	$(OBJCOPY) -O binary $(@:.tns=.elf) $(DISTDIR)/$@
 
 clean:
 	rm -f *.o *.elf
-	rm -f $(DISTDIR)/particles.tns
+	rm -f $(DISTDIR)/ndless_tests.tns

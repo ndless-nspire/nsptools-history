@@ -117,8 +117,24 @@ _SYSCALL3(void, ascii2utf16, void *, const char *, int)
 // TODO dummy
 #define show_dialog_box2(a,b,c) do {} while(0)
 
-/* Ndless extensions */
+/* Ndless extensions. Not available in thumb state. */
+// Given a list of OS-specific value and its size, returns the value for the current OS.
+// The order must be: 1.7, 1.7 CAS
+// If the array isn't enough long for the current OS, returns 0.
 _SYSCALL2(int, nl_osvalue, const int * /* values */, unsigned /* size */)
+// Relocates a global variable initialized with symbols (for example an array of function pointers)
+_SYSCALL2(void, nl_relocdata, unsigned * /* dataptr */, unsigned /* size */)
+
+/* stdlib replacements not directly available as syscalls */
+extern unsigned __crt0exit;
+extern unsigned __crt0_savedsp;
+static inline void __attribute__((noreturn, naked)) exit(int __attribute__((unused)) status) {
+	asm volatile(
+		" mov sp, %0 \n"
+		" mov pc, %1"
+		:: "r" (__crt0_savedsp), "r" (&__crt0exit));
+	while(1);
+}
 
 #endif // GCC C
 #endif

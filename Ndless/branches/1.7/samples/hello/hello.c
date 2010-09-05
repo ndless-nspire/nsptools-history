@@ -5,7 +5,6 @@ char *str;
 void hello(void) {
 	puts(str);
 }
-	
 
 int main(void) {
 	// required because stdout needs the interrupts currently disabled by Ndless

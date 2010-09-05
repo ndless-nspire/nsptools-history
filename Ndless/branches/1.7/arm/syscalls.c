@@ -30,16 +30,30 @@
 extern unsigned syscalls_ncas_1_7[];
 extern unsigned syscalls_cas_1_7[];
 
-/* Ndless extensions exposed as syscalls */
+/* Ndless extensions exposed as syscalls. See os.h for documentation. */
+
 int sc_nl_osvalue(const int *values, unsigned size) {
-	// TODO doc. Returns 0. Which OS version.
 	if (ut_os_version_index >= size)
 		return 0;
 	return values[ut_os_version_index];
 }
 
+extern int __base;
+
+/* Our lightweight relocation support unfortunately cannot handle 
+ * initializers with relocation (for example arrays of function pointers).
+ * data.rel and data.rel.ro sections are created, but may contain both
+ * non-relocable and relocable data, for which we have no clue.
+ * This function allows to relocate an array of pointers. */
+void sc_ext_relocdata(unsigned *dataptr, unsigned size) {
+	unsigned i;
+	for (i = size; i > 0; i--) {
+		*dataptr++ += (unsigned)&__base;
+	}
+}
+
 unsigned sc_ext_table[] = {
-	(unsigned)sc_nl_osvalue, (unsigned)sc_nl_osvalue
+	(unsigned)sc_nl_osvalue, (unsigned)sc_ext_relocdata
 };
 
 void sc_setup(void) {
@@ -52,7 +66,7 @@ void sc_setup(void) {
 			sc_addrs_ptr = syscalls_cas_1_7;
 			break;
 	}
-	ut_reloc_reldata(sc_ext_table, sizeof(sc_ext_table)/sizeof(unsigned));
+	sc_ext_relocdata(sc_ext_table, sizeof(sc_ext_table)/sizeof(unsigned));
 }
 
 #else

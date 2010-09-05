@@ -111,6 +111,8 @@ What you need to know as a developer
   built
 - OS functions ("syscalls") can be called, see the source code of the sample 
   programs in src/samples. Calling syscalls in thumb state is supported.
+- Compatibility with newlib has not been tested. You may get definition 
+  conflicts and crashes due to newlib running without relocation.
 - Development information and resources are or will be available on Hackspire: 
     http://hackspire.unsads.com
 
@@ -135,6 +137,7 @@ C and assembly programs:
    build your programs only once without defining NSPIRE_HARDWARE.
  - OS v1.1 is not supported anymore. Check that your programs still work on OS 
    v1.7.
+-  Programs should be built with the flag -nostdlib (see samples/particles)
 Assembly programs:
  - The way to call syscalls has chanded: replace 'oscall <os_function>' with 
    'syscall(<os_function>)'
@@ -212,9 +215,9 @@ Changelog
   - CHG: 'demo' renamed to 'particles' and moved to samples/
  Includes:
   - NEW: stat, NU_Get_First, NU_Get_Next, NU_Done, strcpy, strcmp, strlen, 
-         strncat
+         strncat, exit
   - FIX: isKeyPressed could sometimes hang in while loops (missing 
-  volatile keyword)
+         volatile keyword)
 
 * v1.1 - 2010/07/31
  Installer:

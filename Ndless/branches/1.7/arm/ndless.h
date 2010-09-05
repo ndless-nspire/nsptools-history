@@ -52,7 +52,6 @@ void ut_read_os_version_index(void);
 void __attribute__ ((noreturn)) ut_os_reboot(void);
 void __attribute__ ((noreturn)) ut_calc_reboot(void);
 void __attribute__ ((noreturn)) ut_panic(const char * msg);
-void ut_reloc_reldata(unsigned *dataptr, unsigned size);
 static inline struct next_descriptor *ut_get_next_descriptor(void) {
 	if (*(*(unsigned**)(OS_BASE_ADDRESS + INTS_SWI_HANDLER_ADDR) - 2) != NEXT_SIGNATURE)
 		return NULL;
@@ -60,8 +59,8 @@ static inline struct next_descriptor *ut_get_next_descriptor(void) {
 }
 
 /* syscalls.c */
+void sc_ext_relocdata(unsigned *dataptr, unsigned size);
 void sc_setup(void);
-void sc_ext_handler(void);
 
 #endif
 

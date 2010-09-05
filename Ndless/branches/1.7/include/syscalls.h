@@ -54,11 +54,13 @@
 #define __SYSCALLS_ISEXT 0x800000
 /* Ndless extensions.
  * Not automatically parsed. Starts from 0. The recommandations for the standard syscalls enumeration apply.
+ * The order is the same as in arm/syscalls.c/sc_ext_table[]
  * Must always be or-ed with __SYSCALLS_ISEXT
  * The extensions cannot be called in thumb state (the swi number is too high for the swi thumb instruction */
 #define e_nl_osvalue (__SYSCALLS_ISEXT | 0)
+#define e_nl_relocdata (__SYSCALLS_ISEXT | 0)
 
 // Must be kept up-to-date with the value of the last syscalls extension without __SYSCALLS_ISEXT
-#define __SYSCALLS_LASTEXT 0
+#define __SYSCALLS_LASTEXT 1
 
 #endif

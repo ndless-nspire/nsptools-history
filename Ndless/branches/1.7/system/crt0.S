@@ -17,9 +17,18 @@ relocate_loop:
 	ldrge r2, [r0]       @ next GOT entry
 	addge r2, r2, r1     @ calculate the absolute address
 	strge r2, [r0], #4   @ store it back to the GOT
-	bge  relocate_loop
+	bge   relocate_loop
 
-	b main
+runmain:
+	stmfd sp!, {r0-r12,lr}
+	adr  r0, __crt0_savedsp
+	str  sp, [r0]
+	bl   main
+__crt0exit: .global __crt0exit
+	ldmfd sp!, {r0-r12,lr}
+	bx   lr
 
 got_offset:
 	.word _GLOBAL_OFFSET_TABLE_ - (get_got_offset+8)
+__crt0_savedsp: .global __crt0_savedsp
+	.long 0
