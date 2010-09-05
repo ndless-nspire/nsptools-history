@@ -111,6 +111,8 @@ What you need to know as a developer
   built
 - OS functions ("syscalls") can be called, see the source code of the sample 
   programs in src/samples. Calling syscalls in thumb state is supported.
+- If you want to use syscalls currently not implemented by Ndless, use the macro 
+  SYSCALL_CUSTOM (see include/os.h)
 - Compatibility with newlib has not been tested. You may get definition 
   conflicts and crashes due to newlib running without relocation.
 - Development information and resources are or will be available on Hackspire: 
@@ -130,6 +132,7 @@ C and assembly programs:
    be rebuilt without any change to the code. This format should be compatible 
    with the new OS versions once supported by Ndless, as long as backward 
    compatibility can be kept.
+ - Custom syscalls should be defined using SYSCALL_CUSTOM (see above)
  - The "PRG\0" signature before main() isn't required anymore, you can remove ir
  - MakeTNS doesn't exist anymore. You must objcopy directly to the .tns file in 
    your Makefile.

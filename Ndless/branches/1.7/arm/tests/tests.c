@@ -28,6 +28,9 @@ static void assertStrEquals(const char *tstname, const char *expected, const cha
 int global_int;
 int* nl_relocdata_data[] = {&global_int};
 
+static unsigned const custom_sprintf_addrs[] = {0x102A280C, 0};
+#define custom_sprintf SYSCALL_CUSTOM(custom_sprintf_addrs, int __attribute__((__format__(__printf__,2,3))), sprintf, char *s, const char *format, ...)
+
 int main(void) {
 	char buf100[100];
 
@@ -40,6 +43,9 @@ int main(void) {
 	global_int = 1; // tests relocation of global variables 
 	nl_relocdata((unsigned*)nl_relocdata_data, 1);
 	assertUIntEquals("nl_relocdata", 1, (unsigned)*nl_relocdata_data[0]);
+	
+	custom_sprintf(buf100, "%s", "custom");
+	assertStrEquals("_syscall_custom", "custom", buf100);
 	
 	if (!errcount)
 		puts("Successful!");
