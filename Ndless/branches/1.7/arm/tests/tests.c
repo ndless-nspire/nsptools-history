@@ -26,7 +26,6 @@ static void assertStrEquals(const char *tstname, const char *expected, const cha
 }
 
 int global_int;
-
 int* nl_relocdata_data[] = {&global_int};
 
 int main(void) {

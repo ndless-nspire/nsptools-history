@@ -102,10 +102,15 @@ static __attribute__ ((unused)) unsigned _syscallvar_savedlr;
 /* Force the use of the stack for the parameters */
 #define _SYSCALL_SWI(rettype, funcname, param1) static inline rettype __attribute__((naked)) funcname##_swi(param1, ...) { \
 	asm volatile( \
-		" push {lr} \n" \
+		" push {r4, r5} \n" \
+		_SYSCALL_GETSAVEDLR_PTR(r4, r5) \
+		" str lr, [r4] \n" \
+		" pop {r4, r5} \n" \
 		" swi " STRINGIFY(_SYSCALL_ENUM(funcname)) "\n" \
-	  " pop {pc}" \
+		_SYSCALL_GETSAVEDLR_PTR(r1, r2) \
+		" ldr pc, [r1] \n" \
 		::: "r0", "r1", "r2", "r3"); \
+	return 0; \
 	}
 #define _SYSCALL(rettype, funcname, param1, ...) _SYSCALL_SWI(rettype, funcname, param1) static inline rettype funcname(param1, __VA_ARGS__)
 // Use in conjunction with _SYSCALL for 5+ parameters
