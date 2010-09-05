@@ -20,6 +20,8 @@
 /* GNU C Compiler */
 #else
 
+extern int __base;
+
 #define _SYSCALL_ENUM(syscall_name) e_##syscall_name
 /* The SWI calling convention is the C calling convention for the parameters.
  * We define:
@@ -69,15 +71,34 @@
 		: "=r" (__r0) : "r" (__r0), "r" (__r1), "r" (__r2) , "r" (__r3) : "r12", "lr"); \
 	return (rettype)__r0; \
 }
+/* used to access through the got the global variable _syscallvar_savedlr. Returns the ptr to reg1. */
+#define _SYSCALL_GETSAVEDLR_PTR(reg1,tmpreg) \
+		" ldr " #reg1 ", 1f \n" \
+		" ldr " #tmpreg ", 1f+4 \n" \
+		"0:	\n" \
+		" add " #reg1 ", pc, " #reg1 " \n" \
+		" ldr " #reg1 ", [" #reg1 ", " #tmpreg "] \n" \
+		" b 2f \n" \
+		"1: \n" \
+		" .long _GLOBAL_OFFSET_TABLE_ - (0b+8) \n" \
+		" .long _syscallvar_savedlr(GOT) \n" \
+		"2: \n"
 /* all parameters must be marked with  __attribute__((unused)) */
 #define _SYSCALLVAR(rettype, funcname, param1, ...) static inline rettype __attribute__((naked)) funcname(param1, __VA_ARGS__) { \
 	asm volatile( \
-		" push {lr} \n" \
+		" push {r4, r5} \n" \
+		_SYSCALL_GETSAVEDLR_PTR(r4, r5) \
+		" str lr, [r4] \n" \
+		" pop {r4, r5} \n" \
 		" swi " STRINGIFY(_SYSCALL_ENUM(funcname)) "\n" \
-		" pop {pc}" \
+		_SYSCALL_GETSAVEDLR_PTR(r1, r2) \
+		" ldr pc, [r1] \n" \
 		::: "r0", "r1", "r2", "r3"); \
 	return 0; \
 }
+// We can't push it onto the stack during the syscall, so save it in a global variable
+// attribute unused: avoids the warning. The symbol will be redefined by the ldscript.
+static __attribute__ ((unused)) unsigned _syscallvar_savedlr;
 /* Force the use of the stack for the parameters */
 #define _SYSCALL_SWI(rettype, funcname, param1) static inline rettype __attribute__((naked)) funcname##_swi(param1, ...) { \
 	asm volatile( \
@@ -121,9 +142,11 @@ _SYSCALL3(void, ascii2utf16, void *, const char *, int)
 // Given a list of OS-specific value and its size, returns the value for the current OS.
 // The order must be: 1.7, 1.7 CAS
 // If the array isn't enough long for the current OS, returns 0.
+// You may cast 'values' from unsigned* to int*.
 _SYSCALL2(int, nl_osvalue, const int * /* values */, unsigned /* size */)
 // Relocates a global variable initialized with symbols (for example an array of function pointers)
-_SYSCALL2(void, nl_relocdata, unsigned * /* dataptr */, unsigned /* size */)
+#define nl_relocdata(ptr, size) nl_relocdatab(ptr, size, &__base)
+_SYSCALL3(void, nl_relocdatab, unsigned * /* dataptr */, unsigned /* size */, void * /* base */)
 
 /* stdlib replacements not directly available as syscalls */
 extern unsigned __crt0exit;
@@ -135,6 +158,10 @@ static inline void __attribute__((noreturn, naked)) exit(int __attribute__((unus
 		:: "r" (__crt0_savedsp), "r" (&__crt0exit));
 	while(1);
 }
+typedef char *va_list;
+#define va_start(ap,p)  (ap = (char*)(&(p) + 1))
+#define va_arg(ap,type) ((type*)(ap += sizeof(type)))[-1]
+#define va_end(ap)
 
 #endif // GCC C
 #endif

@@ -38,22 +38,20 @@ int sc_nl_osvalue(const int *values, unsigned size) {
 	return values[ut_os_version_index];
 }
 
-extern int __base;
-
 /* Our lightweight relocation support unfortunately cannot handle 
  * initializers with relocation (for example arrays of function pointers).
  * data.rel and data.rel.ro sections are created, but may contain both
  * non-relocable and relocable data, for which we have no clue.
  * This function allows to relocate an array of pointers. */
-void sc_ext_relocdata(unsigned *dataptr, unsigned size) {
+void sc_ext_relocdatab(unsigned *dataptr, unsigned size, void *base) {
 	unsigned i;
 	for (i = size; i > 0; i--) {
-		*dataptr++ += (unsigned)&__base;
+		*dataptr++ += (unsigned)base;
 	}
 }
 
 unsigned sc_ext_table[] = {
-	(unsigned)sc_nl_osvalue, (unsigned)sc_ext_relocdata
+	(unsigned)sc_nl_osvalue, (unsigned)sc_ext_relocdatab
 };
 
 void sc_setup(void) {
@@ -66,7 +64,7 @@ void sc_setup(void) {
 			sc_addrs_ptr = syscalls_cas_1_7;
 			break;
 	}
-	sc_ext_relocdata(sc_ext_table, sizeof(sc_ext_table)/sizeof(unsigned));
+	sc_ext_relocdatab(sc_ext_table, sizeof(sc_ext_table)/sizeof(unsigned), &__base);
 }
 
 #else

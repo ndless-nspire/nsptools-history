@@ -58,7 +58,7 @@
  * Must always be or-ed with __SYSCALLS_ISEXT
  * The extensions cannot be called in thumb state (the swi number is too high for the swi thumb instruction */
 #define e_nl_osvalue (__SYSCALLS_ISEXT | 0)
-#define e_nl_relocdata (__SYSCALLS_ISEXT | 0)
+#define e_nl_relocdatab (__SYSCALLS_ISEXT | 1)
 
 // Must be kept up-to-date with the value of the last syscalls extension without __SYSCALLS_ISEXT
 #define __SYSCALLS_LASTEXT 1

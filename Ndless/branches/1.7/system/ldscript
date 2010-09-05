@@ -14,6 +14,8 @@ SECTIONS
   	. += SIZEOF(.bss);
   	__bss_end__ = .;
   	*(.data);
+  	/* symbols used by asm statements in Ndless macros, optimized out by GCC, we want to emit only if used */
+		PROVIDE(_syscallvar_savedlr = 0);
   }
 }
 __got_size = SIZEOF(.got) / 4;

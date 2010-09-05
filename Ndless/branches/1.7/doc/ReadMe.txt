@@ -216,6 +216,7 @@ Changelog
  Includes:
   - NEW: stat, NU_Get_First, NU_Get_Next, NU_Done, strcpy, strcmp, strlen, 
          strncat, exit
+ - NEW: va_list, va_start, va_arg, va_end (thanks apcalc)
   - FIX: isKeyPressed could sometimes hang in while loops (missing 
          volatile keyword)
 

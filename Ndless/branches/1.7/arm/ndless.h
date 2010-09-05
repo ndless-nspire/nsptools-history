@@ -59,7 +59,7 @@ static inline struct next_descriptor *ut_get_next_descriptor(void) {
 }
 
 /* syscalls.c */
-void sc_ext_relocdata(unsigned *dataptr, unsigned size);
+void sc_ext_relocdatab(unsigned *dataptr, unsigned size, void *base);
 void sc_setup(void);
 
 #endif
