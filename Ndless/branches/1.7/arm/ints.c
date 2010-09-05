@@ -39,7 +39,7 @@ void ints_hook_handlers(void) {
  	next_descriptor_ptr = &ut_next_descriptor;
 }
 
-/* All the code run with _SYSCALLS_LIGHT defined must be PC-relative (the loader is not relocated)
+/* All the code run with _NDLS_LIGHT defined must be PC-relative (the loader is not relocated)
  * TODO:
  * Check that the swi number is correct
  * Check it is null; if not null, reboot
@@ -74,7 +74,7 @@ asm(
 " biceq r0, r0, #0xFF000000 \n"
 " ldrneh r0, [lr, #-3]    @ thumb state (-2-1, because of the previous +1) \n"
 " bicne r0, r0, #0xFF00 \n"
-#ifndef _SYSCALLS_LIGHT // syscalls extension support
+#ifndef _NDLS_LIGHT // with syscalls extension support
 " mov   r1, #" STRINGIFY(__SYSCALLS_ISEXT) "\n"
 " tst   r0, r1 \n"
 " bic   r0, r1            @ clear the flag \n"
@@ -93,7 +93,7 @@ asm(
 
 "sc_addrs_ptr: .global sc_addrs_ptr @ defined here because accessed with pc-relative instruction \n"
 " .long 0 \n"
-#ifndef _SYSCALLS_LIGHT
+#ifndef _NDLS_LIGHT
 "get_ext_table_reloc: .long _GLOBAL_OFFSET_TABLE_-(get_ext_table+8) \n"
 " .long sc_ext_table(GOT) \n"
 #endif

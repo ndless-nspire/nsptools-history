@@ -25,7 +25,7 @@
 #include <os.h>
 #include "ndless.h"
 
-#ifndef _SYSCALLS_LIGHT
+#ifndef _NDLS_LIGHT
 // OS-specific
 extern unsigned syscalls_ncas_1_7[];
 extern unsigned syscalls_cas_1_7[];
@@ -73,4 +73,4 @@ void sc_setup(void) {
 	}
 }
 
-#endif // ndef _SYSCALLS_LIGHT
+#endif // ndef _NDLS_LIGHT

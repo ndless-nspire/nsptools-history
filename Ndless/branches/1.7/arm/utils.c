@@ -77,7 +77,7 @@ void __attribute__ ((noreturn)) ut_panic(const char *msg) {
 
 extern int __base;
 
-#ifndef _SYSCALLS_LIGHT
+#ifndef _NDLS_LIGHT
 /* Our lightweight relocation support unfortunately cannot handle 
  * initializers with relocation (for example arrays of function pointers).
  * data.rel and data.rel.ro sections are created, but may contain both

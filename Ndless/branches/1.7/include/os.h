@@ -6,7 +6,7 @@
 #define _OS_H_
 
 #include "common.h"
-#ifdef _SYSCALLS_LIGHT
+#ifdef _NDLS_LIGHT
 // Use the light version of the syscalls table
 #include "syscalls-light.h"
 #else

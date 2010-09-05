@@ -37,8 +37,8 @@ syscalls_light.o: syscalls.c
 utils_light.o: utils.c
 	$(GCC) $(GCCFLAGS) -mthumb -c $< -o $@
 
-loader.o: GCCFLAGS:=$(GCCFLAGS) -D _SYSCALLS_LIGHT -mthumb-interwork -mthumb
-ndless_installer.elf: GCCFLAGS:=$(GCCFLAGS) -D _SYSCALLS_LIGHT -mthumb-interwork
+loader.o: GCCFLAGS:=$(GCCFLAGS) -D _NDLS_LIGHT -mthumb-interwork -mthumb
+ndless_installer.elf: GCCFLAGS:=$(GCCFLAGS) -D _NDLS_LIGHT -mthumb-interwork
 # bootstrapper.o is the entry point: must be first in the list, and linked with --no-startup 
 ndless_installer.elf: bootstrapper.o loader.o ints_light.o syscalls_light.o utils_light.o $(SYSCALLS_LIGHT_OBJS)
 	$(LD) --no-startup $(LDFLAGS) $^ -o $@
