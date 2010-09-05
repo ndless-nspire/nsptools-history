@@ -50,7 +50,7 @@
 	MakeName	(0X1001983C,	"ps_return_ps_data");
 	MakeName	(0X100199A4,	"nn_presentationServiceCallback");
 	MakeName	(0X1001A018,	"translateKey");
-	MakeName	(0X1001D528,	"unknown_TI_showDialogBox");
+	MakeName	(0X1001D528,	"show_dialog_box2");
 	MakeRptCmt	(0X1001D8DC,	"OK");
 	MakeRptCmt	(0X1001D8E8,	"Cancel");
 	MakeRptCmt	(0X1001D90C,	"OK str");
