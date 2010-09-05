@@ -117,7 +117,9 @@ What you need to know as a developer
 - If you want to use syscalls currently not implemented by Ndless, use the macro 
   SYSCALL_CUSTOM (see include/os.h)
 - Compatibility with newlib has not been tested. You may get definition 
-  conflicts and crashes due to newlib running without relocation.
+  conflicts and crashes due to newlib running without relocation. You should 
+  build your programs with the nspire-ld flag "-nostdlib", except if
+  you need the single precision floating-point helper functions (__aeabi_fadd, ...)
 - Development information and resources are or will be available on Hackspire: 
     http://hackspire.unsads.com
 
@@ -143,7 +145,6 @@ C and assembly programs:
    build your programs only once without defining NSPIRE_HARDWARE.
  - OS v1.1 is not supported anymore. Check that your programs still work on OS 
    v1.7.
--  Programs should be built with the flag -nostdlib (see samples/particles)
 Assembly programs:
  - The way to call syscalls has chanded: replace 'oscall <os_function>' with 
    'syscall(<os_function>)'

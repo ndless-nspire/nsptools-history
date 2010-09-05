@@ -1,6 +1,7 @@
 GCC = nspire-gcc
 LD = nspire-ld
-GCCFLAGS = -Os -Wall -W -nostdlib
+GCCFLAGS = -Os -Wall -W
+LDFLAGS = -nostdlib
 OBJCOPY := "$(shell which arm-elf-objcopy 2>/dev/null)"
 ifeq (${OBJCOPY},"")
 	OBJCOPY := arm-none-eabi-objcopy
@@ -15,7 +16,7 @@ all: ndless_tests.tns
 	$(GCC) $(GCCFLAGS) -c $<
 
 ndless_tests.tns: $(OBJS)
-	$(LD) $^ -o $(@:.tns=.elf)
+	$(LD) $(LDFLAGS) $^ -o $(@:.tns=.elf)
 	mkdir -p $(DISTDIR)
 	$(OBJCOPY) -O binary $(@:.tns=.elf) $(DISTDIR)/$@
 
