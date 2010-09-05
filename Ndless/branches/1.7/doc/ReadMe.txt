@@ -102,6 +102,9 @@ What you need to know as a developer
 - An example of build script can be found in src/samples/hello/Makefile
 - BSS sections are not allocated dynamically: global variables will make your
   programs bigger.
+- Global variables with initialization data which requires relocation (for 
+  example an array of function pointers must be relocated manually with 
+  nl_relocdata(). See include/os.h.
 - Pure-assembly programs must define the global symbol "main" after the header:
   see src/samples/hella/hella.S
 - You may find interesting macros, inline functions and syscalls definition in 
@@ -205,11 +208,15 @@ Changelog
   - NEW: Supports OS v1.7
   - NEW: A computer (or Nspire8x) isn't required anymore, the installation 
          is much more easier and compatible with nspire_emu.
+  - NEW: Automated tests
  Hook:
   - NEW: the program format is not specific to an OS or hardware version anymore
   - NEW: syscalls can be called in thumb state
+  - NEW: Ndless can exposed internal functions to programs (nl_...())
  Tools:
   - NEW: startup code relocates the program. You can now use C global variables.
+         initialization data depending on relocation must be relocated with 
+         nl_relocdata().
   - NEW: option --no-startup for nspire-ld
   - CHG: option -fpic moved to nspire-gcc
   - CHG: MakeTNS removed
