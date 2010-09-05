@@ -148,8 +148,7 @@ _SYSCALL2(int, NU_Get_First, struct dstat *, const char * /* pattern */)
 _SYSCALL1(int,  NU_Get_Next, struct dstat *)
 _SYSCALL1(void, NU_Done, struct dstat *)
 _SYSCALL3(void, ascii2utf16, void *, const char *, int)
-// TODO dummy
-#define show_dialog_box2(a,b,c) do {} while(0)
+_SYSCALL3(void, show_dialog_box2, int /* undef */, const char * /* title */, const char * /* msg */)
 
 /* Ndless extensions. Not available in thumb state. */
 // Given a list of OS-specific value and its size, returns the value for the current OS.

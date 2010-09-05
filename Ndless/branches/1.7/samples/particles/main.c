@@ -31,10 +31,10 @@ int main(void) {
 
   showSimpleDialogBox(
     "Ndless - Particle System Demo",
-    "-------------------------------\n"
-    "                Particle System Demo\n" \
-    "  Copyright© 2010 by the Ndless Team\n"
-    "-------------------------------\n"
+    "------------------------\n"
+    "       Particle System Demo\n" \
+    "   © 2010 by the Ndless Team\n"
+    "------------------------\n"
     "+  Add a particle\n"
     "-  Remove a particle\n"
     "*  Increase gravity\n"

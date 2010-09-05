@@ -30,4 +30,5 @@ unsigned syscalls_cas_1_7[] = {
 	, 0x0
 	, 0x0
 	, 0x0
+	, 0x0
 };
