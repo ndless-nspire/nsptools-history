@@ -165,10 +165,11 @@ What we hope you will be able to see in the next releases
 =========================================================
 
 - Installation on recent OS versions
+- No reinstallation required after reboot
 - More syscalls definitions
 - Basic routines as static libraries
-- A fully-fledged executable runner, with library support, an exception 
-  handler...
+- A fully-fledged executable runner, with complete relocation support, library 
+  support, an exception handler...
 - Support for the TI-84+ keypad
 
 We are open to any contribution to these features.

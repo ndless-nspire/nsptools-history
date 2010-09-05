@@ -33,9 +33,11 @@ static unsigned const custom_sprintf_addrs[] = {0x102A280C, 0};
 
 int main(void) {
 	char buf100[100];
+	int ret;
 
-	sprintf(buf100, "%i%i%i", 1, 2, 3);
+	ret = sprintf(buf100, "%i%i%i", 1, 2, 3);
 	assertStrEquals("_syscallsvar >4 params", "123", buf100); // tests sprintf. uses _syscallvar_savedlr.
+	assertUIntEquals("_syscallsvar return", 3, ret);
 
 	unsigned nl_osvalue_data[] = {1, 2, 3};
 	assertUIntEquals("nl_osvalue", 1, nl_osvalue((int*)nl_osvalue_data, 3)); // also tests syscalls extensions. must be run on OS 1.7
