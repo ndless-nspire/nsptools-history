@@ -131,6 +131,8 @@ extern struct arm_state arm;
 #define EX_IRQ            6
 #define EX_FIQ            7
 
+#define current_instr_size (arm.cpsr_low28 & 0x20 ? 2 /* thumb */ : 4)
+
 void cpu_int_check();
 u32 __attribute__((fastcall)) get_cpsr();
 void __attribute__((fastcall)) set_cpsr(u32 cpsr, u32 mask);

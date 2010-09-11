@@ -56,6 +56,9 @@ Olivier Armand aka ExtendeD  -  < olivier dot calc at gmail dot com >
 Changelog
 =========
 
+* v031b - <unreleased>
+ - FIX: Debugger command 'j' supports thumb state
+
 * v031a - 2010/08/30
  - Migrate to nspire_emu v031
  - ADD: State file version tracking
