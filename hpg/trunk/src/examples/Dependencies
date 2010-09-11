@@ -1,0 +1,13 @@
+example_set_pattern.o: example_set_pattern.c ../hpgraphics.h
+test_bigtext.o: test_bigtext.c ../hpgraphics.h
+test_colors_gray16.o: test_colors_gray16.c ../hpgraphics.h
+test_colors_gray4.o: test_colors_gray4.c ../hpgraphics.h
+test_doublebuf.o: test_doublebuf.c ../hpgraphics.h
+test_image.o: test_image.c ../hpgraphics.h
+test_poly.o: test_poly.c ../hpgraphics.h
+test_prim_gray16.o: test_prim_gray16.c ../hpgraphics.h
+test_prim_gray4.o: test_prim_gray4.c ../hpgraphics.h
+test_prim_mono.o: test_prim_mono.c ../hpgraphics.h
+test_shapes.o: test_shapes.c ../hpgraphics.h
+test_text.o: test_text.c ../hpgraphics.h
+test_xpm.o: test_xpm.c ../hpgraphics.h test_xpm_flower.xpm

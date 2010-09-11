@@ -1,0 +1,47 @@
+TASKS:
+
+- Audit all calls to malloc() to ensure that they check the return value for
+  NULL.  The code is probably less than conscientious about doing this.
+
+KNOWN BUGS:
+
+- Occasionally, the screen is taken over with static in a call to hpg_flip().
+  Once this occurs, it can only be fixed by turning the LCD controller off and
+  back on again.  It appears to occur due to some kind of a timing issue with
+  swapping the location of the screen buffer.
+
+- When the screen buffer is swapped, the first few lines drawn to the screen
+  appear to contain old data.  This causes a blank region near the top of the
+  screen in applications that quickly clear the screen and draw multiple frames
+  in sequence, while doing double-buffering.
+
+KLUDGES:
+
+- hpg_init() and hpg_cleanup() shouldn't exist.  As soon as I'm sure that
+  atexit() is stable, hpg_init should become _hpg_init() and should be called
+  by all HPG functions.  hpg_cleanup() should become _hpg_cleanup() and should
+  be registered as an atexit handler by _hpg_init().
+
+- hpg_cleanup() needs to deallocate memory that's used for screen buffers.
+  This is causing memory leak warnings in Claudio's Win32 simulator.
+
+- Optimized blitting routines should be written for blitting between buffers
+  of the same color depth.
+
+- Patterns should be able to have arbitrary widths, and their data should be
+  packed reasonably in the horizontal dimension to save memory.
+
+FEATURES:
+
+- Circle-drawing should be replaced with ellipse-drawing, with circles as
+  a special case.
+
+- Loading of images from additional file formats in to hpg_t off-screen images.
+  Formats that would be nice include JPEG, GIF, PNG, BMP, and Xbm.  Unlike
+  current Xpm support, these would be loaded from the SD card.
+
+- Colors with alpha-values for partial transparency ???
+
+- Should do regular performance benchmarking and optimization
+
+- OpenGL embedded subset (http://www.khronos.org/opengles/)
