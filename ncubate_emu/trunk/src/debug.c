@@ -131,6 +131,7 @@ void debugger() {
 				"q - quit\n"
 				"r - show registers\n"
 				"rs <regnum|pc> <value> - change register value\n"
+				"ss <address> <length> <string> - search a string\n"
 				"s - step instruction\n"
 				"t+ - enable instruction translation\n"
 				"t- - disable instruction translation\n"
@@ -366,6 +367,36 @@ void debugger() {
 				continue;
 			}
 			*(u32*)ram = val;
+		} else if (!stricmp(cmd, "ss")) {
+			char *addr_str = strtok(NULL, " \n");
+			char *len_str = strtok(NULL, " \n");
+			char *string = strtok(NULL, " \n");
+			if (!addr_str || !len_str || !string)
+				printf("Missing parameters.\n");
+			else {
+				u32 addr = strtoul(addr_str, 0, 16);
+				u32 len = strtoul(len_str, 0, 16);
+				char *strptr = virt_mem_ptr(addr, len);
+				char *ptr = strptr;
+				char *endptr = strptr + len;
+				if (ptr) {
+					while (1) {
+						ptr = memchr(ptr, *string, endptr - ptr);
+						if (!ptr) {
+							printf("String not found.\n");
+							break;
+						}
+						if (!memcmp(ptr, string, strlen(string))) {
+							printf("Found at address %08X.\n", ptr - strptr + addr);
+							break;
+						}
+						if (ptr < endptr)
+							ptr++;
+					}
+				} else {
+					printf("Address %08X is not in RAM.\n", addr);
+				}
+			}
 		} else if (!stricmp(cmd, "int")) {
 			printf("active=%08x enabled=%08x,%08x current=%08x,%08x\n",
 				active_ints, enabled_ints[0], enabled_ints[1], current_ints[0], current_ints[1]);

@@ -26,6 +26,7 @@ Debugger:
 - NEW: Command 'j' to jump to the next instruction. This is useful for example 
   to jump over an halt() call in an Ndless program.
 - NEW: Command 'ww' to write a word to an address.
+- NEW: Command 'ss' to search a string in memory.
 - NEW: "+x" is the default flag for the breakpint command 'k' 
 - CHG: The breakpoint command 'k' takes as parameter a virtual address instead 
   of a physical address.
@@ -57,6 +58,7 @@ Changelog
 =========
 
 * v031b - <unreleased>
+ - ADD: Debugger command 'ss'
  - FIX: Debugger command 'j' supports thumb state
 
 * v031a - 2010/08/30
