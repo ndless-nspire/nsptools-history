@@ -1,2 +1,4 @@
+Document licensing exception
+
 hpg_flip: 0x7300000 constants
 hpg_set_mode: double-buffering too complicated or different on the TI-Nspire
