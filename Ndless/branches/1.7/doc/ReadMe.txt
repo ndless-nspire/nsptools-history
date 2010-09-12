@@ -24,10 +24,18 @@ Send with the linking program the documents 'ndless_installer.tns' and
 'ndless_resources.tns' from the calcbin/ directory of Ndless to any directory of 
 the calculator. The two documents must be in the same directory.
 
-Open 'ndless_installer' from the Documents screen of the calculator, and let it 
-hot-reboot. Ndless is now installed.
+Open 'ndless_installer' from the Documents screen of the calculator and wait a 
+few seconds. Now:
 
-You will need to reinstall Ndless after each reboot.
+ - the calculator may display a frozen clock and random pixels at the top of the 
+ screen. You are out of luck, the installation failed. Reboot the TI-Nspire by 
+ unplugging the USB cable, then removing and putting back a battery. Retry the 
+ installation again.
+ 
+ - The calculator may hot-reboot. Ndless is now installed.
+
+The installation is not permanent: you need to reinstall Ndless after each 
+reboot.
 
 How do I upgrade from v1.0/v1.1?
 ================================
@@ -51,6 +59,12 @@ Make sure the documents 'ndless_installer.tns' and 'ndless_resources.tns' are
 still in the 'ndless' directory on the calculator.
 Then open 'ndless_installer' from the Documents screen. A full reboot will be 
 initiated.
+
+How do I install it on nspire_emu?
+==================================
+
+Follow the installation procedure. Ndless is not compatible with nspire_emu 
+v031, you may need to switch to ncubate_emu.
 
 Troubleshooting
 ===============

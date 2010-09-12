@@ -73,6 +73,7 @@ extern int __base;
 	return (rettype)__r0; \
 }
 /* used to access through the got the global variable _syscallvar_savedlr. Returns the ptr to reg1. */
+#ifndef __thumb__
 #define _SYSCALL_GETSAVEDLR_PTR(reg1,tmpreg) \
 		" ldr " #reg1 ", 1f \n" \
 		" ldr " #tmpreg ", 1f+4 \n" \
@@ -80,11 +81,38 @@ extern int __base;
 		" add " #reg1 ", pc, " #reg1 " \n" \
 		" ldr " #reg1 ", [" #reg1 ", " #tmpreg "] \n" \
 		" b 2f \n" \
+		" .align 2 \n" \
 		"1: \n" \
 		" .long _GLOBAL_OFFSET_TABLE_ - (0b+8) \n" \
 		" .long _syscallvar_savedlr(GOT) \n" \
 		"2: \n"
+#else
+#define _SYSCALL_GETSAVEDLR_PTR(reg1,tmpreg) \
+		" ldr " #reg1 ", 1f \n" \
+		" ldr " #tmpreg ", 1f+4 \n" \
+		"0:	\n" \
+		" add " #reg1 ", pc, " #reg1 " \n" \
+		" ldr " #reg1 ", [" #reg1 ", " #tmpreg "] \n" \
+		" b 2f \n" \
+		" .align 2 \n" \
+		"1: \n" \
+		" .long _GLOBAL_OFFSET_TABLE_ - (0b+4) \n" \
+		" .long _syscallvar_savedlr(GOT) \n" \
+		"2: \n"
+#endif // ndef __thumb__
 /* all parameters must be marked with  __attribute__((unused)) */
+#ifdef _NDLS_LIGHT // can't use _SYSCALL_GETSAVEDLR_PTR which depends on the GOT: save lr to the stack, syscallvars with more than 4 parameters can't be used
+#define _SYSCALLVAR(rettype, attributes, funcname, param1, ...) static inline rettype attributes __attribute__((naked)) funcname(param1, __VA_ARGS__) { \
+	register unsigned __r0 asm("r0"); \
+	asm volatile( \
+		" push {lr} \n" \
+		" swi " STRINGIFY(_SYSCALL_ENUM(funcname)) "\n" \
+	  " pop {pc}" \
+		: "=r" (__r0):: "r1", "r2", "r3"); \
+	return (rettype)__r0; \
+}
+#else
+#ifndef __thumb__
 #define _SYSCALLVAR(rettype, attributes, funcname, param1, ...) static inline rettype attributes __attribute__((naked)) funcname(param1, __VA_ARGS__) { \
 	register unsigned __r0 asm("r0"); \
 	asm volatile( \
@@ -98,10 +126,29 @@ extern int __base;
 		: "=r" (__r0):: "r1", "r2", "r3"); \
 	return (rettype)__r0; \
 }
+#else // slightly less optimized
+#define _SYSCALLVAR(rettype, attributes, funcname, param1, ...) static inline rettype attributes __attribute__((naked)) funcname(param1, __VA_ARGS__) { \
+	register unsigned __r0 asm("r0"); \
+	asm volatile( \
+		" push {r4, r5} \n" \
+		_SYSCALL_GETSAVEDLR_PTR(r4, r5) \
+		" mov r5, lr \n" \
+		" str r5, [r4] \n" \
+		" pop {r4, r5} \n" \
+		" swi " STRINGIFY(_SYSCALL_ENUM(funcname)) "\n" \
+		_SYSCALL_GETSAVEDLR_PTR(r1, r2) \
+		" ldr r1, [r1] \n" \
+		" bx r1 \n" \
+		: "=r" (__r0):: "r1", "r2", "r3"); \
+	return (rettype)__r0; \
+}
+#endif // ndef __thumb__
+#endif // def _NDLS_LIGHT
 // We can't push it onto the stack during the syscall, so save it in a global variable
 // attribute unused: avoids the warning. The symbol will be redefined by the ldscript.
 static __attribute__ ((unused)) unsigned _syscallvar_savedlr;
 /* Force the use of the stack for the parameters */
+#ifndef __thumb__
 #define _SYSCALL_SWI(rettype, attributes, funcname, param1) static inline rettype attributes __attribute__((naked)) funcname##_swi(param1, ...) { \
 	register unsigned __r0 asm("r0"); \
 	asm volatile( \
@@ -114,7 +161,24 @@ static __attribute__ ((unused)) unsigned _syscallvar_savedlr;
 		" ldr pc, [r1] \n" \
 		: "=r" (__r0):: "r1", "r2", "r3"); \
 	return (rettype)__r0; \
-	}
+}
+#else // slightly less optimized
+#define _SYSCALL_SWI(rettype, attributes, funcname, param1) static inline rettype attributes __attribute__((naked)) funcname##_swi(param1, ...) { \
+	register unsigned __r0 asm("r0"); \
+	asm volatile( \
+		" push {r4, r5} \n" \
+		_SYSCALL_GETSAVEDLR_PTR(r4, r5) \
+		" mov r5, lr \n" \
+		" str r5, [r4] \n" \
+		" pop {r4, r5} \n" \
+		" swi " STRINGIFY(_SYSCALL_ENUM(funcname)) "\n" \
+		_SYSCALL_GETSAVEDLR_PTR(r1, r2) \
+		" ldr r1, [r1] \n" \
+		" bx r1 \n" \
+		: "=r" (__r0):: "r1", "r2", "r3"); \
+	return (rettype)__r0; \
+}
+#endif // ndef __thumb__
 #define _SYSCALL(rettype, funcname, param1, ...) _SYSCALL_SWI(rettype, funcname, param1) static inline rettype funcname(param1, __VA_ARGS__)
 // Use in conjunction with _SYSCALL for 5+ parameters
 #define _SYSCALL_ARGS(rettype, funcname, param1, ...) {return funcname##_swi(param1, __VA_ARGS__);}
