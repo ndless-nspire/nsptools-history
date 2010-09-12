@@ -32,6 +32,9 @@ Debugger:
   of a physical address.
 - FIX: Command 'd' doesn't crash if the parameter is missing
 
+CPU:
+- FIX: stm instructions push pc+12 instead of pc+8
+
 Flash:
 - FIX: Flash image closed when synced to disk, for external edition
 
@@ -60,6 +63,7 @@ Changelog
 * v031b - <unreleased>
  - ADD: Debugger command 'ss'
  - FIX: Debugger command 'j' supports thumb state
+ - FIX: stm instructions push pc+12 instead of pc+8
 
 * v031a - 2010/08/30
  - Migrate to nspire_emu v031

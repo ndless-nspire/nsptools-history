@@ -623,7 +623,7 @@ void cpu_interpret_instruction(u32 insn) {
 			if (insn & (1 << 20)) // Load
 				set_reg_pc_bx(15, read_word(addr));
 			else // Store
-				write_word(addr, get_reg_pc(15));
+				write_word(addr, get_reg_pc(15) + 4); // +4: special case for some CPU
 		}
 		arm.reg[base_reg] = new_base;
 		if ((~insn & (1 << 22 | 1 << 20 | 1 << 15)) == 0)
