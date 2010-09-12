@@ -854,7 +854,7 @@ no_condition:
 						emit_mov_armreg_x86reg(reg, EAX);
 				} else {
 					if (reg == 15)
-						emit_mov_x86reg_immediate(EDX, pc + 8);
+						emit_mov_x86reg_immediate(EDX, pc + 12); // +12 and not +8: special case for some CPU
 					else
 						emit_mov_x86reg_armreg(EDX, reg);
 					emit_call((u32)write_word);
