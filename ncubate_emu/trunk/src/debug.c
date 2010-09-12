@@ -251,7 +251,6 @@ void debugger() {
 				set_debug_next(cur_insn + 1);
 			break;
 		} else if (!stricmp(cmd, "j")) {
-			printf("%i\n", current_instr_size);
 			arm.reg[15] += current_instr_size;
 			set_debug_next(cur_insn + 1);
 			break;
