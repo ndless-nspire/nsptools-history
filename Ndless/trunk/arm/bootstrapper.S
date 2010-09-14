@@ -45,10 +45,8 @@ main:
 	adr r0, ints_irq_addr
 	ldr r1, =(OS_BASE_ADDRESS+ints_irq_addr-ints_vectors)
 	ldr r1, [r1]
-	str r1, [r0] @ restore the IRQ handler
-	stmfd sp!, {pc}   @ points to 2 instructions later
-	ldmfd sp!, {pc}^  @ ^: jump over the next instruction and move spsr to cpsr (get back to caller mode: svc)
-	halt              @ never executed
+	str r1, [r0]    @ restore the IRQ handler
+	subs pc, pc, #4 @ move spsr to cpsr (get back to caller mode: svc)
 	bl ints_setup_handlers
 	ldr r0, =ld_load @ no relocation required, 0 is the base address
 	bx r0 @ and switch to thumb mode

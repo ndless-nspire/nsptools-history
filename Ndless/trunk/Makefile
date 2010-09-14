@@ -32,7 +32,7 @@ distbin: all
 
 # Dist with cleanup, binary and source
 dist: cleandist distsrc distbin
-	find dist -name .svn -o -name MakeLoader -o -name MakeLoader.exe | xargs rm -rf
+	find dist -name .svn | xargs rm -rf
 
 distsrc: clean
 	mkdir -p dist/src
