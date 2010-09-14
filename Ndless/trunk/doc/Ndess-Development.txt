@@ -26,7 +26,8 @@ ARM
 - Set up the toolchain as described in ReadMe.txt. Ndless is built with itself, and
   you may not be able to use a previous version of Ndless to build it.
   You thus need to build the toolchain (cd tools && make) and add the bin/ directory
-  at the root of the project to the PATH environment variable.
+  at the root of the project to the PATH environment variable, and remove any bin/
+  directory of a previous version of Ndless.
 
 Building
 ========
@@ -34,7 +35,7 @@ Building
 From Ndless root directory:
 
 * make: builds the artifacts
-* make arm [NSPIRE_HARDWARE=CAS|NON_CAS, default is NON_CAS]: builds the ARM artifacts
+* make arm: builds the ARM artifacts
 * make dist: builds the artificats and create a release directory (dist)
 * make distbin: incremental dist during development
 
