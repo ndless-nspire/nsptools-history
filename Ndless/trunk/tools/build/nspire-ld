@@ -1,4 +1,6 @@
 #!/bin/sh
+# Available non-GCC options:
+# --no-startup: do not link with the startup code
 
 cygwin=false
 case "`uname`" in
@@ -19,19 +21,33 @@ if $cygwin; then
 fi
 
 nostdlib=false
-for arg in "$@" args; do
-	if [ $arg = -nostdlib ] ; then
-		nostdlib=true
-	fi
+nostartup=false
+# an array is used to change the arguments while supporting arguments with spaces
+declare -a args
+for arg in "$@"; do
+	case $arg in
+		-nostdlib) nostdlib=true; args=("${args[@]}" $arg);;
+		--no-startup) nostartup=true;;
+		*) args=("${args[@]}" $arg);;
+	esac
 done
-if [ $nostdlib = false ] ; then
-	set -- "$DIRNAME/../system/stdlibsym.o" "$DIRNAME/../system/syscalls.o" "$@"
+if [ $nostdlib = false ]; then
+	args=("${args[@]}" "$DIRNAME/../system/osstub.o")
 fi
+
 # some newlib symbols are not found if ld is used...
 GCC=`which arm-elf-gcc 2>/dev/null`
 GCC=${GCC:=arm-none-eabi-gcc}
 # lazy system build: must be built with the same toolchain
 if [ ! -f "$DIRNAME/../system/crt0.o" ]; then
 	(cd "$DIRNAME/../system" && make all)
+	ret=$?
+	if [ $ret -ne 0 ]; then
+		exit $ret
+	fi
 fi
-"$GCC" -T "$DIRNAME/../system/ldscript" -e _nspire_start "$DIRNAME/../system/crt0.o" "$@"
+if [ $nostartup = false ]; then
+	args=("$DIRNAME/../system/crt0.o" "${args[@]}")
+fi
+# -nostartfiles: avoids newlib startup which would be added before ours
+"$GCC" -nostartfiles  -T "$DIRNAME/../system/ldscript" -e _nspire_start "$DIRNAME/../system/crt0sym.o" "${args[@]}"

@@ -1,15 +1,13 @@
-SUBDIRS = tools java
+SUBDIRS = tools arm samples
 SUBDIR_TOOLS = tools
-SUBDIRSCLEAN = $(SUBDIRS) arm
+SUBDIRSCLEAN = $(SUBDIRS)
+DISTDIRS = calcbin
+SDKDIRS = bin include system
 
-all: subdirs arm
+all: subdirs
 all_tools: subdirs_tools
 
-.PHONY: subdirs arm
-
-arm:
-	(cd arm && make NSPIRE_HARDWARE=CAS clean && make NSPIRE_HARDWARE=CAS)
-	(cd arm && make NSPIRE_HARDWARE=NON_CAS clean && make NSPIRE_HARDWARE=NON_CAS)
+.PHONY: subdirs
 
 subdirs:
 	@for i in $(SUBDIRS); do \
@@ -26,48 +24,29 @@ distbin: all
 	mkdir -p dist
 	@# system's artefacts shouldn't be distributed
 	(cd system && make clean)
-	cp -r bin include res system dist
-	cp install-ndless.bat dist
+	cp -r $(DISTDIRS) dist
+	mkdir -p dist/sdk
+	cp -r $(SDKDIRS) dist/sdk
 	cp "Mozilla-Public-License-v1.1.html" doc/ReadMe.txt doc/ndless-particle-demo.gif dist
 	find dist -name .svn -o -name "*~" | xargs rm -rf
 
 # Dist with cleanup, binary and source
 dist: cleandist distsrc distbin
-	find dist -name .svn | xargs rm -rf
+	find dist -name .svn -o -name MakeLoader -o -name MakeLoader.exe | xargs rm -rf
 
 distsrc: clean
 	mkdir -p dist/src
 	cp -r `ls | grep -v dist` dist/src
 	@# exclude some resources we don't want to distribute
-	find dist -name drawString.s -o -name Font8X.bin -o -name build_config.properties \
-	  -o -name proguard -o -name Makefile.config -o -wholename 'dist/src/java/bin/*' | xargs rm -rf
-
-install: all_tools
-	mkdir -p /usr/local/nspire
-	cp -fR bin /usr/local/nspire
-	cp -fR include /usr/local/nspire
-	cp -fR system /usr/local/nspire
-	ln -sfv /usr/local/nspire/bin/nspire-as /usr/local/bin
-	ln -sfv /usr/local/nspire/bin/nspire-gcc /usr/local/bin
-	ln -sfv /usr/local/nspire/bin/nspire-ld /usr/local/bin
-	ln -sfv /usr/local/nspire/bin/FlashEdit /usr/local/bin
-	ln -sfv /usr/local/nspire/bin/MakeTNS /usr/local/bin 
-	ln -sfv /usr/local/nspire/bin/LoaderWrapper /usr/local/bin
-
-uninstall:
-	rm -f /usr/local/bin/nspire-as
-	rm -f /usr/local/bin/nspire-gcc
-	rm -f /usr/local/bin/nspire-ld
-	rm -f /usr/local/bin/FlashEdit
-	rm -f /usr/local/bin/MakeTNS
-	rm -f /usr/local/bin/LoaderWrapper
-	rm -Rf /usr/local/nspire
+	find dist -name Makefile.config -o -name ndless_tests.tns | xargs rm -rf
 
 cleandist:
 	rm -rf dist
 
 clean: cleandist
-	rm -rf res
 	@for i in $(SUBDIRSCLEAN); do \
 	echo "Clearing in $$i..."; \
 	(cd $$i; make clean) || exit 1; done
+	@# may fail because of nspire_emu keeping a lock on it
+	-rm -rf calcbin
+	rm -rf bin

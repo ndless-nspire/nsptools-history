@@ -20,4 +20,6 @@ fi
 
 GCC=`which arm-elf-gcc 2>/dev/null`
 GCC=${GCC:=arm-none-eabi-gcc}
-"$GCC" -mcpu=arm7tdmi -I "$DIRNAME/../include" "$@"
+# -fno-builtin: We prefer to use syscalls. And GCC's builtins expansion (http://www.ciselant.de/projects/gcc_printf/gcc_printf.html)
+# is incompatible with the inline definition of most syscalls.
+"$GCC" -mcpu=arm7tdmi -I "$DIRNAME/../include"  -fpic -fno-builtin "$@"

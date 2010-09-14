@@ -1,11 +1,21 @@
-/* This ldscript avoids the useless default padding between sections */
+/* See http://sourceware.org/binutils/docs-2.20/ld/Scripts.html#Scripts */
+
+/* Avoid the useless default padding between sections */
 SECTIONS
 {
   . = 0x0;
-  .text : { *(.text) }
-  .data : { *(.data) }
-  .bss : { *(.bss) }
-  /* required by newlib */
-  __bss_start__ = .;
-  __bss_end__ = . ;
+  .text : { *(.text); }
+  .bss : { *(.bss); } /* doesn't generate any output, only headers, because the bss sections have the flag "ALLOC"
+  /* do not insert anything here */
+  .data : {
+  	/* symbol required by newlib */
+  	__bss_start__ = .;
+  	/* hack to allocate space for the BSS sections in the output file, because our loader doesn't support section allocation */
+  	. += SIZEOF(.bss);
+  	__bss_end__ = .;
+  	*(.data);
+  	/* symbols used by asm statements in Ndless macros, optimized out by GCC, we want to emit only if used */
+		PROVIDE(_syscallvar_savedlr = 0);
+  }
 }
+__got_size = SIZEOF(.got) / 4;

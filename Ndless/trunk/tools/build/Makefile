@@ -9,7 +9,7 @@ init:
 	@mkdir -p ../../bin
 
 scripts:
-	@cp $(SCRIPTS) ../../bin
+	cp $(SCRIPTS) ../../bin
 
 clean:
 	@cd ../../bin && rm -rf $(SCRIPTS)

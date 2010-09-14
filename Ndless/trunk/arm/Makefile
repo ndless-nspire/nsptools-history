@@ -1,35 +1,20 @@
-include ../Makefile.config
-
-SUBDIRS = demo
-
-NSPIRE_HARDWARE ?= NON_CAS
-
+SUBDIRS = tests
 AS = nspire-as
 GCC = nspire-gcc
-GCCFLAGS = -Os -D $(NSPIRE_HARDWARE) -nostdlib
+GCCFLAGS = -Os -nostdlib
 LD = nspire-ld
 LDFLAGS = -nostdlib
 OBJCOPY := "$(shell which arm-elf-objcopy 2>/dev/null)"
 ifeq (${OBJCOPY},"")
 	OBJCOPY := arm-none-eabi-objcopy
 endif
-SRC = components/files.S components/utils.S
-DISTDIR = ../res/$(NSPIRE_HARDWARE)
-vpath %.tns  ../res/$(NSPIRE_HARDWARE)
-vpath %.S  components
+DISTDIR = ../calcbin
+# OS-specific
+SYSCALLS_LIGHT_OBJS = syscalls-light_ncas-1.7.o syscalls-light_cas-1.7.o
+SYSCALLS_OBJS = syscalls_ncas-1.7.o syscalls_cas-1.7.o
+vpath %.tns $(DISTDIR)
 
-ifeq ($(NSPIRE_HARDWARE),CAS)
-	NS_EMU_STRING_RES_OFFSET=0x611D60
-else
-	NS_EMU_STRING_RES_OFFSET=0x691320
-endif
-
-all: static loader.tns hook.tns subdirs
-
-subdirs:
-	@for i in $(SUBDIRS); do \
-	echo "make all in $$i..."; \
-  (cd $$i; make all) || exit 1; done
+all: static ndless_installer.tns ndless_resources.tns subdirs
 
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<
@@ -40,35 +25,50 @@ subdirs:
 %.elf: %.o
 	$(LD) $(LDFLAGS) $^ -o $@
 
-%.tns: %.elf
-	$(OBJCOPY) -O binary $< $@
-	mv  $@ $(DISTDIR)
-
-loader.elf: loader.o files.o utils.o
-hook.elf: hook.o files.o utils.o
-
-loader.tns: loader.elf
-	$(OBJCOPY) -O binary $< $(@:.tns=.bin)
-	LoaderWrapper $(@:.tns=.bin) $@
-	rm $(@:.tns=.bin)
-	mv  $@ $(DISTDIR)
 
 static:
-	mkdir -p ../res/$(NSPIRE_HARDWARE)
-	cp -f copier.tno ../res/copier.tno
+	@mkdir -p $(DISTDIR)
 
-emulator: loader
-	FlashEdit ../res/$(NSPIRE_HARDWARE)/loader.tns '$(NS_EMU_FLASH_PATH_$(NSPIRE_HARDWARE))' $(NS_EMU_STRING_RES_OFFSET)
+# Build with the light switch (temporarily added to $GCCFLAGS), and in thumb mode,
+# because of the 1kb limit of ndless_installer.tns
+ints_light.o: ints.c
+	$(GCC) $(GCCFLAGS) -mthumb -c $< -o $@
+syscalls_light.o: syscalls.c
+	$(GCC) $(GCCFLAGS) -mthumb -c $< -o $@
+utils_light.o: utils.c
+	$(GCC) $(GCCFLAGS) -mthumb -c $< -o $@
 
-.PHONY: clean
+loader.o: GCCFLAGS:=$(GCCFLAGS) -D _NDLS_LIGHT -mthumb-interwork -mthumb
+ndless_installer.elf: GCCFLAGS:=$(GCCFLAGS) -D _NDLS_LIGHT -mthumb-interwork
+# bootstrapper.o is the entry point: must be first in the list, and linked with --no-startup 
+ndless_installer.elf: bootstrapper.o loader.o ints_light.o syscalls_light.o utils_light.o $(SYSCALLS_LIGHT_OBJS)
+	$(LD) --no-startup $(LDFLAGS) $^ -o $@
+
+ndless_installer.tns: ndless_installer.elf
+	$(OBJCOPY) -O binary $< $(@:.tns=.bin)
+	../bin/MakeLoader.exe $(@:.tns=.bin) Document.xml
+	rm -f $@ $(@:.tns=.zip)
+	7z a $(@:.tns=.zip) Document.xml
+	mv $(@:.tns=.zip) $(DISTDIR)/$@
+	rm Document.xml
+
+RES_OBJS = install.o ints.o ploaderhook.o syscalls.o utils.o $(SYSCALLS_OBJS)
+ndless_resources.elf: $(RES_OBJS)
+	$(LD) $(LDFLAGS) $^ -o $@
+
+ndless_resources.tns: ndless_resources.elf
+	$(OBJCOPY) -O binary $< $(DISTDIR)/$@
+
+subdirs:
+	@for i in $(SUBDIRS); do \
+	echo "make all in $$i..."; \
+  (cd $$i; make all) || exit 1; done
 
 clean: cleanbin cleanapp
-	@for i in $(SUBDIRS); do \
-	echo "Clearing in $$i..."; \
-	(cd $$i; make clean) || exit 1; done
-
 cleanapp:
-	rm -rf ../res/$(NSPIRE_HARDWARE)
+	rm -rf $(DISTDIR)/ndless_installer.tns $(DISTDIR)/ndless_resources.tns
+cleanres:
+	rm -rf ndless_resources.elf $(RES_OBJS)
 
 cleanbin:
-	rm -rf loader.bin hook.bin *.o *.elf
+	rm -rf *.o *.bin *.elf *.xml *.zip

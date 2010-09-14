@@ -15,34 +15,18 @@ C
 =
 
 - MSYS with MinGW: http://www.mingw.org/wiki/msys
+- 7-zip: http://www.7-zip.org/download.html
 
+* Add 7-zip's folder to your PATH environment variable
 * Copy Ndless/Makefile.config.tpl to Ndless/Makefile.config and configure the latter
 
 ARM
 ===
 
-- Set up the toolchain as described in ReadMe.xt
-
-Java
-====
-
-- Java JDK 6 - http://java.sun.com/javase/downloads/index.jsp
-- Eclipse IDE for Java Developers - http://www.eclipse.org/downloads
-- Subclipse (SVN plug-in for Eclipse) - http://subclipse.tigris.org/
-- Apache Ant - http://ant.apache.org/bindownload.cgi
-- ProGuard - http://proguard.sourceforge.net/
-- TI Computer Link Software >= 1.4 - http://education.ti.com/educationportal/sites/US/productDetail/us_nspire_computerlink.html
-
-* Add Apache Ant's home directory to your PATH environment variable
-* Unzip ProGuard to Ndles/java/tools/proguard (there will be bin/ and README in this directory)
-* Import in Eclipse the Java Project Ndless/java
-* Edit with a text editor Ndlessjava/Ndless.userlibraries, and configure the paths depending
-  on your environment
-* Load this file in Eclipse : Window -> Preferences -> Java -> Build Path -> User Libraries
-  -> Import
-* Copy Ndless/java/build_config.properties.tpl to Ndless/java/build_config.properties and
-  configure the latter
-* Edit Ndless/java/ndless.pro and adapt the libraryjars paths
+- Set up the toolchain as described in ReadMe.txt. Ndless is built with itself, and
+  you may not be able to use a previous version of Ndless to build it.
+  You thus need to build the toolchain (cd tools && make) and add the bin/ directory
+  at the root of the project to the PATH environment variable.
 
 Building
 ========
@@ -51,14 +35,14 @@ From Ndless root directory:
 
 * make: builds the artifacts
 * make arm [NSPIRE_HARDWARE=CAS|NON_CAS, default is NON_CAS]: builds the ARM artifacts
-* make dist FAST=true: builds the artificats and create a release directory (dist) for
-  development tests. Java obfuscation is disabled.
 * make dist: builds the artificats and create a release directory (dist)
+* make distbin: incremental dist during development
 
-Debugging the installer
-=======================
+Generating the syscalls header files
+====================================
 
-The Eclipse Debug configuration should be configured this way:
-* Arguments -> Working directory -> Other -> <dist in Ndless root directory>
-* Classpath -> User Entries: The Computer Link User Library must be removed
-  to use the version patched at runtime. choose Remove, then Add Projects -> Ndless
+The syscalls header files for the different OS are generated.
+This generated files are ditributed with Ndless's source code.
+
+To regenerate these files, run the following command:
+cd tools/Makesyscalls && make
