@@ -46,10 +46,11 @@
 #define e_strncat 28
 #define e_strlen 29
 #define e_show_dialog_box2 30
+#define e_strrchr 31
 // END_OF_LIST (always keep this line after the last constant, used by mksyscalls.sh)
 
 // Must be kept up-to-date with the value of the last syscall
-#define __SYSCALLS_LAST 30
+#define __SYSCALLS_LAST 31
 
 // Flag: higher bit of the 3-bytes comment field of the swi instruction
 #define __SYSCALLS_ISEXT 0x800000

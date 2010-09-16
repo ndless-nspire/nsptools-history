@@ -117,6 +117,8 @@ What you need to know as a developer
   see src/samples/hella/hella.S
 - You may find interesting macros, inline functions and syscalls definition in 
   the include/ directory.
+- You may define argc and argv in your main function's signature to get the 
+  current program path in argv[0]
 - Make sure that the assembly files extensions are in uppercase (.S) to make 
   them be preprocessed by the C preprocessor on which Ndless include files are 
   built
@@ -153,6 +155,8 @@ C and assembly programs:
    build your programs only once without defining NSPIRE_HARDWARE.
  - OS v1.1 is not supported anymore. Check that your programs still work on OS 
    v1.7.
+ - The program path is passed to the main function by following the C calling 
+   convention instead of using register r9
 Assembly programs:
  - The way to call syscalls has chanded: replace 'oscall <os_function>' with 
    'syscall(<os_function>)'
@@ -235,7 +239,7 @@ Changelog
   - CHG: 'demo' renamed to 'particles' and moved to samples/
  Includes:
   - NEW: stat, NU_Get_First, NU_Get_Next, NU_Done, strcpy, strcmp, strlen, 
-         strncat, exit
+         strncat, strrchar, exit
  - NEW: va_list, va_start, va_arg, va_end (thanks apcalc)
   - FIX: isKeyPressed could sometimes hang in while loops (missing 
          volatile keyword)

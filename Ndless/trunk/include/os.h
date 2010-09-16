@@ -198,6 +198,7 @@ _SYSCALL2(char *, strcpy, char *, const char *)
 _SYSCALL2(int, strcmp, const char *, const char *)
 _SYSCALL1(int, strlen, const char *)
 _SYSCALL3(char *, strncat, char *, char *, size_t)
+_SYSCALL2(const char*, strrchr, const char *, int);
 _SYSCALLVAR(int, __attribute__((__format__(__printf__,1,2))), printf, __attribute__((unused)) const char *format, ...)
 _SYSCALLVAR(int, __attribute__((__format__(__printf__,2,3))), sprintf, __attribute__((unused)) char *s, __attribute__((unused)) const char *format, ...)
 _SYSCALL1(int, puts, const char *)

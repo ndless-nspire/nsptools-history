@@ -20,7 +20,7 @@ static void assertUIntEquals(const char *tstname, unsigned expected, unsigned ac
 static void assertStrEquals(const char *tstname, const char *expected, const char *actual) {
 	char sbuf[100];
 	if (strcmp(expected, actual)) {
-		sprintf(sbuf, "%s(%s, %s)", __func__, expected, actual);
+		sprintf(sbuf, "%s(\"%s\", \"%s\")", __func__, expected, actual);
 		error(tstname, sbuf);
 	}
 }
@@ -31,9 +31,12 @@ int* nl_relocdata_data[] = {&global_int};
 static unsigned const custom_sprintf_addrs[] = {0x102A280C, 0};
 #define custom_sprintf SYSCALL_CUSTOM(custom_sprintf_addrs, int __attribute__((__format__(__printf__,2,3))), sprintf, char *s, const char *format, ...)
 
-int main(void) {
+int main(int argc, char *argv[]) {
 	char buf100[100];
 	int ret;
+
+	assertUIntEquals("argc", 1, argc);
+	assertStrEquals("argv,strrchr", "ndless_tests.tns", strrchr(argv[0], '/') + 1);
 
 	ret = sprintf(buf100, "%i%i%i", 1, 2, 3);
 	assertStrEquals("_syscallsvar >4 params", "123", buf100); // tests sprintf. uses _syscallvar_savedlr.

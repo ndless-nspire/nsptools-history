@@ -58,7 +58,7 @@ HOOK_DEFINE(plh_hook) {
 		HOOK_RESTORE_RETURN(plh_hook);
 	}
 	int intmask = TCT_Local_Control_Interrupts(-1); /* TODO workaround: disable the interrupts to avoid the clock on the screen */
-	((void (*)(void))(docptr + sizeof(PRGMSIG)))(); /* run the program */
+	((void (*)(int argc, char *argv[]))(docptr + sizeof(PRGMSIG)))(1, (char*[]){docpath}); /* run the program */
 	TCT_Local_Control_Interrupts(intmask);
 	free(docptr);
 	HOOK_RESTORE_RETURN_SKIP(plh_hook, 4); // skip the error dialog about the unrecognized format
