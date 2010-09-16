@@ -52,6 +52,9 @@ Executables have the extension .tns as standard documents.
 
 You may try the particles demo available in the calcbin/samples/ directory.
 
+Programs built for Ndless v1.0/v1.1 won't work with this version until they are 
+updated by their authors.
+
 How do I uninstall it?
 ======================
 
