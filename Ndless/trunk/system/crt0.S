@@ -20,13 +20,11 @@ relocate_loop:
 	bge   relocate_loop
 
 runmain:
-	stmfd sp!, {r0-r12,lr}
-	adr  r0, __crt0_savedsp
-	str  sp, [r0]
+	stmfd sp!, {r4-r11,lr}
+	str  sp, __crt0_savedsp
 	bl   main
 __crt0exit: .global __crt0exit
-	ldmfd sp!, {r0-r12,lr}
-	bx   lr
+	ldmfd sp!, {r4-r11,pc}
 
 got_offset:
 	.word _GLOBAL_OFFSET_TABLE_ - (get_got_offset+8)
