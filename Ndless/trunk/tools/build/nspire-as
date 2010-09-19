@@ -1,20 +1,21 @@
 #!/bin/sh
 
-cygwin=false
-case "`uname`" in
-  CYGWIN* )
-    cygwin=true
-    ;; 
-esac
-
+UNAME=`uname -s | tr '[A-Z]' '[a-z]'`
 DIRNAME=`dirname "$0"`
 # DIRNAME may not be in the toolchain directory if this script was symlinked.
 # try to find the symlink target
 if which readlink &> /dev/null && readlink "$0" &> /dev/null; then
-  DIRNAME=`readlink "$0"`/..
+    SYMLINK=`readlink "$0"`
+    
+    # On MacOS X, the readlink command hasn't the same behavior than the others operating systems based on Unix.
+    if [ "$UNAME" == "darwin" ]; then
+    	DIRNAME=`dirname "$SYMLINK"`
+    else
+    	DIRNAME="$SYMLINK"/..
+    fi
 fi
 
-if $cygwin; then
+if [ "$UNAME" == "cygwin" ]; then
   DIRNAME=`cygpath --path --windows "$DIRNAME"`
 fi
 

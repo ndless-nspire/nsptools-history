@@ -46,9 +46,9 @@ ndless_installer.elf: bootstrapper.o loader.o ints_light.o syscalls_light.o util
 
 ndless_installer.tns: ndless_installer.elf
 	$(OBJCOPY) -O binary $< $(@:.tns=.bin)
-	../bin/MakeLoader.exe $(@:.tns=.bin) Document.xml
+	../bin/MakeLoader $(@:.tns=.bin) Document.xml
 	rm -f $@ $(@:.tns=.zip)
-	7z a $(@:.tns=.zip) Document.xml
+	7za a $(@:.tns=.zip) Document.xml
 	mv $(@:.tns=.zip) $(DISTDIR)/$@
 	rm Document.xml
 
