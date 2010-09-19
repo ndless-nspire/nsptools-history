@@ -69,7 +69,7 @@ subdirs:
 	echo "make all in $$i..."; \
   (cd $$i; make all) || exit 1; done
 
-clean: cleanbin cleanapp
+clean: cleanbin cleanapp cleansubdirs
 cleanapp:
 	rm -rf $(DISTDIR)/ndless_installer.tns $(DISTDIR)/ndless_resources.tns
 cleanres:
@@ -77,3 +77,8 @@ cleanres:
 
 cleanbin:
 	rm -rf *.o *.bin *.elf *.xml *.zip
+
+cleansubdirs:
+	@for i in $(SUBDIRS); do \
+	echo "make all in $$i..."; \
+  (cd $$i; make clean) || exit 1; done
