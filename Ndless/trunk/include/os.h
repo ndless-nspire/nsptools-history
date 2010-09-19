@@ -201,6 +201,11 @@ _SYSCALL3(char *, strncat, char *, char *, size_t)
 _SYSCALL2(const char*, strrchr, const char *, int);
 _SYSCALLVAR(int, __attribute__((__format__(__printf__,1,2))), printf, __attribute__((unused)) const char *format, ...)
 _SYSCALLVAR(int, __attribute__((__format__(__printf__,2,3))), sprintf, __attribute__((unused)) char *s, __attribute__((unused)) const char *format, ...)
+typedef char *va_list;
+#define va_start(ap,p)  (ap = (char*)(&(p) + 1))
+#define va_arg(ap,type) ((type*)(ap += sizeof(type)))[-1]
+#define va_end(ap)
+_SYSCALL3(int, vsprintf, char *, const char *, va_list);
 _SYSCALL1(int, puts, const char *)
 _SYSCALL1(int, TCT_Local_Control_Interrupts, int)
 _SYSCALL2(FILE*, fopen, const char *, const char *)
@@ -235,10 +240,6 @@ static inline void __attribute__((noreturn, naked)) exit(int __attribute__((unus
 		:: "r" (__crt0_savedsp), "r" (&__crt0exit));
 	while(1);
 }
-typedef char *va_list;
-#define va_start(ap,p)  (ap = (char*)(&(p) + 1))
-#define va_arg(ap,type) ((type*)(ap += sizeof(type)))[-1]
-#define va_end(ap)
 
 #endif // GCC C
 #endif

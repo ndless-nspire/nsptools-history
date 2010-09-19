@@ -255,7 +255,7 @@ static inline void idle(void) {
 		" adr lr," STRINGIFY(__##hookname##_saved_sp) "\n" \
 		" ldr lr, [lr] \n" \
 		" str lr, [sp, #-4]! \n" /* push lr=saved_sp. trick to restore both saved_sp and the original lr */ \
-		" ldmfd sp, {sp, lr} \n" /* lr has been unused instead of r0 to avoid a GAS warning about reg order on this instr */ \
+		" ldmfd sp, {sp, lr} \n" /* lr has been used instead of r0 to avoid a GAS warning about reg order on this instr */ \
 	); \
 } while (0)
 

@@ -13,9 +13,12 @@ SECTIONS
   	/* hack to allocate space for the BSS sections in the output file, because our loader doesn't support section allocation */
   	. += SIZEOF(.bss);
   	__bss_end__ = .;
+  	. = ALIGN(4);
   	*(.data);
   	/* symbols used by asm statements in Ndless macros, optimized out by GCC, we want to emit only if used */
-		PROVIDE(_syscallvar_savedlr = 0);
+	  . = ALIGN(4);
+		PROVIDE(_syscallvar_savedlr = .);
+		. += 4;
   }
 }
 __got_size = SIZEOF(.got) / 4;

@@ -48,6 +48,7 @@ void main(void) {
 	}
 	ints_hook_handlers();
 	ins_install_ploader_hook();
-	puts("Ndless installed!");
+	TCT_Local_Control_Interrupts(-1);
+	ut_puts("Ndless installed!");
 	ut_os_reboot();
 }

@@ -25,19 +25,28 @@
 #include "ndless.h"
 
 extern void *next_descriptor_ptr;
+extern void ints_undef_instr_handler(void);
 extern void ints_swi_handler(void);
+extern void ints_prefetch_abort_handler(void);
+extern void ints_data_abort_handler(void);
 
 void ints_setup_handlers(void) {
  *(void**)INTS_SWI_HANDLER_ADDR = &ints_swi_handler;
 }
 
+#ifndef _NDLS_LIGHT
 /* similar to ints_setup_handlers(), but:
  * - on the OS copy of the vectors, for installation at next reboot
  * - sets the next_descriptor pointer */
 void ints_hook_handlers(void) {
-	*(void**)(OS_BASE_ADDRESS + INTS_SWI_HANDLER_ADDR) = &ints_swi_handler;
+	void **adr_ptr = (void**)(OS_BASE_ADDRESS + INTS_UNDEF_INSTR_HANDLER_ADDR);
+	*adr_ptr++ = &ints_undef_instr_handler;
+	*adr_ptr++ = &ints_swi_handler;
+	*adr_ptr++ = &ints_prefetch_abort_handler;
+	*adr_ptr++ = &ints_data_abort_handler;
  	next_descriptor_ptr = &ut_next_descriptor;
 }
+#endif
 
 /* All the code run with _NDLS_LIGHT defined must be PC-relative (the loader is not relocated)
  * TODO:
@@ -98,11 +107,12 @@ asm(
 #endif
 );
 
+#ifdef _NDLS_LIGHT
 // Used for any exception for which we choose to halt
 asm(
 " .arm \n"
 "ints_halt_handler: .global ints_halt_handler \n"
-" 0: b 0b"
+"0: b 0b"
 );
 
 // Used for any exception for which we want to return back immediatly
@@ -112,3 +122,31 @@ asm(
 "ints_empty_handler4: .global ints_empty_handler4 \n"
 " subs pc, lr, #4" 
 );
+
+#else
+// Exception handlers when Ndless is installed, to make debugging on real hw easier
+asm(
+" .arm \n"
+"ints_data_abort_handler: .global ints_data_abort_handler \n"
+" adr r0, 1f \n"
+" b 10f \n"
+"ints_prefetch_abort_handler: .global ints_prefetch_abort_handler \n"
+" adr r0, 2f \n"
+" b 10f \n"
+"ints_undef_instr_handler: .global ints_undef_instr_handler \n"
+" adr r0, 3f \n"
+"10: \n"
+" mov r1, lr \n"
+" stmfd sp!, {r0, r1} \n"
+" ldmfd sp, {r0, r1}^     @ ^: to user-mode regs \n"
+" add   sp, sp, #8        @ 'sp!' with ^ in the previous instruction is considered to produce an unpredictable result by GAS \n"
+" mrs   r2, cpsr \n"
+" bic   r2, #0b1111       @ to user mode, to be able to call syscalls \n"
+" msr   cpsr, r2 \n"
+" bl ut_printf \n"
+" b ut_calc_reboot \n"
+"1: .asciz \"data abort exception, lr=%08x\\n\" \n"
+"2: .asciz \"prefetch abort exception, lr=%08x\\n\"\n"
+"3: .asciz \"undefined instruction exception, lr=%08x\\n\"\n"
+);
+#endif

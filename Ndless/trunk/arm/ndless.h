@@ -31,7 +31,10 @@
 extern unsigned ints_scextnum;
 extern unsigned *sc_addrs_ptr;
 void ints_setup_handlers(void);
+#define INTS_UNDEF_INSTR_HANDLER_ADDR 0x24
 #define INTS_SWI_HANDLER_ADDR 0x28
+#define INTS_PREFETCH_ABORT_HANDLER_ADDR 0x2C
+#define INTS_DATA_ABORT_HANDLER_ADDR 0x30
 
 /* utils.c */
 // 'NEXT'
@@ -52,6 +55,9 @@ void ut_read_os_version_index(void);
 void __attribute__ ((noreturn)) ut_os_reboot(void);
 void __attribute__ ((noreturn)) ut_calc_reboot(void);
 void __attribute__ ((noreturn)) ut_panic(const char * msg);
+void ut_debug_trace(unsigned line);
+void ut_puts(const char *str);
+void ut_printf(const char *fmt, ...);
 static inline struct next_descriptor *ut_get_next_descriptor(void) {
 	if (*(*(unsigned**)(OS_BASE_ADDRESS + INTS_SWI_HANDLER_ADDR) - 2) != NEXT_SIGNATURE)
 		return NULL;
