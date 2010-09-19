@@ -19,6 +19,7 @@ SYSCALLS_OBJS = syscalls_ncas-1.7.o syscalls_cas-1.7.o
 vpath %.tns $(DISTDIR)
 
 all: static ndless_installer.tns ndless_resources.tns subdirs
+res: ndless_resources.tns
 
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<

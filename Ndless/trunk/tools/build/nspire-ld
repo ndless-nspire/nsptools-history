@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/bin/bash
+# bash and not sh: we use bash arrays
 # Available non-GCC options:
 # --no-startup: do not link with the startup code
 
