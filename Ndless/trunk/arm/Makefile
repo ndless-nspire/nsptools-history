@@ -9,8 +9,8 @@ ifeq (${OBJCOPY},"")
 	OBJCOPY := arm-none-eabi-objcopy
 endif
 7Z := "$(shell which 7z 2>/dev/null)"
-ifeq (${OBJCOPY},"")
-	OBJCOPY := 7za
+ifeq (${7Z},"")
+	7Z := 7za
 endif
 DISTDIR = ../calcbin
 # OS-specific
