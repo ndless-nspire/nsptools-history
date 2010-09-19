@@ -237,6 +237,7 @@ Changelog
   - NEW: option --no-startup for nspire-ld
   - CHG: option -fpic moved to nspire-gcc
   - CHG: MakeTNS removed
+  - FIX: Mac OS X support for symlinked tools
  Samples:
   - NEW: sample program 'hello'
   - CHG: 'demo' renamed to 'particles' and moved to samples/

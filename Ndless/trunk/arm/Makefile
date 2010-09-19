@@ -8,6 +8,10 @@ OBJCOPY := "$(shell which arm-elf-objcopy 2>/dev/null)"
 ifeq (${OBJCOPY},"")
 	OBJCOPY := arm-none-eabi-objcopy
 endif
+7Z := "$(shell which 7z 2>/dev/null)"
+ifeq (${OBJCOPY},"")
+	OBJCOPY := 7za
+endif
 DISTDIR = ../calcbin
 # OS-specific
 SYSCALLS_LIGHT_OBJS = syscalls-light_ncas-1.7.o syscalls-light_cas-1.7.o
@@ -48,7 +52,7 @@ ndless_installer.tns: ndless_installer.elf
 	$(OBJCOPY) -O binary $< $(@:.tns=.bin)
 	../bin/MakeLoader $(@:.tns=.bin) Document.xml
 	rm -f $@ $(@:.tns=.zip)
-	7za a $(@:.tns=.zip) Document.xml
+	$(7Z) a $(@:.tns=.zip) Document.xml
 	mv $(@:.tns=.zip) $(DISTDIR)/$@
 	rm Document.xml
 
