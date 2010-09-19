@@ -112,7 +112,7 @@ LRESULT CALLBACK keys_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 	int row, col, down;
 	RECT rc;
 
-	static const char key_names[NUM_KEYPAD_TYPES][8][11][6] = {
+	static const char key_names[NUM_KEYPAD_TYPES][8][11][5] = {
 		{{ "ret", "enter","space","(-)", "Z",   ".",   "Y",   "0",  "X",  "on",   "theta" },
 		 { ",",   "+",    "W",    "3",   "V",   "2",   "U",   "1",  "T",  "e^x",  "pi"    },
 		 { "?",   "-",    "S",    "6",   "R",   "5",   "Q",   "4",  "P",  "10^x", "EE"    },
@@ -248,6 +248,7 @@ LRESULT CALLBACK keys_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 					str = key_names[keypad_type][row][col];
 				else
 					str = "---";
+				int len = min(strlen(str), 5);
 				rc.left = col * KEY_WIDTH; rc.right = rc.left + KEY_WIDTH;
 				rc.top = row * KEY_HEIGHT; rc.bottom = rc.top + KEY_HEIGHT;
 				int is_down = key_map[row] & (1 << col);
@@ -255,7 +256,7 @@ LRESULT CALLBACK keys_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 					tc = SetTextColor(hdc, GetSysColor(COLOR_HIGHLIGHTTEXT));
 					bc = SetBkColor(hdc, GetSysColor(COLOR_HIGHLIGHT));
 				}
-				ExtTextOut(hdc, rc.left + KEY_WIDTH / 2, rc.top, ETO_OPAQUE, &rc, str, strlen(str), NULL);
+				ExtTextOut(hdc, rc.left + KEY_WIDTH / 2, rc.top, ETO_OPAQUE, &rc, str, len, NULL);
 				if (is_down) {
 					SetTextColor(hdc, tc);
 					SetBkColor(hdc, bc);

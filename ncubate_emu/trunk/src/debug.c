@@ -272,22 +272,22 @@ void debugger() {
 			u32 task = strtoul(strtok(NULL, " \n"), 0, 16);
 			u8 *p = virt_mem_ptr(task, 52);
 			if (p) {
-				printf("Previous:        %08x\n", *(u32 *)&p[0]);
-				printf("Next:            %08x\n", *(u32 *)&p[4]);
-				printf("ID:              %c%c%c%c\n", p[15], p[14], p[13], p[12]);
-				printf("Name:            %.8s\n", &p[16]);
-				printf("Status:          %02x\n", p[24]);
-				printf("Delayed suspend: %d\n", p[25]);
-				printf("Priority:        %02x\n", p[26]);
-				printf("Preemption:      %d\n", p[27]);
-				printf("Stack start:     %08x\n", *(u32 *)&p[36]);
-				printf("Stack end:       %08x\n", *(u32 *)&p[40]);
-				printf("Stack pointer:   %08x\n", *(u32 *)&p[44]);
-				printf("Stack size:      %08x\n", *(u32 *)&p[48]);
+				printf("Previous:	%08x\n", *(u32 *)&p[0]);
+				printf("Next:		%08x\n", *(u32 *)&p[4]);
+				printf("ID:		%c%c%c%c\n", p[15], p[14], p[13], p[12]);
+				printf("Name:		%.8s\n", &p[16]);
+				printf("Status:		%02x\n", p[24]);
+				printf("Delayed suspend:%d\n", p[25]);
+				printf("Priority:	%02x\n", p[26]);
+				printf("Preemption:	%d\n", p[27]);
+				printf("Stack start:	%08x\n", *(u32 *)&p[36]);
+				printf("Stack end:	%08x\n", *(u32 *)&p[40]);
+				printf("Stack pointer:	%08x\n", *(u32 *)&p[44]);
+				printf("Stack size:	%08x\n", *(u32 *)&p[48]);
 				u32 sp = *(u32 *)&p[44];
 				u32 *psp = virt_mem_ptr(sp, 18 * 4);
 				if (psp) {
-					printf("Stack type:      %d (%s)\n", psp[0], psp[0] ? "Interrupt" : "Normal");
+					printf("Stack type:	%d (%s)\n", psp[0], psp[0] ? "Interrupt" : "Normal");
 					if (psp[0]) {
 						vprintf("cpsr=%08x  r0=%08x r1=%08x r2=%08x r3=%08x  r4=%08x\n"
 						        "  r5=%08x  r6=%08x r7=%08x r8=%08x r9=%08x r10=%08x\n"
@@ -397,12 +397,24 @@ void debugger() {
 				}
 			}
 		} else if (!stricmp(cmd, "int")) {
-			printf("active=%08x enabled=%08x,%08x current=%08x,%08x\n",
-				active_ints, enabled_ints[0], enabled_ints[1], current_ints[0], current_ints[1]);
+			printf("active		= %08x\n", intr.active);
+			printf("status		= %08x\n", intr.status);
+			printf("mask		= %08x %08x\n", intr.mask[0], intr.mask[1]);
+			printf("priority_limit	= %02x       %02x\n", intr.priority_limit[0], intr.priority_limit[1]);
+			printf("noninverted	= %08x\n", intr.noninverted);
+			printf("sticky		= %08x\n", intr.sticky);
+			printf("priority:\n");
+			int i, j;
+			for (i = 0; i < 32; i += 16) {
+				printf("\t");
+				for (j = 0; j < 16; j++)
+					printf("%02x ", intr.priority[i+j]);
+				printf("\n");
+			}
 		} else if (!stricmp(cmd, "int+")) {
-			int_activate(1 << atoi(strtok(NULL, " \n")));
+			int_set(atoi(strtok(NULL, " \n")), 1);
 		} else if (!stricmp(cmd, "int-")) {
-			int_deactivate(1 << atoi(strtok(NULL, " \n")));
+			int_set(atoi(strtok(NULL, " \n")), 0);
 		} else {
 			printf("Unknown command %s\n", cmd);
 		}

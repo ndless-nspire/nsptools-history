@@ -69,14 +69,8 @@ static void emit_modrm_armreg(int r, int armreg) {
 // ----------------------------------------------------------------------
 
 static void emit_mov_x86reg_immediate(int x86reg, int imm) {
-	if (imm == 0) {
-		// use "xor reg,reg" to save space
-		emit_byte(0x31);
-		emit_modrm_x86reg(x86reg, x86reg);
-	} else {
-		emit_byte(0xB8 | x86reg);
-		emit_dword(imm);
-	}
+	emit_byte(0xB8 | x86reg);
+	emit_dword(imm);
 }
 
 static void emit_alu_x86reg_immediate(int aluop, int x86reg, int imm) {
@@ -451,6 +445,11 @@ no_condition:
 				if (insn & 0x0010000) mask |= 0x000000FF;
 				emit_mov_x86reg_immediate(EDX, mask);
 				emit_call(insn & 0x0400000 ? (u32)set_spsr : (u32)set_cpsr);
+				// If cpsr_c changed, leave translation to check for interrupts
+				if ((insn & 0x0410000) == 0x0010000) {
+					emit_mov_x86reg_immediate(EAX, pc + 4);
+					emit_jump((u32)translation_next);
+				}
 			} else if ((insn & 0xFFF0FF0) == 0x16F0F10) {
 				/* CLZ: Count leading zeros */
 				int src_reg = insn & 15;
@@ -678,12 +677,16 @@ no_condition:
 							emit_mov_x86reg_armreg(EAX, left_reg);
 							emit_alu_x86reg_immediate(aluop, EAX, imm);
 						} else {
-							if (aluop == SUB && dest_reg == left_reg && imm == 0) {
-								/* RSB reg, reg, 0 is like x86's NEG */
-								emit_unary_armreg(NEG, left_reg);
-								goto data_proc_done;
+							if (aluop == SUB && imm == 0) {
+								if (dest_reg == left_reg) {
+									/* RSB reg, reg, 0 is like x86's NEG */
+									emit_unary_armreg(NEG, left_reg);
+									goto data_proc_done;
+								}
+								emit_alu_x86reg_x86reg(XOR, EAX, EAX);
+							} else {
+								emit_mov_x86reg_immediate(EAX, imm);
 							}
-							emit_mov_x86reg_immediate(EAX, imm);
 							emit_alu_x86reg_armreg(aluop, EAX, left_reg);
 						}
 					} else if (right_is_reg) {
@@ -787,7 +790,7 @@ no_condition:
 			} else {
 				/* STR/STRB instruction */
 				if (data_reg == 15)
-					emit_mov_x86reg_immediate(EDX, pc + 8);
+					emit_mov_x86reg_immediate(EDX, pc + 12);
 				else
 					emit_mov_x86reg_armreg(EDX, data_reg);
 				emit_call(is_byteop ? (u32)write_byte : (u32)write_word);
@@ -854,7 +857,7 @@ no_condition:
 						emit_mov_armreg_x86reg(reg, EAX);
 				} else {
 					if (reg == 15)
-						emit_mov_x86reg_immediate(EDX, pc + 12); // +12 and not +8: special case for some CPU
+						emit_mov_x86reg_immediate(EDX, pc + 12);
 					else
 						emit_mov_x86reg_armreg(EDX, reg);
 					emit_call((u32)write_word);

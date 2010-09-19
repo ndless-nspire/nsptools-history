@@ -9,40 +9,50 @@ static u16 lcd_palette[256];
 /* Draw the current screen into a 4bpp upside-down bitmap. (SetDIBitsToDevice
  * supports either orientation, but some programs can't paste right-side-up bitmaps) */
 void lcd_draw_frame(u8 buffer[240][160]) {
-	u32 bpp = 1 << (lcd_control >> 1 & 3);
+	u32 bpp = 1 << (lcd_control >> 1 & 7);
 	u32 *in = phys_mem_ptr(lcd_framebuffer, (320 * 240) / 8 * bpp);
-	if (!in) {
+	if (!in || bpp > 16) {
 		memset(buffer, 0, 160 * 240);
 		return;
 	}
 	int row;
 	for (row = 239; row >= 0; row--) {
-		u32 mask = (1 << bpp) - 1;
 		u32 pal_shift = lcd_control & (1 << 8) ? 11 : 1;
-		u32 bi = (lcd_control & (1 << 9)) ? 0 : 24;
-		if (!(lcd_control & (1 << 10)))
-			bi ^= (8 - bpp);
 		int words = (320 / 32) * bpp;
 		u8 *out = buffer[row];
-		do {
-			u32 word = *in++;
-			int bitpos = 32;
+		if (bpp < 16) {
+			u32 mask = (1 << bpp) - 1;
+			u32 bi = (lcd_control & (1 << 9)) ? 0 : 24;
+			if (!(lcd_control & (1 << 10)))
+				bi ^= (8 - bpp);
 			do {
-				int color1 = lcd_palette[word >> ((bitpos -= bpp) ^ bi) & mask] >> pal_shift & 15;
-				int color2 = lcd_palette[word >> ((bitpos -= bpp) ^ bi) & mask] >> pal_shift & 15;
-				*out++ = color1 << 4 | color2;
-				color1 = lcd_palette[word >> ((bitpos -= bpp) ^ bi) & mask] >> pal_shift & 15;
-				color2 = lcd_palette[word >> ((bitpos -= bpp) ^ bi) & mask] >> pal_shift & 15;
-				*out++ = color1 << 4 | color2;
-			} while (bitpos != 0);
-		} while (--words != 0);
+				u32 word = *in++;
+				int bitpos = 32;
+				do {
+					int color1 = lcd_palette[word >> ((bitpos -= bpp) ^ bi) & mask] >> pal_shift & 15;
+					int color2 = lcd_palette[word >> ((bitpos -= bpp) ^ bi) & mask] >> pal_shift & 15;
+					*out++ = color1 << 4 | color2;
+					color1 = lcd_palette[word >> ((bitpos -= bpp) ^ bi) & mask] >> pal_shift & 15;
+					color2 = lcd_palette[word >> ((bitpos -= bpp) ^ bi) & mask] >> pal_shift & 15;
+					*out++ = color1 << 4 | color2;
+				} while (bitpos != 0);
+			} while (--words != 0);
+		} else {
+			u32 shift1 = pal_shift | (lcd_control & (1 << 9) ? 16 : 0);
+			u32 shift2 = shift1 ^ 16;
+			do {
+				u32 word = *in++;
+				*out++ = (word >> shift1 & 15) << 4 | (word >> shift2 & 15);
+			} while (--words != 0);
+		}
 	}
 }
 
 u32 lcd_read_word(u32 addr) {
-	if (addr >= 0xC0000200 && addr < 0xC0000400)
-		return *(u32 *)((u8 *)lcd_palette + addr - 0xC0000200);
-	switch (addr & 0x3FFFFFF) {
+	u32 pal_offset = (addr & 0xFFF) - 0x200;
+	if (pal_offset < 0x200)
+		return *(u32 *)((u8 *)lcd_palette + pal_offset);
+	switch (addr & 0xFFF) {
 		case 0x010: return lcd_framebuffer;
 		case 0x01C: return lcd_control;
 	}
@@ -50,11 +60,12 @@ u32 lcd_read_word(u32 addr) {
 }
 
 void lcd_write_word(u32 addr, u32 value) {
-	if (addr >= 0xC0000200 && addr < 0xC0000400) {
-		*(u32 *)((u8 *)lcd_palette + addr - 0xC0000200) = value;
+	u32 pal_offset = (addr & 0xFFF) - 0x200;
+	if (pal_offset < 0x200) {
+		*(u32 *)((u8 *)lcd_palette + pal_offset) = value;
 		return;
 	}
-	switch (addr & 0x3FFFFFF) {
+	switch (addr & 0xFFF) {
 		case 0x000: case 0x004: case 0x008: case 0x00C:
 			return;
 		case 0x010:

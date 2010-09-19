@@ -6,11 +6,11 @@
 struct arm_state arm;
 
 void cpu_int_check() {
-	if (current_ints[0] != 0 && !(arm.cpsr_low28 & 0x80))
+	if (arm.interrupts & ~arm.cpsr_low28 & 0x80)
 		cpu_events |= EVENT_IRQ;
 	else
 		cpu_events &= ~EVENT_IRQ;
-	if (current_ints[1] != 0 && !(arm.cpsr_low28 & 0x40))
+	if (arm.interrupts & ~arm.cpsr_low28 & 0x40)
 		cpu_events |= EVENT_FIQ;
 	else
 		cpu_events &= ~EVENT_FIQ;
@@ -103,11 +103,13 @@ inline void __attribute__((fastcall)) set_spsr(u32 spsr, u32 mask) {
 	*ptr_spsr() ^= (*ptr_spsr() ^ spsr) & mask;
 }
 
-/* Retrieve an ARM register. Deal with the annoying fact that accessing R15 (PC)
- * gives you the next instruction plus 4. (But when *modifying* PC, you set it
- * to the next instruction to execute plus NOTHING. What were they thinking?!) */
+/* Retrieve an ARM register. Deal with the annoying effect of the CPU pipeline
+ * that accessing R15 (PC) gives you the next instruction plus 4 (8 for str/stm) */
 static u32 get_reg_pc(int rn) {
 	return arm.reg[rn] + ((rn == 15) ? 4 : 0);
+}
+static u32 get_reg_pc_store(int rn) {
+	return arm.reg[rn] + ((rn == 15) ? 8 : 0);
 }
 static u32 get_reg_pc_thumb(int rn) {
 	return arm.reg[rn] + ((rn == 15) ? 2 : 0);
@@ -567,8 +569,8 @@ void cpu_interpret_instruction(u32 insn) {
 			if (insn & (1 << 22)) set_reg_pc_bx(data_reg, read_byte(addr));
 			else                  set_reg_pc_bx(data_reg, read_word(addr));
 		} else {
-			if (insn & (1 << 22)) write_byte(addr, get_reg_pc(data_reg));
-			else                  write_word(addr, get_reg_pc(data_reg));
+			if (insn & (1 << 22)) write_byte(addr, get_reg_pc_store(data_reg));
+			else                  write_word(addr, get_reg_pc_store(data_reg));
 		}
 		if (writeback)
 			set_reg(base_reg, addr + offset);
@@ -623,7 +625,7 @@ void cpu_interpret_instruction(u32 insn) {
 			if (insn & (1 << 20)) // Load
 				set_reg_pc_bx(15, read_word(addr));
 			else // Store
-				write_word(addr, get_reg_pc(15) + 4); // +4: special case for some CPU
+				write_word(addr, get_reg_pc_store(15));
 		}
 		arm.reg[base_reg] = new_base;
 		if ((~insn & (1 << 22 | 1 << 20 | 1 << 15)) == 0)
@@ -666,7 +668,7 @@ void cpu_interpret_instruction(u32 insn) {
 			case 0x070080: /* MCR p15, 0, <Rd>, c7, c0, 4: Wait for interrupt */
 				cycle_count += cycle_count_delta;
 				cycle_count_delta = 0;
-				if ((current_ints[0] | current_ints[1]) == 0) {
+				if (arm.interrupts == 0) {
 					arm.reg[15] -= 4;
 					cpu_events |= EVENT_WAITING;
 				}

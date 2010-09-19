@@ -39,6 +39,7 @@ u8 usblink_header_checksum(struct packet *packet) {
 }
 
 static void dump_packet(char *type, void *data, u32 size) {
+#if 0
 	if (log_enabled[LOG_USB]) {
 		u32 i;
 		logprintf(LOG_USB, "%s", type);
@@ -48,6 +49,7 @@ static void dump_packet(char *type, void *data, u32 size) {
 			logprintf(LOG_USB, "...");
 		logprintf(LOG_USB, "\n");
 	}
+#endif
 }
 
 struct packet usblink_send_buffer;

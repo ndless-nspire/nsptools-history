@@ -31,23 +31,71 @@ void gpio_write(u32 addr, u32 value) {
 	bad_write_word(addr, value);
 }
 
-/* 90010000 */
-/* This timer apparently updates at the speed of the APB (22.5 MHz).
- * Proper implementation could be tricky to do efficiently, so this is just a hack for now */
-u32 fast_timer_read(u32 addr) {
-	switch (addr & 0xFFFF) {
-		case 0x00: return 0;
+/* 90010000, 900C0000, 900D0000 */
+struct timerpair timerpairs[3];
+#define ADDR_TO_TP(addr) (&timerpairs[((addr) >> 16) % 5])
+
+u32 timer_read(u32 addr) {
+	struct timerpair *tp = ADDR_TO_TP(addr);
+	cycle_count_delta = 0; // Avoid slowdown by fast-forwarding through polling loops
+	switch (addr & 0x003F) {
+		case 0x00: return tp->timers[0].value;
+		case 0x04: return tp->timers[0].divider;
+		case 0x08: return tp->timers[0].control;
+		case 0x0C: return tp->timers[1].value;
+		case 0x10: return tp->timers[1].divider;
+		case 0x14: return tp->timers[1].control;
+		case 0x18: case 0x1C: case 0x20: case 0x24: case 0x28: case 0x2C:
+			return tp->completion_value[((addr & 0x3F) - 0x18) >> 2];
 	}
 	return bad_read_word(addr);
 }
-void fast_timer_write(u32 addr, u32 value) {
-	static u32 scale;
-	switch (addr & 0xFFFF) {
-		case 0x00: cycle_count_delta += 4 * scale * (value & 0xFFFF); return;
-		case 0x04: scale = value; return;
-		case 0x08: return;
+void timer_write(u32 addr, u32 value) {
+	struct timerpair *tp = ADDR_TO_TP(addr);
+	switch (addr & 0x003F) {
+		case 0x00: tp->timers[0].start_value = tp->timers[0].value = value; return;
+		case 0x04: tp->timers[0].divider = value; return;
+		case 0x08: tp->timers[0].control = value & 0x1F; return;
+		case 0x0C: tp->timers[1].start_value = tp->timers[1].value = value; return;
+		case 0x10: tp->timers[1].divider = value; return;
+		case 0x14: tp->timers[1].control = value & 0x1F; return;
+		case 0x18: case 0x1C: case 0x20: case 0x24: case 0x28: case 0x2C:
+			tp->completion_value[((addr & 0x3F) - 0x18) >> 2] = value; return;
+		case 0x30: return;
 	}
 	bad_write_word(addr, value);
+}
+static void timer_int_check(struct timerpair *tp) {
+	int_set(INT_TIMER0 + (tp - timerpairs), tp->int_status & tp->int_mask);
+}
+void timer_advance(struct timerpair *tp, int ticks) {
+	struct timer *t;
+	for (t = &tp->timers[0]; t != &tp->timers[2]; t++) {
+		int newticks;
+		if (t->control & 0x10)
+			continue;
+		for (newticks = t->ticks + ticks; newticks > t->divider; newticks -= (t->divider + 1)) {
+			int compl = t->control & 7;
+			t->ticks = 0;
+
+			if (compl == 0 && t->value == 0)
+				/* nothing */;
+			else if (compl != 0 && compl != 7 && t->value == tp->completion_value[compl - 1])
+				t->value = t->start_value;
+			else
+				t->value += (t->control & 8) ? +1 : -1;
+
+			if (t == &tp->timers[0]) {
+				for (compl = 0; compl < 6; compl++) {
+					if (t->value == tp->completion_value[compl]) {
+						tp->int_status |= 1 << compl;
+						timer_int_check(tp);
+					}
+				}
+			}
+		}
+		t->ticks = newticks;
+	}
 }
 
 /* 90020000 */
@@ -62,16 +110,16 @@ u8 serial_LCR;
 void serial_byte_in(u8 byte) {
 	serial_rx_char = byte;
 	serial_rx_ready = 1;
-	int_activate(1 << INT_SERIAL);
+	int_set(INT_SERIAL, 1);
 }
 
 static inline void serial_int_check() {
 	if (!(serial_rx_ready || serial_tx_ready))
-		int_deactivate(1 << INT_SERIAL);
+		int_set(INT_SERIAL, 0);
 }
 
 u32 serial_read(u32 addr) {
-	switch (addr & 0xFFFF) {
+	switch (addr & 0x3F) {
 		case 0x00:
 			if (serial_LCR & 0x80)
 				return serial_DLL; /* Divisor Latch LSB */
@@ -102,14 +150,14 @@ u32 serial_read(u32 addr) {
 	return bad_read_word(addr);
 }
 void serial_write(u32 addr, u32 value) {
-	switch (addr & 0xFFFF) {
+	switch (addr & 0x3F) {
 		case 0x00:
 			if (serial_LCR & 0x80) {
 				serial_DLL = value;
 			} else {
 				putchar(value);
 				serial_tx_ready = 1;
-				int_activate(1 << INT_SERIAL);
+				int_set(INT_SERIAL, 1);
 			}
 			return;
 		case 0x04:
@@ -180,11 +228,13 @@ void rtc_write(u32 addr, u32 value) {
 }
 
 /* 900A0000 */
-u32 reg_900A0004;
 u32 unknown_900A_read(u32 addr) {
-	switch (addr & 0xFFFF) {
+	struct timerpair *tp = &timerpairs[(addr - 0x10) >> 3 & 3];
+	switch (addr & 0x0FFF) {
 		case 0x00: return 0;
-		case 0x04: return reg_900A0004;
+		case 0x04: return 0;
+		case 0x10: case 0x18: case 0x20: return tp->int_status;
+		case 0x14: case 0x1C: case 0x24: return tp->int_mask;
 		/* Registers 28 and 2C give a 64-bit number (28 is low, 2C is high),
 		 * which comprises 56 data bits and 8 parity checking bits:
 		 *    Bit 0 is a parity check of all data bits
@@ -202,13 +252,12 @@ u32 unknown_900A_read(u32 addr) {
 	return bad_read_word(addr);
 }
 void unknown_900A_write(u32 addr, u32 value) {
-	switch (addr & 0xFFFF) {
-		case 0x04: reg_900A0004 = value; return;
+	struct timerpair *tp = &timerpairs[(addr - 0x10) >> 3 & 3];
+	switch (addr & 0x0FFF) {
+		case 0x04: return;
 		case 0x08: cpu_events |= EVENT_RESET; return;
-		case 0x18: int_deactivate(1 << INT_TIMER1); return;
-		case 0x1C: return;
-		case 0x20: int_deactivate(1 << INT_TIMER2); return;
-		case 0x24: return;
+		case 0x10: case 0x18: case 0x20: tp->int_status &= ~value; timer_int_check(tp); return;
+		case 0x14: case 0x1C: case 0x24: tp->int_mask = value & 0x3F; timer_int_check(tp); return;
 		case 0xF04: return;
 	}
 	bad_write_word(addr, value);
@@ -216,7 +265,7 @@ void unknown_900A_write(u32 addr, u32 value) {
 
 /* 900B0000 */
 u32 unknown_900B_read(u32 addr) {
-	switch (addr & 0xFFFF) {
+	switch (addr & 0x003F) {
 		/* Register 0 includes the speeds of the various clocks.
 		 *    Bits 1-7:   Multiply by 2 to get base/CPU ratio
 		 *    Bit  8:     If set, base clock is 27 MHz, else see bits 16-20
@@ -235,7 +284,7 @@ u32 unknown_900B_read(u32 addr) {
 	return bad_read_word(addr);
 }
 void unknown_900B_write(u32 addr, u32 value) {
-	switch (addr & 0xFFFF) {
+	switch (addr & 0x003F) {
 		case 0x00: return;
 		case 0x04: return;
 		case 0x08: return;
@@ -247,41 +296,11 @@ void unknown_900B_write(u32 addr, u32 value) {
 	bad_write_word(addr, value);
 }
 
-/* 900C0000, 900D0000: Timers */
-struct timer timer[2];
-u32 timer_read(u32 addr) {
-	static u16 timer0C;
-	struct timer *t = &timer[addr >> 16 & 1];
-	switch (addr & 0xFFFF) {
-		case 0x00: return t->count;
-		case 0x08: return 0;
-		case 0x0C: return --timer0C; // break timing loops
-	}
-	return bad_read_word(addr);
-}
-void timer_write(u32 addr, u32 value) {
-	struct timer *t = &timer[addr >> 16 & 1];
-	switch (addr & 0xFFFF) {
-		case 0x00: t->counts_per_int = value; t->count = (value - 1) & 0xFFFF; return;
-		case 0x04: t->ticks_per_count = value; return;
-		case 0x08: return;
-		case 0x0C: return;
-		case 0x14: return;
-		case 0x18: return;
-		case 0x1C: return;
-		case 0x30: return;
-	}
-	bad_write_word(addr, value);
-}
-
 /* 900E0000 */
 u32 keypad_int_active;
 u32 keypad_int_enable;
 void keypad_int_check() {
-	if (keypad_int_enable & keypad_int_active)
-		int_activate(1 << INT_KEYPAD);
-	else
-		int_deactivate(1 << INT_KEYPAD);
+	int_set(INT_KEYPAD, keypad_int_enable & keypad_int_active);
 }
 u32 keypad_read(u32 addr) {
 	switch (addr & 0xFFFF) {
@@ -351,7 +370,7 @@ const struct {
 	void (*write)(u32 addr, u32 value);
 } apb_map[0x12] = {
 	{ gpio_read,         gpio_write         },
-	{ fast_timer_read,   fast_timer_write   },
+	{ timer_read,        timer_write        },
 	{ serial_read,       serial_write       },
 	{ bad_read_word,     bad_write_word     },
 	{ bad_read_word,     bad_write_word     },
@@ -407,10 +426,9 @@ struct apb_saved_state {
 	u8 serial_DLM;
 	u8 serial_IER;
 	u8 serial_LCR;
-	u32 reg_900A0004;
-	struct timer timer[2];
 	u32 keypad_int_active;
 	u32 keypad_int_enable;
+	struct timerpair timerpairs[3];
 };
 
 void *apb_save_state(size_t *size) {
@@ -423,10 +441,9 @@ void *apb_save_state(size_t *size) {
 	state->serial_DLM = serial_DLM;
 	state->serial_IER = serial_IER;
 	state->serial_LCR = serial_LCR;
-	state->reg_900A0004 = reg_900A0004;
-	memcpy(&state->timer, timer, sizeof(timer));
 	state->keypad_int_active = keypad_int_active;
 	state->keypad_int_enable = keypad_int_enable;
+	memcpy(&state->timerpairs, timerpairs, sizeof(timerpairs));
 	return state;
 }
 
@@ -439,8 +456,7 @@ void apb_reload_state(void *state) {
 	serial_DLM = _state->serial_DLM;
 	serial_IER = _state->serial_IER;
 	serial_LCR = _state->serial_LCR;
-	reg_900A0004 = _state->reg_900A0004;
-	memcpy(timer, &_state->timer, sizeof(timer));
 	keypad_int_active = _state->keypad_int_active;
 	keypad_int_enable = _state->keypad_int_enable;
+	memcpy(timerpairs, &_state->timerpairs, sizeof(timerpairs));
 }

@@ -1,6 +1,6 @@
 include Makefile.config
 vpath = ..
-OBJ = apb.o asmcode.o cpu.o debug.o emu.o flash.o gui.o lcd.o link.o memory.o mmu.o resource.o sha256.o translate.o usblink.o
+OBJ = apb.o asmcode.o cpu.o debug.o emu.o flash.o gui.o interrupt.o lcd.o link.o memory.o mmu.o resource.o sha256.o translate.o usblink.o
 
 FLAGS := $(FLAGS) -W -Wall
 

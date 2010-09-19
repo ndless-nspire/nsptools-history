@@ -48,6 +48,7 @@ void write_action(u32 *flags, u32 addr) {
 		debugger();
 	}
 	if (*flags & RF_CODE_TRANSLATED) {
+		logprintf(LOG_CPU, "Wrote to translated code at %08x. Deleting translations.\n", addr);
 		invalidate_translation(*flags >> RFS_TRANSLATION_INDEX);
 	} else {
 		*flags &= ~RF_CODE_NO_TRANSLATE;
@@ -189,15 +190,15 @@ void sdio_write_word(u32 addr, u32 value) {
 
 /* B0000000 (and B4000000?): USB */
 u8 usb_read_byte(u32 addr) {
-	if ((addr & 0x3FFFFFF) == 0x100) return 0x40; // operational registers start at +40
+	if ((addr & 0x1FF) == 0x100) return 0x40; // operational registers start at +40
 	return bad_read_byte(addr);
 }
 u16 usb_read_half(u32 addr) {
-	if ((addr & 0x3FFFFFF) == 0x102) return 0x0100; // EHCI 1.0
+	if ((addr & 0x1FF) == 0x102) return 0x0100; // EHCI 1.0
 	return bad_read_half(addr);
 }
 u32 usb_read_word(u32 addr) {
-	switch (addr & 0x3FFFFFF) {
+	switch (addr & 0x1FF) {
 		case 0x00C: return 0;
 		case 0x100: return 0x01000040; // EHCI 1.0, operational registers start at +40
 		case 0x104: return 0x00010011; // Port indicator control, port power control, 1 port
@@ -219,7 +220,7 @@ u32 usb_read_word(u32 addr) {
 	return bad_read_word(addr);
 }
 void usb_write_word(u32 addr, u32 value) {
-	switch (addr & 0x3FFFFFF) {
+	switch (addr & 0x1FF) {
 		case 0x080: return; // used by diags
 		case 0x084: return; // used by diags
 		case 0x140: return;
@@ -284,7 +285,7 @@ static void adc_write_word(u32 addr, u32 value) {
 			case 0x04: // Acknowledge interrupt?
 				adc_int_active &= ~value;
 				if (adc_int_active == 0)
-					int_deactivate(1 << INT_ADC);
+					int_set(INT_ADC, 0);
 				return;
 			case 0x08: // Interrupt enable?
 				adc_int_enable = value;
@@ -299,7 +300,7 @@ static void adc_write_word(u32 addr, u32 value) {
 				if (value & 1) {
 					// start a measurement, I guess
 					adc_int_active |= 2 << (n << 2);
-					int_activate(1 << INT_ADC);
+					int_set(INT_ADC, 1);
 				}
 				return;
 			case 0x04:
@@ -310,79 +311,6 @@ static void adc_write_word(u32 addr, u32 value) {
 		}
 	}
 	return bad_write_word(addr, value);
-}
-
-/* DC000000: Interrupt controller */
-u32 active_ints;
-u32 current_ints[2];
-u32 enabled_ints[2];
-
-static u32 int_read_word(u32 addr) {
-	int is_fiq = addr >> 8 & 1;
-	int i;
-	switch (addr & 0x3FFFFFF) {
-		case 0x000: case 0x100: return current_ints[is_fiq];
-		case 0x004: case 0x104: return active_ints;
-		case 0x008: case 0x108:
-		case 0x00C: case 0x10C: return enabled_ints[is_fiq];
-		case 0x020: case 0x120: return 0;
-		case 0x024: case 0x124: // Current interrupt type
-			for (i = 0; i < 32; i++)
-				if (current_ints[addr >> 8 & 1] & (1 << i))
-					return i;
-			error("No interrupt");
-		case 0x028: case 0x128: return 0;
-		case 0x200: return 0;
-		case 0x204: return 0;
-		case 0x208: return 0;
-	}
-	return bad_read_word(addr);
-}
-static void int_write_word(u32 addr, u32 value) {
-	int is_fiq = addr >> 8 & 1;
-	switch (addr & 0x3FFFFFF) {
-		case 0x004: case 0x104: // Acknowledge?
-			current_ints[is_fiq] &= (~value | (active_ints & enabled_ints[is_fiq]));
-			cpu_int_check();
-			return;
-		case 0x008: case 0x108: // Enable
-			enabled_ints[is_fiq] |= value;
-			current_ints[is_fiq] |= (active_ints & enabled_ints[is_fiq]);
-			cpu_int_check();
-			return;
-		case 0x00C: case 0x10C: // Disable
-			enabled_ints[is_fiq] &= ~value;
-			// Should this also remove them from the current set?
-			return;
-		case 0x02C: case 0x12C: return;
-		case 0x200: return;
-		case 0x204: return;
-		case 0x208: return;
-		case 0x304: return;
-		case 0x30C: return;
-		case 0x31C: return;
-		case 0x320: return;
-		case 0x324: return;
-		case 0x32C: return;
-		case 0x338: return;
-		case 0x340: return;
-		case 0x348: return;
-		case 0x34C: return;
-		case 0x358: return;
-	}
-	return bad_write_word(addr, value);
-}
-
-void int_activate(u32 int_mask) {
-	active_ints |= int_mask;
-	current_ints[0] |= int_mask & enabled_ints[0];
-	current_ints[1] |= int_mask & enabled_ints[1];
-	cpu_int_check();
-}
-
-void int_deactivate(u32 int_mask) {
-	active_ints &= ~int_mask;
-	// Should this also remove them from the current set?
 }
 
 /* -------------------------------------------------------------------------- */
@@ -479,9 +407,6 @@ struct memory_saved_state {
 	u8 mem_and_flags[MEM_SIZE * 2];
 	u32 adc_int_active;
 	u32 adc_int_enable;
-	u32 active_ints;
-	u32 current_ints[2];
-	u32 enabled_ints[2];
 };
 
 void *memory_save_state(size_t *size) {
@@ -490,9 +415,6 @@ void *memory_save_state(size_t *size) {
 	memcpy(&state->mem_and_flags, mem_and_flags, sizeof(mem_and_flags));
 	state->adc_int_active = adc_int_active;
 	state->adc_int_enable = adc_int_enable;
-	state->active_ints = active_ints;
-	memcpy(&state->current_ints, current_ints, sizeof(current_ints));
-	memcpy(&state->enabled_ints, enabled_ints, sizeof(enabled_ints));
 	return state;
 }
 
@@ -501,7 +423,4 @@ void memory_reload_state(void *state) {
 	memcpy(mem_and_flags, &_state->mem_and_flags, sizeof(mem_and_flags));
 	adc_int_active = _state->adc_int_active;
 	adc_int_enable = _state->adc_int_enable;
-	active_ints = _state->active_ints;
-	memcpy(current_ints, &_state->current_ints, sizeof(current_ints));
-	memcpy(enabled_ints, &_state->enabled_ints, sizeof(enabled_ints));
 }

@@ -10,7 +10,7 @@ Ncubate Emu is an enhanced of the TI-Nspire emulator nspire_emu.
 Features
 ========
 
-Ncubate adds the following features to nspire_emu v031:
+Ncubate adds the following features to nspire_emu v032:
 
 GUI:
 - NEW: 'File -> Save State' let you save the whole emulator state to a file 
@@ -27,13 +27,10 @@ Debugger:
   to jump over an halt() call in an Ndless program.
 - NEW: Command 'ww' to write a word to an address.
 - NEW: Command 'ss' to search a string in memory.
-- NEW: "+x" is the default flag for the breakpint command 'k' 
+- NEW: "+x" is the default flag for the breakpoint command 'k' 
 - CHG: The breakpoint command 'k' takes as parameter a virtual address instead 
   of a physical address.
 - FIX: Command 'd' doesn't crash if the parameter is missing
-
-CPU:
-- FIX: stm instructions push pc+12 instead of pc+8
 
 Flash:
 - FIX: Flash image closed when synced to disk, for external edition
@@ -60,10 +57,10 @@ Olivier Armand aka ExtendeD  -  < olivier dot calc at gmail dot com >
 Changelog
 =========
 
-* v031b - <unreleased>
+* v032a - <unreleased>
+ - Migrate to nspire_emu v032
  - ADD: Debugger command 'ss'
  - FIX: Debugger command 'j' supports thumb state
- - FIX: stm instructions push pc+12 instead of pc+8
 
 * v031a - 2010/08/30
  - Migrate to nspire_emu v031

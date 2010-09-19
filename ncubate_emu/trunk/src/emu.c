@@ -153,7 +153,7 @@ static void get_saved_state_filename(char out_filename[MAX_PATH]) {
 }
 
 /* increment each time the save file format is changed */
-#define SAVE_STATE_VERSION 1
+#define SAVE_STATE_VERSION 2
 void save_state(void) {
 	char state_filename[MAX_PATH+1];
 	get_saved_state_filename(state_filename);
@@ -183,6 +183,7 @@ void save_state(void) {
 	SAVE_STATE_WRITE_CHUNK(debug);
 	SAVE_STATE_WRITE_CHUNK(flash);
 	SAVE_STATE_WRITE_CHUNK(gui);
+	SAVE_STATE_WRITE_CHUNK(int);
 	SAVE_STATE_WRITE_CHUNK(lcd);
 	SAVE_STATE_WRITE_CHUNK(link);
 	SAVE_STATE_WRITE_CHUNK(mmu);
@@ -247,6 +248,7 @@ bool reload_state(void) {
 	RELOAD_STATE_READ_CHUNK(debug);
 	RELOAD_STATE_READ_CHUNK(flash);
 	RELOAD_STATE_READ_CHUNK(gui);
+	RELOAD_STATE_READ_CHUNK(int);
 	RELOAD_STATE_READ_CHUNK(lcd);
 	RELOAD_STATE_READ_CHUNK(link);
 	RELOAD_STATE_READ_CHUNK(mmu);
@@ -344,17 +346,17 @@ int main(int argc, char **argv) {
 				default:
 usage:
 					printf(
-						"nspire emulator v0.31\n"
-						"  /1=boot1      - location of BOOT1 image\n"
-						"  /B=boot2      - location of decompressed BOOT2 image\n"
-						"  /C            - emulate CAS hardware version\n"
-						"  /D            - enter debugger at start\n"
-						"  /F=file       - flash image filename\n"
-						"  /Kn           - set keypad type (2 = TI-84 Plus, 3 = Touchpad)\n"
-						"  /N            - create new flash image\n"
-						"  /PB=boot2.img - preload flash with BOOT2 (.img file)\n"
-						"  /PD=diags.img - preload flash with DIAGS image\n"
-						"  /PO=osfile    - preload flash with OS (.tnc/.tno file)\n");
+						"nspire emulator v0.32\n"
+						"  /1=boot1	- location of BOOT1 image\n"
+						"  /B=boot2	- location of decompressed BOOT2 image\n"
+						"  /C		- emulate CAS hardware version\n"
+						"  /D		- enter debugger at start\n"
+						"  /F=file	- flash image filename\n"
+						"  /Kn		- set keypad type (2 = TI-84 Plus, 3 = Touchpad)\n"
+						"  /N		- create new flash image\n"
+						"  /PB=boot2.img	- preload flash with BOOT2 (.img file)\n"
+						"  /PD=diags.img	- preload flash with DIAGS image\n"
+						"  /PO=osfile	- preload flash with OS (.tnc/.tno file)\n");
 					return 1;
 			}
 		} else {
@@ -440,7 +442,7 @@ reset:
 			memcpy(MEM_PTR(0xA4012ECC), (void *)key_map, 0x12);
 	
 			/* Disable all FIQs (since BOOT2 neglects to do this) */
-			enabled_ints[1] = 0;
+			intr.mask[1] = 0;
 		} else {
 			/* Start from BOOT1. */
 			arm.reg[15] = 0;
@@ -448,6 +450,16 @@ reset:
 		arm.control = 0x00050078;
 		addr_cache_flush();
 		flush_translations();
+		
+		intr.noninverted = -1;
+		intr.priority_limit[0] = 8;
+		intr.priority_limit[1] = 8;
+	
+		/* Halt the hardware timers */
+		for (i = 0; i < 3; i++) {
+			timerpairs[i].timers[0].control = 0x10;
+			timerpairs[i].timers[1].control = 0x10;
+		}
 	}
 
 	setjmp(restart_after_exception);
@@ -478,22 +490,9 @@ reset:
 		cycle_count       += 2812;
 		cycle_count_delta -= 2812;
 
-		if (++timer[0].ticks > timer[0].ticks_per_count) {
-			timer[0].ticks = 0;
-			if (--timer[0].count < 0) {
-				timer[0].count = (timer[0].counts_per_int - 1) & 0xFFFF;
-				if (reg_900A0004 & 0x80) // just guessing here...
-					int_activate(1 << INT_TIMER1);
-			}
-		}
-
-		if (++timer[1].ticks > timer[1].ticks_per_count) {
-			timer[1].ticks = 0;
-			if (--timer[1].count < 0) {
-				timer[1].count = (timer[1].counts_per_int - 1) & 0xFFFF;
-				int_activate(1 << INT_TIMER2);
-			}
-		}
+		timer_advance(&timerpairs[0], 703);
+		timer_advance(&timerpairs[1], 1);
+		timer_advance(&timerpairs[2], 1);
 
 		// after polling keypad as a result of getting the second interrupt,
 		// OS 2.1 does not wake up keypad task until it receives this one
@@ -549,6 +548,7 @@ reset:
 			if (!turbo_mode)
 				WaitForSingleObject(hTimerEvent, INFINITE);
 
+#if 0
 			if (log_enabled[LOG_ICOUNT]) {
 				static LARGE_INTEGER interval_start;
 				LARGE_INTEGER next_start;
@@ -565,6 +565,7 @@ reset:
 				prev_cycles = cycles;
 				interval_start = next_start;
 			}
+#endif
 		}
 	}
 	return 0;

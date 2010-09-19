@@ -66,7 +66,22 @@ fault_proc prefetch_abort, data_abort;
 
 void serial_byte_in(u8 byte);
 
-extern u32 reg_900A0004;
+extern struct timerpair {
+	struct timer {
+		u16 ticks;
+		u16 start_value;     /* Write value of +00 */
+		u16 value;           /* Read value of +00  */
+		u16 divider;         /* Value of +04 */
+		u16 control;         /* Value of +08 */
+	} timers[2];
+	u16 completion_value[6];
+	u8 int_mask;
+	u8 int_status;
+} timerpairs[3];
+void timer_advance(struct timerpair *tp, int ticks);
+
+extern u32 keypad_int_active;
+extern void keypad_int_check();
 
 u8 apb_read_byte(u32 addr);
 u16 apb_read_half(u32 addr);
@@ -74,17 +89,6 @@ u32 apb_read_word(u32 addr);
 void apb_write_byte(u32 addr, u8 value);
 void apb_write_half(u32 addr, u16 value);
 void apb_write_word(u32 addr, u32 value);
-
-extern struct timer {
-	int counts_per_int;  /* Write value of +0000 */
-	int count;           /* Read value of +0000  */
-	int ticks_per_count; /* Write value of +0004 */
-	int ticks;
-} timer[2];
-
-extern u32 keypad_int_active;
-extern void keypad_int_check();
-
 void *apb_save_state(size_t *size);
 void apb_reload_state(void *state);
 
@@ -105,6 +109,8 @@ struct arm_state {  // Remember to update asmcode.S if this gets rearranged
 	u32 r13_svc[2], spsr_svc;
 	u32 r13_abt[2], spsr_abt;
 	u32 r13_und[2], spsr_und;
+
+	u8  interrupts;
 
 	/* CP15 registers */
 	u32 control;
@@ -176,6 +182,35 @@ extern HWND hwndMain;
 #endif
 void *gui_save_state(size_t *size);
 void gui_reload_state(void *state);
+
+/* Declarations for interrupt.c */
+
+#define INT_SERIAL 1
+#define INT_USB    8
+#define INT_ADC    11
+#define INT_KEYPAD 16
+#define INT_TIMER0 17
+#define INT_TIMER1 18
+#define INT_TIMER2 19
+
+extern struct interrupt_state {
+	u32 active;
+	u32 raw_status;         // .active ^ ~.noninverted
+	u32 sticky_status;      // set on rising transition of .raw_status
+	u32 status;             // +x04: mixture of bits from .raw_status and .sticky_status
+	                        //       (determined by .sticky)
+	u32 mask[2];            // +x08: enabled interrupts
+	u8  prev_pri_limit[2];  // +x28: saved .priority_limit from reading +x24
+	u8  priority_limit[2];  // +x2C: interrupts with priority >= this value are disabled
+	u32 noninverted;        // +200: which interrupts not to invert in .raw_status
+	u32 sticky;             // +204: which interrupts to use .sticky_status
+	u8  priority[32];       // +3xx: priority per interrupt (0=max, 7=min)
+} intr;
+u32 int_read_word(u32 addr);
+void int_write_word(u32 addr, u32 value);
+void int_set(u32 int_num, bool on);
+void *int_save_state(size_t *size);
+void int_reload_state(void *state);
 
 /* Declarations for sha256.c */
 
@@ -253,18 +288,6 @@ u32 bad_read_word(u32 addr);
 void bad_write_byte(u32 addr, u8 value);
 void bad_write_half(u32 addr, u16 value);
 void bad_write_word(u32 addr, u32 value);
-
-extern u32 active_ints;
-extern u32 current_ints[2];
-extern u32 enabled_ints[2];
-#define INT_SERIAL 1
-#define INT_USB    8
-#define INT_ADC    11
-#define INT_KEYPAD 16
-#define INT_TIMER1 18
-#define INT_TIMER2 19
-void int_activate(u32 int_mask);
-void int_deactivate(u32 int_mask);
 
 u32 __attribute__((fastcall)) slow_read_byte(u32 addr);
 u32 __attribute__((fastcall)) slow_read_half(u32 addr);
