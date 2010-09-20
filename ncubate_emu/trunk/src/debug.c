@@ -343,7 +343,7 @@ void debugger() {
 				continue;
 			}
 			FILE *f = fopen(filename, "wb");
-			if (!f || (!fwrite(ram, size, 1, f) | fclose(f))) {
+			if (!f || (!fwrite(ram, size, 1, f) || fclose(f))) {
 				perror(filename);
 				continue;
 			}

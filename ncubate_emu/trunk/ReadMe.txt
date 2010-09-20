@@ -31,6 +31,7 @@ Debugger:
 - CHG: The breakpoint command 'k' takes as parameter a virtual address instead 
   of a physical address.
 - FIX: Command 'd' doesn't crash if the parameter is missing
+- FIX: Broken 'w' command
 
 Flash:
 - FIX: Flash image closed when synced to disk, for external edition
@@ -61,6 +62,7 @@ Changelog
  - Migrate to nspire_emu v032
  - ADD: Debugger command 'ss'
  - FIX: Debugger command 'j' supports thumb state
+ - FIX: Broken debugger command 'w'
 
 * v031a - 2010/08/30
  - Migrate to nspire_emu v031
