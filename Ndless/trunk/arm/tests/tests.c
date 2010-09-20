@@ -37,7 +37,9 @@ int main(int argc, char *argv[]) {
 
 	assertUIntEquals("argc", 1, argc);
 	assertStrEquals("argv,strrchr", "ndless_tests.tns", strrchr(argv[0], '/') + 1);
-
+	
+	assertUIntEquals("abs,min,max", 4, max(min(abs(-3), 2), 4));
+	
 	ret = sprintf(buf100, "%i%i%i", 1, 2, 3);
 	assertStrEquals("_syscallsvar >4 params", "123", buf100); // tests sprintf. uses _syscallvar_savedlr.
 	assertUIntEquals("_syscallsvar return", 3, ret);

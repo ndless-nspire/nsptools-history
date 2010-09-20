@@ -193,13 +193,21 @@ typedef enum bool {FALSE = 0, TRUE = 1} BOOL;
 typedef struct{} FILE;
 typedef unsigned long size_t;
 
-  typedef struct {
-    int row, col;
-  } t_key;
+typedef struct {
+  int row, col;
+} t_key;
 
-  #define ADDR_(addr)             (void*)addr
-  #define KEY_(row, col)          (t_key){row, col}
-  #define isKeyPressed(key)       (!((*(volatile short*)(KEY_MAP + (key).row)) & (key).col))
+#define ADDR_(addr)             (void*)addr
+#define KEY_(row, col)          (t_key){row, col}
+#define isKeyPressed(key)       (!((*(volatile short*)(KEY_MAP + (key).row)) & (key).col))
+
+#ifndef abs
+#define abs(x) ({typeof(x) __x = (x); __x >= 0 ? __x : -__x;})
+#endif
+#ifndef max
+#define max(a,b) ({typeof(a) __a = (a); typeof(b) __b = (b); (__a > __b) ? __a : __b;})
+#define min(a,b) ({typeof(a) __a = (a); typeof(b) __b = (b); (__a < __b) ? __a : __b;})
+#endif
 
 /***********************************
  * Misc inline functions

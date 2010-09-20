@@ -243,7 +243,7 @@ Changelog
   - CHG: 'demo' renamed to 'particles' and moved to samples/
  Includes:
   - NEW: stat, NU_Get_First, NU_Get_Next, NU_Done, strcpy, strcmp, strlen, 
-         strncat, strrchar, vsprintf, exit
+         strncat, strrchar, vsprintf, abs, min, max, exit
  - NEW: va_list, va_start, va_arg, va_end (thanks apcalc)
   - FIX: isKeyPressed could sometimes hang in while loops (missing 
          volatile keyword)
