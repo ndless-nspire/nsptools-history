@@ -136,7 +136,8 @@ void debugger() {
 				"t+ - enable instruction translation\n"
 				"t- - disable instruction translation\n"
 				"u[a|t] [address] - disassemble memory\n"
-				"w <file> <start> <size> - write memory to file\n"
+				"wm <file> <start> <size> - write memory to file\n"
+				"wf <file> <start> [size] - write file to memory\n"
 				"ww <address> <value> - write a word to memory\n");
 		} else if (!stricmp(cmd, "b")) {
 			char *fp = strtok(NULL, " \n");
@@ -333,17 +334,35 @@ void debugger() {
 			do_translate = 0;
 		} else if (!stricmp(cmd, "q")) {
 			exit(1);
-		} else if (!stricmp(cmd, "w")) {
+		} else if (!stricmp(cmd, "wm") || !stricmp(cmd, "wf")) {
+			bool frommem = cmd[1] == 'm';
 			char *filename = strtok(NULL, " \n");
-			u32 start = strtoul(strtok(NULL, " \n"), 0, 16);
-			u32 size = strtoul(strtok(NULL, " \n"), 0, 16);
-			void *ram = phys_mem_ptr(start, size);
+			char *start_str = strtok(NULL, " \n");
+			char *size_str = strtok(NULL, " \n");
+			if (!start_str) {
+				printf("Parameters are missing.\n");
+				continue;
+			}
+			u32 start = strtoul(start_str, 0, 16);
+			u32 size = 0;
+			if (size_str)
+				size = strtoul(size_str, 0, 16);
+			void *ram = virt_mem_ptr(start, size);
 			if (!ram) {
 				printf("Address range %08x-%08x is not in RAM.\n", start, start + size - 1);
 				continue;
 			}
-			FILE *f = fopen(filename, "wb");
-			if (!f || (!fwrite(ram, size, 1, f) || fclose(f))) {
+			FILE *f = fopen(filename, frommem ? "wb" : "rb");
+			if (!f) {
+				perror(filename);
+				continue;
+			}
+			if (!size && !frommem) {
+				fseek (f, 0, SEEK_END);
+				size = ftell(f);
+				rewind(f);
+			}
+			if (!(frommem ? fwrite(ram, size, 1, f) : fread(ram, size, 1, f)) || fclose(f)) {
 				perror(filename);
 				continue;
 			}

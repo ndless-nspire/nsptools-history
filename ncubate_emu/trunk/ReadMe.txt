@@ -28,8 +28,12 @@ Debugger:
 - NEW: Command 'ww' to write a word to an address.
 - NEW: Command 'ss' to search a string in memory.
 - NEW: "+x" is the default flag for the breakpoint command 'k' 
+- NEW: Command 'wf' to load a file to memory.
 - CHG: The breakpoint command 'k' takes as parameter a virtual address instead 
   of a physical address.
+- CHG: Debugger command 'w' renamed to 'wm'
+- CHG: The command 'wm' takes as parameter a virtual address instead of a 
+  physicall address.
 - FIX: Command 'd' doesn't crash if the parameter is missing
 - FIX: Broken 'w' command
 
@@ -61,8 +65,10 @@ Changelog
 * v032a - <unreleased>
  - Migrate to nspire_emu v032
  - ADD: Debugger command 'ss'
+ - ADD: Debugger command 'wf'
+ - CHG: Debugger command 'w' renamed to 'wm'
  - FIX: Debugger command 'j' supports thumb state
- - FIX: Broken debugger command 'w'
+ - FIX: Broken debugger command 'w' (now 'wm')
 
 * v031a - 2010/08/30
  - Migrate to nspire_emu v031
