@@ -40,9 +40,6 @@ Debugger:
 Flash:
 - FIX: Flash image closed when synced to disk, for external edition
 
-Memory:
-- CHG: Remove log "Wrote to translated code..."
-
 Build:
 - NEW: Makefile.config for custom compilation flags
 - NEW: make clean
