@@ -62,7 +62,7 @@ Olivier Armand aka ExtendeD  -  < olivier dot calc at gmail dot com >
 Changelog
 =========
 
-* v032a - <unreleased>
+* v032a - 2010/09/21
  - Migrate to nspire_emu v032
  - ADD: Debugger command 'ss'
  - ADD: Debugger command 'wf'
