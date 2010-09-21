@@ -59,6 +59,10 @@ Olivier Armand aka ExtendeD  -  < olivier dot calc at gmail dot com >
 Changelog
 =========
 
+* v032b - <not released yet>
+ - FIX: 'j' (over a non-branch instruction) and 'rs pc' debugger commands 
+   incorrectly skipped the target instruction
+
 * v032a - 2010/09/21
  - Migrate to nspire_emu v032
  - ADD: Debugger command 'ss'

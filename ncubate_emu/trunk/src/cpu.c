@@ -786,6 +786,8 @@ void cpu_arm_loop() {
 					printf("Hit breakpoint at %08X. Entering debugger.\n", pc);
 enter_debugger:
 				debugger();
+				if (arm.reg[15] != pc)
+					continue; // the debugger command skipped the current instruction, reload it
 			}
 			if (flags & RF_EXEC_HACK)
 				if (exec_hack())
