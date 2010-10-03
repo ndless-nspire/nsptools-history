@@ -62,6 +62,7 @@ Changelog
 * v032b - <not released yet>
  - FIX: 'j' (over a non-branch instruction) and 'rs pc' debugger commands 
    incorrectly skipped the target instruction
+ - FIX: no more 'bad read word' on auto power down, but still hangs
 
 * v032a - 2010/09/21
  - Migrate to nspire_emu v032

@@ -206,6 +206,7 @@ u32 usb_read_word(u32 addr) {
 		case 0x10C: return 0;
 		case 0x124: return 0;
 		case 0x140: return 0;
+		case 0x148: return 0;
 		case 0x164: return 0;
 		case 0x180: return 0;
 		case 0x184: return 0;
