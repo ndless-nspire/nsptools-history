@@ -35,6 +35,10 @@ void *phys_mem_ptr(u32 addr, u32 size) {
 	return NULL;
 }
 
+void *virt_mem_ptr(u32 addr, u32 size) {
+	return phys_mem_ptr(mmu_translate(addr, NULL), size);
+}
+
 #define DO_READ_ACTION (RF_READ_BREAKPOINT)
 void read_action(u32 addr) {
 	printf("Hit read breakpoint at %08x. Entering debugger.\n", addr);

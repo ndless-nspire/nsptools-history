@@ -265,7 +265,9 @@ int main(int argc, char **argv) {
 	FILE *f;
 	static FILE *boot2_file = NULL;
 	static char *boot1_filename = NULL, *boot2_filename = NULL, *flash_filename = NULL;
+	char *debug_cmds_filename = NULL;
 	bool new_flash_image = false;
+	int gdb_port = 0;
 	char *preload_boot2 = NULL, *preload_diags = NULL, *preload_os = NULL;
 
 	for (i = 1; i < argc; i++) {
@@ -297,6 +299,15 @@ int main(int argc, char **argv) {
 				case 'F':
 					if (*arg == '=') arg++;
 					flash_filename = arg;
+					break;
+				case 'G':
+					if (*arg == '=') arg++;
+					gdb_port = atoi(arg);
+					if (!gdb_port) {
+						printf("Invalid listen port for GDB stub%s%s\n", *arg ? ": " : "", arg);
+						exit(1);
+					}
+					is_gdb_debugger = true;
 					break;
 				case 'K':
 					keypad_type = 1;
@@ -343,20 +354,27 @@ int main(int argc, char **argv) {
 					*pp = arg;
 					break;
 				}
+				case 'R':
+					cpu_events |= EVENT_DEBUG_STEP;
+					if (*arg == '=') arg++;
+					debug_cmds_filename = arg;
+					break;
 				default:
 usage:
 					printf(
 						"nspire emulator v0.32\n"
-						"  /1=boot1	- location of BOOT1 image\n"
-						"  /B=boot2	- location of decompressed BOOT2 image\n"
-						"  /C		- emulate CAS hardware version\n"
-						"  /D		- enter debugger at start\n"
+						"  /1=boot1 - location of BOOT1 image\n"
+						"  /B=boot2 - location of decompressed BOOT2 image\n"
+						"  /C	     	- emulate CAS hardware version\n"
+						"  /D	     	- enter debugger at start\n"
 						"  /F=file	- flash image filename\n"
-						"  /Kn		- set keypad type (2 = TI-84 Plus, 3 = Touchpad)\n"
-						"  /N		- create new flash image\n"
-						"  /PB=boot2.img	- preload flash with BOOT2 (.img file)\n"
-						"  /PD=diags.img	- preload flash with DIAGS image\n"
-						"  /PO=osfile	- preload flash with OS (.tnc/.tno file)\n");
+						"  /G=port	- debug with external GDB through TCP\n"
+						"  /Kn	   	- set keypad type (2 = TI-84 Plus, 3 = Touchpad)\n"
+						"  /N	     	- create new flash image\n"
+						"  /PB=boot2.img - preload flash with BOOT2 (.img file)\n"
+						"  /PD=diags.img - preload flash with DIAGS image\n"
+						"  /PO=osfile	- preload flash with OS (.tnc/.tno file)\n"
+						"  /R=cmdfile - run debugger commands on startup\n");
 					return 1;
 			}
 		} else {
@@ -403,6 +421,14 @@ usage:
 		*(u32 *)MEM_PTR(0x0000001C) = 0x1234;
 		*(u32 *)MEM_PTR(0x00001234) = 0xE12FFF1E; /* bx lr */
 	}
+	
+	if (debug_cmds_filename) {
+		debugger_stdin = fopen(debug_cmds_filename, "rt");
+		if (!debugger_stdin) {
+			perror(debug_cmds_filename);
+			return 1;
+		}
+	}
 
 	insn_buffer = VirtualAlloc(NULL, INSN_BUFFER_SIZE, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 	insn_bufptr = insn_buffer;
@@ -416,6 +442,9 @@ usage:
 	hTimerEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 
 	gui_initialize();
+
+	if (is_gdb_debugger)
+		gdbstub_init(gdb_port);
 
 	throttle_timer_on();
 	atexit(throttle_timer_off);

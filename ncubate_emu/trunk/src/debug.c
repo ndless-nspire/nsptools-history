@@ -5,10 +5,6 @@
 #include <string.h>
 #include "emu.h"
 
-void *virt_mem_ptr(u32 addr, u32 size) {
-	return phys_mem_ptr(mmu_translate(addr, NULL), size);
-}
-
 #include "disasm.c"
 
 void backtrace(u32 fp) {
@@ -80,26 +76,30 @@ static void disasm(u32 (*dis_func)(u32 pc)) {
 	}
 }
 
-u32 *debug_next;
-static void set_debug_next(u32 *next) {
-	if (debug_next != NULL)
-		RAM_FLAGS(debug_next) &= ~RF_EXEC_DEBUG_NEXT;
-	if (next != NULL) {
-		if (RAM_FLAGS(next) & RF_CODE_TRANSLATED)
+u32 *debug_next_brkpt_adr;
+/* if next_adr is null, simply clears the 'next' breakpoint */
+void debug_set_next_brkpt(u32 *next_adr) {
+	if (debug_next_brkpt_adr != NULL)
+		RAM_FLAGS(debug_next_brkpt_adr) &= ~RF_EXEC_DEBUG_NEXT;
+	if (next_adr != NULL) {
+		if (RAM_FLAGS(next_adr) & RF_CODE_TRANSLATED)
 			flush_translations();
-		RAM_FLAGS(next) |= RF_EXEC_DEBUG_NEXT;
+		RAM_FLAGS(next_adr) |= RF_EXEC_DEBUG_NEXT;
 	}
-	debug_next = next;
+	debug_next_brkpt_adr = next_adr;
 }
 
-void debugger() {
+bool is_gdb_debugger = false;
+FILE *debugger_stdin;
+
+static void native_debugger(void) {
 	char line[80];
 	char *cmd;
 	u32 *cur_insn = virt_mem_ptr(arm.reg[15] & ~3, 4);
 
 	// Did we hit the "next" breakpoint?
-	if (cur_insn == debug_next) {
-		set_debug_next(NULL);
+	if (cur_insn == debug_next_brkpt_adr) {
+		debug_set_next_brkpt(NULL);
 		disasm_insn(arm.reg[15]);
 	}
 
@@ -113,8 +113,21 @@ void debugger() {
 		printf("debug> ");
 		fflush(stdout);
 		fflush(stderr);
-		if (!fgets(line, sizeof line, stdin))
-			exit(1);
+		if (!debugger_stdin)
+			debugger_stdin = stdin;
+readstdin:
+		if (!fgets(line, sizeof line, debugger_stdin)) {
+			if (debugger_stdin != stdin) {
+				fclose(debugger_stdin);
+				debugger_stdin = stdin;
+				goto readstdin;
+			}
+			else
+				exit(1);
+		}
+		if (debugger_stdin != stdin) {
+			printf("%s\n", line);
+		}
 		cmd = strtok(line, " \n");
 		if (!cmd) {
 			continue;
@@ -249,11 +262,11 @@ void debugger() {
 			break;
 		} else if (!stricmp(cmd, "n")) {
 			if (cur_insn)
-				set_debug_next(cur_insn + 1);
+				debug_set_next_brkpt(cur_insn + 1);
 			break;
 		} else if (!stricmp(cmd, "j")) {
 			arm.reg[15] += current_instr_size;
-			set_debug_next(cur_insn + 1);
+			debug_set_next_brkpt(cur_insn + 1);
 			break;
 		} else if (!stricmp(cmd, "d")) {
 			char *arg = strtok(NULL, " \n");
@@ -441,11 +454,18 @@ void debugger() {
 	throttle_timer_on();
 }
 
+void debugger(void) {
+	if (is_gdb_debugger)
+		gdbstub_debugger();
+	else
+		native_debugger();
+}
+
 void *debug_save_state(size_t *size) {
 	*size = 0;
 	return NULL;
 }
 
 void debug_reload_state(void *state __attribute__((unused))) {
-	set_debug_next(NULL);
+	debug_set_next_brkpt(NULL);
 }

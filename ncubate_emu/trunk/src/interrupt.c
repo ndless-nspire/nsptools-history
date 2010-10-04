@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "emu.h"
 
 /* DC000000: Interrupt controller */

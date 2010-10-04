@@ -322,42 +322,40 @@ void usblink_hook_submit_write_buffer() {
 }
 
 void usblink_connect() {
-	switch (*(u32 *)MEM_PTR(0xA4000020)) {
-		case 0x1181F220: /* 1.4 BOOT2 */
-			usblink_addr_set_event           = 0x11808490;
-			usblink_addr_schedule            = 0x1181FDB4;
-			usblink_addr_submit_read_buffer  = 0x11842AC8;
-			usblink_addr_submit_write_buffer = 0x11842B74;
-			usblink_addr_nav_user            = *(u32 *)MEM_PTR(0x11987EDC);
-			break;
-		case 0x1014A9F0: /* 1.1 CAS OS */
+	switch (OS_VERSION) {
+		case OS_VERSION_1_4_BOOT2:
+  			usblink_addr_set_event           = 0x11808490;
+  			usblink_addr_schedule            = 0x1181FDB4;
+  			usblink_addr_submit_read_buffer  = 0x11842AC8;
+  			usblink_addr_submit_write_buffer = 0x11842B74;
+  			usblink_addr_nav_user            = *(u32 *)MEM_PTR(0x11987EDC);
+  			break;
+		case OS_VERSION_1_1_CAS:
 			usblink_addr_set_event           = 0x100F6618;
 			usblink_addr_schedule            = 0x1014B574;
 			usblink_addr_submit_read_buffer  = 0x1017098C;
 			usblink_addr_submit_write_buffer = 0x10170A38;
 			usblink_addr_nav_user            = *(u32 *)MEM_PTR(0x10564D1C);
 			break;
-		case 0x1014A9C0: /* 1.1 Non-CAS OS */
+		case OS_VERSION_1_1_NON_CAS:
 			usblink_addr_set_event           = 0x100F65E8;
 			usblink_addr_schedule            = 0x1014B544;
 			usblink_addr_submit_read_buffer  = 0x10170C88;
 			usblink_addr_submit_write_buffer = 0x10170D34;
 			usblink_addr_nav_user            = *(u32 *)MEM_PTR(0x10590D1C);
 			break;
-		case 0x102132A0: /* 1.7 CAS OS */
-			usblink_addr_set_event           = 0x101A62B4;
-			usblink_addr_schedule            = 0x10213E54;
-			usblink_addr_submit_read_buffer  = 0x1028E98C;
-			usblink_addr_submit_write_buffer = 0x1028EA38;
-			usblink_addr_nav_user            = *(u32 *)MEM_PTR(0x1072751C);
-			break;
-		case 0x10211290: /* 1.7 Non-CAS OS */
-			usblink_addr_set_event           = 0x101A429C;
-			usblink_addr_schedule            = 0x10211E44;
-			usblink_addr_submit_read_buffer  = 0x1028C97C;
-			usblink_addr_submit_write_buffer = 0x1028CA28;
-			usblink_addr_nav_user            = *(u32 *)MEM_PTR(0x106F4C14);
-			break;
+		case OS_VERSION_1_7_CAS:
+  			usblink_addr_set_event           = 0x101A62B4;
+  			usblink_addr_schedule            = 0x10213E54;
+  			usblink_addr_submit_read_buffer  = 0x1028E98C;
+  			usblink_addr_submit_write_buffer = 0x1028EA38;
+  			usblink_addr_nav_user            = *(u32 *)MEM_PTR(0x1072751C);
+  			break;
+		case OS_VERSION_1_7_NON_CAS:
+  			usblink_addr_set_event           = 0x101A429C;
+  			usblink_addr_schedule            = 0x10211E44;
+  			usblink_addr_submit_read_buffer  = 0x1028C97C;
+				break;
 		default:
 			printf("Unknown OS version\n");
 			return;

@@ -480,7 +480,7 @@ no_condition:
 			int set_carry = -1;
 			int right_is_imm = insn >> 25 & 1;
 			int right_is_reg = 0;
-			u32 imm;
+			u32 imm = 0;
 			if (right_is_imm) {
 				// Right operand is immediate
 				imm = insn & 0xFF;
@@ -970,6 +970,19 @@ void fix_pc_for_fault() {
 		in_translation_esp = NULL;
 	}
 	arm.reg[15] -= (arm.cpsr_low28 & 0x20) ? 2 : 4;
+}
+
+// returns 1 if at least one instruction translated in the range
+int range_translated(u32 range_start, u32 range_end) {
+		u32 pc;
+		int translated = 0;
+		for (pc = range_start; pc < range_end;  pc += 4) {
+			void *pc_ram_ptr = virt_mem_ptr(pc, 4);
+			if (!pc_ram_ptr)
+				break;
+			translated |= RAM_FLAGS(pc_ram_ptr) & RF_CODE_TRANSLATED;
+		}
+		return translated;
 }
 
 #if 0

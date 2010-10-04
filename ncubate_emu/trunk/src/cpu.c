@@ -1,3 +1,4 @@
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,7 +27,8 @@ u32 __attribute__((fastcall)) get_cpsr() {
 	     | arm.cpsr_v << 28
 	     | arm.cpsr_low28;
 }
-static void set_cpsr_full(u32 cpsr) {
+
+void set_cpsr_full(u32 cpsr) {
 	if ((cpsr ^ arm.cpsr_low28) & 0x1F) {
 		/* Switching to a different processor mode. Swap out registers of old mode */
 		if ((arm.cpsr_low28 & 0x1F) == MODE_FIQ)
@@ -160,7 +162,7 @@ static u32 add(u32 left, u32 right, int carry, int setcc) {
 	return sum;
 }
 
-static int get_shifted_immed(int insn, int setcc) {
+static u32 get_shifted_immed(int insn, int setcc) {
 	int count = insn >> 7 & 30;
 	s32 val = insn & 0xFF;
 	val = val >> count | val << (32 - count);
@@ -207,31 +209,35 @@ static u32 shift(int type, u32 res, u32 count, int setcc) {
 	}
 }
 
-static int get_shifted_reg(int insn, int setcc) {
+/* Return -1 if an exception occurs */
+static int get_shifted_reg(u32 *ret, int insn, int setcc) {
 	u32 res = get_reg_pc(insn & 15);
 	int type = insn >> 5 & 3;
 	int count; 
 
 	if (insn & (1 << 4)) {
-		if (insn & (1 << 7))
-			error("shift by reg, bit 7 set");
+		if (insn & (1 << 7)) {
+			cpu_exception_warn(EX_UNDEFINED, "shift by reg, bit 7 set");
+			return -1;
+		}
 		count = get_reg(insn >> 8 & 15) & 0xFF;
 	} else {
 		count = insn >> 7 & 31;
 		if (count == 0) {
 			switch (type) {
-				case 0: /* LSL #0 */ return res;
+				case 0: /* LSL #0 */ *ret = res; return 0;
 				case 1: /* LSR #32 */ count = 32; break;
 				case 2: /* ASR #32 */ count = 32; break;
 				case 3: /* RRX */ {
-					u32 ret = arm.cpsr_c << 31 | res >> 1;
+					*ret = arm.cpsr_c << 31 | res >> 1;
 					if (setcc) arm.cpsr_c = res & 1;
-					return ret;
+					return 0;
 				}
 			}
 		}
 	}
-	return shift(type, res, count, setcc);
+	*ret = shift(type, res, count, setcc);
+	return 0;
 }
 
 void cpu_exception(int type) {
@@ -245,6 +251,12 @@ void cpu_exception(int type) {
 		MODE_IRQ | 0x80, /* IRQ */
 		MODE_FIQ | 0xC0, /* FIQ */
 	};
+	
+	/* GDB relies on some exceptions, for example for soft breakpoints */
+	if (type == EX_UNDEFINED && is_gdb_debugger) {
+		gdbstub_exception(type);
+		return;
+	}
 
 	/* Switch mode, disable interrupts */
 	u32 old_cpsr = get_cpsr();
@@ -256,6 +268,14 @@ void cpu_exception(int type) {
 	arm.reg[15] = type << 2;
 	if (arm.control & 0x2000) /* High vectors */
 		arm.reg[15] += 0xFFFF0000;
+}
+
+void cpu_exception_warn(int type, char *fmt, ...) {
+	va_list va;
+	va_start(va, fmt);
+	warn(fmt, va);
+	va_end(va);
+	cpu_exception(type);
 }
 
 void cpu_interpret_instruction(u32 insn) {
@@ -278,7 +298,7 @@ void cpu_interpret_instruction(u32 insn) {
 					arm.reg[15] += 4 + ((s32)insn << 8 >> 6) + (insn >> 23 & 2);
 					arm.cpsr_low28 |= 0x20; /* Enter THUMB mode */
 				} else {
-					error("Invalid condition code");
+					cpu_exception_warn(EX_UNDEFINED, "Invalid condition code");
 				}
 				return;
 			}
@@ -305,8 +325,10 @@ void cpu_interpret_instruction(u32 insn) {
 				u32 reg_lo = insn >> 12 & 15;
 				u32 reg_hi = insn >> 16 & 15;
 
-				if (reg_lo == reg_hi)
-					error("RdLo and RdHi cannot be same for 64-bit multiply");
+				if (reg_lo == reg_hi) {
+					cpu_exception_warn(EX_UNDEFINED, "RdLo and RdHi cannot be same for 64-bit multiply");
+					return;
+				}
 
 				u64 res;
 				if (insn & 0x0400000) res = (s64)(s32)left * (s32)right;
@@ -366,7 +388,10 @@ void cpu_interpret_instruction(u32 insn) {
 			} else if (type == 1) { /* STRH */
 				write_half(addr, get_reg(data_reg));
 			} else {
-				if (data_reg & 1) error("LDRD/STRD with odd-numbered data register");
+				if (data_reg & 1) {
+					cpu_exception_warn(EX_UNDEFINED, "LDRD/STRD with odd-numbered data register");
+					return;
+				}
 				if (type == 2) { /* LDRD */
 					if ((base_reg & ~1) == data_reg && writeback)
 						error("Load instruction modifies base register twice");
@@ -429,8 +454,10 @@ void cpu_interpret_instruction(u32 insn) {
 				u32 reg_lo = insn >> 12 & 15;
 				u32 reg_hi = insn >> 16 & 15;
 				s64 sum;
-				if (reg_lo == reg_hi)
-					error("RdLo and RdHi cannot be same for 64-bit accumulate");
+				if (reg_lo == reg_hi) {
+					cpu_exception_warn(EX_UNDEFINED, "RdLo and RdHi cannot be same for 64-bit accumulate");
+					return;
+				}
 				sum = product + ((u64)get_reg(reg_hi) << 32 | get_reg(reg_lo));
 				set_reg(reg_lo, sum);
 				set_reg(reg_hi, sum >> 32);
@@ -499,8 +526,8 @@ void cpu_interpret_instruction(u32 insn) {
 		left = get_reg_pc(insn >> 16 & 15);
 		if (insn & (1 << 25))
 			right = get_shifted_immed(insn, setcc);
-		else
-			right = get_shifted_reg(insn, setcc);
+		else if (get_shifted_reg(&right, insn, setcc) == -1)
+			return;
 
 		switch (opcode) {
 			default: /* not used, obviously - here to shut up gcc warning */
@@ -523,8 +550,10 @@ void cpu_interpret_instruction(u32 insn) {
 		}
 
 		if ((opcode & 12) == 8) {
-			if (dest_reg != 0)
-				error("Compare instruction has nonzero destination reg");
+			if (dest_reg != 0) {
+				cpu_exception_warn(EX_UNDEFINED, "Compare instruction has nonzero destination reg");
+				return;
+			}
 		} else {
 			set_reg_pc(dest_reg, res);
 		}
@@ -540,9 +569,12 @@ void cpu_interpret_instruction(u32 insn) {
 
 		u32 offset;
 		if (insn & (1 << 25)) {
-			if (insn & (1 << 4))
-				error("Cannot shift memory offset by register");
-			offset = get_shifted_reg(insn, 0);
+			if (insn & (1 << 4)) {
+				cpu_exception_warn(EX_UNDEFINED, "Cannot shift memory offset by register");
+				return;
+			}
+			if (get_shifted_reg(&offset, insn, 0) == -1)
+				return;
 		} else {
 			offset = insn & 0xFFF;
 		}
@@ -749,7 +781,7 @@ void cpu_interpret_instruction(u32 insn) {
 		cpu_exception(EX_SWI);
 	} else {
 bad_insn:
-		error("Unrecognized instruction %08x\n", insn);
+		cpu_exception_warn(EX_UNDEFINED, "Unrecognized instruction %08x\n", insn);
 	}
 }
 
@@ -977,7 +1009,7 @@ enter_debugger:
 			CASE_x8(0xC8): { /* LDMIA Rn!, {reglist} */
 				int i;
 				u32 addr = REG8;
-				u32 tmp;
+				u32 tmp = 0;
 				for (i = 0; i < 8; i++) {
 					if (insn >> i & 1) {
 						if (i == (insn >> 8 & 7))

@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <string.h>
 
 typedef unsigned char      u8;
@@ -142,9 +143,11 @@ extern struct arm_state arm;
 void cpu_int_check();
 u32 __attribute__((fastcall)) get_cpsr();
 void __attribute__((fastcall)) set_cpsr(u32 cpsr, u32 mask);
+void set_cpsr_full(u32 cpsr);
 u32 __attribute__((fastcall)) get_spsr();
 void __attribute__((fastcall)) set_spsr(u32 cpsr, u32 mask);
 void cpu_exception(int type);
+void cpu_exception_warn(int type, char *fmt, ...);
 void cpu_interpret_instruction(u32 insn);
 void cpu_arm_loop();
 void cpu_thumb_loop();
@@ -153,8 +156,13 @@ void cpu_reload_state(void *state);
 
 /* Declarations for debug.c */
 
+extern FILE *debugger_stdin;
+extern bool is_gdb_debugger;
+u32 *debug_next_brkpt_adr;
+
 void backtrace(u32 fp);
 void debugger();
+void debug_set_next_brkpt(u32 *next_adr);
 void *debug_save_state(size_t *size);
 void debug_reload_state(void *state);
 
@@ -172,6 +180,12 @@ void flash_reload(void);
 void flash_initialize(char *preload_boot2, char *preload_diags, char *preload_os);
 void *flash_save_state(size_t *size);
 void flash_reload_state(void *state);
+
+/* Declarations for gdbstub.c */
+
+void gdbstub_init(int port);
+void gdbstub_debugger(void);
+void gdbstub_exception(int type);
 
 /* Declarations for gui.c */
 
@@ -263,6 +277,7 @@ struct mem_area_desc {
 };
 extern const struct mem_area_desc mem_areas[3];
 void *phys_mem_ptr(u32 addr, u32 size);
+void *virt_mem_ptr(u32 addr, u32 size);
 
 /* Each word of memory has a flag word associated with it. For fast access,
  * flags are located at a constant offset from the memory data itself.
@@ -281,6 +296,13 @@ void *phys_mem_ptr(u32 addr, u32 size);
 #define RF_CODE_NO_TRANSLATE 64
 #define RF_READ_ONLY         128
 #define RFS_TRANSLATION_INDEX 8
+
+#define OS_VERSION (*(u32 *)MEM_PTR(0xA4000020))
+#define OS_VERSION_1_4_BOOT2 0x1181F220
+#define OS_VERSION_1_1_CAS 0x1014A9F0
+#define OS_VERSION_1_1_NON_CAS 0x1014A9C0
+#define OS_VERSION_1_7_CAS 0x102132A0
+#define OS_VERSION_1_7_NON_CAS 0x10211290
 
 u8 bad_read_byte(u32 addr);
 u16 bad_read_half(u32 addr);
@@ -334,6 +356,30 @@ void __attribute__((fastcall)) write_byte(u32 addr, u32 value);
 void __attribute__((fastcall)) write_half(u32 addr, u32 value);
 void __attribute__((fastcall)) write_word(u32 addr, u32 value);
 
+/* Declarations for armsnippets.S */
+
+enum SNIPPETS {
+	SNIPPET_file_open, SNIPPET_file_read, SNIPPET_file_write, SNIPPET_file_close, SNIPPET_file_unlink
+};
+extern char binary_snippets_bin_start[];
+extern char binary_snippets_bin_end[];
+#define SNIPPETS_EP_OSCALLS_TABLE 0
+#define SNIPPETS_EP_LOAD 1
+enum ARMLOADER_PARAM_TYPE {ARMLOADER_PARAM_VAL, ARMLOADER_PARAM_PTR};
+struct armloader_load_params {
+	enum ARMLOADER_PARAM_TYPE t;
+	union {
+		struct p {
+			void *ptr;
+			unsigned int size;
+		} p;
+		u32 v; // simple value
+	};
+};
+void armloader_restore_state(void);
+int armloader_load_snippet(enum SNIPPETS snippet, struct armloader_load_params params[],
+	                         unsigned params_num);
+
 /* Declarations for translate.c */
 
 struct translation {
@@ -350,6 +396,7 @@ extern u8 *insn_bufptr;
 int translate(u32 start_pc, u32 *insnp);
 void flush_translations();
 void invalidate_translation(int index);
+int range_translated(u32 range_start, u32 range_end);
 void fix_pc_for_fault();
 void *translate_save_state(size_t *size);
 void translate_reload_state(void *state);
