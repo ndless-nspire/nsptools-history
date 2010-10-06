@@ -315,16 +315,16 @@
  	MakeName	(0X100A094C,	 "unknown_TI_XML_CheckTags");
  	MakeName	(0X1011A550,	 "TE_MLPDev_service_handler");
  	MakeName	(0X1011D194,	 "RAND_bytes");
- 	MakeName	(0X101252E8,	 "OPENSSL_cleanse");
- 	MakeName	(0X1011C614,	 "RAND_SSLeay");
- 	MakeName	(0X10130CEC,	 "ssleay_rand_cleanup");
- 	MakeName	(0X10130D8C,	 "ssleay_rand_add");
- 	MakeName	(0X1011CE98,	 "ssleay_rand_seed");
- 	MakeName	(0X1013132C,	 "ssleay_rand_bytes");
- 	MakeName	(0X10131974,	 "ssleay_rand_pseudo_bytes");
- 	MakeName	(0X101319F4,	 "ssleay_rand_status");
- 	MakeName	(0X10131B8C,	 "RAND_poll");
- 	MakeName	(0X100858EC,	 "CRYPTO_thread_id");
+ 	MakeName	(0X101252E8,	 "OPENSSL_cleanse");				//
+ 	MakeName	(0X1011C614,	 "RAND_SSLeay");					//
+ 	MakeName	(0X10130CEC,	 "ssleay_rand_cleanup");			//
+ 	MakeName	(0X10130D8C,	 "ssleay_rand_add");				//
+ 	MakeName	(0X1011CE98,	 "ssleay_rand_seed");				//
+ 	MakeName	(0X1013132C,	 "ssleay_rand_bytes");				//
+ 	MakeName	(0X10131974,	 "ssleay_rand_pseudo_bytes");		//
+ 	MakeName	(0X101319F4,	 "ssleay_rand_status");				//
+ 	MakeName	(0X10131B8C,	 "RAND_poll");						//
+ 	MakeName	(0X100858EC,	 "CRYPTO_thread_id");				//
  	MakeName	(0X1011D130,	 "CRYPTO_lock");
  	MakeName	(0X1011D130,	 "ERR_put_error");
  	MakeName	(0X101330FC,	 "ERR_clear_error");
@@ -347,8 +347,8 @@
  	MakeName	(0X10182074,	 "Expat_poolInit");
  	MakeName	(0X10182094,	 "Expat_moveToFreeBindingList");
  	MakeName	(0X101820C0,	 "Expat_poolClear");
- 	MakeName	(0X100720B0,	 "Expat_destroyBindings");
- 	MakeName	(0X100B07D8,	 "Expat_poolDestroy");
+ 	MakeName	(0X100720B0,	 "Expat_destroyBindings");			//
+ 	MakeName	(0X100B07D8,	 "Expat_poolDestroy");				//
  	MakeName	(0X10182374,	 "Expat_XML_ParseBuffer");
  	MakeName	(0X1018247C,	 "Expat_XML_GetBuffer");
  	MakeName	(0X101825E8,	 "Expat_XML_Parse");
@@ -371,7 +371,7 @@
  	MakeName	(0X101838E8,	 "Expat_normalizePublicId");
  	MakeName	(0X10183988,	 "Expat_poolAppendString");
  	MakeName	(0X10183A04,	 "Expat_poolAppend");
- 	MakeName	(0X100668D4,	 "Expat_poolStoreString");
+ 	MakeName	(0X100668D4,	 "Expat_poolStoreString");			//
  	MakeName	(0X10183B00,	 "Expat_processXmlDecl");
  	MakeName	(0X10183D80,	 "Expat_defineAttribute");
  	MakeName	(0X10183EC4,	 "Expat_nextScaffoldPart");
@@ -389,7 +389,7 @@
  	MakeName	(0X101848B4,	 "Expat_dtdReset");
  	MakeName	(0X101849AC,	 "Expat_hashTableDestroy");
  	MakeName	(0X10184A04,	 "Expat_dtdDestroy");
- 	MakeName	(0X10083B84,	 "Expat_XML_ParserFree");
+ 	MakeName	(0X10083B84,	 "Expat_XML_ParserFree");			//
  	MakeName	(0X10184C58,	 "Expat_parserCreate");
  	MakeName	(0X10184E40,	 "Expat_poolCopyStringN");
  	MakeName	(0X10184ED4,	 "Expat_keyeq");
@@ -437,8 +437,8 @@
  	MakeName	(0X10198BBC,	 "Expat_XmlInitEncodingNS");
  	MakeName	(0X10198F34,	 "Expat_XmlInitUnknownEncodingNS");
  	MakeName	(0X10198F54,	 "unknown_TI_ZIPArchive_AllocateBuffers");
- 	MakeName	(0X10083B84,	 "unknown_TI_ZIPArchive_UnallocateBuffers");
- 	MakeName	(0X1002A774,	 "unknown_TI_ZIPArchive_Open");
+ 	MakeName	(0X10083B84,	 "unknown_TI_ZIPArchive_UnallocateBuffers");	//
+ 	MakeName	(0X1002A774,	 "unknown_TI_ZIPArchive_Open");					//
  	MakeName	(0X10199020,	 "unknown_TI_ZIPArchive_Uncompress_");
  	MakeName	(0X1019921C,	 "unknown_TI_ZIPArchive_Close");
  	MakeName	(0X10199754,	 "unknown_TI_ZIPArchive_Compress_");
@@ -465,7 +465,7 @@
  	MakeName	(0X1019F674,	 "deflateInit2_");
  	MakeName	(0X1019F940,	 "deflateInit");
  	MakeName	(0X1019F978,	 "deflateCopy");
- 	MakeName	(0X100D4A60,	 "read_buf");
+ 	MakeName	(0X100D4A60,	 "read_buf");					//
  	MakeName	(0X1019FDE8,	 "check_match");
  	MakeName	(0X1019FEEC,	 "fill_window");
  	MakeName	(0X101A0068,	 "deflate_stored");
@@ -479,12 +479,12 @@
  	MakeName	(0X101A0EA0,	 "updatewindow");
  	MakeName	(0X101A0FE8,	 "inflate");
  	MakeName	(0X101A2724,	 "inflateEnd");
- 	MakeName	(0X1006D6E0,	 "inflateSetDictionary");
+ 	MakeName	(0X1006D6E0,	 "inflateSetDictionary");		//
  	MakeName	(0X1019E768,	 "inflateGetHeader");
  	MakeName	(0X101A28E0,	 "syncsearch");
  	MakeName	(0X101A2944,	 "inflateSync");
  	MakeName	(0X101A2A7C,	 "inflateSyncPoint");
- 	MakeName	(0X1001E044,	 "inflateCopy");
+ 	MakeName	(0X1001E044,	 "inflateCopy");				//
  	MakeName	(0X101A2C28,	 "inflate_table");
  	MakeName	(0X101A32FC,	 "_tr_init");
  	MakeName	(0X101A552C,	 "zlibCompileFlags");
@@ -496,7 +496,7 @@
  	MakeName	(0X101A5A14,	 "compress");
  	MakeName	(0X101A5A48,	 "inflate_fast");
 	MakeName	(0X101A5A14,	"DMF_Established_Memory_Pools");
- 	MakeName	(0X10006324,	 "DMF_Memory_Pool_Pointers");
+ 	MakeName	(0X10006324,	 "DMF_Memory_Pool_Pointers");		//
  	MakeName	(0X101A5F88,	 "DMF_Memory_Pool_Information");
  	MakeName	(0X101A60AC,	 "ERC_System_Error");
 	MakeName	(0X101A613C,	"EVC_Create_Event_Group");
@@ -511,7 +511,7 @@
  	MakeName	(0X101A7754,	 "SMC_Cleanup");
  	MakeName	(0X101A777C,	 "TCS_Change_Priority");
 	MakeName	(0X101A79E4,	"TCS_Change_Preemption");
- 	MakeName	(0X10030D6C,	 "TCS_Change_Time_Slice");
+ 	MakeName	(0X10030D6C,	 "TCS_Change_Time_Slice");				//
 	MakeName	(0X101A7AE0,	"TCS_Control_Signals");
 	MakeName	(0X101A7B64,	"TCS_Receive_Signals");
 	MakeName	(0X101A7BA4,	"TCS_Register_Signal_Handler");
@@ -553,10 +553,10 @@
  	MakeName	(0X10212E10,	 "TCC_Register_LISR");
 	MakeName	(0X10212F28,	"TCF_Established_Tasks");
 	MakeName	(0X10212F48,	"TCF_Established_HISRs");
- 	MakeName	(0X10006324,	 "TCF_Task_Pointers");
- 	MakeName	(0X10006324,	 "TCF_HISR_Pointers");
+ 	MakeName	(0X10006324,	 "TCF_Task_Pointers");			//
+ 	MakeName	(0X10006324,	 "TCF_HISR_Pointers");			//
  	MakeName	(0X10213050,	 "TCF_Task_Information");
- 	MakeName	(0X10007CA4,	 "TCF_HISR_Information");
+ 	MakeName	(0X10007CA4,	 "TCF_HISR_Information");		//
 	MakeName	(0X10213224,	"INT_System_SP");
  	MakeName	(0X102132A0,	 "INT_Initialize");
  	MakeName	(0X10213300,	 "INT_Vectors_Loaded");
@@ -654,7 +654,7 @@
  	MakeName	(0X102A30DC,	 "isprint");
  	MakeName	(0X101C1860,	 "isspace");
  	MakeName	(0X102A3108,	 "isupper");
- 	MakeName	(0X100BE2F0,	 "isxdigit");
+ 	MakeName	(0X100BE2F0,	 "isxdigit");			//
  	MakeName	(0X102A316C,	 "toupper");
  	MakeName	(0X102A3188,	 "calloc");
  	MakeName	(0X102A31CC,	 "free");
@@ -676,7 +676,7 @@
  	MakeName	(0X102A6CCC,	 "fopen");
  	MakeName	(0X102A6EC0,	 "fread");
  	MakeName	(0X102A6FFC,	 "fseek");
- 	MakeName	(0X102A6EC0,	 "fwrite");
+ 	MakeName	(0X102A7274,	 "fwrite");
  	MakeName	(0X102A7468,	 "putc");
  	MakeName	(0X102A74D4,	 "puts");
  	MakeName	(0X102A7780,	 "atoi");
@@ -695,7 +695,7 @@
  	MakeName	(0X102A85B4,	 "strrchr");
  	MakeName	(0X102A8848,	 "memrev");
  	MakeName	(0X102A89B8,	 "atof");
- 	MakeName	(0X10058678,	 "_fputc");
+ 	MakeName	(0X10058678,	 "_fputc");			//
  	MakeName	(0X102A99AC,	 "chdir");
  	MakeName	(0X102A9B10,	 "close");
  	MakeName	(0X102AA874,	 "mkdir");
@@ -710,7 +710,7 @@
  	MakeName	(0X102AC844,	 "write");
  	MakeName	(0X102AD710,	 "NU_Make_Dir");
  	MakeName	(0X102AD774,	 "NU_Remove_Dir");
- 	MakeName	(0X100A1294,	 "NU_Get_First");
+ 	MakeName	(0X102AD7D8,	 "NU_Get_First");
  	MakeName	(0X102AD870,	 "NU_Get_Next");
  	MakeName	(0X102AD8E8,	 "NU_Done");
  	MakeName	(0X102ADC90,	 "NU_Close_Disk");
@@ -1045,7 +1045,7 @@
  	MakeName	(0X103404A8,	 "RelDclTestByteOrder");
  	MakeName	(0X1034DF7C,	 "DMCE_Create_Memory_Pool");
  	MakeName	(0X1034E018,	 "DMCE_Delete_Memory_Pool");
- 	MakeName	(0X1006C1A0,	 "DMCE_Allocate_Memory");
+ 	MakeName	(0X1006C1A0,	 "DMCE_Allocate_Memory");				//
  	MakeName	(0X1034E0E8,	 "DMCE_Deallocate_Memory");
  	MakeName	(0X1034E290,	 "INC_Initialize");
  	MakeName	(0X1034ED80,	 "SMCE_Create_Semaphore");
@@ -1218,7 +1218,7 @@
 	MakeName	(0X105FF874,	"lckpng_task");
  	MakeName	(0X105FDC2C,	 "nn_login");
  	MakeName	(0X105FE058,	 "login_service_handler");
- 	MakeName	(0X10052AE0,	 "nn_stop_screen_service_3");
+ 	MakeName	(0X10052AE0,	 "nn_stop_screen_service_3");		//
 	MakeName	(0X10626268,	"FONT_Table");
  	MakeName	(0X105FED1C,	 "TI_showExceptionReport");
  	MakeName	(0X105FF2AC,	 "TI_showTaskInfos1");
