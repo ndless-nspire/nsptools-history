@@ -29,7 +29,7 @@
  * The instruction pointed to by C is sub r3, r3, #0x100000 */
 static unsigned const ld_hook_alloc_patch_addrs[][3] = {
 	{0x107957B0, 0x100002C0, 0x10000088}, // 1.7 non-CAS
-	{0, 0} // 1.7 CAS TODO
+	{0x107597A0, 0x100002C0, 0x10000088} // 1.7 CAS
 };
 
 /* Allocate space at the end of the heap for the hook.
@@ -48,7 +48,7 @@ static void ld_heap_patch(unsigned hook_size) {
 
 /* OS-specific: addresses of the name of the directory containing the documen
  * being opened */
-static unsigned const ld_currentdocdir_addr[] = {0x10669A9C, 0x0};
+static unsigned const ld_currentdocdir_addr[] = {0x10669A9C, 0x1069BD64};
 
 /* Returns the hook size */
 static void ld_copy_hook(void *hook_dest, unsigned hook_size, const char *respath) {

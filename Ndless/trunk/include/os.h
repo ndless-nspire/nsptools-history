@@ -184,9 +184,9 @@ static __attribute__ ((unused)) unsigned _syscallvar_savedlr;
 #define _SYSCALL_ARGS(rettype, funcname, param1, ...) {return funcname##_swi(param1, __VA_ARGS__);}
 /* Custom syscalls: these are syscalls currently not implemented by Ndless you want to define yourself.
  * The syntax is:
- * static unsigned const puts_addrs[] = {<1.7-address>, <1.7-CAS-address>, ...}; // see nl_osvalue for the order of the addresses
+ * static const unsigned puts_addrs[] = {<1.7-address>, <1.7-CAS-address>, ...}; // see nl_osvalue for the order of the addresses
  * #define puts SYSCALL_CUSTOM(puts_addrs, int, puts, const char *) */
-#define SYSCALL_CUSTOM(addresses, rettype, funcname, ...) ((rettype(*)(__VA_ARGS__))nl_osvalue((int*)addresses, sizeof(addresses)))
+#define SYSCALL_CUSTOM(addresses, rettype, funcname, ...) ((rettype(*)(__VA_ARGS__))nl_osvalue((int*)addresses, sizeof(addresses)/sizeof(addresses[0])))
 
 /* OS syscalls */
 _SYSCALL1(void*, malloc, size_t)

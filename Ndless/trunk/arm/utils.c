@@ -52,7 +52,7 @@ void ut_read_os_version_index(void) {
 // addresses of OS global variables which must be reinitialized for proper OS reboot
 static unsigned const ut_os_reboot_reset_addrs[][3] = {
 	{0x106DAFC4, 0x106F2A0C, 0x106F2AF0},  // 1.7 non-CAS
-	{0, 0, 0} // 1.7 CAS TODO
+	{0x1070D28C, 0x10725314, 0x107253F8} // 1.7 CAS
 };
 
 void __attribute__ ((noreturn)) ut_os_reboot(void) {
