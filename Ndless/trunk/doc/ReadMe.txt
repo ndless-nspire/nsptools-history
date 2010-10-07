@@ -78,63 +78,12 @@ Troubleshooting
   message: "Sorry. Could not open document 'xxx.tns'", Ndless has not been 
   correctly installed. Run 'ndless_installer' again after a reboot.
 
-How do I set up a development environment?
-==========================================
+Developing for the TI-Nspire
+============================
 
-Here is the preferred way for Windows:
-- Add the sdk/bin/ directory to your PATH environment variable
-- Install MSYS, the lightweight Unix-like shell environment: 
-  http://www.mingw.org/wiki/msys
-  The automated installation has been discontinued since MSYS 1.0.11, so you may 
-  prefer to use this old version for an easier installation.
-  Then you may optionally download the indivual component upgrades from 
-  http://sourceforge.net/projects/mingw/files/ (MSYS sub-folder) and unpack them 
-  in MSYS's installation directory using 7-zip
-  (http://www.7-zip.org/download.html).
-  MinGW is not required by Ndless.
-- Install the YAGARTO GNU ARM toolchain - http://www.yagarto.de . Request 
-  YAGARTO's installer to add YAGARTO's bin/ directory to your PATH environment 
-  variable.
-- You can now open "MSYS (rxvt)" from the Windows Start menu, and run "make" 
-  from the root of a Makefile-based project.
-
-To set up the development environment on Linux:
-- Install the GNU ARM toolchain (this procedure may help:
-  http://blog.nutaksas.com/2009/05/installing-gnuarm-arm-toolchain-on.html)
-- Add the sdk/bin/ directory to your PATH environment variable
-  (http://www.troubleshooters.com/linux/prepostpath.htm)
-
-Ndless provides a light wrapper to some YAGARTO tools and TI-Nspire-specific C 
-and assembly header files.
-
-What you need to know as a developer
-====================================
-
-- An example of build script can be found in src/samples/hello/Makefile
-- BSS sections are not allocated dynamically: global variables will make your
-  programs bigger.
-- Global variables with initialization data which requires relocation (for 
-  example an array of function pointers must be relocated manually with 
-  nl_relocdata(). See include/os.h.
-- Pure-assembly programs must define the global symbol "main" after the header:
-  see src/samples/hella/hella.S
-- You may find interesting macros, inline functions and syscalls definition in 
-  the include/ directory.
-- You may define argc and argv in your main function's signature to get the 
-  current program path in argv[0]
-- Make sure that the assembly files extensions are in uppercase (.S) to make 
-  them be preprocessed by the C preprocessor on which Ndless include files are 
-  built
-- OS functions ("syscalls") can be called, see the source code of the sample 
-  programs in src/samples. Calling syscalls in thumb state is supported.
-- If you want to use syscalls currently not implemented by Ndless, use the macro 
-  SYSCALL_CUSTOM (see include/os.h)
-- Compatibility with newlib has not been tested. You may get definition 
-  conflicts and crashes due to newlib running without relocation. You should 
-  build your programs with the nspire-ld flag "-nostdlib", except if
-  you need the single precision floating-point helper functions (__aeabi_fadd, ...)
-- Development information and resources are or will be available on Hackspire: 
+Development information and resources are available on Hackspire: 
     http://hackspire.unsads.com
+Join the community now!
 
 Upgrading your developments and scripts
 =======================================
@@ -193,10 +142,12 @@ We are open to any contribution to these features.
 Many thanks to
 ==============
 
-calc84maniac (GB/GBC emulator), Goplat (TI-Nspire emulator, HW info), hwti (OS 
-info, 64-bit support), squalyl (Hackspire and development tools hosting),
-TI-Bank (data hosting), all the contributors to the include files and all the 
-beta testers.
+calc84maniac (GB/GBC emulator, HW info), Goplat (TI-Nspire emulator, HW info), 
+hwti (OS info, 64-bit support), squalyl (Hackspire and development tools 
+hosting), TI-Bank (data hosting), Omnimaga (message board).
+
+Thanks to all the contributors and beta testers: apcalc, bsl, bwang, 
+calc84maniac, Levak.
 
 Development team
 ================
