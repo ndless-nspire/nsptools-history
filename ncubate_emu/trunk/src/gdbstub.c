@@ -29,7 +29,7 @@
 
 static void wait_gdb_connection(void);
 
-#define TRACE_PACKETS 1
+//#define TRACE_PACKETS 1
 
 static int listen_socket_fd = 0;
 static int socket_fd = 0;
@@ -684,9 +684,10 @@ z:
 					break;
 				ptr = strtok(ptr, ","); 
 				if (ptr && hexToInt(&ptr, &addr) && (ramaddr = virt_mem_ptr(addr, 4))) {
-					if (set)
+					if (set){
+						if (RAM_FLAGS(ramaddr) & RF_CODE_TRANSLATED) flush_translations();
 						RAM_FLAGS(ramaddr) |= RF_EXEC_BREAKPOINT;
-					else
+					}	else
 						RAM_FLAGS(ramaddr) &= ~RF_EXEC_BREAKPOINT;
 					strcpy(remcomOutBuffer, "OK");
 				}
