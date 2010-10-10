@@ -295,6 +295,7 @@ void *virt_mem_ptr(u32 addr, u32 size);
 #define RF_CODE_TRANSLATED   32
 #define RF_CODE_NO_TRANSLATE 64
 #define RF_READ_ONLY         128
+#define RF_ARMLOADER_CB      256
 #define RFS_TRANSLATION_INDEX 8
 
 #define OS_VERSION (*(u32 *)MEM_PTR(0xA4000020))
@@ -359,7 +360,8 @@ void __attribute__((fastcall)) write_word(u32 addr, u32 value);
 /* Declarations for armsnippets.S */
 
 enum SNIPPETS {
-	SNIPPET_file_open, SNIPPET_file_read, SNIPPET_file_write, SNIPPET_file_close, SNIPPET_file_unlink
+	SNIPPET_file_open = 1, SNIPPET_file_read, SNIPPET_file_write, SNIPPET_file_close,
+	SNIPPET_file_unlink
 };
 extern char binary_snippets_bin_start[];
 extern char binary_snippets_bin_end[];
@@ -376,9 +378,9 @@ struct armloader_load_params {
 		u32 v; // simple value
 	};
 };
-void armloader_restore_state(void);
+void armloader_cb(void);
 int armloader_load_snippet(enum SNIPPETS snippet, struct armloader_load_params params[],
-	                         unsigned params_num);
+	                         unsigned params_num, void (*callback)(struct arm_state *));
 
 /* Declarations for translate.c */
 

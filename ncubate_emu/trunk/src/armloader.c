@@ -6,8 +6,17 @@
 
 struct arm_state armloader_orig_arm_state;
 
-void armloader_restore_state(void) {
+static void armloader_restore_state(void) {
 	memcpy(&arm, &armloader_orig_arm_state, sizeof(arm));
+}
+
+static void (*armloader_cb_ptr)(struct arm_state*);
+
+void armloader_cb(void) {
+	struct arm_state after_snippet_exec_arm_state;
+	memcpy(&after_snippet_exec_arm_state, &arm, sizeof(arm));
+	armloader_restore_state();
+	armloader_cb_ptr(&after_snippet_exec_arm_state);
 }
 
 /* Load the snippet and jump to it. 
@@ -15,17 +24,17 @@ void armloader_restore_state(void) {
  * params may contain pointer to data which should be copied to device space.
  * Each param will be copied to the ARM stack, and its address written in rX, starting from r0.
  * params_num must be less or equal than 12.
+ * callback() will be called once the snippet has finished its execution.
  * returns 0 if success.
- * A 'next' breakpoint is set after the snippet exectution.
- * armloader_restore_state() should be called at that time.
  */
 int armloader_load_snippet(enum SNIPPETS snippet, struct armloader_load_params params[],
-	                         unsigned params_num) {
+	                         unsigned params_num, void (*callback)(struct arm_state*)) {
 	unsigned int i, oscalls_tbl_num;
 	int code_size;
 	void *code_ptr;
 	u32 *entry_points, *oscalls_ptr;
 	u32 os_version;
+	u32 orig_pc;
 	
 	code_size = binary_snippets_bin_end - binary_snippets_bin_start;
 	if (code_size % 4)
@@ -66,8 +75,7 @@ int armloader_load_snippet(enum SNIPPETS snippet, struct armloader_load_params p
 		return -1;
 	}
 	
-	/* set a 'next' breakpoint at the current PC, which is used as return address */
-	debug_set_next_brkpt((u32*)arm.reg[15]);
+	orig_pc = arm.reg[15];
 	arm.reg[14] = arm.reg[15]; // return address
 	arm.reg[15] = arm.reg[13] + entry_points[SNIPPETS_EP_LOAD];
 	arm.reg[12] = snippet;
@@ -91,11 +99,15 @@ int armloader_load_snippet(enum SNIPPETS snippet, struct armloader_load_params p
 			memcpy(param_ptr, params[i].p.ptr, params[i].p.size);
 		}
 	}
+	armloader_cb_ptr = callback;
+	u32 *flags = &RAM_FLAGS(virt_mem_ptr(orig_pc, 4));
+	if (*flags & RF_CODE_TRANSLATED) flush_translations();
+	*flags |= RF_ARMLOADER_CB;	
 
 // TODO for debugging
-						u32 *flags = &RAM_FLAGS(virt_mem_ptr(arm.reg[15], 4));
-										if (*flags & RF_CODE_TRANSLATED) flush_translations();
-									*flags |= RF_EXEC_BREAKPOINT;	
+//						u32 *flags = &RAM_FLAGS(virt_mem_ptr(arm.reg[15], 4));
+//										if (*flags & RF_CODE_TRANSLATED) flush_translations();
+//									*flags |= RF_EXEC_BREAKPOINT;	
 	
 	return 0;
 }

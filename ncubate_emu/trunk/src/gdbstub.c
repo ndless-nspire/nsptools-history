@@ -29,7 +29,7 @@
 
 static void wait_gdb_connection(void);
 
-//#define TRACE_PACKETS 1
+#define TRACE_PACKETS 1
 
 static int listen_socket_fd = 0;
 static int socket_fd = 0;
@@ -387,15 +387,11 @@ static void set_registers(const unsigned long regbuf[NUMREGS]) {
 	set_cpsr_full(regbuf[NUMREGS-1]);
 }
 
-/* Called to finish request processing and send the response */
-void (*packhandler_cb)(void) = NULL;
-
 /* GDB Host I/O */
 
 static void remote_vfile_cb(int result) {
 	char *ptr;
-	armloader_restore_state();
-		/* response: F result [, errno] [; attachment] */
+	/* response: F result [, errno] [; attachment] */
 	ptr = remcomOutBuffer;
 	sprintf(ptr, "F%x", result);
 	if (result < 0)
@@ -411,7 +407,7 @@ static void remote_vfile_cb(int result) {
 	putpacket(remcomOutBuffer);
 }
 
-static void remote_open_cb(void) {
+static void remote_open_cb(struct arm_state *after_exec_arm_state) {
 	remote_vfile_cb(arm.reg[0]);
 }
 
@@ -420,11 +416,10 @@ static int remote_open(char *pathname, int flags) {
 	struct armloader_load_params params[2];
 	params[0].t = ARMLOADER_PARAM_PTR;
 	params[0].p.ptr = pathname;
-	params[0].p.size= strlen(pathname) + 1;
+	params[0].p.size = strlen(pathname) + 1;
 	params[1].t = ARMLOADER_PARAM_VAL;
 	params[1].v = flags;
-	armloader_load_snippet(SNIPPET_file_open, params, 2);
-	packhandler_cb = remote_open_cb;
+	armloader_load_snippet(SNIPPET_file_open, params, 2, remote_open_cb);
 	return 0;
 }
 
@@ -724,14 +719,6 @@ void gdbstub_debugger(void) {
 	static bool first_pkt_received = 0;
 	
 	cpu_events &= ~EVENT_DEBUG_STEP;
-	if ((u32*)arm.reg[15] == debug_next_brkpt_adr) { // 'next' breakpoint hit: used by the stub for ARM snippets implementing commands
-		debug_set_next_brkpt(0);
-		if (packhandler_cb) {
-			packhandler_cb();
-			packhandler_cb = NULL;
-			return;
-		}
-	}
 
 	if (first_pkt_received)
 		send_signal_reply(SIGNAL_TRAP);
