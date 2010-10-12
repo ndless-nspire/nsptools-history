@@ -53,8 +53,10 @@
 // Must be kept up-to-date with the value of the last syscall
 #define __SYSCALLS_LAST 32
 
-// Flag: higher bit of the 3-bytes comment field of the swi instruction
-#define __SYSCALLS_ISEXT 0x800000
+// Flag: 3 higher bits of the 3-bytes comment field of the swi instruction
+#define __SYSCALLS_ISEXT 0x200000
+#define __SYSCALLS_ISEMU 0x400000
+
 /* Ndless extensions.
  * Not automatically parsed. Starts from 0. The recommandations for the standard syscalls enumeration apply.
  * The order is the same as in arm/syscalls.c/sc_ext_table[]
@@ -65,5 +67,16 @@
 
 // Must be kept up-to-date with the value of the last syscalls extension without __SYSCALLS_ISEXT
 #define __SYSCALLS_LASTEXT 1
+
+/* Ndless integration with emulators. Grouped to make the integration easier for the emulators (they require
+ * only these constants).
+ * Not automatically parsed. Starts from 0. The recommandations for the standard syscalls enumeration apply.
+ * The order is the same as in arm/emu.c/emu_sysc_table[]
+ * Must always be or-ed with __SYSCALLS_ISEMU */
+#define NDLSEMU_DEBUG_ALLOC (__SYSCALLS_ISEMU | 0)
+#define NDLSEMU_DEBUG_FREE (__SYSCALLS_ISEMU | 1)
+
+// Must be kept up-to-date with the value of the last syscalls extension without __SYSCALLS_ISEXT
+#define __SYSCALLS_LASTEMU 1
 
 #endif

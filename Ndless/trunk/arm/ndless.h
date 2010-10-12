@@ -27,7 +27,11 @@
 
 #include <os.h>
 
-/* ints.h */
+/* emu.c */
+extern unsigned emu_sysc_table[];
+
+
+/* ints.c */
 extern unsigned ints_scextnum;
 extern unsigned *sc_addrs_ptr;
 void ints_setup_handlers(void);

@@ -50,6 +50,7 @@ void sc_ext_relocdatab(unsigned *dataptr, unsigned size, void *base) {
 	}
 }
 
+/* Extension syscalls table */
 unsigned sc_ext_table[] = {
 	(unsigned)sc_nl_osvalue, (unsigned)sc_ext_relocdatab
 };
@@ -64,7 +65,8 @@ void sc_setup(void) {
 			sc_addrs_ptr = syscalls_cas_1_7;
 			break;
 	}
-	sc_ext_relocdatab(sc_ext_table, sizeof(sc_ext_table)/sizeof(unsigned), &__base);
+	sc_ext_relocdatab(sc_ext_table, __SYSCALLS_LASTEXT + 1, &__base);
+	sc_ext_relocdatab(emu_sysc_table, __SYSCALLS_LASTEMU + 1, &__base);
 }
 
 #else

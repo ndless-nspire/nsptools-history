@@ -57,7 +57,7 @@ ndless_installer.tns: ndless_installer.elf
 	mv $(@:.tns=.zip) $(DISTDIR)/$@
 	rm Document.xml
 
-RES_OBJS = install.o ints.o ploaderhook.o syscalls.o utils.o $(SYSCALLS_OBJS)
+RES_OBJS = emu.o install.o ints.o ploaderhook.o syscalls.o utils.o $(SYSCALLS_OBJS)
 ndless_resources.elf: $(RES_OBJS)
 	$(LD) $(LDFLAGS) $^ -o $@
 

@@ -82,28 +82,46 @@ asm(
 " biceq r0, r0, #0xFF000000 \n"
 " ldrneh r0, [lr, #-3]    @ thumb state (-2-1, because of the previous +1) \n"
 " bicne r0, r0, #0xFF00 \n"
-#ifndef _NDLS_LIGHT // with syscalls extension support
-" mov   r1, #" STRINGIFY(__SYSCALLS_ISEXT) "\n"
-" tst   r0, r1 \n"
-" bic   r0, r1            @ clear the flag \n"
-" ldreq r1, sc_addrs_ptr  @ OS syscalls table \n"
-" ldrne r1, get_ext_table_reloc @ from here...\n"
-" ldrne r2, get_ext_table_reloc+4 \n"
-"get_ext_table: \n"
-" addne r1, pc \n"
-" ldrne r1, [r1, r2]      @ ...to there: GOT-based access to sc_ext_table (defined in another .o). TODO: Could be optimized with http://gcc.gnu.org/bugzilla/show_bug.cgi?id=43129 once available? \n"
-#else
-" ldr   r1, sc_addrs_ptr \n"
+#ifndef _NDLS_LIGHT // with syscalls extension/emu syscalls support
+" mov   r1, r0            @ syscall number \n"
+" and   r1, #0xE00000   @ keep the 3-bit flag \n"
+" bic   r0, #0xE00000   @ clear the flag \n"
+" cmp   r1, #" STRINGIFY(__SYSCALLS_ISEXT) "\n"
+" beq   is_ext_syscall \n"
+" cmp   r1, #" STRINGIFY(__SYSCALLS_ISEMU) "\n"
+" beq   is_emu_syscall \n"
 #endif
+" ldr   r1, sc_addrs_ptr  @ OS syscalls table \n"
+"jmp_to_syscall: \n"
 " ldr   r0, [r1, r0, lsl #2] @ syscall address \n"
 " str   r0, [sp, #12]      @ overwrite the dummy register previously saved \n"
 " ldmfd sp!, {r0-r2, pc}  @ restore the regs and jump to the syscall. lr is still the return address \n"
+
+#ifndef _NDLS_LIGHT // with syscalls extension/emu support
+"is_ext_syscall: \n"
+" ldr   r1, get_ext_table_reloc @ from here...\n"
+" ldr   r2, get_ext_table_reloc+4 \n"
+"get_ext_table: \n"
+" add   r1, pc \n"
+" ldr   r1, [r1, r2]      @ ...to there: GOT-based access to sc_ext_table (defined in another .o). TODO: Could be optimized with http://gcc.gnu.org/bugzilla/show_bug.cgi?id=43129 once available? \n"
+" b jmp_to_syscall \n"
+
+"is_emu_syscall: \n"
+" ldr   r1, get_emu_table_reloc \n"
+" ldr   r2, get_emu_table_reloc+4 \n"
+"get_emu_table: \n"
+" add   r1, pc \n"
+" ldr   r1, [r1, r2] \n"
+" b jmp_to_syscall \n"
+#endif
 
 "sc_addrs_ptr: .global sc_addrs_ptr @ defined here because accessed with pc-relative instruction \n"
 " .long 0 \n"
 #ifndef _NDLS_LIGHT
 "get_ext_table_reloc: .long _GLOBAL_OFFSET_TABLE_-(get_ext_table+8) \n"
 " .long sc_ext_table(GOT) \n"
+"get_emu_table_reloc: .long _GLOBAL_OFFSET_TABLE_-(get_emu_table+8) \n"
+" .long emu_sysc_table(GOT) \n"
 #endif
 );
 

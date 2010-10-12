@@ -180,7 +180,8 @@ Changelog
  Hook:
   - NEW: the program format is not specific to an OS or hardware version anymore
   - NEW: syscalls can be called in thumb state
-  - NEW: Ndless can exposed internal functions to programs (nl_...())
+  - NEW: Ndless can exposed internal functions to programs (nl_...()) and 
+         emulators
  Tools:
   - NEW: startup code relocates the program. You can now use C global variables.
          initialization data depending on relocation must be relocated with 
