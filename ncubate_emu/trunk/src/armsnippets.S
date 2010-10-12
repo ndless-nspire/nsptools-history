@@ -6,42 +6,49 @@
 start:
 
 entry_points_list:    @ defined by SNIPPETS_EP_*
-	.word oscalls_tables_list - entry_points_list
+	.word syscalls_tables_list - entry_points_list
 	.word load_snippet - entry_points_list
 
-oscalls_tables_list:
+syscalls_tables_list:
 	.word 1 @ size
 	@ format: OS_VERSION_*, offset from start
-@	.word 0x102132A0, oscalls_1_7_cas - start
-	.word 0x10211290, oscalls_1_7_non_cas - start
+@	.word 0x102132A0, syscalls_1_7_cas - start
+	.word 0x10211290, syscalls_1_7_non_cas - start
 
-	.equ fopen, 0
-	.equ fread, 1
-	.equ fwrite, 2
-	.equ fclose, 3
-	.equ unlink, 4
+	.equ TCC_Current_HISR_Pointer_patch, 0
+	.equ fopen, 1
+	.equ fread, 2
+	.equ fwrite, 3
+	.equ fclose, 4
+	.equ unlink, 5
+	.equ free, 6
+	.equ stat, 7
+	.equ malloc, 8
 
-oscalls_1_7_cas:
+syscalls_1_7_cas:
 @ TODO
 
-oscalls_1_7_non_cas:
+syscalls_1_7_non_cas:
 	.word 0x102A0788 @ TCC_Current_HISR_Pointer_patch: cmp r0, #4
 	.word 0x102A4CBC @ fopen
 	.word 0x102A4EB0 @ fread
 	.word 0x102A5264 @ fwrite
 	.word 0x102A46B4 @ fclose
 	.word 0x102AA5A8 @ unlink
+	.word 0x102A11BC @ free
+	.word 0x102AA2CC @ stat
+	.word 0x102A11C8 @ malloc
 
-	.macro oscall id
+	.macro syscall id
 	mov lr, pc
-	ldr pc, [r11,#\id]
+	ldr pc, [r11, #\id*4]
 	.endm
-	
+
 @ The snippets should return to the caller with ldmfd sp, {pc}
 @ input:
 @  lr=return address
 @  r12=index (SNIPPET_*)
-@  r11=oscall table (caution, the snippets depend on it)
+@  r11=syscall table (caution, the snippets depend on it)
 @ destroys: r10, r12
 load_snippet:
   stmfd sp!, {lr}
@@ -52,9 +59,9 @@ load_snippet:
 
 @ Some file related syscalls call a sub-function which don't check correctly the return
 @ of TCC_Current_HISR_Pointer. It may be null depending when the control flow is interrupted
-@ by teh armloader.
+@ by the armloader.
 @ This function patches the check.
-@ params: r11=oscall table
+@ params: r11=syscall table
 patch_TCC_Current_HISR_Pointer_return_check:
 	ldr  r0, [r11, #0]  @ TCC_Current_HISR_Pointer_patch
 	adr  r1, unpatch_TCC_Current_HISR_Pointer_addr
@@ -73,19 +80,88 @@ unpatch_TCC_Current_HISR_Pointer_return_check:
 	bx   lr	
 
 snippets_list:      @ defined by SNIPPET_*
-	.word 0 @ reserved for TCC_Current_HISR_Pointer_patch
+	.word file_export - snippets_list
+	.word free_block - snippets_list
 	.word file_open - snippets_list
 	.word file_read - snippets_list
 	.word file_write - snippets_list
 	.word file_close - snippets_list
 	.word file_unlink - snippets_list
 
+@ param: char *full_path
+@ returns:
+@  pointer to a malloc-ed buffer holding the file content, which must be freed with free_block
+@    null in case of error
+@  file size
+file_export:
+	full_path .req r4
+	buf .req r6
+	mov  buf, #0
+	mov  full_path, r0
+	bl   patch_TCC_Current_HISR_Pointer_return_check
+	mov  r0, full_path
+	.equ sstat_size, 36   @ word aligned
+	sub  sp, sp, #sstat_size
+	mov  r1, sp        @ sstat
+	syscall stat
+	mov  r1, sp        @ sstat
+	add sp, sp, #sstat_size
+	cmp	 r0, #0
+	@ bne  file_export_exit @ TODO
+	fsize .req r7
+	ldr  fsize, [r1, #20] @ sstat.st_size
+	ldr  fsize, =500
+0: b 0b
+	mov  r0, fsize
+	syscall malloc
+	subs buf, r0, #0
+	beq  file_export_exit
+	mov  r0, full_path
+	adr  r1, rb
+	syscall fopen
+	file .req r5
+	subs file, r0, #0
+	beq  file_export_free_exit
+	.set block_size, 4 @ TODO 1000
+	readcnt .req r8
+	mov  readcnt, fsize
+0:
+	mov  r0, buf
+	mov  r1, #block_size
+	sub  readcnt, readcnt, r1
+	mov  r2, #1       @ count
+	mov  r3, file
+	syscall fread
+	cmp  r0, #1
+	bne  file_export_close_free_exit
+	cmp  readcnt, #0
+	bgt  0b
+	mov  r0, file
+	syscall fclose
+	b   file_export_exit
+file_export_close_free_exit:
+	mov  r0, file
+	syscall fclose
+file_export_free_exit:
+  mov r0, buf
+	syscall free
+file_export_exit:
+	bl   unpatch_TCC_Current_HISR_Pointer_return_check
+	mov  r0, buf
+	mov  r1, fsize
+	ldmfd sp, {pc}
+
+@ calls free
+free_block:
+	syscall free
+	ldmfd sp, {pc}
+
 @ params: char *pathname, int flags
 file_open:
 	mov  r4, r0
 	bl   patch_TCC_Current_HISR_Pointer_return_check
 	adr  r1, rb
-	oscall fopen
+	syscall fopen
 	mov  r4, r0
 	bl   unpatch_TCC_Current_HISR_Pointer_return_check
 	mov  r0, r4
