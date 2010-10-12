@@ -61,6 +61,8 @@ static void flush_out_buffer(void) {
 static void put_debug_char(char c) {
 #if TRACE_PACKETS
 	printf("%c", c);
+		if (c == '+' || c == '-')
+			printf("\t");
 #endif
 	if (sockbufptr == sockbuf + sizeof sockbuf)
 		flush_out_buffer();
@@ -74,6 +76,8 @@ static char get_debug_char(void) {
 		r = recv(socket_fd, &c, 1, 0);
 	#if TRACE_PACKETS
 		printf("%c", c);
+		if (c == '+' || c == '-')
+			printf("\n");
 	#endif
 		if (r == -1) {
 			log_socket_error("Failed to recv from GDB stub socket");
@@ -175,7 +179,7 @@ static char remcomInBuffer[BUFMAX];
 static char remcomOutBuffer[BUFMAX];
 static char databuffer[BUFMAX / 2];
 
-/* scan for the sequence $<data>#<checksum> */
+/* scan for the sequence $<data>#<checksum>. # will be replaced with \0.*/
 unsigned char *getpacket(void) {
 	unsigned char *buffer = &remcomInBuffer[0];
 	unsigned char checksum;
@@ -203,14 +207,14 @@ retry:
 			if (ch == '$')
 				goto retry;
 			buffer[count] = ch;
-			count = count + 1;
 			if (ch == '#')
 				break;
+			count = count + 1;
 			checksum = checksum + ch;
 		}
-		buffer[count] = 0;
 
 		if (ch == '#') {
+			buffer[count] = 0;
 			ch = get_debug_char();
 			xmitcsum = hex(ch) << 4;
 			ch = get_debug_char();
@@ -576,7 +580,11 @@ parse_new_pc:
 					arm.reg[15] = addr;
 				}
 				return;
-			
+			case 'q':
+				if (!strcmp("Offsets", ptr)) {
+					sprintf(remcomOutBuffer, "Text=%x;Data=%x;Bss=%x", 0, 0, 0);
+				}
+				break;
 			case 'v':
 				ptr = strtok(ptr, ";:");
 				if (!strcmp("Cont?", ptr)) { /* supported actions query */
@@ -584,7 +592,7 @@ parse_new_pc:
 					strcat(remcomOutBuffer, "cs"); /* supports these actions */
 				}
 				else if (!strcmp("Cont", ptr)) {
-					ptr = strtok(NULL, ""); /* remaining strin: [action[:thread-id];]* */
+					ptr = strtok(NULL, ""); /* remaining string: [action[:thread-id];]* */
 					while (ptr && *ptr) {
 						char action = *ptr++;
 						ptr = strtok(ptr, ";");
