@@ -25,6 +25,9 @@
 #include <os.h>
 #include "ndless.h"
 
+// set by emu_debug_alloc()
+void *emu_debug_alloc_ptr;
+
 // The following functions are exported as syscalls.
 
 /* Allocates a memory block that should be used by the loader to load the program
@@ -35,12 +38,15 @@
  * is sent only once by GDB for each debug session.
  * Returns a pointer to the memory block, or null in case of error. */
 static void *emu_debug_alloc(void) {
-	return malloc(500*1024);
+	if (!emu_debug_alloc_ptr)
+	emu_debug_alloc_ptr = malloc(500*1024);
+	return emu_debug_alloc_ptr;
 }
 
 /* Free the memory block allocated with emu_debug_alloc(). */
-static void emu_debug_free(void *ptr) {
-	free(ptr);
+static void emu_debug_free() {
+	free(emu_debug_alloc_ptr);
+	emu_debug_alloc_ptr = NULL;
 }
 
 /* Emu syscalls table. Relocated by sc_setup(). */

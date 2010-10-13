@@ -23,6 +23,7 @@
  ****************************************************************************/
 
 #include <os.h>
+#include "ndless.h"
 
 // Marker at the beginning of a program
 #define PRGMSIG "PRG"
@@ -42,24 +43,27 @@ HOOK_DEFINE(plh_hook) {
 		puts("ploaderhook: can't open doc");
 		HOOK_RESTORE_RETURN(plh_hook);
 	}
-	void *docptr = malloc(docstat.st_size);
+	void *docptr = emu_debug_alloc_ptr ? emu_debug_alloc_ptr : malloc(docstat.st_size);
 	if (!docptr) {
 		puts("ploaderhook: can't malloc");
 		HOOK_RESTORE_RETURN(plh_hook);
 	}
 	if (!fread(docptr, docstat.st_size, 1, docfile)) {
 		puts("ploaderhook: can't read doc");
-		free(docptr);
+		if (!emu_debug_alloc_ptr)
+			free(docptr);
 		HOOK_RESTORE_RETURN(plh_hook);
 	}
 	fclose(docfile);
 	if (strcmp(PRGMSIG, docptr)) { /* not a program */
-		free(docptr);
+		if (!emu_debug_alloc_ptr)
+			free(docptr);
 		HOOK_RESTORE_RETURN(plh_hook);
 	}
 	int intmask = TCT_Local_Control_Interrupts(-1); /* TODO workaround: disable the interrupts to avoid the clock on the screen */
 	((void (*)(int argc, char *argv[]))(docptr + sizeof(PRGMSIG)))(1, (char*[]){docpath, NULL}); /* run the program */
 	TCT_Local_Control_Interrupts(intmask);
-	free(docptr);
+	if (!emu_debug_alloc_ptr)
+		free(docptr);
 	HOOK_RESTORE_RETURN_SKIP(plh_hook, 4); // skip the error dialog about the unrecognized format
 }

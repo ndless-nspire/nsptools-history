@@ -28,6 +28,7 @@
 #include <os.h>
 
 /* emu.c */
+extern void *emu_debug_alloc_ptr;
 extern unsigned emu_sysc_table[];
 
 
