@@ -1,0 +1,64 @@
+      =================================
+      = Development environment setup =
+      =================================
+
+
+This document is intended for maintainers of Ndless.
+
+This file describes the prerequisites and setup steps for a Windows development environment
+to build Ndless.
+
+You *don't* need to follow this procedure to set up a C/ARM development environment to
+build TI-Nspire programs. This setup is described in ReadMe.txt.
+
+C
+=
+
+- MSYS with MinGW: http://www.mingw.org/wiki/msys
+
+* Copy Ndless/Makefile.config.tpl to Ndless/Makefile.config and configure the latter
+
+ARM
+===
+
+- Set up the toolchain as described in ReadMe.xt
+
+Java
+====
+
+- Java JDK 6 - http://java.sun.com/javase/downloads/index.jsp
+- Eclipse IDE for Java Developers - http://www.eclipse.org/downloads
+- Subclipse (SVN plug-in for Eclipse) - http://subclipse.tigris.org/
+- Apache Ant - http://ant.apache.org/bindownload.cgi
+- ProGuard - http://proguard.sourceforge.net/
+- TI Computer Link Software >= 1.4 - http://education.ti.com/educationportal/sites/US/productDetail/us_nspire_computerlink.html
+
+* Add Apache Ant's home directory to your PATH environment variable
+* Unzip ProGuard to Ndles/java/tools/proguard (there will be bin/ and README in this directory)
+* Import in Eclipse the Java Project Ndless/java
+* Edit with a text editor Ndlessjava/Ndless.userlibraries, and configure the paths depending
+  on your environment
+* Load this file in Eclipse : Window -> Preferences -> Java -> Build Path -> User Libraries
+  -> Import
+* Copy Ndless/java/build_config.properties.tpl to Ndless/java/build_config.properties and
+  configure the latter
+* Edit Ndless/java/ndless.pro and adapt the libraryjars paths
+
+Building
+========
+
+From Ndless root directory:
+
+* make: builds the artifacts
+* make arm [NSPIRE_HARDWARE=CAS|NON_CAS, default is NON_CAS]: builds the ARM artifacts
+* make dist FAST=true: builds the artificats and create a release directory (dist) for
+  development tests. Java obfuscation is disabled.
+* make dist: builds the artificats and create a release directory (dist)
+
+Debugging the installer
+=======================
+
+The Eclipse Debug configuration should be configured this way:
+* Arguments -> Working directory -> Other -> <dist in Ndless root directory>
+* Classpath -> User Entries: The Computer Link User Library must be removed
+  to use the version patched at runtime. choose Remove, then Add Projects -> Ndless
