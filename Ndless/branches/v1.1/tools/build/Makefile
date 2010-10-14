@@ -11,5 +11,5 @@ init:
 scripts:
 	@cp $(SCRIPTS) ../../bin
 
-clean:
+clean: init
 	@cd ../../bin && rm -rf $(SCRIPTS)

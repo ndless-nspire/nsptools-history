@@ -30,8 +30,15 @@ import ndless.install.injection.Injector;
 import ndless.install.setup.ConnectivitySetup;
 
 public class Main {
+	public static boolean diagEnabled = false;
 
+	// main(boolean diagnosticEnabled)
 	public static void main(String[] args) {
+		if (args.length == 1) {
+			try {
+				diagEnabled = Boolean.parseBoolean(args[0]);
+			} catch(Exception e) {}
+		}
 		MainFrame.create();
 		ContinueDialog.message("You are about to install Ndless on a TI-Nspire.\n" +
 				"\n" +

@@ -53,6 +53,7 @@ From Ndless root directory:
 * make arm [NSPIRE_HARDWARE=CAS|NON_CAS, default is NON_CAS]: builds the ARM artifacts
 * make dist FAST=true: builds the artificats and create a release directory (dist) for
   development tests. Java obfuscation is disabled.
+* make distbin: builds the artifacts without packaging the source code
 * make dist: builds the artificats and create a release directory (dist)
 
 Debugging the installer

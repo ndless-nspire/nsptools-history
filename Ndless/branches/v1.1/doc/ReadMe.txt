@@ -11,8 +11,9 @@ TI-Nspire to third-party C and assembly development.
 What do I need to install it on a TI-Nspire?
 ============================================
 
-- A TI-Nspire CAS or non-CAS
-- Windows
+- A TI-Nspire CAS or non-CAS ClickPad. TouchPad models aren't supported except if you have
+  a non-CAS ClickPad keypad.
+- Windows as Operating System
 - TI-Nspire Computer Link Software v1.3 or above (previous versions not tested)
 - An Internet connection for automatic OS download if OS 1.1 is not currently installed on
   the TI-Nspire
@@ -64,9 +65,20 @@ Troubleshooting
       with the ClickPad keypad: Home+Enter+P then ON
       with the TouchPad keypad: Doc+Enter+EE then ON
   * Select '2' to uninstall the current OS. Reinstall it when asked to.
+  
 - If the Ndless Installer is lost in is installation sequence, or the USB connection is
   lost, restart the installer. Ndless may then get installed before the end of the second
   sequence, but this shouldn't be a problem.
+  
+- If you still can't install Ndless after multiple attempts, enable the diagnostic mode of
+  the installer and send a problem report:
+  * Edit install-ndless.bat. Replace "set DIAG=false" by "set DIAG=true" on the third line
+  * Follow the installation procedure
+  * At the end of the installation procedure, once an error is reported by the installer,
+    send the file "diag.log.0" to the development team (see below) with any information
+    that could be useful (content of the installer window, computer OS used, version of
+    ComputerLink, TI-Nspire model, ...). We will try not help without any guarantee.
+    
 - If running an executable from the documents screen displays the following message:
   "Sorry. Could not open document 'xxx.tns'", Ndless has not been correctly installed.
   Run the installer again.
@@ -195,6 +207,10 @@ These parts are identified by the files LICENSE.txt or LICENSE.html in the sub-d
 
 Changelog
 =========
+
+* v1.1.1 - <not yet released>
+ Installer:
+  - NEW: Diagnostic mode for problem reports
 
 * v1.1 - 2010/07/31
  Installer:

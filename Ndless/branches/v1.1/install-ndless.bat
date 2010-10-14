@@ -1,4 +1,7 @@
 @echo off
+REM Set to true to enable diagnostic mode
+set DIAG=false
+
 if "%OS%"=="Windows_NT" setlocal
 if "%PROCESSOR_ARCHITECTURE%"=="AMD64" (
 	set regkey=HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Texas Instruments\TI-Nspire Computer Link
@@ -40,7 +43,7 @@ pause
 goto end
 
 :valid_JAVA_EXE
-start /min "" "%JAVA_EXE%" "-jar" "res/install-ndless.jar"
+start /min "" "%JAVA_EXE%" "-jar" "res/install-ndless.jar" %DIAG%
 
 :end
 if "%OS%"=="Windows_NT" endlocal

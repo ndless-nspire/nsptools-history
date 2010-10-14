@@ -36,6 +36,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import ndless.install.Main;
 import ndless.install.common.NdlessException;
 import ndless.install.common.TempFileManager;
 import ndless.install.common.Utils;
@@ -163,12 +164,15 @@ public class Injector implements CurrentStep {
 	}
 
 	private void setupNavnet() throws InterruptedException, IOException {
-		LoggerUtil.setupLogging(TempFileManager.getTempDir() + File.separator
-				+ "pxcl.log", Level.OFF, Level.OFF);
+		LoggerUtil.setupLogging(Main.diagEnabled ? "diag.log" : TempFileManager
+				.getTempDir()
+				+ File.separator + "pxcl.log", Main.diagEnabled ? Level.ALL
+				: Level.OFF /* log */, Level.OFF /* console */);
 		// NavnetConnectivityAPI() uses the level of the logger to set the
 		// native library log level
-		// Level OFF is unfortunately not supported. Logs will appear on stdout
-		Logger.getLogger("com.ti.eps.pxconnect").setLevel(Level.SEVERE);
+		// Level OFF is unfortunately not supported. Logs will allways appear on stdout
+		Logger.getLogger("com.ti.eps.pxconnect").setLevel(
+				Main.diagEnabled ? Level.ALL : Level.SEVERE);
 		try {
 			conApi = NavnetConnectivityAPI.getInstance();
 		} catch (IllegalNavnetStateException e) {
