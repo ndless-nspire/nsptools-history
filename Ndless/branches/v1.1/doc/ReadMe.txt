@@ -211,6 +211,8 @@ Changelog
 * v1.1.1 - <not yet released>
  Installer:
   - NEW: Diagnostic mode for problem reports
+ Include files:
+  - FIX: isKeyPressed made sometimes the program hang
 
 * v1.1 - 2010/07/31
  Installer:
