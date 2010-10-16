@@ -156,7 +156,10 @@ Olivier Armand aka ExtendeD  -  < olivier dot calc at gmail dot com >
 Geoffrey Anneheim aka geogeo - < geoffrey dot anneheim at free dot fr >
 
 We will gladly accept PayPal donations for the hardware expenses that were 
-required for the development of Ndless. Thank you for your support.
+required for the development of Ndless. You can use the e-mail addresses above 
+or the following URL:
+https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=PJ7SGQPQJ8WKQ&item_name=Ndless%20Donation
+Thank you for your support.
 
 Legal stuff
 ===========
