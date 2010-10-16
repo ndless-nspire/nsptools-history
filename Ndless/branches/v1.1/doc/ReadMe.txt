@@ -69,7 +69,9 @@ Troubleshooting
 - If the Ndless Installer is lost in is installation sequence, or the USB connection is
   lost, restart the installer. Ndless may then get installed before the end of the second
   sequence, but this shouldn't be a problem.
-  
+
+- If you have issues installing Ndless, try Computer Link Software v1.3 instead of v1.4
+
 - If you still can't install Ndless after multiple attempts, enable the diagnostic mode of
   the installer and send a problem report:
   * Edit install-ndless.bat. Replace "set DIAG=false" by "set DIAG=true" on the third line
@@ -210,9 +212,10 @@ These parts are identified by the files LICENSE.txt or LICENSE.html in the sub-d
 Changelog
 =========
 
-* v1.1.1 - <not yet released>
+* v1.1.1 - <2010/10/16>
  Installer:
-  - NEW: Diagnostic mode for problem reports
+  - NEW: Diagnostic mode for problem reports (see "Troubleshooting" above)
+  - CHG: Change file transfer path handling, which may fix some transfer errors
  Include files:
   - FIX: isKeyPressed made sometimes the program hang
 

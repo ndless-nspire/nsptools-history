@@ -368,7 +368,7 @@ public class Injector implements CurrentStep {
 			String filename = resFile.getName();
 			MainFrame.log(" - Transferring "
 					+ filename.substring(0, filename.indexOf(".tns")));
-			sendFileToDevice(resFile.getPath(), deviceInstallerDir + "/"
+			sendFileToDevice(resFile.getAbsolutePath(), deviceInstallerDir + "/"
 					+ filename);
 		}
 	}
