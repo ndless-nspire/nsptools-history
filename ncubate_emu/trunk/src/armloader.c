@@ -21,7 +21,8 @@ void armloader_cb(void) {
 
 /* Load the snippet and jump to it. 
  * snippets are defined in armsnippets.S.
- * params may contain pointer to data which should be copied to device space.
+ * params can be null if not required.
+ * params may contain pointers to data which should be copied to device space.
  * Each param will be copied to the ARM stack, and its address written in rX, starting from r0.
  * params_num must be less or equal than 12.
  * callback() will be called once the snippet has finished its execution.

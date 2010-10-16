@@ -361,7 +361,7 @@ void __attribute__((fastcall)) write_word(u32 addr, u32 value);
 
 enum SNIPPETS {
 	SNIPPET_file_export, SNIPPET_free_block, SNIPPET_file_open, SNIPPET_file_read, SNIPPET_file_write, SNIPPET_file_close,
-	SNIPPET_file_unlink
+	SNIPPET_file_unlink, SNIPPET_ndls_debug_alloc, SNIPPET_ndls_debug_free
 };
 extern char binary_snippets_bin_start[];
 extern char binary_snippets_bin_end[];

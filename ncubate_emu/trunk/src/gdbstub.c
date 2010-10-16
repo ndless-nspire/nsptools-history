@@ -31,6 +31,14 @@ static void wait_gdb_connection(void);
 
 #define TRACE_PACKETS 1
 
+bool ndls_is_installed(void) {
+	// The Ndless marker is 8 bytes before the SWI handler
+	return *(unsigned*)(virt_mem_ptr(
+		*(unsigned*)virt_mem_ptr(0x20 + 2 * 4 /* SWI handler address */, 4)
+		, 4) - 8)
+	== 0x4E455854 /* 'NEXT' */;
+}
+
 static int listen_socket_fd = 0;
 static int socket_fd = 0;
 
@@ -123,6 +131,13 @@ static void gdbstub_bind(int port) {
 	}
 }
 
+// program block pre-allocated by Ndless, used for vOffsets queries
+static u32 ndls_debug_alloc_block = NULL;
+
+static void gdb_connect_ndls_cb(struct arm_state* state) {
+	ndls_debug_alloc_block = state->reg[0]; // can be 0
+}
+
 static void wait_gdb_connection(void) {
 	int r, on;
 	
@@ -143,6 +158,10 @@ static void wait_gdb_connection(void) {
 #endif
 	if (r == -1)
 		log_socket_error("setsockopt(TCP_NODELAY) failed for GDB stub socket");
+	
+	// Interface with Ndless
+	if (ndls_is_installed())
+		armloader_load_snippet(SNIPPET_ndls_debug_alloc, NULL, 0, gdb_connect_ndls_cb);
 	puts("GDB connected.");
 }
 
@@ -582,7 +601,8 @@ parse_new_pc:
 				return;
 			case 'q':
 				if (!strcmp("Offsets", ptr)) {
-					sprintf(remcomOutBuffer, "Text=%x;Data=%x;Bss=%x", 0, 0, 0);
+					sprintf(remcomOutBuffer, "Text=%x;Data=%x;Bss=%x",
+						ndls_debug_alloc_block, ndls_debug_alloc_block,	ndls_debug_alloc_block);
 				}
 				break;
 			case 'v':

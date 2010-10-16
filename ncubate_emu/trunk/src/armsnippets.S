@@ -3,6 +3,11 @@
  * and ending at binary_armsnippets_bin_end.
  */
 
+// From Ndless's include/syscalls.h
+#define __SYSCALLS_ISEMU 0x400000
+#define NDLSEMU_DEBUG_ALLOC (__SYSCALLS_ISEMU | 0)
+#define NDLSEMU_DEBUG_FREE (__SYSCALLS_ISEMU | 1)
+
 start:
 
 entry_points_list:    @ defined by SNIPPETS_EP_*
@@ -44,6 +49,17 @@ syscalls_1_7_non_cas:
 	ldr pc, [r11, #\id*4]
 	.endm
 
+snippets_list:      @ defined by SNIPPET_*
+	.word file_export - snippets_list
+	.word free_block - snippets_list
+	.word file_open - snippets_list
+	.word file_read - snippets_list
+	.word file_write - snippets_list
+	.word file_close - snippets_list
+	.word file_unlink - snippets_list
+	.word ndls_debug_alloc - snippets_list
+	.word ndls_debug_free - snippets_list 
+
 @ The snippets should return to the caller with ldmfd sp, {pc}
 @ input:
 @  lr=return address
@@ -78,15 +94,6 @@ unpatch_TCC_Current_HISR_Pointer_return_check:
 	mov  r1, #4
 	strb r1, [r0, #0] @ converts back 'cmp r0, #0' to 'cmp r0, #4'
 	bx   lr	
-
-snippets_list:      @ defined by SNIPPET_*
-	.word file_export - snippets_list
-	.word free_block - snippets_list
-	.word file_open - snippets_list
-	.word file_read - snippets_list
-	.word file_write - snippets_list
-	.word file_close - snippets_list
-	.word file_unlink - snippets_list
 
 @ param: char *full_path
 @ returns:
@@ -167,6 +174,7 @@ file_open:
 	mov  r0, r4
 	ldmfd sp, {pc}
 rb:	.asciz "rb"
+	.align
 
 file_read:
 
@@ -175,3 +183,12 @@ file_write:
 file_close:
 
 file_unlink:
+
+// See Ndless's emu.c
+ndls_debug_alloc:
+	swi  NDLSEMU_DEBUG_ALLOC
+	ldmfd sp, {pc}
+
+ndls_debug_free:
+	swi  NDLSEMU_DEBUG_FREE
+	ldmfd sp, {pc}

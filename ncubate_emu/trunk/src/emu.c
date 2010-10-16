@@ -443,9 +443,6 @@ usage:
 
 	gui_initialize();
 
-	if (is_gdb_debugger)
-		gdbstub_init(gdb_port);
-
 	throttle_timer_on();
 	atexit(throttle_timer_off);
 	//FILE *untrans = fopen("untrans.out", "wb");
@@ -490,6 +487,9 @@ reset:
 			timerpairs[i].timers[1].control = 0x10;
 		}
 	}
+
+	if (is_gdb_debugger)
+		gdbstub_init(gdb_port);
 
 	setjmp(restart_after_exception);
 
