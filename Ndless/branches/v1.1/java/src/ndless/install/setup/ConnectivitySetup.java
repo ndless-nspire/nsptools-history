@@ -123,17 +123,15 @@ public class ConnectivitySetup {
 		navNetDir = new File(clInstallDir, "lib" + File.separator + "navnet");
 		if (navNetDir.exists())
 			return navNetDir;
+		String commonPFEnvVars[] = {"CommonProgramFiles", "COMMONPROGRAMFILES",
+				"CommonProgramFiles(x86)", "CommonProgramW6432"};
 		String sharedSuffix = "/TI Shared/CommLib/1/NavNet";
-		navNetDir = new File(System.getenv().get("CommonProgramFiles")
-				+ sharedSuffix);
-		if (navNetDir.exists())
-			return navNetDir;
-		navNetDir = new File(System.getenv().get("COMMONPROGRAMFILES")
-				+ sharedSuffix);
-		if (navNetDir.exists())
-			return navNetDir;
-		else
-			throw new NdlessException("NavNet directory not found");
+		for (String env: commonPFEnvVars) {
+			navNetDir = new File(System.getenv().get(env) + sharedSuffix);
+			if (navNetDir.exists())
+				return navNetDir;
+		}
+		throw new NdlessException("NavNet directory not found");
 	}
 
 	/**

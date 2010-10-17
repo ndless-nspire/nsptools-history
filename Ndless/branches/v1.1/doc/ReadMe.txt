@@ -1,6 +1,6 @@
-=============================
-= Ndless for TI-Nspire v1.1 =
-=============================
+===============================
+= Ndless for TI-Nspire v1.1.2 =
+===============================
 
 What is it?
 ===========
@@ -211,6 +211,11 @@ These parts are identified by the files LICENSE.txt or LICENSE.html in the sub-d
 
 Changelog
 =========
+
+* v1.1.2 - <not yet released>
+ Installer:
+  - FIX: The installation failed on 64-bit architectures with Computer Link Software 1.4
+         since Ndless v1.1
 
 * v1.1.1 - <2010/10/16>
  Installer:
