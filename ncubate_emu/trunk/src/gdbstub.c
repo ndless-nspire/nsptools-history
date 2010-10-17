@@ -25,8 +25,6 @@
 
 #include "emu.h"
 
-#define TRACE_PACKETS 1
-
 static void gdbstub_disconnect(void);
 
 bool ndls_is_installed(void) {
@@ -73,12 +71,12 @@ static void flush_out_buffer(void) {
 }
 
 static void put_debug_char(char c) {
-#if TRACE_PACKETS
-	printf("%c", c);
-	fflush(stdout);
+	if (log_enabled[LOG_GDB]) {
+		logprintf(LOG_GDB, "%c", c);
+		fflush(stdout);
 		if (c == '+' || c == '-')
-			printf("\t");
-#endif
+			logprintf(LOG_GDB, "\t");
+	}
 	if (sockbufptr == sockbuf + sizeof sockbuf)
 		flush_out_buffer();
 	*sockbufptr++ = c;
@@ -106,13 +104,13 @@ static char get_debug_char(void) {
 			return -1; // disconnected
 		break;
 	}
-#if TRACE_PACKETS
-		printf("%c", c);
+	if (log_enabled[LOG_GDB]) {
+		logprintf(LOG_GDB, "%c", c);
 		fflush(stdout);
 		if (c == '+' || c == '-')
-			printf("\n");
-#endif
-		return c;
+			logprintf(LOG_GDB, "\n");
+	}
+	return c;
 }
 
 static void gdbstub_bind(int port) {

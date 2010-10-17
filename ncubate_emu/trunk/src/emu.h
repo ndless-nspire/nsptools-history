@@ -48,8 +48,8 @@ extern bool show_speed;
 extern int keypad_type;
 extern volatile u16 key_map[16];
 
-enum { LOG_MISC, LOG_CPU, LOG_IO, LOG_HASH, LOG_FLASH, LOG_INTS, LOG_ICOUNT, LOG_USB, MAX_LOG };
-#define LOG_TYPE_TBL "MCIHFQ#U";
+enum { LOG_MISC, LOG_CPU, LOG_IO, LOG_HASH, LOG_FLASH, LOG_INTS, LOG_ICOUNT, LOG_USB, LOG_GDB, MAX_LOG };
+#define LOG_TYPE_TBL "MCIHFQ#UG"
 extern int log_enabled[MAX_LOG];
 void logprintf(int type, char *str, ...);
 
