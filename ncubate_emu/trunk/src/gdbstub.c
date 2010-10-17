@@ -613,28 +613,7 @@ parse_new_pc:
 				break;
 			case 'v':
 				ptr = strtok(ptr, ";:");
-				if (!strcmp("Cont?", ptr)) { /* supported actions query */
-					strcpy(remcomOutBuffer, "vCont;");
-					strcat(remcomOutBuffer, "cs"); /* supports these actions */
-				}
-				else if (!strcmp("Cont", ptr)) {
-					ptr = strtok(NULL, ""); /* remaining string: [action[:thread-id];]* */
-					while (ptr && *ptr) {
-						char action = *ptr++;
-						ptr = strtok(ptr, ";");
-						if (*ptr != ':') { /* thread-ids or not supported: perform action if not a thread-id */
-							switch (action) {
-								case 's':
-									cpu_events |= EVENT_DEBUG_STEP;
-									return;
-								case 'c':
-									return;
-							}
-						}
-						ptr = strtok(NULL, ";"); 
-					}
-				}
-				else if (!strcmp("File", ptr)) { /* vFile:operation:parameter... */
+				if (!strcmp("File", ptr)) { /* vFile:operation:parameter... */
 					ptr = strtok(NULL, ":"); /* operation */
 					if (!ptr) {
 						strcpy(remcomOutBuffer,"E01");
