@@ -355,6 +355,8 @@ void usblink_connect() {
   			usblink_addr_set_event           = 0x101A429C;
   			usblink_addr_schedule            = 0x10211E44;
   			usblink_addr_submit_read_buffer  = 0x1028C97C;
+				usblink_addr_submit_write_buffer = 0x1028CA28;
+				usblink_addr_nav_user            = *(u32 *)MEM_PTR(0x106F4C14);
 				break;
 		default:
 			printf("Unknown OS version\n");
