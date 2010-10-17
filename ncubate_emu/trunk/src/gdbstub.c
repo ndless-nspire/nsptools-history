@@ -1,8 +1,8 @@
 /*
  * TODO:
- * - Explicitely supports the endianness (set/get_registers). Currently the host must be little-endian
+ * - Explicitely support the endianness (set/get_registers). Currently the host must be little-endian
  *   as ARM is.
- * - remote_read(), etc.
+ * - fix remote_read(), etc.
  */
 
 /*
@@ -157,7 +157,7 @@ static void gdbstub_bind(int port) {
 // program block pre-allocated by Ndless, used for vOffsets queries
 static u32 ndls_debug_alloc_block = 0;
 
-static void gdb_connect_ndls_cb(struct arm_state* state) {
+static void gdb_connect_ndls_cb(struct arm_state *state) {
 	ndls_debug_alloc_block = state->reg[0]; // can be 0
 }
 
@@ -716,6 +716,8 @@ static void gdbstub_disconnect(void) {
 	puts("GDB disconnected.");
 	closesocket(socket_fd);
 	socket_fd = 0;
+	if (ndls_is_installed())
+		armloader_load_snippet(SNIPPET_ndls_debug_free, NULL, 0, NULL);
 }
 
 /* Non-blocking poll. Enter the debugger loop if a message is received. */

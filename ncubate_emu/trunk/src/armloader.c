@@ -16,7 +16,8 @@ void armloader_cb(void) {
 	struct arm_state after_snippet_exec_arm_state;
 	memcpy(&after_snippet_exec_arm_state, &arm, sizeof(arm));
 	armloader_restore_state();
-	armloader_cb_ptr(&after_snippet_exec_arm_state);
+	if (armloader_cb_ptr)
+		armloader_cb_ptr(&after_snippet_exec_arm_state);
 }
 
 /* Load the snippet and jump to it. 
@@ -25,7 +26,7 @@ void armloader_cb(void) {
  * params may contain pointers to data which should be copied to device space.
  * Each param will be copied to the ARM stack, and its address written in rX, starting from r0.
  * params_num must be less or equal than 12.
- * callback() will be called once the snippet has finished its execution.
+ * callback() will be called once the snippet has finished its execution. Can be NULL.
  * returns 0 if success.
  */
 int armloader_load_snippet(enum SNIPPETS snippet, struct armloader_load_params params[],
