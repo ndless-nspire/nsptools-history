@@ -187,6 +187,8 @@ void gdbstub_init(int port);
 void gdbstub_recv(void);
 void gdbstub_debugger(void);
 void gdbstub_exception(int type);
+void *gdbstub_save_state(size_t *size);
+void gdbstub_reload_state(void *state);
 
 /* Declarations for gui.c */
 

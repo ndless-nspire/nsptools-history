@@ -346,7 +346,7 @@ static int hexToInt(char **ptr, int *intValue) {
 
 /* See Appendix D - GDB Remote Serial Protocol - Overview.
  * A null character is appended. */
-static void binary_escape(char *in, int insize, char *out, int outsize) {
+__attribute__((unused)) static void binary_escape(char *in, int insize, char *out, int outsize) {
 	while (insize-- > 0 && outsize > 1) {
 		if (*in == '#' || *in == '$' || *in == '}' || *in == 0x2A) {
 			if (outsize < 3)
@@ -755,9 +755,22 @@ void gdbstub_recv(void) {
 		gdbstub_debugger();
 }
 
-
 void gdbstub_debugger(void) {
 	cpu_events &= ~EVENT_DEBUG_STEP;
 	send_signal_reply(SIGNAL_TRAP);
 	gdbstub_loop();
+}
+
+struct gdbstub_saved_state {
+};
+
+
+void *gdbstub_save_state(size_t *size) {
+	*size = sizeof(struct gdbstub_saved_state);
+	struct gdbstub_saved_state *state = malloc(*size);
+	return state;
+}
+
+void gdbstub_reload_state(__attribute__((unused)) void *state) {
+	ndls_debug_alloc_block = 0;
 }

@@ -153,7 +153,7 @@ static void get_saved_state_filename(char out_filename[MAX_PATH]) {
 }
 
 /* increment each time the save file format is changed */
-#define SAVE_STATE_VERSION 2
+#define SAVE_STATE_VERSION 3
 void save_state(void) {
 	char state_filename[MAX_PATH+1];
 	get_saved_state_filename(state_filename);
@@ -182,6 +182,7 @@ void save_state(void) {
 	SAVE_STATE_WRITE_CHUNK(apb);
 	SAVE_STATE_WRITE_CHUNK(debug);
 	SAVE_STATE_WRITE_CHUNK(flash);
+	SAVE_STATE_WRITE_CHUNK(gdbstub);
 	SAVE_STATE_WRITE_CHUNK(gui);
 	SAVE_STATE_WRITE_CHUNK(int);
 	SAVE_STATE_WRITE_CHUNK(lcd);
@@ -214,7 +215,7 @@ bool reload_state(void) {
 		exit(1);
 	}
 	if (save_state_version != SAVE_STATE_VERSION) {
-		printf("The version of this save file is not supported.");
+		printf("The version of the save file is not supported or out-of-date.\n");
 		fclose(state_file);
 		return false;
 	}
@@ -247,6 +248,7 @@ bool reload_state(void) {
 	RELOAD_STATE_READ_CHUNK(apb);
 	RELOAD_STATE_READ_CHUNK(debug);
 	RELOAD_STATE_READ_CHUNK(flash);
+	RELOAD_STATE_READ_CHUNK(gdbstub);
 	RELOAD_STATE_READ_CHUNK(gui);
 	RELOAD_STATE_READ_CHUNK(int);
 	RELOAD_STATE_READ_CHUNK(lcd);
