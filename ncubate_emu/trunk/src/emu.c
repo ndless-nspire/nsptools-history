@@ -447,6 +447,9 @@ usage:
 	atexit(throttle_timer_off);
 	//FILE *untrans = fopen("untrans.out", "wb");
 
+	if (is_gdb_debugger)
+		gdbstub_init(gdb_port);
+
 	if (!reload_state()) {
 reset:
 		memset(&arm, 0, sizeof arm);
@@ -487,9 +490,6 @@ reset:
 			timerpairs[i].timers[1].control = 0x10;
 		}
 	}
-
-	if (is_gdb_debugger)
-		gdbstub_init(gdb_port);
 
 	setjmp(restart_after_exception);
 
