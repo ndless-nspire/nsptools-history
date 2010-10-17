@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #include <unistd.h>
 
 #ifdef __MINGW32__
@@ -27,9 +28,9 @@
 
 #include "emu.h"
 
-static void wait_gdb_connection(void);
-
 #define TRACE_PACKETS 1
+
+static void gdbstub_disconnect(void);
 
 bool ndls_is_installed(void) {
 	// The Ndless marker is 8 bytes before the SWI handler
@@ -58,8 +59,16 @@ static void flush_out_buffer(void) {
 	while (p != sockbufptr) {
 		int n = send(socket_fd, p, sockbufptr-p, 0);
 		if (n == -1) {
-			log_socket_error("Failed to send to GDB stub socket");
-			break;
+#ifdef __MINGW32__
+			if (WSAGetLastError() == WSAEWOULDBLOCK)
+#else
+			if (errno == EAGAIN)
+#endif
+				continue; // not ready to send
+			else {
+				log_socket_error("Failed to send to GDB stub socket");
+				break;
+			}
 		}
 		p += n;
 	}
@@ -69,6 +78,7 @@ static void flush_out_buffer(void) {
 static void put_debug_char(char c) {
 #if TRACE_PACKETS
 	printf("%c", c);
+	fflush(stdout);
 		if (c == '+' || c == '-')
 			printf("\t");
 #endif
@@ -77,25 +87,35 @@ static void put_debug_char(char c) {
 	*sockbufptr++ = c;
 }
 
+/* Returns -1 on disconnection */
 static char get_debug_char(void) {
 	char c;
 	int r;
 	while (1) {
 		r = recv(socket_fd, &c, 1, 0);
-	#if TRACE_PACKETS
+		if (r == -1) {
+#ifdef __MINGW32__
+			if (WSAGetLastError() == WSAEWOULDBLOCK)
+#else
+			if (errno == EAGAIN)
+#endif
+				continue; // data not yet available
+			else {
+				// only for debugging - log_socket_error("Failed to recv from GDB stub socket");
+				return -1;
+			}
+		}
+		if (r == 0)
+			return -1; // disconnected
+		break;
+	}
+#if TRACE_PACKETS
 		printf("%c", c);
+		fflush(stdout);
 		if (c == '+' || c == '-')
 			printf("\n");
-	#endif
-		if (r == -1) {
-			log_socket_error("Failed to recv from GDB stub socket");
-			wait_gdb_connection();
-		} else if(r == 0) {
-			puts("GDB disconnected.");
-			wait_gdb_connection();
-		}
+#endif
 		return c;
-	}
 }
 
 static void gdbstub_bind(int port) {
@@ -116,6 +136,14 @@ static void gdbstub_bind(int port) {
 		log_socket_error("Failed to create GDB stub socket");
 		exit(1);
 	}
+#ifdef __MINGW32__
+	u_long mode = 1;
+	ioctlsocket(listen_socket_fd, FIONBIO, &mode);
+#else
+  ret = fcntl(listen_socket_fd, F_GETFL, 0);
+  fcntl(listen_socket_fd, F_SETFL, ret | O_NONBLOCK);
+#endif
+
 	memset (&sockaddr, '\000', sizeof sockaddr);
 	sockaddr.sin_family = AF_INET;
 	sockaddr.sin_port = htons(port);
@@ -132,37 +160,10 @@ static void gdbstub_bind(int port) {
 }
 
 // program block pre-allocated by Ndless, used for vOffsets queries
-static u32 ndls_debug_alloc_block = NULL;
+static u32 ndls_debug_alloc_block = 0;
 
 static void gdb_connect_ndls_cb(struct arm_state* state) {
 	ndls_debug_alloc_block = state->reg[0]; // can be 0
-}
-
-static void wait_gdb_connection(void) {
-	int r, on;
-	
-	puts("Waiting for GDB to connect...");
-	if (socket_fd)
-		closesocket(socket_fd);
-	socket_fd = accept(listen_socket_fd, NULL, NULL);
-	if (socket_fd == -1) {
-		log_socket_error("Failed to accept on GDB stub socket");
-		exit(1);
-	}
-	/* Disable Nagle for low latency */
-	on = 1;
-#ifdef __MINGW32__
-	r = setsockopt(socket_fd, IPPROTO_TCP, TCP_NODELAY, (const char *)&on, sizeof(on));
-#else
-	r = setsockopt(socket_fd, IPPROTO_TCP, TCP_NODELAY, &on, sizeof(on));
-#endif
-	if (r == -1)
-		log_socket_error("setsockopt(TCP_NODELAY) failed for GDB stub socket");
-	
-	// Interface with Ndless
-	if (ndls_is_installed())
-		armloader_load_snippet(SNIPPET_ndls_debug_alloc, NULL, 0, gdb_connect_ndls_cb);
-	puts("GDB connected.");
 }
 
 /* BUFMAX defines the maximum number of characters in inbound/outbound buffers */
@@ -198,9 +199,10 @@ static char remcomInBuffer[BUFMAX];
 static char remcomOutBuffer[BUFMAX];
 static char databuffer[BUFMAX / 2];
 
-/* scan for the sequence $<data>#<checksum>. # will be replaced with \0.*/
-unsigned char *getpacket(void) {
-	unsigned char *buffer = &remcomInBuffer[0];
+/* scan for the sequence $<data>#<checksum>. # will be replaced with \0.
+ * Returns NULL on disconnection. */
+char *getpacket(void) {
+	char *buffer = &remcomInBuffer[0];
 	unsigned char checksum;
 	unsigned char xmitcsum;
 	int count;
@@ -210,9 +212,8 @@ unsigned char *getpacket(void) {
 		/* wait around for the start character, ignore all other characters */
 		do {
 			ch = get_debug_char();
-			// TODO handle disconnections
-			if (ch == -1)
-				exit(1);
+			if (ch == -1) // disconnected
+				return NULL;
 		}	while (ch != '$');
 		
 retry:
@@ -260,10 +261,10 @@ retry:
 }
 
 /* send the packet in buffer.  */
-static void putpacket(unsigned char *buffer) {
+static void putpacket(char *buffer) {
 	unsigned char checksum;
 	int count;
-	unsigned char ch;
+	char ch;
 
 	/*  $<packet info>#<checksum> */
 	do {
@@ -281,8 +282,8 @@ static void putpacket(unsigned char *buffer) {
 			put_debug_char(hexchars[checksum >> 4]);
 			put_debug_char(hexchars[checksum & 0xf]);
 			flush_out_buffer();
-		}
-	while (get_debug_char() != '+');
+			ch = get_debug_char();
+	} while (ch != '+' && ch != -1);
 }
 
 /* Indicate to caller of mem2hex or hex2mem that there has been an
@@ -507,10 +508,15 @@ void gdbstub_loop(void) {
 		remcomOutBuffer[0] = 0;
 
 		ptr = getpacket();
+		if (!ptr) {
+			gdbstub_disconnect();
+			return;
+		}
 		reply = true;
 		switch (*ptr++) 	{
 			case '?':
 				send_signal_reply(SIGNAL_TRAP);
+				reply = false; // already done
 				break;
 
 			case 'g':  /* return the value of the CPU registers */
@@ -740,17 +746,52 @@ void gdbstub_exception(int type) {
 
 void gdbstub_init(int port) {
 	gdbstub_bind(port);
-	wait_gdb_connection();
 }
 
-void gdbstub_debugger(void) {
-	static bool first_pkt_received = 0;
-	
-	cpu_events &= ~EVENT_DEBUG_STEP;
+static void gdbstub_disconnect(void) {
+	puts("GDB disconnected.");
+	closesocket(socket_fd);
+	socket_fd = 0;
+}
 
-	if (first_pkt_received)
-		send_signal_reply(SIGNAL_TRAP);
-	else
-	first_pkt_received = 1;
-		gdbstub_loop();
+/* Non-blocking poll. Enter the debugger loop if a message is received. */
+void gdbstub_recv(void) {
+	int ret, on;
+	if (!socket_fd) {
+		ret = accept(listen_socket_fd, NULL, NULL);
+		if (ret == -1)
+			return;
+		socket_fd = ret;
+		/* Disable Nagle for low latency */
+		on = 1;
+#ifdef __MINGW32__
+		ret = setsockopt(socket_fd, IPPROTO_TCP, TCP_NODELAY, (const char *)&on, sizeof(on));
+#else
+		ret = setsockopt(socket_fd, IPPROTO_TCP, TCP_NODELAY, &on, sizeof(on));
+#endif
+		if (ret == -1)
+			log_socket_error("setsockopt(TCP_NODELAY) failed for GDB stub socket");
+		
+		/* Interface with Ndless */
+		if (ndls_is_installed())
+			armloader_load_snippet(SNIPPET_ndls_debug_alloc, NULL, 0, gdb_connect_ndls_cb);
+		puts("GDB connected.");
+		return;
+	}
+	fd_set rfds;
+	FD_ZERO(&rfds);
+	FD_SET((unsigned)socket_fd, &rfds);
+	ret = select(socket_fd + 1, &rfds, NULL, NULL, &(struct timeval) {0, 0});
+	if (ret == -1 && errno == EBADF) {
+		gdbstub_disconnect();
+	}
+	else if (ret)
+		gdbstub_debugger();
+}
+
+
+void gdbstub_debugger(void) {
+	cpu_events &= ~EVENT_DEBUG_STEP;
+	send_signal_reply(SIGNAL_TRAP);
+	gdbstub_loop();
 }

@@ -545,6 +545,9 @@ reset:
 					serial_byte_in(c);
 			}
 
+			if (is_gdb_debugger)
+				gdbstub_recv();
+
 			get_messages();
 
 			LARGE_INTEGER interval_end;
