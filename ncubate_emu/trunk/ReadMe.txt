@@ -44,6 +44,7 @@ Debugger:
 - FIX: Broken 'w' command
 
 CPU/Ports:
+- ADD: (internal) ARM loader for arbitrary ARM snippet execution by the emulator
 - FIX: no more 'bad read word' on auto power down, but still hangs
 
 Flash:
@@ -52,6 +53,7 @@ Flash:
 Build:
 - NEW: Makefile.config for custom compilation flags
 - NEW: make clean
+- FIX: compilation warnings
 
 What may be incubated
 =====================

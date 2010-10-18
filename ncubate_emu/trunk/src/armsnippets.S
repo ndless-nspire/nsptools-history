@@ -1,6 +1,9 @@
 /*
  * This file is wrapped as host-side object file pointed to by the symbol binary_snippets_bin_start
  * and ending at binary_armsnippets_bin_end.
+ * TODO: Currently most file_* snippets are broken, because an error for any file read/write operation is
+ * returned by the OS,probably because the armloader interrupts the OS in a state not ready for these
+ * syscalls.
  */
 
 // From Ndless's include/syscalls.h

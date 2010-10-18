@@ -2,7 +2,7 @@
  * TODO:
  * - Explicitely support the endianness (set/get_registers). Currently the host must be little-endian
  *   as ARM is.
- * - fix remote_read(), etc.
+ * - fix vFile commands, currently broken because of the armsnippets
  */
 
 /*
