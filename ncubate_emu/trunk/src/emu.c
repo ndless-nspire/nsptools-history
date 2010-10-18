@@ -358,7 +358,7 @@ int main(int argc, char **argv) {
 					break;
 				}
 				case 'R':
-					cpu_events |= EVENT_DEBUG_STEP;
+					debug_on_startup = true;
 					if (*arg == '=') arg++;
 					debug_cmds_filename = arg;
 					break;
