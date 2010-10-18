@@ -712,6 +712,10 @@ void gdbstub_init(int port) {
 	gdbstub_bind(port);
 }
 
+void gdbstub_reset(void) {
+	ndls_debug_alloc_block = 0; // the block is obvisouly freed by the OS on reset
+}
+
 static void gdbstub_disconnect(void) {
 	puts("GDB disconnected.");
 	closesocket(socket_fd);

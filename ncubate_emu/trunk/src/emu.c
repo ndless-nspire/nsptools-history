@@ -460,6 +460,8 @@ reset:
 		memset(&arm, 0, sizeof arm);
 		arm.cpsr_low28 = MODE_SVC | 0xC0;
 		cpu_events = 0;
+		if (gdb_port)
+			gdbstub_reset();
 		if (boot2_file) {
 			/* Start from BOOT2. (needs to be re-loaded on each reset since
 			 * it can get overwritten in memory) */

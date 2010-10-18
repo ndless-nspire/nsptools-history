@@ -184,6 +184,7 @@ void flash_reload_state(void *state);
 /* Declarations for gdbstub.c */
 
 void gdbstub_init(int port);
+void gdbstub_reset(void);
 void gdbstub_recv(void);
 void gdbstub_debugger(void);
 void gdbstub_exception(int type);
