@@ -147,7 +147,6 @@ void set_cpsr_full(u32 cpsr);
 u32 __attribute__((fastcall)) get_spsr();
 void __attribute__((fastcall)) set_spsr(u32 cpsr, u32 mask);
 void cpu_exception(int type);
-void cpu_exception_warn(int type, char *fmt, ...);
 void cpu_interpret_instruction(u32 insn);
 void cpu_arm_loop();
 void cpu_thumb_loop();
