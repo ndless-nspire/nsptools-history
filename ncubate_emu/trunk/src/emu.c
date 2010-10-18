@@ -263,13 +263,15 @@ bool reload_state(void) {
 }
 
 int main(int argc, char **argv) {
+	// volatile keyword for some variables avoids GCC warning "might be clobbered by `longjmp'"
 	int i;
 	FILE *f;
 	static FILE *boot2_file = NULL;
 	static char *boot1_filename = NULL, *boot2_filename = NULL, *flash_filename = NULL;
 	char *debug_cmds_filename = NULL;
 	bool new_flash_image = false;
-	int gdb_port = 0;
+	volatile int gdb_port = 0;
+	volatile bool debug_on_startup = false;
 	char *preload_boot2 = NULL, *preload_diags = NULL, *preload_os = NULL;
 
 	for (i = 1; i < argc; i++) {
@@ -296,7 +298,7 @@ int main(int argc, char **argv) {
 					break;
 				case 'D':
 					if (*arg) goto usage;
-					cpu_events |= EVENT_DEBUG_STEP;
+					debug_on_startup = true;
 					break;
 				case 'F':
 					if (*arg == '=') arg++;
@@ -309,7 +311,6 @@ int main(int argc, char **argv) {
 						printf("Invalid listen port for GDB stub%s%s\n", *arg ? ": " : "", arg);
 						exit(1);
 					}
-					is_gdb_debugger = true;
 					break;
 				case 'K':
 					keypad_type = 1;
@@ -451,14 +452,14 @@ usage:
 	atexit(throttle_timer_off);
 	//FILE *untrans = fopen("untrans.out", "wb");
 
-	if (is_gdb_debugger)
+	if (gdb_port)
 		gdbstub_init(gdb_port);
 
 	if (!reload_state()) {
 reset:
 		memset(&arm, 0, sizeof arm);
 		arm.cpsr_low28 = MODE_SVC | 0xC0;
-		cpu_events &= EVENT_DEBUG_STEP;
+		cpu_events = 0;
 		if (boot2_file) {
 			/* Start from BOOT2. (needs to be re-loaded on each reset since
 			 * it can get overwritten in memory) */
@@ -494,6 +495,8 @@ reset:
 			timerpairs[i].timers[1].control = 0x10;
 		}
 	}
+	if (debug_on_startup)
+		cpu_events |= EVENT_DEBUG_STEP;
 
 	setjmp(restart_after_exception);
 
@@ -549,7 +552,7 @@ reset:
 					serial_byte_in(c);
 			}
 
-			if (is_gdb_debugger)
+			if (gdb_port)
 				gdbstub_recv();
 
 			get_messages();

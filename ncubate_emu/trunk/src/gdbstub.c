@@ -716,6 +716,7 @@ static void gdbstub_disconnect(void) {
 	puts("GDB disconnected.");
 	closesocket(socket_fd);
 	socket_fd = 0;
+	gdb_connected = false;
 	if (ndls_is_installed())
 		armloader_load_snippet(SNIPPET_ndls_debug_free, NULL, 0, NULL);
 }
@@ -741,6 +742,7 @@ void gdbstub_recv(void) {
 		/* Interface with Ndless */
 		if (ndls_is_installed())
 			armloader_load_snippet(SNIPPET_ndls_debug_alloc, NULL, 0, gdb_connect_ndls_cb);
+		gdb_connected = true;
 		puts("GDB connected.");
 		return;
 	}

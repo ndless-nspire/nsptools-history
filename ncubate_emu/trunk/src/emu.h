@@ -157,7 +157,7 @@ void cpu_reload_state(void *state);
 /* Declarations for debug.c */
 
 extern FILE *debugger_stdin;
-extern bool is_gdb_debugger;
+extern bool gdb_connected;
 u32 *debug_next_brkpt_adr;
 
 void backtrace(u32 fp);

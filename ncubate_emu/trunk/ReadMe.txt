@@ -37,6 +37,9 @@ Debugger:
 - FIX: Command 'd' doesn't crash if the parameter is missing
 - FIX: Broken 'w' command
 
+CPU/Ports:
+- FIX: no more 'bad read word' on auto power down, but still hangs
+
 Flash:
 - FIX: Flash image closed when synced to disk, for external edition
 
@@ -63,6 +66,7 @@ Changelog
  - FIX: 'j' (over a non-branch instruction) and 'rs pc' debugger commands 
    incorrectly skipped the target instruction
  - FIX: no more 'bad read word' on auto power down, but still hangs
+ - FIX: ineffective command line option /D when saved state was reloaded on startup
 
 * v032a - 2010/09/21
  - Migrate to nspire_emu v032

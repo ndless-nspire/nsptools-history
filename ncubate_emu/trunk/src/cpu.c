@@ -253,7 +253,7 @@ void cpu_exception(int type) {
 	};
 	
 	/* GDB relies on some exceptions, for example for soft breakpoints */
-	if (type == EX_UNDEFINED && is_gdb_debugger) {
+	if (type == EX_UNDEFINED && gdb_connected) {
 		gdbstub_exception(type);
 		return;
 	}
@@ -818,7 +818,7 @@ void cpu_arm_loop() {
 				armloader_cb();
 			}
 			if (*flags & (RF_EXEC_BREAKPOINT | RF_EXEC_DEBUG_NEXT)) {
-				if (*flags & RF_EXEC_BREAKPOINT && !is_gdb_debugger)
+				if (*flags & RF_EXEC_BREAKPOINT && !gdb_connected)
 					printf("Hit breakpoint at %08X. Entering debugger.\n", pc);
 enter_debugger:
 				debugger();

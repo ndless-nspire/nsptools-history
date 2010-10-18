@@ -89,7 +89,7 @@ void debug_set_next_brkpt(u32 *next_adr) {
 	debug_next_brkpt_adr = next_adr;
 }
 
-bool is_gdb_debugger = false;
+bool gdb_connected = false;
 FILE *debugger_stdin;
 
 static void native_debugger(void) {
@@ -455,7 +455,7 @@ readstdin:
 }
 
 void debugger(void) {
-	if (is_gdb_debugger)
+	if (gdb_connected)
 		gdbstub_debugger();
 	else
 		native_debugger();
