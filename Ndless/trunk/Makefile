@@ -27,7 +27,7 @@ distbin: all
 	cp -r $(DISTDIRS) dist
 	mkdir -p dist/sdk
 	cp -r $(SDKDIRS) dist/sdk
-	cp "Mozilla-Public-License-v1.1.html" doc/ReadMe.txt doc/ndless-particle-demo.gif dist
+	cp "Mozilla-Public-License-v1.1.html" doc/ReadMe.txt doc/Changes.txt doc/ndless-particle-demo.gif dist
 	find dist -name .svn -o -name "*~" | xargs rm -rf
 
 # Dist with cleanup, binary and source

@@ -1,0 +1,72 @@
+Ndless - Changelog
+==================
+
+* v1.7 - <unreleased>
+  - NEW: Supports OS v1.7
+  - NEW: A computer (or Nspire8x) isn't required anymore, the installation 
+         is much more easier and compatible with nspire_emu.
+  - NEW: Automated tests
+ Hook:
+  - NEW: the program format is not specific to an OS or hardware version anymore
+  - NEW: syscalls can be called in thumb state
+  - NEW: Ndless can exposed internal functions to programs (nl_...()) and 
+         emulators
+ Tools:
+  - NEW: startup code relocates the program. You can now use C global variables.
+         initialization data depending on relocation must be relocated with 
+         nl_relocdata().
+  - NEW: option --no-startup for nspire-ld
+  - CHG: option -fpic moved to nspire-gcc
+  - CHG: MakeTNS removed
+  - FIX: Mac OS X support for symlinked tools
+ Samples:
+  - NEW: sample program 'hello'
+  - CHG: 'demo' renamed to 'particles' and moved to samples/
+ Includes:
+  - NEW: stat, NU_Get_First, NU_Get_Next, NU_Done, strcpy, strcmp, strlen, 
+         strncat, strrchar, vsprintf, abs, min, max, exit
+ - NEW: va_list, va_start, va_arg, va_end (thanks apcalc)
+
+* v1.1.1 - <2010/10/16>
+ Installer:
+  - NEW: Diagnostic mode for problem reports (see "Troubleshooting" above)
+  - CHG: Change file transfer path handling, which may fix some transfer errors
+ Include files:
+  - FIX: isKeyPressed made sometimes the program hang
+
+* v1.1 - 2010/07/31
+ Installer:
+  - NEW: Compatible with Computer Link Software 1.4
+  - NEW: Possible manual step to work around missed reboots
+  - FIX: Installer doesn't force downgrade anymore when already on OS v1.1
+  - FIX: Some transfer errors were not correctly reported
+ Loader:
+  - FIX: The OS could not be upgraded while Ndless was installed
+ Tools:
+  - NEW: Building executables made a little easier. See the demo's Makefile and 
+         "How do I set up a development environment?" section above.
+  - NEW: Supports YAGARTO v4.5.0
+  - FIX: MakeTNS: better error checking
+ Includes:
+  - NEW: Added fgets, stdin, stdout, stderr (thanks bsl)
+  - NEW: Added printf, fprintf (thanks bwang)
+  - NEW: Exhaustive key constants (thanks bwang)
+  - NEW: added halt, idle
+  - NEW: (ARM) added halt
+  - FIX: log_rs232, fread
+
+* v1.0 - 2010/02/26
+ - The work is now covered by Open Source licenses
+ - Fixed a potential endless OS reboot after a system language change
+
+* beta 4 - <unreleased> 
+ - The language can now be changed after the installation
+ - Particle Demo written in C
+ - Installation steps for nspire_emu
+
+* beta 3 - <unreleased>
+ - OS hook to run executables from the Documents screen
+ - Fast upgrade by the installer if Ndless is already installed
+
+* beta 2 - <unreleased> 
+ - 64-bit architectures support thanks to hwti
