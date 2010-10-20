@@ -461,7 +461,9 @@ static int remote_unlink(char *pathname) {
 
 #define append_hex_char(ptr,ch) do {*ptr++ = hexchars[(ch) >> 4]; *ptr++ = hexchars[(ch) & 0xf];} while (0)
 
-void send_signal_reply(int signal) {
+/* See GDB's documentation: D.3 Stop Reply Packets
+ * stop reason and r can be NULL. */
+void send_signal_reply(int signal, const char *stop_reason, const char *r) {
 	char *ptr = remcomOutBuffer;
 	*ptr++ = 'T';
 	append_hex_char(ptr, signal);
@@ -473,6 +475,13 @@ void send_signal_reply(int signal) {
 	*ptr++ = ':';
 	ptr = mem2hex((char *)&arm.reg[15], ptr, sizeof(u32));
 	*ptr++ = ';';
+	if (stop_reason) {
+		strcpy(ptr, stop_reason);
+		ptr += strlen(stop_reason);
+		if (!r) r = "0";
+		strcpy(ptr, r);
+		ptr += strlen(r);
+	}
 	*ptr++ = 0;
 	putpacket(remcomOutBuffer);
 }
@@ -500,7 +509,7 @@ void gdbstub_loop(void) {
 		reply = true;
 		switch (*ptr++) 	{
 			case '?':
-				send_signal_reply(SIGNAL_TRAP);
+				send_signal_reply(SIGNAL_TRAP, NULL, NULL);
 				reply = false; // already done
 				break;
 
@@ -672,40 +681,46 @@ parse_new_pc:
 				goto z;
 			case 'z': /* 0|1|2|3|4,addr,kind  */
 				set = false;
+			// kinds other than 4 aren't supported
 z:
-				if (*ptr++ != '0')
-					break;
+				ptr1 = ptr++;
 				ptr = strtok(ptr, ","); 
-				if (ptr && hexToInt(&ptr, &addr) && (ramaddr = virt_mem_ptr(addr, 4))) {
-					if (set){
-						if (RAM_FLAGS(ramaddr) & RF_CODE_TRANSLATED) flush_translations();
-						RAM_FLAGS(ramaddr) |= RF_EXEC_BREAKPOINT;
-					}	else
-						RAM_FLAGS(ramaddr) &= ~RF_EXEC_BREAKPOINT;
+				if (ptr && hexToInt(&ptr, &addr) && (ramaddr = virt_mem_ptr(addr & ~3, 4))) {
+					u32 *flags = &RAM_FLAGS(ramaddr);
+					switch (*ptr1) {
+						case '0': // mem breakpoint
+						case '1': // hw breakpoint
+							if (set) {
+								puts("set");
+								if (*flags & RF_CODE_TRANSLATED) flush_translations();
+								*flags |= RF_EXEC_BREAKPOINT;
+							} else
+								*flags &= ~RF_EXEC_BREAKPOINT;
+							break;
+						case '2': // write watchpoint
+						case '4': // access watchpoint
+							if (set) *flags |= RF_WRITE_BREAKPOINT;
+							else *flags &= ~RF_WRITE_BREAKPOINT;
+							if (*ptr1 != 4)
+								break;
+						case '3': // read watchpoint, access watchpoint
+							if (set) *flags |= RF_READ_BREAKPOINT;
+							else *flags &= ~RF_READ_BREAKPOINT;
+							break;
+						default:
+							goto reply;
+					}
 					strcpy(remcomOutBuffer, "OK");
-				}
-				else
+				} else
 					strcpy(remcomOutBuffer, "E01");
 				break;
 		}			/* switch */
 
+reply:
 		/* reply to the request */
 		if (reply)
 			putpacket(remcomOutBuffer);
 	}
-}
-
-void gdbstub_exception(int type) {
-	int gdb_type;
-	switch (type) {
-		case EX_UNDEFINED: 
-			gdb_type = SIGNAL_ILL_INSTR;
-			break;
-		default:
-			gdb_type = SIGNAL_TRAP;
-	}
-	send_signal_reply(gdb_type);
-	gdbstub_loop();
 }
 
 void gdbstub_init(int port) {
@@ -763,7 +778,18 @@ void gdbstub_recv(void) {
 
 void gdbstub_debugger(void) {
 	cpu_events &= ~EVENT_DEBUG_STEP;
-	send_signal_reply(SIGNAL_TRAP);
+#if 0
+	u32 *insnp = 0; // fixme
+	u32 *flags = &RAM_FLAGS(insnp);
+	char addrstr[9]; // 8 digits
+	snprintf(pcstr, sizeof(addrstr), "%x", addrstr);
+	if (*flags & RF_WRITE_BREAKPOINT)
+		send_signal_reply(SIGNAL_TRAP, "watch", addrstr);
+	else if (*flags & RF_READ_BREAKPOINT)
+		send_signal_reply(SIGNAL_TRAP, "rwatch", addrstr);
+	else
+#endif
+		send_signal_reply(SIGNAL_TRAP, NULL, NULL);
 	gdbstub_loop();
 }
 

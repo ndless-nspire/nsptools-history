@@ -41,14 +41,16 @@ void *virt_mem_ptr(u32 addr, u32 size) {
 
 #define DO_READ_ACTION (RF_READ_BREAKPOINT)
 void read_action(u32 addr) {
-	printf("Hit read breakpoint at %08x. Entering debugger.\n", addr);
+	if (!gdb_connected)
+		printf("Hit read breakpoint at %08x. Entering debugger.\n", addr);
 	debugger();
 }
 
 #define DO_WRITE_ACTION (RF_WRITE_BREAKPOINT | RF_CODE_TRANSLATED | RF_CODE_NO_TRANSLATE)
 void write_action(u32 *flags, u32 addr) {
 	if (*flags & RF_WRITE_BREAKPOINT) {
-		printf("Hit write breakpoint at %08x. Entering debugger.\n", addr);
+		if (!gdb_connected)
+			printf("Hit write breakpoint at %08x. Entering debugger.\n", addr);
 		debugger();
 	}
 	if (*flags & RF_CODE_TRANSLATED) {
