@@ -158,9 +158,10 @@ void cpu_reload_state(void *state);
 extern FILE *debugger_stdin;
 extern bool gdb_connected;
 u32 *debug_next_brkpt_adr;
+enum DBG_REASON { DBG_USER, DBG_EXCEPTION, DBG_EXEC_BREAKPOINT, DBG_READ_BREAKPOINT, DBG_WRITE_BREAKPOINT };
 
 void backtrace(u32 fp);
-void debugger();
+void debugger(enum DBG_REASON reason, u32 addr);
 void debug_set_next_brkpt(u32 *next_adr);
 void *debug_save_state(size_t *size);
 void debug_reload_state(void *state);
@@ -185,7 +186,7 @@ void flash_reload_state(void *state);
 void gdbstub_init(int port);
 void gdbstub_reset(void);
 void gdbstub_recv(void);
-void gdbstub_debugger(void);
+void gdbstub_debugger(enum DBG_REASON reason, u32 addr);
 void *gdbstub_save_state(size_t *size);
 void gdbstub_reload_state(void *state);
 

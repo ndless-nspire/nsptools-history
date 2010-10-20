@@ -63,7 +63,7 @@ void error(char *fmt, ...) {
 	va_end(va);
 	fprintf(stderr, "\n\tBacktrace:\n");
 	backtrace(arm.reg[11]);
-	debugger();
+	debugger(DBG_EXCEPTION, 0);
 	exit(1);
 }
 
@@ -549,7 +549,7 @@ reset:
 			if (_kbhit()) {
 				char c = _getch();
 				if (c == 4)
-					debugger();
+					debugger(DBG_USER, 0);
 				else
 					serial_byte_in(c);
 			}

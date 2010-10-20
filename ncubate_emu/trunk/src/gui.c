@@ -18,7 +18,7 @@ HWND hwndMessage;
 HWND hwndMain, hwndGfx, hwndKeys;
 HMENU hMenu;
 
-LRESULT CALLBACK message_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK message_wnd_proc(__attribute__((unused)) HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	if (uMsg == WM_USER) {
 		switch (wParam) {
 			case ID_SAVE_STATE:
@@ -32,7 +32,7 @@ LRESULT CALLBACK message_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 				reload_state();
 				break;
 			case ID_DEBUGGER:
-				debugger();
+				debugger(DBG_USER, 0);
 				break;
 			case ID_RESET:
 				cpu_events |= EVENT_RESET;
@@ -242,7 +242,7 @@ LRESULT CALLBACK keys_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		UINT align = SetTextAlign(hdc, TA_CENTER);
 		for (row = 0; row < KEYPAD_ROWS; row++) {
 			for (col = 0; col < KEYPAD_COLUMNS; col++) {
-				COLORREF tc, bc;
+				COLORREF tc = 0, bc = 0;
 				const char *str;
 				if (row < 8 && col < 11)
 					str = key_names[keypad_type][row][col];
@@ -309,7 +309,7 @@ update:
 	return 0;
 }
 
-BOOL CALLBACK folder_dlg_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+BOOL CALLBACK folder_dlg_proc(HWND hWnd, UINT uMsg, __attribute__((unused)) WPARAM wParam, __attribute__((unused)) LPARAM lParam) {
 	switch (uMsg) {
 		case WM_INITDIALOG:
 			SetDlgItemText(hWnd, IDC_TARGET_FOLDER, target_folder);

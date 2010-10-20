@@ -454,9 +454,9 @@ readstdin:
 	throttle_timer_on();
 }
 
-void debugger(void) {
+void debugger(enum DBG_REASON reason, u32 addr) {
 	if (gdb_connected)
-		gdbstub_debugger();
+		gdbstub_debugger(reason, addr);
 	else
 		native_debugger();
 }

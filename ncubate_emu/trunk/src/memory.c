@@ -11,12 +11,12 @@ void (*write_half_map[64])(u32 addr, u16 value);
 void (*write_word_map[64])(u32 addr, u32 value);
 
 /* For invalid/unknown physical addresses */
-u8 bad_read_byte(u32 addr)               { warn("Bad read_byte: %08x", addr); debugger(); return 0; }
-u16 bad_read_half(u32 addr)              { warn("Bad read_half: %08x", addr); debugger(); return 0; }
-u32 bad_read_word(u32 addr)              { warn("Bad read_word: %08x", addr); debugger(); return 0; }
-void bad_write_byte(u32 addr, u8 value)  { warn("Bad write_byte: %08x %02x",addr,value); debugger(); }
-void bad_write_half(u32 addr, u16 value) { warn("Bad write_half: %08x %04x",addr,value); debugger(); }
-void bad_write_word(u32 addr, u32 value) { warn("Bad write_word: %08x %08x",addr,value); debugger(); }
+u8 bad_read_byte(u32 addr)               { warn("Bad read_byte: %08x", addr); debugger(DBG_EXCEPTION, 0); return 0; }
+u16 bad_read_half(u32 addr)              { warn("Bad read_half: %08x", addr); debugger(DBG_EXCEPTION, 0); return 0; }
+u32 bad_read_word(u32 addr)              { warn("Bad read_word: %08x", addr); debugger(DBG_EXCEPTION, 0); return 0; }
+void bad_write_byte(u32 addr, u8 value)  { warn("Bad write_byte: %08x %02x",addr,value); debugger(DBG_EXCEPTION, 0); }
+void bad_write_half(u32 addr, u16 value) { warn("Bad write_half: %08x %04x",addr,value); debugger(DBG_EXCEPTION, 0); }
+void bad_write_word(u32 addr, u32 value) { warn("Bad write_word: %08x %08x",addr,value); debugger(DBG_EXCEPTION, 0); }
 
 u8 mem_and_flags[MEM_SIZE * 2];
 const struct mem_area_desc mem_areas[] = {
@@ -43,7 +43,7 @@ void *virt_mem_ptr(u32 addr, u32 size) {
 void read_action(u32 addr) {
 	if (!gdb_connected)
 		printf("Hit read breakpoint at %08x. Entering debugger.\n", addr);
-	debugger();
+	debugger(DBG_READ_BREAKPOINT, addr);
 }
 
 #define DO_WRITE_ACTION (RF_WRITE_BREAKPOINT | RF_CODE_TRANSLATED | RF_CODE_NO_TRANSLATE)
@@ -51,7 +51,7 @@ void write_action(u32 *flags, u32 addr) {
 	if (*flags & RF_WRITE_BREAKPOINT) {
 		if (!gdb_connected)
 			printf("Hit write breakpoint at %08x. Entering debugger.\n", addr);
-		debugger();
+		debugger(DBG_WRITE_BREAKPOINT, addr);
 	}
 	if (*flags & RF_CODE_TRANSLATED) {
 		logprintf(LOG_CPU, "Wrote to translated code at %08x. Deleting translations.\n", addr);

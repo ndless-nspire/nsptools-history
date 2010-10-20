@@ -485,7 +485,7 @@ void cpu_interpret_instruction(u32 insn) {
 		} else if ((insn & 0xFFF000F0) == 0xE1200070) {
 			printf("Software breakpoint at %08x (%04x)\n",
 				arm.reg[15], (insn >> 4 & 0xFFF0) | (insn & 0xF));
-			debugger();
+			debugger(DBG_EXEC_BREAKPOINT, 0);
 		} else {
 			goto bad_insn;
 		}
@@ -688,7 +688,7 @@ void cpu_interpret_instruction(u32 insn) {
 				break;
 			default:
 				warn("Unknown coprocessor instruction MCR %08X\n", insn);
-				debugger();
+				debugger(DBG_EXCEPTION, 0);
 				break;
 		}
 	} else if ((insn & 0xF100F10) == 0xE100F10) {
@@ -734,7 +734,7 @@ void cpu_interpret_instruction(u32 insn) {
 				break;
 			default:
 				warn("Unknown coprocessor instruction MRC %08X\n", insn);
-				debugger();
+				debugger(DBG_EXCEPTION, 0);
 				value = 0;
 				break;
 		}
@@ -791,7 +791,7 @@ void cpu_arm_loop() {
 				if (*flags & RF_EXEC_BREAKPOINT && !gdb_connected)
 					printf("Hit breakpoint at %08X. Entering debugger.\n", pc);
 enter_debugger:
-				debugger();
+				debugger(DBG_EXEC_BREAKPOINT, 0);
 				if (arm.reg[15] != pc)
 					continue; // the debugger command skipped the current instruction, reload it
 			}
@@ -827,7 +827,7 @@ void cpu_thumb_loop() {
 			if (*flags & RF_EXEC_BREAKPOINT)
 				printf("Hit breakpoint at %08X. Entering debugger.\n", pc);
 enter_debugger:
-			debugger();
+			debugger(DBG_EXEC_BREAKPOINT, 0);
 				if (arm.reg[15] != pc)
 					continue; // the debugger command skipped the current instruction, reload it
 		}
@@ -968,7 +968,7 @@ enter_debugger:
 			}
 			case 0xBE:
 				printf("Software breakpoint at %08x (%02x)\n", arm.reg[15], insn & 0xFF);
-				debugger();
+				debugger(DBG_EXEC_BREAKPOINT, 0);
 				break;
 
 			CASE_x8(0xC0): { /* STMIA Rn!, {reglist} */

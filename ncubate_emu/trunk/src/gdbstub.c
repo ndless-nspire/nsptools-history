@@ -462,11 +462,18 @@ static int remote_unlink(char *pathname) {
 #define append_hex_char(ptr,ch) do {*ptr++ = hexchars[(ch) >> 4]; *ptr++ = hexchars[(ch) & 0xf];} while (0)
 
 /* See GDB's documentation: D.3 Stop Reply Packets
- * stop reason and r can be NULL. */
-void send_signal_reply(int signal, const char *stop_reason, const char *r) {
+ * stop reason and r can be null. */
+static void send_stop_reply(int signal, const char *stop_reason, u32 r) {
 	char *ptr = remcomOutBuffer;
 	*ptr++ = 'T';
 	append_hex_char(ptr, signal);
+	if (stop_reason) {
+		strcpy(ptr, stop_reason);
+		ptr += strlen(stop_reason);
+		*ptr++ = ':';
+		ptr = mem2hex((char *)&r, ptr, sizeof(u32));
+		*ptr++ = ';';
+	}
 	append_hex_char(ptr, 13);
 	*ptr++ = ':';
 	ptr = mem2hex((char *)&arm.reg[13], ptr, sizeof(u32));
@@ -475,14 +482,7 @@ void send_signal_reply(int signal, const char *stop_reason, const char *r) {
 	*ptr++ = ':';
 	ptr = mem2hex((char *)&arm.reg[15], ptr, sizeof(u32));
 	*ptr++ = ';';
-	if (stop_reason) {
-		strcpy(ptr, stop_reason);
-		ptr += strlen(stop_reason);
-		if (!r) r = "0";
-		strcpy(ptr, r);
-		ptr += strlen(r);
-	}
-	*ptr++ = 0;
+	*ptr = 0;
 	putpacket(remcomOutBuffer);
 }
 
@@ -509,7 +509,7 @@ void gdbstub_loop(void) {
 		reply = true;
 		switch (*ptr++) 	{
 			case '?':
-				send_signal_reply(SIGNAL_TRAP, NULL, NULL);
+				send_stop_reply(SIGNAL_TRAP, NULL, 0);
 				reply = false; // already done
 				break;
 
@@ -773,23 +773,22 @@ void gdbstub_recv(void) {
 		gdbstub_disconnect();
 	}
 	else if (ret)
-		gdbstub_debugger();
+		gdbstub_debugger(DBG_USER, 0);
 }
 
-void gdbstub_debugger(void) {
+/* addr is only required for read/write breakpoints */
+void gdbstub_debugger(enum DBG_REASON reason, u32 addr) {
 	cpu_events &= ~EVENT_DEBUG_STEP;
-#if 0
-	u32 *insnp = 0; // fixme
-	u32 *flags = &RAM_FLAGS(insnp);
-	char addrstr[9]; // 8 digits
-	snprintf(pcstr, sizeof(addrstr), "%x", addrstr);
-	if (*flags & RF_WRITE_BREAKPOINT)
-		send_signal_reply(SIGNAL_TRAP, "watch", addrstr);
-	else if (*flags & RF_READ_BREAKPOINT)
-		send_signal_reply(SIGNAL_TRAP, "rwatch", addrstr);
-	else
-#endif
-		send_signal_reply(SIGNAL_TRAP, NULL, NULL);
+	switch (reason) {
+		case DBG_WRITE_BREAKPOINT:
+			send_stop_reply(SIGNAL_TRAP, "watch", addr);
+		break;
+		case DBG_READ_BREAKPOINT:
+			send_stop_reply(SIGNAL_TRAP, "rwatch", addr);
+			break;
+		default:
+			send_stop_reply(SIGNAL_TRAP, NULL, 0);
+	}
 	gdbstub_loop();
 }
 
