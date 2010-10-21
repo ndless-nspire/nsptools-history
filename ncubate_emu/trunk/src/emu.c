@@ -371,7 +371,7 @@ usage:
 						"  /C       - emulate CAS hardware version\n"
 						"  /D       - enter debugger at start\n"
 						"  /F=file  - flash image filename\n"
-						"  /G[=port] - enable GDB remote protocol through TCP port\n"
+						"  /G=port  - enable GDB remote protocol through the TCP port\n"
 						"  /Kn      - set keypad type (2 = TI-84 Plus, 3 = Touchpad)\n"
 						"  /Ll[-|file] - enable log level l (one of " LOG_TYPE_TBL ")\n"
 						"  /Ll=m    - write to the same log file as level m \n"
