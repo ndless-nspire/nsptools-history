@@ -39,7 +39,9 @@ Debugger:
   of a physical address
 - CHG: Debugger command 'w' renamed to 'wm'
 - CHG: The command 'wm' takes as parameter a virtual address instead of a 
-  physicall address
+  physical address
+- CHG: Read/write breakpoint logs display a virtual address instead of a 
+  physical address
 - FIX: Command 'd' doesn't crash if the parameter is missing
 - FIX: Broken 'w' command
 
@@ -55,11 +57,10 @@ Build:
 - NEW: make clean
 - FIX: compilation warnings
 
-What may be incubated
-=====================
+What may be incubated later
+===========================
 
 - Faster save/reload state
-- GDB support (being tested)
 
 Development team
 ================
@@ -73,6 +74,8 @@ Changelog
 * v032b - <not released yet>
  - ADD: GDB support
  - ADD: Command-line option /R
+ - CHG: Read/write breakpoint logs display a virtual address instead of a 
+   physical address
  - FIX: 'j' (over a non-branch instruction) and 'rs pc' debugger commands 
    incorrectly skipped the target instruction
  - FIX: no more 'bad read word' on auto power down, but still hangs

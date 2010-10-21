@@ -463,7 +463,7 @@ static int remote_unlink(char *pathname) {
 
 /* See GDB's documentation: D.3 Stop Reply Packets
  * stop reason and r can be null. */
-static void send_stop_reply(int signal, const char *stop_reason, u32 r) {
+static void send_stop_reply(int signal, const char *stop_reason, const char *r) {
 	char *ptr = remcomOutBuffer;
 	*ptr++ = 'T';
 	append_hex_char(ptr, signal);
@@ -471,7 +471,8 @@ static void send_stop_reply(int signal, const char *stop_reason, u32 r) {
 		strcpy(ptr, stop_reason);
 		ptr += strlen(stop_reason);
 		*ptr++ = ':';
-		ptr = mem2hex((char *)&r, ptr, sizeof(u32));
+		strcpy(ptr, r);
+		ptr += strlen(ptr);
 		*ptr++ = ';';
 	}
 	append_hex_char(ptr, 13);
@@ -779,12 +780,14 @@ void gdbstub_recv(void) {
 /* addr is only required for read/write breakpoints */
 void gdbstub_debugger(enum DBG_REASON reason, u32 addr) {
 	cpu_events &= ~EVENT_DEBUG_STEP;
+	char addrstr[9]; // 8 digits
+	snprintf(addrstr, sizeof(addrstr), "%x", addr);
 	switch (reason) {
 		case DBG_WRITE_BREAKPOINT:
-			send_stop_reply(SIGNAL_TRAP, "watch", addr);
+			send_stop_reply(SIGNAL_TRAP, "watch", addrstr);
 		break;
 		case DBG_READ_BREAKPOINT:
-			send_stop_reply(SIGNAL_TRAP, "rwatch", addr);
+			send_stop_reply(SIGNAL_TRAP, "rwatch", addrstr);
 			break;
 		default:
 			send_stop_reply(SIGNAL_TRAP, NULL, 0);

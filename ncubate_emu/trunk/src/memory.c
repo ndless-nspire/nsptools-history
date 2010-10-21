@@ -322,38 +322,44 @@ static void adc_write_word(u32 addr, u32 value) {
 
 /* -------------------------------------------------------------------------- */
 
+/* If read=false, then its a write. Returns the physical address. */
+static inline u32 check_action(u32 vaddr, bool read, u8 size) {
+	u32 paddr = mmu_translate(vaddr, data_abort);
+	u8 *ptr = phys_mem_ptr(paddr, size);
+	if (ptr) {
+		u32 *flags = &RAM_FLAGS((size_t)ptr & ~3);
+		if (read && *flags & DO_READ_ACTION)  read_action(vaddr);
+		else if    (*flags & DO_WRITE_ACTION) write_action(flags, vaddr);
+	}
+	return paddr;
+}
+
 u32 __attribute__((fastcall)) slow_read_byte(u32 addr) {
-	addr = mmu_translate(addr, data_abort);
-	return read_byte_map[addr >> 26](addr);
+	return read_byte_map[addr >> 26](check_action(addr, true, 1));
 }
 
 u32 __attribute__((fastcall)) slow_read_half(u32 addr) {
 	if (addr & 1) error("Unaligned read_half: %x", addr);
-	addr = mmu_translate(addr, data_abort);
-	return read_half_map[addr >> 26](addr);
+	return read_half_map[addr >> 26](check_action(addr, true, 2));
 }
 
 u32 __attribute__((fastcall)) slow_read_word(u32 addr) {
 	if (addr & 3) error("Unaligned read_word: %x", addr);
-	addr = mmu_translate(addr, data_abort);
-	return read_word_map[addr >> 26](addr);
+	return read_word_map[addr >> 26](check_action(addr, true, 4));
 }
 
 void __attribute__((fastcall)) slow_write_byte(u32 addr, u32 value) {
-	addr = mmu_translate(addr, data_abort);
-	write_byte_map[addr >> 26](addr, value);
+	write_byte_map[addr >> 26](check_action(addr, false, 1), value);
 }
 
 void __attribute__((fastcall)) slow_write_half(u32 addr, u32 value) {
 	if (addr & 1) error("Unaligned write_half: %x", addr);
-	addr = mmu_translate(addr, data_abort);
-	write_half_map[addr >> 26](addr, value);
+	write_half_map[addr >> 26](check_action(addr, false, 2), value);
 }
 
 void __attribute__((fastcall)) slow_write_word(u32 addr, u32 value) {
 	if (addr & 3) error("Unaligned write_word: %x", addr);
-	addr = mmu_translate(addr, data_abort);
-	write_word_map[addr >> 26](addr, value);
+	write_word_map[addr >> 26](check_action(addr, false, 4), value);
 }
 
 void memory_initialize() {
