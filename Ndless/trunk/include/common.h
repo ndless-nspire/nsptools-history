@@ -186,6 +186,8 @@ halt\@: b halt\@
 /** GNU C Compiler */
 #else
 
+#include "libndls.h"
+
 #define _STRINGIFY(s) #s
 #define STRINGIFY(s) _STRINGIFY(s)
 #define NULL ((void*)0)

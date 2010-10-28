@@ -1,8 +1,9 @@
-SUBDIRS = tools arm samples
+SUBDIRS = tools libndls arm samples
 SUBDIR_TOOLS = tools
 SUBDIRSCLEAN = $(SUBDIRS)
 DISTDIRS = calcbin
-SDKDIRS = bin include system
+SDKDISTDIRS = bin lib
+SDKDIRS = $(SDKDISTDIRS) include system
 
 all: subdirs
 all_tools: subdirs_tools
@@ -49,4 +50,4 @@ clean: cleandist
 	(cd $$i; make clean) || exit 1; done
 	@# may fail because of nspire_emu keeping a lock on it
 	-rm -rf calcbin
-	rm -rf bin
+	rm -rf $(SDKDISTDIRS)
