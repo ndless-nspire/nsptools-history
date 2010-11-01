@@ -40,7 +40,12 @@ static int socket_fd = 0;
 
 static void log_socket_error(const char *msg) {
 #ifdef __MINGW32__
-	printf("%s: %i\n", msg, WSAGetLastError());
+	int errCode = WSAGetLastError();
+	LPSTR errString = NULL;  // will be allocated and filled by FormatMessage
+	FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 
+                  0, errCode, 0, (LPSTR)&errString, 0, 0);
+	printf( "%s: %s (%i)\n", msg, errString, errCode);
+	LocalFree( errString );
 #else
 	perror(msg);
 #endif
@@ -145,7 +150,7 @@ static void gdbstub_bind(int port) {
 	sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	r = bind(listen_socket_fd, (struct sockaddr *)&sockaddr, sizeof(sockaddr));
 	if (r == -1) {
-		log_socket_error("Failed to bind GDB stub socket");
+		log_socket_error("Failed to bind GDB stub socket. Check that nspire_emu is not already running");
 		exit(1);
 	}
 	r = listen(listen_socket_fd, 0);
@@ -289,11 +294,11 @@ static volatile int mem_err = 0;
  * If MAY_FAULT is non-zero, then we will handle memory faults by returning
  * a 0, else treat a fault like any other fault in the stub.
  */
-static unsigned char *mem2hex(unsigned char *mem, unsigned char *buf, int count) {
+static char *mem2hex(void *mem, char *buf, int count) {
 	unsigned char ch;
 
 	while (count-- > 0)	{
-		ch = *mem++;
+		ch = *(unsigned char*)mem++;
 		if (mem_err)
 			return 0;
 		*buf++ = hexchars[ch >> 4];
@@ -306,7 +311,7 @@ static unsigned char *mem2hex(unsigned char *mem, unsigned char *buf, int count)
 /* convert the hex array pointed to by buf into binary to be placed in mem
  * return a pointer to the character AFTER the last byte written.
  * If count is null stops at the first non hex digit */
-static char *hex2mem(char *buf, unsigned char *mem, int count) {
+static void *hex2mem(char *buf, void *mem, int count) {
 	int i;
 	char ch;
 
@@ -316,7 +321,7 @@ static char *hex2mem(char *buf, unsigned char *mem, int count) {
 			return mem;
 		ch <<= 4;
 		ch |= hex(*buf++);
-		*mem++ = ch;
+		*(char*)mem++ = ch;
 		if (mem_err)
 			return 0;
 	}
@@ -477,11 +482,11 @@ static void send_stop_reply(int signal, const char *stop_reason, const char *r) 
 	}
 	append_hex_char(ptr, 13);
 	*ptr++ = ':';
-	ptr = mem2hex((char *)&arm.reg[13], ptr, sizeof(u32));
+	ptr = mem2hex(&arm.reg[13], ptr, sizeof(u32));
 	*ptr++ = ';';
 	append_hex_char(ptr, 15);
 	*ptr++ = ':';
-	ptr = mem2hex((char *)&arm.reg[15], ptr, sizeof(u32));
+	ptr = mem2hex(&arm.reg[15], ptr, sizeof(u32));
 	*ptr++ = ';';
 	*ptr = 0;
 	putpacket(remcomOutBuffer);
@@ -517,18 +522,18 @@ void gdbstub_loop(void) {
 			case 'g':  /* return the value of the CPU registers */
 				get_registers(regbuf);
 				ptr = remcomOutBuffer;
-				ptr = mem2hex((char *)regbuf, ptr, NUMREGS * sizeof(unsigned long)); 
+				ptr = mem2hex(regbuf, ptr, NUMREGS * sizeof(unsigned long)); 
 				break;
 		
 			case 'G':  /* set the value of the CPU registers - return OK */
-				hex2mem(ptr, (char *)regbuf, NUMREGS * sizeof(unsigned long));
+				hex2mem(ptr, regbuf, NUMREGS * sizeof(unsigned long));
 				set_registers(regbuf);
 				strcpy(remcomOutBuffer,"OK");
 				break;
 				
 			case 'p': /* pn Read the value of register n */
 				if (hexToInt(&ptr, &addr) && (size_t)addr < sizeof(regbuf)) {
-					mem2hex((char*)(get_registers(regbuf) + addr), remcomOutBuffer, sizeof(unsigned long));
+					mem2hex(get_registers(regbuf) + addr, remcomOutBuffer, sizeof(unsigned long));
 				} else {
 					strcpy(remcomOutBuffer,"E01");
 				}
@@ -540,7 +545,7 @@ void gdbstub_loop(void) {
 					  && (ptr=strtok(NULL, ""))
 					  && (size_t)addr < sizeof(regbuf)
 					  // TODO hex2mem doesn't check the format
-					  && hex2mem((unsigned char*)ptr, (unsigned char*)&get_registers(regbuf)[addr], sizeof(u32))
+					  && hex2mem((char*)ptr, &get_registers(regbuf)[addr], sizeof(u32))
 					  ) {
 					set_registers(regbuf);
 					strcpy(remcomOutBuffer, "OK");
@@ -555,7 +560,7 @@ void gdbstub_loop(void) {
 				    && *ptr++ == ','
 				    && hexToInt(&ptr, &length)) {
 					ramaddr = virt_mem_ptr(addr, length);
-					if (!ramaddr || mem2hex((char *)ramaddr, remcomOutBuffer, length))
+					if (!ramaddr || mem2hex(ramaddr, remcomOutBuffer, length))
 						break;
 					strcpy(remcomOutBuffer, "E03");
 				}	else
@@ -575,7 +580,7 @@ void gdbstub_loop(void) {
 				  }
 				  if (range_translated((u32)ramaddr, (u32)((char *)ramaddr + length)))
 				  	flush_translations();
-					if (hex2mem(ptr, (char *)ramaddr, length))
+					if (hex2mem(ptr, ramaddr, length))
 						strcpy(remcomOutBuffer, "OK");
 					else
 						strcpy(remcomOutBuffer, "E03");
@@ -625,7 +630,7 @@ parse_new_pc:
 							strcpy(remcomOutBuffer,"E02");
 							break;
 						}
-						*hex2mem(ptr1, databuffer, 0) = '\0'; /* to string */
+						*(char*)hex2mem(ptr1, databuffer, 0) = '\0'; /* to string */
 						ret = remote_open(databuffer, i);
 						reply = false;
 						return; // remote_vfile_cb will finish processing
@@ -670,7 +675,7 @@ parse_new_pc:
 							strcpy(remcomOutBuffer,"E02");
 							break;
 						}
-						*hex2mem(ptr1, databuffer, 0) = '\0'; /* to string */
+						*(char*)hex2mem(ptr1, databuffer, 0) = '\0'; /* to string */
 						ret = remote_unlink(databuffer);
 						reply = false;
 						return;
@@ -692,7 +697,6 @@ z:
 						case '0': // mem breakpoint
 						case '1': // hw breakpoint
 							if (set) {
-								puts("set");
 								if (*flags & RF_CODE_TRANSLATED) flush_translations();
 								*flags |= RF_EXEC_BREAKPOINT;
 							} else

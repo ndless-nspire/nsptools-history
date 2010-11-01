@@ -78,9 +78,10 @@ Changelog
    physical address
  - FIX: 'j' (over a non-branch instruction) and 'rs pc' debugger commands 
    incorrectly skipped the target instruction
+ - FIX: flash file creation (/N) may sometimes fail
  - FIX: no more 'bad read word' on auto power down, but still hangs
  - FIX: ineffective command line option /D when saved state was reloaded on startup
-
+ 
 * v032a - 2010/09/21
  - Migrate to nspire_emu v032
  - ADD: Debugger command 'ss'

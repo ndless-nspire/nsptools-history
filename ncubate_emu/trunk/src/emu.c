@@ -267,7 +267,7 @@ int main(int argc, char **argv) {
 	int i;
 	FILE *f;
 	static FILE *boot2_file = NULL;
-	static char *boot1_filename = NULL, *boot2_filename = NULL, *flash_filename = NULL;
+	static char *boot1_filename = NULL, *boot2_filename = NULL;
 	char *debug_cmds_filename = NULL;
 	bool new_flash_image = false;
 	volatile int gdb_port = 0;
@@ -302,7 +302,7 @@ int main(int argc, char **argv) {
 					break;
 				case 'F':
 					if (*arg == '=') arg++;
-					flash_filename = arg;
+					strncpy(flash_filename, arg, MAX_PATH);
 					break;
 				case 'G':
 					if (*arg == '=') arg++;
