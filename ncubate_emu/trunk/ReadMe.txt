@@ -5,7 +5,7 @@
 What is it?
 ===========
 
-Ncubate Emu is an enhanced of the TI-Nspire emulator nspire_emu.
+Ncubate Emu is an enhanced version of the TI-Nspire emulator nspire_emu.
 
 Features
 ========
