@@ -71,7 +71,7 @@ Olivier Armand aka ExtendeD  -  < olivier dot calc at gmail dot com >
 Changelog
 =========
 
-* v032b - <not released yet>
+* v032b - 2010/11/06
  - ADD: GDB support
  - ADD: Command-line option /R
  - CHG: Read/write breakpoint logs display a virtual address instead of a 
