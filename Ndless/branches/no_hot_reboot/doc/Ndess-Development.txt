@@ -1,0 +1,49 @@
+      =================================
+      = Development environment setup =
+      =================================
+
+
+This document is intended for maintainers of Ndless.
+
+This file describes the prerequisites and setup steps for a Windows development environment
+to build Ndless.
+
+You *don't* need to follow this procedure to set up a C/ARM development environment to
+build TI-Nspire programs. This setup is described in ReadMe.txt.
+
+C
+=
+
+- MSYS with MinGW: http://www.mingw.org/wiki/msys
+- 7-zip: http://www.7-zip.org/download.html
+
+* Add 7-zip's folder to your PATH environment variable
+* Copy Ndless/Makefile.config.tpl to Ndless/Makefile.config and configure the latter
+
+ARM
+===
+
+- Set up the toolchain as described in ReadMe.txt. Ndless is built with itself, and
+  you may not be able to use a previous version of Ndless to build it.
+  You thus need to build the toolchain (cd tools && make) and add the bin/ directory
+  at the root of the project to the PATH environment variable, and remove any bin/
+  directory of a previous version of Ndless.
+
+Building
+========
+
+From Ndless root directory:
+
+* make: builds the artifacts
+* make arm: builds the ARM artifacts
+* make dist: builds the artificats and create a release directory (dist)
+* make distbin: incremental dist during development
+
+Generating the syscalls header files
+====================================
+
+The syscalls header files for the different OS are generated.
+This generated files are ditributed with Ndless's source code.
+
+To regenerate these files, run the following command:
+cd tools/Makesyscalls && make

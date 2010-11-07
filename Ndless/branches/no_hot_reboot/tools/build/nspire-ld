@@ -1,0 +1,55 @@
+#!/bin/bash
+# bash and not sh: we use bash arrays
+# Available non-GCC options:
+# --no-startup: do not link with the startup code
+
+UNAME=`uname -s | tr '[A-Z]' '[a-z]'`
+DIRNAME=`dirname "$0"`
+
+# DIRNAME may not be in the toolchain directory if this script was symlinked.
+# try to find the symlink target	
+if which readlink &> /dev/null && readlink "$0" &> /dev/null; then
+    SYMLINK=`readlink "$0"`
+    
+    # On MacOS X, the readlink command hasn't the same behavior than the others operating systems based on Unix.
+    if [ "$UNAME" == "darwin" ]; then
+    	DIRNAME=`dirname "$SYMLINK"`
+    else
+    	DIRNAME="$SYMLINK"/..
+    fi
+fi
+
+# Cygwin owns a dedicated command to find the symlink target
+if [ "$UNAME" == "cygwin" ]; then
+	DIRNAME=`cygpath --path --windows "$DIRNAME"`
+fi
+
+nostdlib=false
+nostartup=false
+# an array is used to change the arguments while supporting arguments with spaces
+declare -a args
+for arg in "$@"; do
+	case $arg in
+		-nostdlib) nostdlib=true; args=("${args[@]}" $arg);;
+		--no-startup) nostartup=true;;
+		*) args=("${args[@]}" $arg);;
+	esac
+done
+if [ $nostdlib = false ]; then
+	args=("${args[@]}" "$DIRNAME/../system/osstub.o")
+fi
+
+# some newlib symbols are not found if ld is used...
+GCC=`which arm-elf-gcc 2>/dev/null`
+GCC=${GCC:=arm-none-eabi-gcc}
+# lazy system build: must be built with the same toolchain
+(cd "$DIRNAME/../system" && make -s all)
+ret=$?
+if [ $ret -ne 0 ]; then
+	exit $ret
+fi
+if [ $nostartup = false ]; then
+	args=("$DIRNAME/../system/crt0.o" "${args[@]}")
+fi
+# -nostartfiles: avoids newlib startup which would be added before ours
+"$GCC" -nostartfiles  -T "$DIRNAME/../system/ldscript" -e _nspire_start "$DIRNAME/../system/crt0sym.o" "${args[@]}"
