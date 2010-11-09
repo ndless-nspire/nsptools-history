@@ -34,7 +34,6 @@ static unsigned const s2_tizip_hook_addrs[] = {0x1019708C, 0x0};
 static void s2_run_install(void);
 
 HOOK_DEFINE(s2_tizip_hook) {
-	ut_debug_trace(7);
 	HOOK_UNINSTALL(s2_tizip_hook_addrs[ut_os_version_index], s2_tizip_hook); // uninstall itself
 	// At this stage, malloc is possible: run the core installation
 	s2_run_install();
@@ -44,10 +43,8 @@ HOOK_DEFINE(s2_tizip_hook) {
 HOOK_SKIP_VAR(s2_tizip_hook, 0x24);
 
 void main(void) {
-	ut_debug_trace(2);
 	ut_read_os_version_index();
 	ints_setup_handlers();
-	ut_debug_trace(3);
 	struct next_descriptor *installed_next_descriptor = ut_get_next_descriptor();
 	if (installed_next_descriptor) {
 		if (*(unsigned*)installed_next_descriptor->ext_name == 0x4E444C53) { // 'NDLS'
@@ -57,9 +54,7 @@ void main(void) {
 		else
 			ut_panic("unknown N-ext");
 	}
-	ut_debug_trace(4);
 	HOOK_INSTALL(s2_tizip_hook_addrs[ut_os_version_index], s2_tizip_hook);
-	ut_debug_trace(5);
 }
 
 static void s2_run_install(void) {

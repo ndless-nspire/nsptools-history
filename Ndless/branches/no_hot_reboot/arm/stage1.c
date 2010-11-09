@@ -27,17 +27,14 @@
 
 #include "ndless.h"
 
+/* The error handling is commented and only enabled for debugging purposes
+ * because of the size constraints of the installer.
+ */
 void s1_load(void) {
 	unsigned stage2_size;
-	ut_read_os_version_index();
-	ints_setup_handlers();
-#if 1
-	char *respath = "/documents/ndless/ndless_resources.tns";
-#else
 	char respath[0x300 + 40];
 	sprintf(respath, "/documents/%s/ndless_resources.tns",
 	        (char*)ut_currentdocdir_addr[ut_os_version_index]);
-#endif
 	// We can't malloc in this low-memory conditions.
 	// The screen is used as a temporary buffer for stage2.
 	// Copy it at 3/4 from the top of the screen. We must avoid any dynamic icon.

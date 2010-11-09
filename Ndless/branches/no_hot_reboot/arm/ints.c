@@ -58,7 +58,7 @@ asm(
 " .long " STRINGIFY(NEXT_SIGNATURE) "\n"
 "ints_next_descriptor_ptr: .long 0 \n"
 #endif
-"ints_swi_handler:        @ caution: 1) only supports calls from the svc and user mode (many syscalls will reboot with TCT_Check_Stack in other modes anyway) 2) destroys the caller's mode lr \n"
+"ints_swi_handler: .global ints_swi_handler  @ caution: 1) only supports calls from the svc and user mode (many syscalls will reboot with TCT_Check_Stack in other modes anyway) 2) destroys the caller's mode lr \n"
 " str   r0, [sp, #-4]!    @ push r0 \n"
 " mrs	  r0, spsr \n"
 " tst   r0, #0b100000     @ caller in thumb state? \n"
@@ -107,23 +107,7 @@ asm(
 #endif
 );
 
-#ifdef _NDLS_LIGHT
-// Used for any exception for which we choose to halt
-asm(
-" .arm \n"
-"ints_halt_handler: .global ints_halt_handler \n"
-"0: b 0b"
-);
-
-// Used for any exception for which we want to return back immediatly
-// Only works for exceptions where lr = orig_pc + 4
-asm(
-" .arm \n"
-"ints_empty_handler4: .global ints_empty_handler4 \n"
-" subs pc, lr, #4" 
-);
-
-#else
+#ifndef _NDLS_LIGHT
 // Exception handlers when Ndless is installed, to make debugging on real hw easier
 asm(
 " .arm \n"

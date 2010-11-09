@@ -92,6 +92,7 @@ void __attribute__ ((noreturn)) ut_panic(const char *msg) {
 #endif
 
 
+#ifndef STAGE1
 /* draw a dotted line. Line 0 is at the bottom of the screen (to avoid overwriting the installer) */
 void ut_debug_trace(unsigned line) {
 	volatile unsigned *ptr = (unsigned*)((char*)SCREEN_BASE_ADDRESS + (SCREEN_WIDTH/2) * (SCREEN_HEIGHT - 1 - line));
@@ -99,6 +100,7 @@ void ut_debug_trace(unsigned line) {
 	for (i = 0; i < (SCREEN_WIDTH/2) / 4; i++)
 		*ptr++ = line & 1 ? 0xFFFF0000 : 0x0000FFFF;
 }
+#endif
 
 
 #ifndef _NDLS_LIGHT

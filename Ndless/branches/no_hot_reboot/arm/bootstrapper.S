@@ -32,21 +32,21 @@ ints_vectors:
 int_irq:
  .byte 0x18, 0xF0, 0x9F, 0xE5, 0x18, 0xF0, 0x9F, 0xE5
 	@ Interrupt vectors: default addresses (used by the jump instructions)
-	.long ints_halt_handler @ initialize
-	.long ints_halt_handler @ undef instr
-	.long ints_empty_handler4 @ software
-	.long ints_halt_handler @ prefetch abort
-	.long ints_empty_handler4 @ data abort
-	.long ints_halt_handler @ reserved
+	.long 0 @ initialize
+	.long 0 @ undef instr
+	.long ints_swi_handler @ software
+	.long 0 @ prefetch abort
+	.long 0 @ data abort
+	.long 0 @ reserved
 ints_irq_addr:
 	.long main @ IRQ - our entry point by default
-	.long ints_empty_handler4 @ FIQ
+	.long main @ FIQ
 
 @ First set of instructions executed at installation time, as an IRQ handler
 @ Caution, calling syscalls in IRQ mode is not possible
 main:
 	stmfd sp!, {r0-r3,r12,lr}  @ registers possibly destroyed by the calling convention
-	
+
 	adr   r0, ints_irq_addr
 	ldr   r1, =(OS_BASE_ADDRESS+ints_irq_addr-ints_vectors)
 	ldr   r2, [r1], #4
@@ -58,3 +58,4 @@ main:
 	bl    s1_install_hook
 	ldmfd sp!, {r0-r3,r12,lr}
 	b     int_irq              @ jump to the IRQ handler of the OS
+	

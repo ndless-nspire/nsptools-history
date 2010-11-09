@@ -30,8 +30,7 @@
 static unsigned const s1_inflate_hook_addrs[] = {0x101976BC, 0x0};
 
 HOOK_DEFINE(s1_inflate_hook) {
-	//HOOK_UNINSTALL(s1_inflate_hook_addrs[ut_os_version_index], s1_inflate_hook); // uninstall itself
-	ut_debug_trace(1);
+	HOOK_UNINSTALL(s1_inflate_hook_addrs[ut_os_version_index], s1_inflate_hook); // uninstall itself
 	s1_load();
 	HOOK_RESTORE_RETURN_SKIP(s1_inflate_hook, 0x3C); // Jump to the function exit. Caution, the offset may depend on the OS version.
 }
