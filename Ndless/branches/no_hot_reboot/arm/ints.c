@@ -30,26 +30,24 @@ extern void ints_swi_handler(void);
 extern void ints_prefetch_abort_handler(void);
 extern void ints_data_abort_handler(void);
 
-#ifdef _NDLS_LIGHT
-void ints_setup_handlers(void) {
-	*(void**)INTS_SWI_HANDLER_ADDR = &ints_swi_handler;
-}
 
-#else
 void ints_setup_handlers(void) {
+#ifdef _NDLS_LIGHT
+	*(void**)INTS_SWI_HANDLER_ADDR = &ints_swi_handler;
+#else
 	void **adr_ptr = (void**)INTS_UNDEF_INSTR_HANDLER_ADDR;
 	*adr_ptr++ = &ints_undef_instr_handler;
 	*adr_ptr++ = &ints_swi_handler;
 	*adr_ptr++ = &ints_prefetch_abort_handler;
 	*adr_ptr++ = &ints_data_abort_handler;
  	ints_next_descriptor_ptr = &ut_next_descriptor;
-}
 #endif
+}
 
 /* All the code run with _NDLS_LIGHT defined must be PC-relative (the loader is not relocated)
  * TODO:
  * Check that the swi number is correct
- * Check it is null; if not null, reboot
+ * Check if it is null. If not null, reboot
  */
 asm(
 " .arm \n"

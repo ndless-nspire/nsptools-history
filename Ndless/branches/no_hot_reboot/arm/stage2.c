@@ -73,6 +73,8 @@ static void s2_run_install(void) {
 		ut_panic("ldfrs");
 	unsigned core_size = res_stat.st_size - stage2_size - sizeof(unsigned) /* stage 2 size */;
 	void *hook_dest = malloc(core_size); // malloc is now possible
+	if (!hook_dest)
+		ut_panic("s2ma");
 	if (fseek(res_file, sizeof(unsigned) /* stage 2 size */ + stage2_size, SEEK_SET))
 		ut_panic("s2fs");
 	if (fread(hook_dest, core_size, 1, res_file) != 1)

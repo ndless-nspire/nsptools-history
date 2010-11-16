@@ -183,6 +183,34 @@
 halt\@: b halt\@
   .endm
 
+	.macro to_thumb reg
+	add \reg, pc, #1
+	bx \reg
+	.thumb
+	.endm
+
+	.macro to_arm reg
+	adr \reg, to_arm\@
+	bx \reg
+	.arm
+to_arm\@:
+	.endm
+
+  .macro got_get var, reg1, reg2
+	ldr \reg1, got_var_\var
+	ldr \reg2, got_var_\var+4
+got_get_\var: 
+	add \reg1, pc
+	ldr \reg1, [\reg1, \reg2]
+	.endm
+
+	.macro got_var var
+	.align 2
+got_var_\var:
+	.long _GLOBAL_OFFSET_TABLE_-(got_get_\var+4) 
+	.long \var(GOT) 
+	.endm
+
 /** GNU C Compiler */
 #else
 

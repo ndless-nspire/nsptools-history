@@ -1,5 +1,5 @@
 /****************************************************************************
- * Stage 1 of the installation. Installed as a hook to be run in a stable
+ * Stage 1 of the installation. Installed as a hook to be run in a known
  * state, and not directly by the bootstrapper which is trigger by an IRQ.
  * Loads stage 2 from ndless_resources.
  * Error checking is disabled due to the size constraint of ndless_installer.
