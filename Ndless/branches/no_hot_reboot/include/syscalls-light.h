@@ -16,10 +16,10 @@
 #define e_stat 5
 #define e_puts 6
 #define e_malloc 7
-#define e_free 7
+#define e_free 8
 // END_OF_LIST (always keep this line after the last constant, used by mksyscalls.sh)
 
 // Must be kept up-to-date with the value of the last syscall
-#define SYSCALLS_NUM 7
+#define SYSCALLS_NUM 8
 
 #endif
