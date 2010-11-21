@@ -30,9 +30,25 @@
 // call to the dialog box display telling that the format isn't recognized
 static unsigned const ins_ploader_hook_addrs[] = {0x1000921C, 0x100091E8};
 
+// OS-specific
+// call to the dialog box display warning about low memory
+unsigned const ins_lowmem_hook_addrs[] = {0x10012F24, 0}; // TODO CAS
+
+BOOL ins_lowmem_hook_installed = TRUE; 
+
+// At installation time, a low memory warning may pop up. Skip it.
+// Since it may be called several during installation, it is uninstalled asynchronously by the ploaderhook.
+HOOK_DEFINE(ins_lowmem_hook) {
+  //TODO broken HOOK_RESTORE_RETURN_SKIP(ins_lowmem_hook, 4); // skip the original warning display
+  HOOK_RESTORE_RETURN(ins_lowmem_hook);
+}
+
+HOOK_SKIP_VAR(ins_lowmem_hook, 4);
+
 void main(void) {
 	ut_read_os_version_index();
 	sc_setup();
 	ints_setup_handlers();
 	HOOK_INSTALL(ins_ploader_hook_addrs[ut_os_version_index], plh_hook);
+	HOOK_INSTALL(ins_lowmem_hook_addrs[ut_os_version_index], ins_lowmem_hook);
 }

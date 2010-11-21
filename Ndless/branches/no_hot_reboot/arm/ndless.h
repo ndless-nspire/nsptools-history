@@ -30,6 +30,10 @@
 /* stage1.c */
 void s1_load(void);
 
+/* install.c */
+extern BOOL ins_lowmem_hook_installed;
+extern unsigned const ins_lowmem_hook_addrs[];
+
 /* ints.c */
 extern unsigned ints_scextnum;
 extern unsigned *sc_addrs_ptr;
