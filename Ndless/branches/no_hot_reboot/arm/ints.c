@@ -40,6 +40,8 @@ void ints_setup_handlers(void) {
 	*adr_ptr++ = &ints_swi_handler;
 	*adr_ptr++ = &ints_prefetch_abort_handler;
 	*adr_ptr++ = &ints_data_abort_handler;
+	// also change the SWI handler in the OS code, required by the N-ext convention
+	*(void**)(OS_BASE_ADDRESS + INTS_SWI_HANDLER_ADDR) = &ints_swi_handler;
  	ints_next_descriptor_ptr = &ut_next_descriptor;
 #endif
 }

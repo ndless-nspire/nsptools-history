@@ -49,7 +49,7 @@ void main(void) {
 	ints_setup_handlers();
 	struct next_descriptor *installed_next_descriptor = ut_get_next_descriptor();
 	if (installed_next_descriptor) {
-		if (*(unsigned*)installed_next_descriptor->ext_name == 0x4E444C53) { // 'NDLS'
+		if (*(unsigned*)installed_next_descriptor->ext_name == 0x534C444E) { // 'NDLS'
 			puts("uninstalling");
 			ut_calc_reboot();
 		}
