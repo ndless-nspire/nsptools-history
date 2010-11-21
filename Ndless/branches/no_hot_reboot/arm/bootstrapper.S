@@ -106,14 +106,21 @@ main_copy:
 	mov   r4, r11              @ required later for stack unwinding
 	bl    ints_setup_handlers
 	bl    ut_read_os_version_index
+	
+	got_get ut_os_version_index, r0, r1
+	ldr r0, [r0]
+	adr r1, bs_stack_unwind_addrs
+	lsl r0, #3                 @ sizeof(bs_stack_unwind_addrs)=8
+	add r6, r1, r0             @ point to the entry of bs_stack_unwind_addrs for this OS version
 
 	@ A Data Abort Exception may occur at any moment in this low-memory state.
 	@ Unwind the stack to a known state (after the call of inflate()), instead of placing
 	@ a hook and waiting for the calls to return.
 	mov   r1, #0             @ depth of the call stack
+	ldr   r3, [r6]            @ after the prologue of the caller of inflate()
+	add   r6, #4
 stack_unwind_loop:
 	ldr   r0, [r4]            @ where pc is pushed by the ldmfd of the function's prologue
-	ldr   r3, =0x101975FC     @ TODO don't hard code. After the prologue of the caller of inflate()
 	cmp   r0, r3
 	beq   frame_found
 	add   r1, #1
@@ -124,12 +131,25 @@ stack_unwind_loop:
 	ldr   r4, [r4]      
 	b     stack_unwind_loop
 frame_not_found:
-	halt	                    @ error, the frame was not found. TODO write error on screen
+	mov   r0, #0
+	bl    ut_debug_trace
+	halt                      @ panic
 
 frame_found:
 	bl    s1_load             @ load stage1, which will load stage2, which will install its hooks
 	sub   r5, r5, #0x28       @ last frame: point to the saved registers (as in a function prologue)
-	ldr   r0, =0x10197700
+	ldr   r0, [r6]            @ cleanup codes
 	to_arm r1
 	ldmfd r5, {r4-r11,sp}     @ pop the regiters saved by the sub-function (but not pc)
 	bx    r0                  @ jump to the heap cleanup code. The hooks installed by stage2 will then be called.
+
+	got_var ut_os_version_index
+
+@ OS-specific
+@ Each OS version is on its own line:
+@ 0) After the prologue of the caller of inflate()
+@ 1) Cleanup code of this function
+	.align 2
+bs_stack_unwind_addrs:
+	.long 0x101975FC, 0x10197700
+	.long 0x0, 0x0 @ TODO
