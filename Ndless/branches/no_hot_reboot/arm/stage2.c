@@ -1,8 +1,8 @@
 /****************************************************************************
  * Stage 2 of the installation, loaded by stage 1 in a size-constrained
  * temporary buffer.
- * Puts the calculator back to a stable state and loads the last 
- * installation steps.
+ * Puts the calculator back to a stable state and loads asyncronously
+ * with a hook the last installation steps.
  *
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
@@ -37,7 +37,9 @@ HOOK_DEFINE(s2_tizip_hook) {
 	HOOK_UNINSTALL(s2_tizip_hook_addrs[ut_os_version_index], s2_tizip_hook); // uninstall itself
 	// At this stage, malloc is possible: run the core installation
 	s2_run_install();
-	HOOK_RESTORE_RETURN_SKIP(s2_tizip_hook, 0x24); // Jump to the function exit. Caution, the offset may depend on the OS version.
+	// Jump to the function's exit code (TI_ZIPArchive_Uncompress) to abort the decompression loop.
+	// Caution, the offset may depend on the OS version.
+	HOOK_RESTORE_RETURN_SKIP(s2_tizip_hook, 0x24);
 }
 
 HOOK_SKIP_VAR(s2_tizip_hook, 0x24);

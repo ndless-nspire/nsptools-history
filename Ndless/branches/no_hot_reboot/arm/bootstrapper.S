@@ -1,5 +1,5 @@
 /****************************************************************************
- * Ndless bootstrapper. Installs the stage1 hook.
+ * Ndless bootstrapper. Loads stage1 and breaks the inflate() loop.
  *
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
@@ -44,10 +44,8 @@ ints_irq_addr:
 
 @ First set of instructions executed at installation time, as an IRQ handler
 @ Caution, calling syscalls in IRQ mode is not possible
-main:
-	stmfd sp!, {r0-r3,r12,lr, pc}  @ registers possibly destroyed by the calling convention. pc is dummy and will be overwritten
+main:   @ don't save any registers. The stack unwinding will restore those needed.
 	to_thumb r0
-
 	@ Copy the shellcode further down on the screen, to avoid being damaged
 	@ by the icon refresh on the upper-right corner
 	mov   r0, #0    @ ints_vectors
@@ -85,7 +83,7 @@ relocate_loop:
 
 relocated:
 	add   r3, #main_copy-ints_vectors+1 @ +1: still in thumb state
-	bx    r3        @ jump to main_copy in the copy
+	bx    r3            @ jump to main_copy in the copy
 
 	.align 2
 got_offset:
@@ -100,11 +98,38 @@ main_copy:
 	add   r0, #4
 	ldr   r3, [r1]
 	str   r3, [r0]             @ restore the FIQ handler of the OS
-	str   r2, [sp, #6*4]       @ IRQ handler of the OS. Overwrite the dummy pc previously pushed. Will by used the ldmfd.
-	
+	to_arm r0
+	add   lr, pc, #4           @ lr=return address+4 for IRQ interrupts. Will return to our code.
+	bx    r2                   @ jump to the IRQ handler of the OS
+	@ we are now in service mode
+	to_thumb r0
+	mov   r4, r11              @ required later for stack unwinding
 	bl    ints_setup_handlers
 	bl    ut_read_os_version_index
-	bl    s1_install_hook
 
-	to_arm r0
-	ldmfd sp!, {r0-r3,r12,lr, pc} @ and jump to the IRQ handler of the OS
+	@ A Data Abort Exception may occur at any moment in this low-memory state.
+	@ Unwind the stack to a known state (after the call of inflate()), instead of placing
+	@ a hook and waiting for the calls to return.
+	mov   r1, #0             @ depth of the call stack
+stack_unwind_loop:
+	ldr   r0, [r4]            @ where pc is pushed by the ldmfd of the function's prologue
+	ldr   r3, =0x101975FC     @ TODO don't hard code. After the prologue of the caller of inflate()
+	cmp   r0, r3
+	beq   frame_found
+	add   r1, #1
+	cmp   r1, #10             @ max depth
+	beq   frame_not_found
+	mov   r5, r4              @ r5=last frame
+	sub   r4, #4*3            @ pops r11 before r12, lr, and pc pushed by the function's prologue
+	ldr   r4, [r4]      
+	b     stack_unwind_loop
+frame_not_found:
+	halt	                    @ error, the frame was not found. TODO write error on screen
+
+frame_found:
+	bl    s1_load             @ load stage1, which will load stage2, which will install its hooks
+	sub   r5, r5, #0x28       @ last frame: point to the saved registers (as in a function prologue)
+	ldr   r0, =0x10197700
+	to_arm r1
+	ldmfd r5, {r4-r11,sp}     @ pop the regiters saved by the sub-function (but not pc)
+	bx    r0                  @ jump to the heap cleanup code. The hooks installed by stage2 will then be called.

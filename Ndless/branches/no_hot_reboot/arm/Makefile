@@ -44,7 +44,7 @@ utils_light_thumb.o: utils.c
 	$(GCC) $(GCCFLAGS) -c $< -o $@
 ndless_installer.elf: GCCFLAGS:=$(GCCFLAGS_DEFAULT) -D _NDLS_LIGHT -D STAGE1 -mthumb-interwork -mthumb
 # bootstrapper.o is the entry point: must be first in the list, and linked with --no-startup
-INST_OBJS = bootstrapper.o stage1.o stage1hook.o ints_light_thumb.o syscalls_light_thumb.o utils_light_thumb.o $(SYSCALLS_LIGHT_OBJS)
+INST_OBJS = bootstrapper.o stage1.o ints_light_thumb.o syscalls_light_thumb.o utils_light_thumb.o $(SYSCALLS_LIGHT_OBJS)
 ndless_installer.elf: $(INST_OBJS)
 	$(LD) --no-startup $(LDFLAGS) $^ -o $@
 

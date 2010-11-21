@@ -72,4 +72,3 @@ void sc_ext_relocdatab(unsigned *dataptr, unsigned size, void *base);
 void sc_setup(void);
 
 #endif
-
