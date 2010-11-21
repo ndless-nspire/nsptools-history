@@ -101,8 +101,10 @@ main_copy:
 	to_arm r0
 	add   lr, pc, #4           @ lr=return address+4 for IRQ interrupts. Will return to our code.
 	bx    r2                   @ jump to the IRQ handler of the OS
+	
 	@ we are now in service mode
 	to_thumb r0
+	push  {r5-r7}              @ registers used and required by the cleanup code when jumping at pop_and_cleanup. Only popped if the IRQ was triggered directly in sub_101975EC (on OS 1.7)
 	mov   r4, r11              @ required later for stack unwinding
 	bl    ints_setup_handlers
 	bl    ut_read_os_version_index
@@ -113,35 +115,45 @@ main_copy:
 	lsl r0, #3                 @ sizeof(bs_stack_unwind_addrs)=8
 	add r6, r1, r0             @ point to the entry of bs_stack_unwind_addrs for this OS version
 
-	@ A Data Abort Exception may occur at any moment in this low-memory state.
-	@ Unwind the stack to a known state (after the call of inflate()), instead of placing
-	@ a hook and waiting for the calls to return.
-	mov   r1, #0             @ depth of the call stack
-	ldr   r3, [r6]            @ after the prologue of the caller of inflate()
+	@ A Data Abort Exception may occur in this low-memory state.
+	@ Prepare to unwind the call stack to a known state (after the call of inflate()).
+	mov   r7, #0               @ depth of the call stack
+	ldr   r3, [r6]             @ after the prologue of the caller of inflate()
 	add   r6, #4
 stack_unwind_loop:
-	ldr   r0, [r4]            @ where pc is pushed by the ldmfd of the function's prologue
+	ldr   r0, [r4]             @ where pc is pushed by the ldmfd of the function's prologue
 	cmp   r0, r3
 	beq   frame_found
-	add   r1, #1
-	cmp   r1, #10             @ max depth
+	add   r7, #1
+	cmp   r7, #10              @ max depth
 	beq   frame_not_found
-	mov   r5, r4              @ r5=last frame
-	sub   r4, #4*3            @ pops r11 before r12, lr, and pc pushed by the function's prologue
-	ldr   r4, [r4]      
+	mov   r5, r4               @ r5=previous frame
+	sub   r4, #4*3             @ pops r11 before r12, lr, and pc pushed by the function's prologue
+	ldr   r4, [r4]
 	b     stack_unwind_loop
 frame_not_found:
 	mov   r0, #0
 	bl    ut_debug_trace
-	halt                      @ panic
+	halt                       @ panic
 
 frame_found:
-	bl    s1_load             @ load stage1, which will load stage2, which will install its hooks
-	sub   r5, r5, #0x28       @ last frame: point to the saved registers (as in a function prologue)
-	ldr   r0, [r6]            @ cleanup codes
+	bl    s1_load              @ load stage1, which will load stage2, which will install its hooks
+	ldr   r0, [r6]             @ cleanup code
+	@ We want to restore the registers for this frame to able to run the cleanup code.
+	cmp   r7, #0               @ check the depth
+	beq   pop_and_cleanup      @ the first frame is the current frame: no need to restore the registers
+	@ point to the saved registers of the previous frame, as in a function prologue.
+	@ Caution, this will only work for functions pushing r4-r11 (inflate() and sub_1009DF50 (OS 1.7)),
+	@ and we should be one of them
+	sub   r5, r5, #0x28
 	to_arm r1
-	ldmfd r5, {r4-r11,sp}     @ pop the regiters saved by the sub-function (but not pc)
-	bx    r0                  @ jump to the heap cleanup code. The hooks installed by stage2 will then be called.
+	ldmfd r5, {r4-r11,sp}      @ pop the regiters saved by the sub-function (but not pc)
+	bx    r0                   @ jump to the heap cleanup code. The hooks installed by stage2 will then be called.
+
+	.thumb
+pop_and_cleanup:
+	pop  {r5-r7}               @ restore the current registers required by the cleanup
+	bx    r0
 
 	got_var ut_os_version_index
 
