@@ -77,12 +77,10 @@ void ut_read_os_version_index(void) {
  * being opened */
 unsigned const ut_currentdocdir_addr[] = {0x10669A9C, 0x1069BD64};
 
-#ifndef STAGE1
 void __attribute__ ((noreturn)) ut_calc_reboot(void) {
 	*(unsigned*)0x900A0008 = 2; //CPU reset
 	__builtin_unreachable();
 }
-#endif
 
 #ifndef STAGE1
 void __attribute__ ((noreturn)) ut_panic(const char *msg) {

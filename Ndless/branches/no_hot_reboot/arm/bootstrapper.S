@@ -30,14 +30,17 @@ ints_vectors:
  .byte 0x18, 0xF0, 0x9F, 0xE5
  .byte 0x18, 0xF0, 0x9F, 0xE5, 0x18, 0xF0, 0x9F, 0xE5, 0x18, 0xF0, 0x9F, 0xE5
  .byte 0x18, 0xF0, 0x9F, 0xE5, 0x18, 0xF0, 0x9F, 0xE5
-int_irq:
  .byte 0x18, 0xF0, 0x9F, 0xE5, 0x18, 0xF0, 0x9F, 0xE5
 	@ Interrupt vectors: default addresses (used by the jump instructions)
-	.long 0 @ initialize
-	.long 0 @ undef instr
+ints_init_addr:
+	.long ints_light_exception_handler @ initialize
+ints_undef_addr:
+	.long ints_light_exception_handler @ undef instr
 	.long 0 @ software
-	.long 0 @ prefetch abort
-	.long 0 @ data abort
+ints_prefetch_addr:
+	.long ints_light_exception_handler @ prefetch abort
+ints_data_addr:
+	.long ints_light_exception_handler @ data abort
 	.long 0 @ reserved
 ints_irq_addr:
 	.long main @ IRQ - our entry point by default
@@ -91,11 +94,18 @@ got_offset:
 	.long _GLOBAL_OFFSET_TABLE_ - (get_got_offset+4)   @ +4: we are in thumb state
 
 main_copy:
-	mov   r0, #ints_irq_addr-ints_vectors
+	@ set up the exception handlers
+	adr   r1, ints_light_exception_handler
+	mov   r0, #0
+	str   r1, [r0, #ints_init_addr-ints_vectors]
+	str   r1, [r0, #ints_undef_addr-ints_vectors]
+	str   r1, [r0, #ints_prefetch_addr-ints_vectors]
+	str   r1, [r0, #ints_data_addr-ints_vectors]
+
 	ldr   r1, =(OS_BASE_ADDRESS+ints_irq_addr)
 	ldr   r2, [r1]
 	add   r1, #4
-	str   r2, [r0]             @ restore the IRQ handler of the OS (and keep it)
+	str   r2, [r0, #ints_irq_addr-ints_vectors]  @ restore the IRQ handler of the OS (and keep it)
 	add   r0, #4
 	ldr   r3, [r1]
 	str   r3, [r0]             @ restore the FIQ handler of the OS
@@ -129,17 +139,15 @@ stack_unwind_loop:
 	beq   frame_found
 	add   r7, #1
 	cmp   r7, #10              @ max depth
-	beq   frame_not_found
+	beq   ints_light_exception_handler_thumb @ frame not found
 	mov   r5, r4               @ r5=previous frame
 	sub   r4, #4*3             @ pops r11 before r12, lr, and pc pushed by the function's prologue
 	ldr   r4, [r4]
 	b     stack_unwind_loop
-frame_not_found:
-	mov   r0, #INSTTR_BS_STACKUNWIND
-	bl    ut_debug_trace
-	halt                       @ panic
 
 frame_found:
+	mov   r0, #INSTTR_BS_LOADS1
+	bl    ut_debug_trace
 	bl    s1_load              @ load stage1, which will load stage2, which will install its hooks
 	mov   r0, #INSTTR_BS_CLEANUP
 	bl    ut_debug_trace
@@ -170,3 +178,17 @@ pop_and_cleanup:
 bs_stack_unwind_addrs:
 	.long 0x101975FC, 0x10197700
 	.long 0x0, 0x0 @ TODO
+
+@ Exception handlers for bootstrapping
+@ Defined here to be reference with pc-relative instructions for a lighter installer
+	.arm
+ints_light_exception_handler:
+	to_thumb r0
+ints_light_exception_handler_thumb:
+	@ Short delay to display the ut_debug_traces.
+	ldr  r0, =INTS_EXCEPTION_SLEEP_CNT
+exception_sleep:
+	sub r0, #1
+	cmp r0, #0
+	bne exception_sleep
+	b ut_calc_reboot

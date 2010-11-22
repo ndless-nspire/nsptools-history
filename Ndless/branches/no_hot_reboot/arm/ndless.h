@@ -39,6 +39,9 @@
 #define INSTTR_INS_INSTALL 8
 #define INSTTR_S2_END 9
 
+// Delay for the exception handlers as a number of loops
+#define INTS_EXCEPTION_SLEEP_CNT 0xB30000
+
 #ifndef GNU_AS
 
 #include <os.h>
