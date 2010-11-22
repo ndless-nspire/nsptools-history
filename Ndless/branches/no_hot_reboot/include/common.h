@@ -332,20 +332,14 @@ static inline void idle(void) {
  * The 2 instructions overwritten by the hook are always skipped, the offset is based from the third instruction.
  * Any use must come with a call to HOOK_SKIP_VAR() outside of the hook function */
 #define HOOK_RESTORE_RETURN_SKIP(hookname, offset) do { \
-	extern volatile unsigned __##hookname##_end_instrs_skip##offset[2]; /* ldr pc, [pc, #-4]; .long return_addr */  \
-	/* Copy the default end instructions */ \
-	__##hookname##_end_instrs_skip##offset[0] = __##hookname##_end_instrs[2]; \
-	__##hookname##_end_instrs_skip##offset[1] = __##hookname##_end_instrs[3] + offset; /* and patch the jump to skip instructions */ \
-	/* Patch the next asm() to branch to this copy */ \
 	asm volatile( \
-		" adr r0, " STRINGIFY(__##hookname##_end_instrs_jump_offset_skip##offset) "\n" \
+		" adr r0, " STRINGIFY(__##hookname##_return_skip##offset) "\n" \
 		"	str %0, [r0] \n" \
-		:: "r"(&__##hookname##_end_instrs_skip##offset) : "r0"); \
+		:: "r"(__##hookname##_end_instrs[3] + offset) : "r0"); \
 	HOOK_RESTORE(hookname); \
-	/* Branch to the end instrs copy */ \
 	asm volatile( \
 		" ldr pc, [pc, #-4] \n" \
-	  STRINGIFY(__##hookname##_end_instrs_jump_offset_skip##offset) ":" \
+	  STRINGIFY(__##hookname##_return_skip##offset) ":" \
 		" .long 0"); \
 	} while (0)
 

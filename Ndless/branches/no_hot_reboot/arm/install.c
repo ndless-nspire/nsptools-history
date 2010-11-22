@@ -39,11 +39,9 @@ BOOL ins_lowmem_hook_installed = TRUE;
 // At installation time, a low memory warning may pop up. Skip it.
 // Since it may be called several during installation, it is uninstalled asynchronously by the ploaderhook.
 HOOK_DEFINE(ins_lowmem_hook) {
-  //TODO broken HOOK_RESTORE_RETURN_SKIP(ins_lowmem_hook, 4); // skip the original warning display
+  HOOK_RESTORE_RETURN_SKIP(ins_lowmem_hook, 4); // skip the original warning display
   HOOK_RESTORE_RETURN(ins_lowmem_hook);
 }
-
-HOOK_SKIP_VAR(ins_lowmem_hook, 4);
 
 void main(void) {
 	ut_read_os_version_index();

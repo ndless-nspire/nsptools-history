@@ -42,8 +42,6 @@ HOOK_DEFINE(s2_tizip_hook) {
 	HOOK_RESTORE_RETURN_SKIP(s2_tizip_hook, 0x24);
 }
 
-HOOK_SKIP_VAR(s2_tizip_hook, 0x24);
-
 void main(void) {
 	ut_read_os_version_index();
 	ints_setup_handlers();

@@ -79,5 +79,3 @@ HOOK_DEFINE(plh_hook) {
 silent:
 	HOOK_RESTORE_RETURN_SKIP(plh_hook, 4); // skip the error dialog about the unrecognized format
 }
-
-HOOK_SKIP_VAR(plh_hook, 4);
