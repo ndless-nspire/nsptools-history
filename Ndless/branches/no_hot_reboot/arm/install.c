@@ -40,10 +40,10 @@ BOOL ins_lowmem_hook_installed = TRUE;
 // Since it may be called several during installation, it is uninstalled asynchronously by the ploaderhook.
 HOOK_DEFINE(ins_lowmem_hook) {
   HOOK_RESTORE_RETURN_SKIP(ins_lowmem_hook, 4); // skip the original warning display
-  HOOK_RESTORE_RETURN(ins_lowmem_hook);
 }
 
 void main(void) {
+	ut_debug_trace(INSTTR_INS_INSTALL);
 	ut_read_os_version_index();
 	sc_setup();
 	ints_setup_handlers();

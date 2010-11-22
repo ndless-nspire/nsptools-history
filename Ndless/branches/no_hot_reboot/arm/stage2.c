@@ -34,15 +34,18 @@ static unsigned const s2_tizip_hook_addrs[] = {0x1019708C, 0x0};
 static void s2_run_install(void);
 
 HOOK_DEFINE(s2_tizip_hook) {
+	ut_debug_trace(INSTTR_S2_TZHOOK);
 	HOOK_UNINSTALL(s2_tizip_hook_addrs[ut_os_version_index], s2_tizip_hook); // uninstall itself
 	// At this stage, malloc is possible: run the core installation
 	s2_run_install();
+	ut_debug_trace(INSTTR_S2_END);
 	// Jump to the function's exit code (TI_ZIPArchive_Uncompress) to abort the decompression loop.
 	// Caution, the offset may depend on the OS version.
 	HOOK_RESTORE_RETURN_SKIP(s2_tizip_hook, 0x24);
 }
 
 void main(void) {
+	ut_debug_trace(INSTTR_S2_HOOK);
 	ut_read_os_version_index();
 	ints_setup_handlers();
 	struct next_descriptor *installed_next_descriptor = ut_get_next_descriptor();
@@ -80,5 +83,6 @@ static void s2_run_install(void) {
 	if (fread(hook_dest, core_size, 1, res_file) != 1)
 		ut_panic("s2fr");
 	fclose(res_file);
+	ut_debug_trace(INSTTR_S2_LOADINST);
 	((void (*)(void))(char*)(hook_dest + sizeof("PRG")))(); // Run the core installation
 }

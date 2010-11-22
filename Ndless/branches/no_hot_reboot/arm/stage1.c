@@ -32,6 +32,7 @@
 void s1_load(void) {
 	unsigned stage2_size;
 	char respath[0x300 + 40];
+	ut_debug_trace(INSTTR_S1_LOAD);
 	sprintf(respath, "/documents/%s/ndless_resources.tns",
 	        (char*)ut_currentdocdir_addr[ut_os_version_index]);
 	// We can't malloc in this low-memory conditions.
@@ -49,5 +50,6 @@ void s1_load(void) {
 	if (fread(stage2_dest, stage2_size, 1, res_file) != 1)
 		;//ut_panic("ldfr");
 	fclose(res_file);
+	ut_debug_trace(INSTTR_S1_LOADS2);
 	((void (*)(void))(char*)(stage2_dest + sizeof("PRG")))(); // Run stage2
 }

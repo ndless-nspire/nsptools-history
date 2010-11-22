@@ -23,6 +23,7 @@
  ****************************************************************************/
 
 #include <os.h>
+#include "ndless.h"
 
 ints_vectors:
 	@ Interrupt vectors: jump instructions
@@ -105,6 +106,8 @@ main_copy:
 	@ we are now in service mode
 	to_thumb r0
 	push  {r5-r7}              @ registers used and required by the cleanup code when jumping at pop_and_cleanup. Only popped if the IRQ was triggered directly in sub_101975EC (on OS 1.7)
+	mov   r0, #INSTTR_BS_STACKUNWIND
+	bl    ut_debug_trace
 	mov   r4, r11              @ required later for stack unwinding
 	bl    ints_setup_handlers
 	bl    ut_read_os_version_index
@@ -132,12 +135,14 @@ stack_unwind_loop:
 	ldr   r4, [r4]
 	b     stack_unwind_loop
 frame_not_found:
-	mov   r0, #0
+	mov   r0, #INSTTR_BS_STACKUNWIND
 	bl    ut_debug_trace
 	halt                       @ panic
 
 frame_found:
 	bl    s1_load              @ load stage1, which will load stage2, which will install its hooks
+	mov   r0, #INSTTR_BS_CLEANUP
+	bl    ut_debug_trace
 	ldr   r0, [r6]             @ cleanup code
 	@ We want to restore the registers for this frame to able to run the cleanup code.
 	cmp   r7, #0               @ check the depth

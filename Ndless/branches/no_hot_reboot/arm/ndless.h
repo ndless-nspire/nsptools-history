@@ -25,6 +25,22 @@
 #ifndef _NDLESS_H_
 #define _NDLESS_H_
 
+/* Common to asm and C code. Only define integer constants. */
+
+/* Debug levels for ut_debug_trace() for installation failure diagnostic. Keep in execution order. */
+#define INSTTR_BS_STACKUNWIND 0
+#define INSTTR_BS_LOADS1 1
+#define INSTTR_S1_LOAD 2
+#define INSTTR_S1_LOADS2 3
+#define INSTTR_S2_HOOK 4
+#define INSTTR_BS_CLEANUP 5
+#define INSTTR_S2_TZHOOK 6
+#define INSTTR_S2_LOADINST 7
+#define INSTTR_INS_INSTALL 8
+#define INSTTR_S2_END 9
+
+#ifndef GNU_AS
+
 #include <os.h>
 
 /* stage1.c */
@@ -75,4 +91,6 @@ static inline struct next_descriptor *ut_get_next_descriptor(void) {
 void sc_ext_relocdatab(unsigned *dataptr, unsigned size, void *base);
 void sc_setup(void);
 
-#endif
+#endif /* GNU_AS */
+
+#endif /* _NDLESS_H_ */
