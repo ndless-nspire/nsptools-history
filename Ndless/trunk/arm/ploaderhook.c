@@ -34,6 +34,20 @@ HOOK_DEFINE(plh_hook) {
 	char docpath[100];
 	int ret;
 	halfpath =  (char*)(HOOK_SAVED_REGS(plh_hook)[11] /* r11 */ - 0x124); // on the stack
+	// the hook is called at installation time. Show the installation message.
+	if (!strcmp("ndless_installer.tns", strrchr(halfpath, '/') + 1)) {
+		char title[20];
+		char msg[150];
+	  ascii2utf16(title, "Ndless", sizeof(title));
+	  ascii2utf16(msg, "Ndless installed successfully!", sizeof(msg));
+	  show_dialog_box2(0, title, msg);
+		goto silent; // skip the error dialog
+	}
+	// Asynchronous uninstallation
+	if (ins_lowmem_hook_installed) {
+		HOOK_UNINSTALL(ins_lowmem_hook_addrs[ut_os_version_index], ins_lowmem_hook);
+		ins_lowmem_hook_installed = FALSE;
+	}
 	// TODO use snprintf
 	sprintf(docpath, "/documents/%s", halfpath);
 	struct stat docstat;
@@ -65,5 +79,6 @@ HOOK_DEFINE(plh_hook) {
 	TCT_Local_Control_Interrupts(intmask);
 	if (!emu_debug_alloc_ptr)
 		free(docptr);
+silent:
 	HOOK_RESTORE_RETURN_SKIP(plh_hook, 4); // skip the error dialog about the unrecognized format
 }

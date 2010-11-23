@@ -183,6 +183,34 @@
 halt\@: b halt\@
   .endm
 
+	.macro to_thumb reg
+	add \reg, pc, #1
+	bx \reg
+	.thumb
+	.endm
+
+	.macro to_arm reg
+	adr \reg, to_arm\@
+	bx \reg
+	.arm
+to_arm\@:
+	.endm
+
+  .macro got_get var, reg1, reg2
+	ldr \reg1, got_var_\var
+	ldr \reg2, got_var_\var+4
+got_get_\var: 
+	add \reg1, pc
+	ldr \reg1, [\reg1, \reg2]
+	.endm
+
+	.macro got_var var
+	.align 2
+got_var_\var:
+	.long _GLOBAL_OFFSET_TABLE_-(got_get_\var+4) 
+	.long \var(GOT) 
+	.endm
+
 /** GNU C Compiler */
 #else
 
@@ -194,6 +222,11 @@ halt\@: b halt\@
 typedef enum bool {FALSE = 0, TRUE = 1} BOOL;
 typedef struct{} FILE;
 typedef unsigned long size_t;
+#ifndef SEEK_SET
+#define SEEK_SET 0
+#define SEEK_CUR 1
+#define SEEK_END 2
+#endif
 
 typedef struct {
   int row, col;
@@ -225,14 +258,15 @@ static inline void idle(void) {
   asm volatile("mcr p15, 0, %0, c7, c0, 4" : "=r"(sbz) );
 }
 
+/* Hooked functions and hooks must be built in ARM and not Thumb */
 #define HOOK_INSTALL(address, hookname) do { \
-	extern unsigned hookname; \
+	void hookname(void); \
 	extern unsigned __##hookname##_end_instrs[4]; /* orig_instrs1; orig_instrs2; ldr pc, [pc, #-4]; .long return_addr */ \
 	__##hookname##_end_instrs[3] = (unsigned)(address) + 8; \
 	__##hookname##_end_instrs[0] = *(unsigned*)(address); \
 	*(unsigned*)(address) = 0xE51FF004; /* ldr pc, [pc, #-4] */ \
 	__##hookname##_end_instrs[1] = *(unsigned*)((address) + 4); \
-	*(unsigned*)((address) + 4) = (unsigned)&hookname; \
+	*(unsigned*)((address) + 4) = (unsigned)hookname; \
 	__##hookname##_end_instrs[2] = 0xE51FF004; /* ldr pc, [pc, #-4] */ \
 	} while (0)
 
@@ -296,24 +330,28 @@ static inline void idle(void) {
 	HOOK_RETURN(hookname); \
 } while (0)
 
-/* Hook return skipping instructions */
+/* Hook return skipping instructions.
+ * The 2 instructions overwritten by the hook are always skipped, the offset is based from the third instruction.
+ * Any use must come with a call to HOOK_SKIP_VAR() outside of the hook function */
 #define HOOK_RESTORE_RETURN_SKIP(hookname, offset) do { \
-	volatile unsigned __end_instrs_skip##offset[4]; \
-	/* Copy the default end instructions */ \
-	memcpy((void*)__end_instrs_skip##offset, __##hookname##_end_instrs, sizeof(__end_instrs_skip##offset)); \
-	/* Patch the final jump to skip instructions */ \
-	__end_instrs_skip##offset[3] += offset; \
-	/* Patch the next asm() to branch to this copy */ \
 	asm volatile( \
-		" adr r0, " STRINGIFY(__##hookname##_end_instrs_jump_offset_skip##offset) "\n" \
+		" adr r0, " STRINGIFY(__##hookname##_return_skip##offset) "\n" \
 		"	str %0, [r0] \n" \
-		:: "r"(&__end_instrs_skip##offset) : "r0"); \
+		:: "r"(__##hookname##_end_instrs[3] + offset) : "r0"); \
 	HOOK_RESTORE(hookname); \
-	/* Branch to the end instrs copy */ \
 	asm volatile( \
 		" ldr pc, [pc, #-4] \n" \
-	  STRINGIFY(__##hookname##_end_instrs_jump_offset_skip##offset) ":" \
+	  STRINGIFY(__##hookname##_return_skip##offset) ":" \
 		" .long 0"); \
+	} while (0)
+
+#define HOOK_SKIP_VAR(hookname, offset) \
+	volatile unsigned __##hookname##_end_instrs_skip##offset[2]; /* ldr pc, [pc, #-4]; .long return_addr */ \
+
+#define HOOK_UNINSTALL(address, hookname) do { \
+	extern unsigned __##hookname##_end_instrs[4]; /* orig_instrs1; orig_instrs2; ... */ \
+	*(unsigned*)(address) = __##hookname##_end_instrs[0]; \
+	*(unsigned*)((address) + 4) = __##hookname##_end_instrs[1]; \
 } while (0)
 
 /***********************************

@@ -24,15 +24,24 @@
 
 #include "ndless.h"
 
+#ifndef STAGE1
 struct next_descriptor ut_next_descriptor = {
 	.next_version = 0x00010000,
 	.ext_name = "NDLS",
 	.ext_version = 0x00010007 // will be incremented only if new functionnalities exposed to third-party tools
 };
+#endif
 
 unsigned ut_os_version_index;
 
+// OS-specific
+extern unsigned syscalls_light_ncas_1_7[];
+extern unsigned syscalls_light_cas_1_7[];
+extern unsigned syscalls_ncas_1_7[];
+extern unsigned syscalls_cas_1_7[];
+
 /* Writes to ut_os_version_index a zero-based index identifying the OS version and HW model.
+ * Also sets up the syscalls table.
  * Should be called only once.
  * May be used for OS-specific arrays of constants (marked with "// OS-specific"). */
 void ut_read_os_version_index(void) {
@@ -41,41 +50,45 @@ void ut_read_os_version_index(void) {
 	 * destroyed at installation time */
 	switch (*(unsigned*)(OS_BASE_ADDRESS + 0x20)) {
 		// OS-specific
-		case 0x10211290: ut_os_version_index = 0; break; // 1.7 non-CAS
-		case 0x102132A0: ut_os_version_index = 1; break; // 1.7 CAS
+		case 0x10211290:  // 1.7 non-CAS
+			ut_os_version_index = 0;
+#ifdef _NDLS_LIGHT
+			sc_addrs_ptr = syscalls_light_ncas_1_7;
+#else
+			sc_addrs_ptr = syscalls_ncas_1_7;
+#endif
+			break;
+		case 0x102132A0:  // 1.7 CAS
+			ut_os_version_index = 1;
+#ifdef _NDLS_LIGHT
+			sc_addrs_ptr = syscalls_light_cas_1_7;
+#else
+			sc_addrs_ptr = syscalls_cas_1_7;
+#endif
+			break;
+#ifndef STAGE1
 		default:
-			ut_os_version_index = 0xFFFFFFFF;
-			ut_panic("v?");		
+			ut_panic("v?");
+#endif
 	}
 }
 
-// addresses of OS global variables which must be reinitialized for proper OS reboot
-static unsigned const ut_os_reboot_reset_addrs[][3] = {
-	{0x106DAFC4, 0x106F2A0C, 0x106F2AF0},  // 1.7 non-CAS
-	{0x1070D28C, 0x10725314, 0x107253F8} // 1.7 CAS
-};
-
-void __attribute__ ((noreturn)) ut_os_reboot(void) {
-	unsigned i;
-	if (ut_os_version_index == 0xFFFFFFFF)
-		ut_calc_reboot();
-	for (i = 0; i < sizeof(ut_os_reboot_reset_addrs[0])/sizeof(unsigned); i++)
-		*(unsigned*)(ut_os_reboot_reset_addrs[ut_os_version_index][i]) = 1;
-	asm volatile(" bx %0" :: "r"(OS_BASE_ADDRESS)); /* and switch to ARM state */
-	while(1);
-}
+/* OS-specific: addresses of the name of the directory containing the document
+ * being opened */
+unsigned const ut_currentdocdir_addr[] = {0x10669A9C, 0x1069BD64};
 
 void __attribute__ ((noreturn)) ut_calc_reboot(void) {
 	*(unsigned*)0x900A0008 = 2; //CPU reset
-	while(1);
+	__builtin_unreachable();
 }
 
+#ifndef STAGE1
 void __attribute__ ((noreturn)) ut_panic(const char *msg) {
 	puts(msg);
-	ut_os_reboot();
+	ut_calc_reboot();
 }
+#endif
 
-#ifndef _NDLS_LIGHT
 /* draw a dotted line. Line 0 is at the bottom of the screen (to avoid overwriting the installer) */
 void ut_debug_trace(unsigned line) {
 	volatile unsigned *ptr = (unsigned*)((char*)SCREEN_BASE_ADDRESS + (SCREEN_WIDTH/2) * (SCREEN_HEIGHT - 1 - line));
@@ -84,6 +97,7 @@ void ut_debug_trace(unsigned line) {
 		*ptr++ = line & 1 ? 0xFFFF0000 : 0x0000FFFF;
 }
 
+#ifndef _NDLS_LIGHT
 /* synchronous and doesn't require the IRQ to be enabled (actually the IRQ *must* be disabled) */
 void ut_puts(const char *str) {
 	volatile unsigned *line_status_reg = (unsigned*)0x90020014;

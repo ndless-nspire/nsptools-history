@@ -15,6 +15,8 @@ What do I need to install it on a TI-Nspire?
 - OS v1.7 installed on it
 - Any linking program such as TI-Nspire Computer Link Software
 
+Ndless is currently not compatible with Touchpad TI-Nspire models.
+
 How do I install it?
 ====================
 
@@ -27,15 +29,18 @@ the calculator. The two documents must be in the same directory.
 Open 'ndless_installer' from the Documents screen of the calculator and wait a 
 few seconds. Now:
 
- - the calculator may display a frozen clock and possibly random pixels at the 
- top of the screen. You are out of luck, the installation failed. Reboot the TI-
- Nspire by unplugging the USB cable, then removing and putting back a battery. 
- Retry the installation again.
- 
- - The calculator may hot-reboot. Ndless is now installed.
+ - The calculator may display a popup about the success of the installation.
+ That's it!
+ The installation is not permanent: you need to reinstall Ndless after each 
+ reboot.
 
-The installation is not permanent: you need to reinstall Ndless after each 
-reboot.
+ - The calculator may display a frozen clock and possibly 1, 2 or 3 vertical 
+ bars of random pixels on the screen. You are out of luck, the installation 
+ failed. The TI-Nspire should reboot by itself after a few seconds.
+ If not, force a reboot by unplugging the USB cable if plugged in, then removing 
+ and putting back a battery. Retry the installation again.
+ If you can't install Ndless after multiple attempts, jump to the section 
+ 'Problem report' below.
 
 How do I upgrade from v1.0/v1.1?
 ================================
@@ -96,7 +101,6 @@ What we hope you will be able to see in the next releases
 =========================================================
 
 - Installation on recent OS versions
-- No reinstallation required after reboot
 - More syscalls definitions
 - Basic routines as static libraries
 - A fully-fledged executable runner, with complete relocation support, library 
@@ -110,7 +114,7 @@ Many thanks to
 
 calc84maniac (GB/GBC emulator, HW info), Goplat (TI-Nspire emulator, HW info), 
 hwti (OS info, 64-bit support), squalyl (Hackspire and development tools 
-hosting), TI-Bank (data hosting), Omnimaga (message board).
+hosting), TI-Bank (data hosting).
 
 Thanks to all the contributors and beta testers: apcalc, bsl, bwang, 
 calc84maniac, Levak.
@@ -118,14 +122,34 @@ calc84maniac, Levak.
 Development team
 ================
 
-Olivier Armand aka ExtendeD  -  < olivier dot calc at gmail dot com >
-Geoffrey Anneheim aka geogeo - < geoffrey dot anneheim at free dot fr >
+  Olivier Armand aka ExtendeD  -  < olivier dot calc at gmail dot com >
+
+Former team member:
+  Geoffrey Anneheim aka geogeo - < geoffrey dot anneheim at free dot fr >
+
+Ndless is brought to you by Omnimaga: The Coders Of Tomorrow
+                        www.omnimaga.org
 
 We will gladly accept PayPal donations for the hardware expenses that were 
 required for the development of Ndless. You can use the e-mail addresses above 
 or the following URL:
 https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=PJ7SGQPQJ8WKQ&item_name=Ndless%20Donation
 Thank you for your support.
+
+Problem report
+==============
+
+First make sure:
+- You have followed the steps in the troubleshooting section above
+- You don't find a solution either on http://hackspire.unsads.com
+  or http://www.omnimaga.org/index.php?board=136.0
+
+Then count if you can:
+- the number of vertical bars of random pixels which appear at the top of the 
+  screen at installation time
+- The number of dotted lines which appear at the bottom of the screen
+
+E-mail this with anything which might help the authors to fix the issue.
 
 Legal stuff
 ===========

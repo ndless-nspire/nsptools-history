@@ -1,5 +1,6 @@
 /****************************************************************************
- * Ndless installation
+ * Final steps of the installation.
+ * Installs the hooks at their target addresses.
  *
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
@@ -26,29 +27,26 @@
 #include "ndless.h"
 
 // OS-specific
-// Call to dialog box display saying that the format isn't recognized
+// call to the dialog box display telling that the format isn't recognized
 static unsigned const ins_ploader_hook_addrs[] = {0x1000921C, 0x100091F0};
 
-static void ins_install_ploader_hook(void) {
-	HOOK_INSTALL(ins_ploader_hook_addrs[ut_os_version_index], plh_hook);
+// OS-specific
+// call to the dialog box display warning about low memory
+unsigned const ins_lowmem_hook_addrs[] = {0x10012F24, 0}; // TODO CAS
+
+BOOL ins_lowmem_hook_installed = TRUE; 
+
+// At installation time, a low memory warning may pop up. Skip it.
+// Since it may be called several during installation, it is uninstalled asynchronously by the ploaderhook.
+HOOK_DEFINE(ins_lowmem_hook) {
+  HOOK_RESTORE_RETURN_SKIP(ins_lowmem_hook, 4); // skip the original warning display
 }
 
 void main(void) {
+	ut_debug_trace(INSTTR_INS_INSTALL);
 	ut_read_os_version_index();
-	sc_setup();	
+	sc_setup();
 	ints_setup_handlers();
-	struct next_descriptor *installed_next_descriptor = ut_get_next_descriptor();
-	if (installed_next_descriptor) {
-		if (*(unsigned*)installed_next_descriptor->ext_name == 0x4E444C53) { // 'NDLS'
-			puts("uninstalling");
-			ut_calc_reboot();
-		}
-		else
-			ut_panic("unknown N-ext");
-	}
-	ints_hook_handlers();
-	ins_install_ploader_hook();
-	TCT_Local_Control_Interrupts(-1);
-	ut_puts("Ndless installed!");
-	ut_os_reboot();
+	HOOK_INSTALL(ins_ploader_hook_addrs[ut_os_version_index], plh_hook);
+	HOOK_INSTALL(ins_lowmem_hook_addrs[ut_os_version_index], ins_lowmem_hook);
 }

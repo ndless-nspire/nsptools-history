@@ -212,6 +212,7 @@ _SYSCALL2(FILE*, fopen, const char *, const char *)
 _SYSCALL4(size_t, fread, void *, size_t, size_t, FILE *)
 _SYSCALL4(size_t, fwrite, const void *, size_t, size_t, FILE *)
 _SYSCALL1(int, fclose, FILE *)
+_SYSCALL3(int, fseek, FILE *, long int, int)
 _SYSCALL2(int, mkdir, const char*, int)
 _SYSCALL2(int, stat, const char *, struct stat *)
 _SYSCALL2(int, NU_Get_First, struct dstat *, const char * /* pattern */)
@@ -238,7 +239,7 @@ static inline void __attribute__((noreturn, naked)) exit(int __attribute__((unus
 		" mov sp, %0 \n"
 		" mov pc, %1"
 		:: "r" (__crt0_savedsp), "r" (&__crt0exit));
-	while(1);
+	__builtin_unreachable();
 }
 
 #endif // GCC C

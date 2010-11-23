@@ -22,43 +22,44 @@
  *                 Geoffrey ANNEHEIM <geoffrey.anneheim@gmail.com>
  ****************************************************************************/
 
+#include <os.h>
 #include "ndless.h"
 
-extern void *next_descriptor_ptr;
+extern void *ints_next_descriptor_ptr; // but static
 extern void ints_undef_instr_handler(void);
 extern void ints_swi_handler(void);
 extern void ints_prefetch_abort_handler(void);
 extern void ints_data_abort_handler(void);
 
-void ints_setup_handlers(void) {
- *(void**)INTS_SWI_HANDLER_ADDR = &ints_swi_handler;
-}
 
-#ifndef _NDLS_LIGHT
-/* similar to ints_setup_handlers(), but:
- * - on the OS copy of the vectors, for installation at next reboot
- * - sets the next_descriptor pointer */
-void ints_hook_handlers(void) {
-	void **adr_ptr = (void**)(OS_BASE_ADDRESS + INTS_UNDEF_INSTR_HANDLER_ADDR);
+void ints_setup_handlers(void) {
+#ifdef _NDLS_LIGHT
+	*(void**)INTS_SWI_HANDLER_ADDR = &ints_swi_handler;
+#else
+	void **adr_ptr = (void**)INTS_UNDEF_INSTR_HANDLER_ADDR;
 	*adr_ptr++ = &ints_undef_instr_handler;
 	*adr_ptr++ = &ints_swi_handler;
 	*adr_ptr++ = &ints_prefetch_abort_handler;
-	*adr_ptr++ = &ints_data_abort_handler;
- 	next_descriptor_ptr = &ut_next_descriptor;
-}
+	*adr_ptr = &ints_data_abort_handler;
+	// also change the SWI handler in the OS code, required by the N-ext convention
+	*(void**)(OS_BASE_ADDRESS + INTS_SWI_HANDLER_ADDR) = &ints_swi_handler;
+ 	ints_next_descriptor_ptr = &ut_next_descriptor;
 #endif
+}
 
 /* All the code run with _NDLS_LIGHT defined must be PC-relative (the loader is not relocated)
  * TODO:
  * Check that the swi number is correct
- * Check it is null; if not null, reboot
+ * Check if it is null. If not null, reboot
  */
 asm(
 " .arm \n"
+#ifndef STAGE1
 " @ N-ext convention: a signature and a pointer to the descriptor, before the SWI handler address in the OS copy of the vectors \n"
 " .long " STRINGIFY(NEXT_SIGNATURE) "\n"
-"next_descriptor_ptr: .long 0 \n"
-"ints_swi_handler:        @ caution: 1) only supports calls from the svc and user mode (many syscalls will reboot with TCT_Check_Stack in other modes anyway) 2) destroys the caller's mode lr \n"
+"ints_next_descriptor_ptr: .long 0 \n"
+#endif
+"ints_swi_handler: .global ints_swi_handler  @ caution: 1) only supports calls from the svc and user mode (many syscalls will reboot with TCT_Check_Stack in other modes anyway) 2) destroys the caller's mode lr \n"
 " str   r0, [sp, #-4]!    @ push r0 \n"
 " mrs	  r0, spsr \n"
 " tst   r0, #0b100000     @ caller in thumb state? \n"
@@ -125,23 +126,8 @@ asm(
 #endif
 );
 
-#ifdef _NDLS_LIGHT
-// Used for any exception for which we choose to halt
-asm(
-" .arm \n"
-"ints_halt_handler: .global ints_halt_handler \n"
-"0: b 0b"
-);
-
-// Used for any exception for which we want to return back immediatly
-// Only works for exceptions where lr = orig_pc + 4
-asm(
-" .arm \n"
-"ints_empty_handler4: .global ints_empty_handler4 \n"
-" subs pc, lr, #4" 
-);
-
-#else
+/* Exception handlers for the installer are in bootstrapper.S */
+#ifndef _NDLS_LIGHT
 // Exception handlers when Ndless is installed, to make debugging on real hw easier
 asm(
 " .arm \n"
@@ -162,9 +148,13 @@ asm(
 " bic   r2, #0b1111       @ to user mode, to be able to call syscalls \n"
 " msr   cpsr, r2 \n"
 " bl ut_printf \n"
+" mov r0, #" STRINGIFY(INTS_EXCEPTION_SLEEP_CNT) "\n"
+"0: \n"
+" subs r0, #1 \n"
+" bne 0b \n"
 " b ut_calc_reboot \n"
 "1: .asciz \"data abort exception, lr=%08x\\n\" \n"
 "2: .asciz \"prefetch abort exception, lr=%08x\\n\"\n"
 "3: .asciz \"undefined instruction exception, lr=%08x\\n\"\n"
 );
-#endif
+#endif /* _NDLS_LIGHT */

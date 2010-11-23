@@ -23,9 +23,10 @@ Ndless - Changelog
   - NEW: sample program 'hello'
   - CHG: 'demo' renamed to 'particles' and moved to samples/
  Includes:
-  - NEW: stat, NU_Get_First, NU_Get_Next, NU_Done, strcpy, strcmp, strlen, 
-         strncat, strrchar, vsprintf, abs, min, max, exit, sleep
- - NEW: va_list, va_start, va_arg, va_end (thanks apcalc)
+  - NEW: fseek, stat, NU_Get_First, NU_Get_Next, NU_Done, strcpy, strcmp, 
+         strlen, strncat, strrchar, vsprintf, abs, min, max, exit, sleep, 
+         to_thumb, to_arm, got_get, got_var
+  - NEW: va_list, va_start, va_arg, va_end (thanks apcalc)
 
 * v1.1.1 - <2010/10/16>
  Installer:

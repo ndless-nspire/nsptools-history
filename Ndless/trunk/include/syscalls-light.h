@@ -10,13 +10,15 @@
 // START_OF_LIST (always keep this line before the fist constant, used by mksyscalls.sh)
 #define e_fopen 0
 #define e_fread 1
-#define e_sprintf 2
-#define e_printf 3
-#define e_stat 4
-#define e_puts 5
+#define e_fseek 2
+#define e_fclose 3
+#define e_sprintf 4
+#define e_stat 5
+#define e_puts 6
+#define e_malloc 7
 // END_OF_LIST (always keep this line after the last constant, used by mksyscalls.sh)
 
 // Must be kept up-to-date with the value of the last syscall
-#define SYSCALLS_NUM 4
+#define SYSCALLS_NUM 7
 
 #endif

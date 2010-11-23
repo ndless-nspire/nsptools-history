@@ -26,10 +26,6 @@
 #include "ndless.h"
 
 #ifndef _NDLS_LIGHT
-// OS-specific
-extern unsigned syscalls_ncas_1_7[];
-extern unsigned syscalls_cas_1_7[];
-
 /* Ndless extensions exposed as syscalls. See os.h for documentation. */
 
 int sc_nl_osvalue(const int *values, unsigned size) {
@@ -56,35 +52,8 @@ unsigned sc_ext_table[] = {
 };
 
 void sc_setup(void) {
-	switch (ut_os_version_index) {
-		// OS-specific
-		case 0:
-			sc_addrs_ptr = syscalls_ncas_1_7;
-			break;
-		case 1:
-			sc_addrs_ptr = syscalls_cas_1_7;
-			break;
-	}
 	sc_ext_relocdatab(sc_ext_table, __SYSCALLS_LASTEXT + 1, &__base);
 	sc_ext_relocdatab(emu_sysc_table, __SYSCALLS_LASTEMU + 1, &__base);
-}
-
-#else
-// OS-specific
-extern unsigned syscalls_light_ncas_1_7[];
-extern unsigned syscalls_light_cas_1_7[];
-
-/* Used by the loader: switch to light syscall array */
-void sc_setup(void) {
-	switch (ut_os_version_index) {
-		// OS-specific
-		case 0:
-			sc_addrs_ptr = syscalls_light_ncas_1_7;
-			break;
-		case 1:
-			sc_addrs_ptr = syscalls_light_cas_1_7;
-			break;
-	}
 }
 
 #endif // ndef _NDLS_LIGHT
