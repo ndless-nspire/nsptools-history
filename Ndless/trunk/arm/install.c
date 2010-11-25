@@ -32,7 +32,7 @@ static unsigned const ins_ploader_hook_addrs[] = {0x1000921C, 0x100091F0};
 
 // OS-specific
 // call to the dialog box display warning about low memory
-unsigned const ins_lowmem_hook_addrs[] = {0x10012F24, 0}; // TODO CAS
+unsigned const ins_lowmem_hook_addrs[] = {0x10012F24, 0x10012E6C};
 
 BOOL ins_lowmem_hook_installed = TRUE; 
 

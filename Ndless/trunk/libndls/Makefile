@@ -1,5 +1,8 @@
 AS = nspire-as
-AR = arm-none-eabi-ar
+AR := "$(shell which arm-elf-ar 2>/dev/null)"
+ifeq (${AR},"")
+	AR := arm-none-eabi-ar
+endif
 GCC = nspire-gcc
 GCCFLAGS = -Os -nostdlib
 LD = nspire-ld

@@ -16,6 +16,7 @@ C
 
 - MSYS with MinGW: http://www.mingw.org/wiki/msys
 - 7-zip: http://www.7-zip.org/download.html
+- Make sure you are using GCC v4.5.x for ARM
 
 * Add 7-zip's folder to your PATH environment variable
 * Copy Ndless/Makefile.config.tpl to Ndless/Makefile.config and configure the latter

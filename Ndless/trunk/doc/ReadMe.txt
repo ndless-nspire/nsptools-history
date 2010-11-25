@@ -26,6 +26,9 @@ Send with the linking program the documents 'ndless_installer.tns' and
 'ndless_resources.tns' from the calcbin/ directory of Ndless to any directory of 
 the calculator. The two documents must be in the same directory.
 
+Unplug the calculator from the computer (it may be required for some 
+configurations).
+
 Open 'ndless_installer' from the Documents screen of the calculator and wait a 
 few seconds. Now:
 
@@ -64,7 +67,7 @@ How do I uninstall it?
 ======================
 
 Make sure the documents 'ndless_installer.tns' and 'ndless_resources.tns' are 
-still in the 'ndless' directory on the calculator.
+still in the same directory on the calculator.
 Then open 'ndless_installer' from the Documents screen. A full reboot will be 
 initiated.
 
