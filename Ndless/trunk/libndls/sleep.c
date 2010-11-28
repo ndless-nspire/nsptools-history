@@ -25,11 +25,10 @@ void sleep(unsigned millisec) {
 	volatile unsigned *timer = (unsigned*)0x900D0000;
 	volatile unsigned *divider = (unsigned*)0x900D0004;
 	unsigned orig_divider = *divider;
-	unsigned orig_timer = *timer;
 	*divider = 31;
 	*timer = millisec;
 	while (*timer > 0)
   	idle();
 	*divider = orig_divider;
-	*timer = orig_timer;
+	*timer = 32;
 }
