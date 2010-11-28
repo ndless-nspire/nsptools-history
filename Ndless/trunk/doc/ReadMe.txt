@@ -46,7 +46,7 @@ few seconds. Now:
  If not, force a reboot by unplugging the USB cable if plugged in, then removing 
  and putting back a battery. Retry the installation again.
  If you can't install Ndless after multiple attempts, jump to the section 
- 'Problem report' below.
+ 'Installation problem report' below.
 
 How do I install it on nspire_emu/Ncubate?
 ==========================================
@@ -98,6 +98,27 @@ Troubleshooting
 - If running an executable from the documents screen displays the following 
   message: "Sorry. Could not open document 'xxx.tns'", Ndless has not been 
   correctly installed. Run 'ndless_installer' again after a reboot.
+
+Support and suggestions
+=======================
+
+Forum: http://www.omnimaga.org/index.php?board=136.0
+Issues and enhancements tracker: http://www.unsads.com/projects/nsptools
+General TI-Nspire hacking wiki: http://hackspire.unsads.com
+
+Installation problem report
+===========================
+
+First make sure:
+- You have followed the steps in the troubleshooting section above
+- You don't find a solution on the web sites above
+
+Then count if you can:
+- the number of vertical bars of random pixels which appear at the top of the 
+  screen at installation time
+- The number of dotted lines which appear at the bottom of the screen
+
+E-mail this with anything which might help the authors to fix the issue.
 
 Developing for the TI-Nspire
 ============================
@@ -151,21 +172,6 @@ required for the development of Ndless. You can use the e-mail addresses above
 or the following URL:
 https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=PJ7SGQPQJ8WKQ&item_name=Ndless%20Donation
 Thank you for your support.
-
-Problem report
-==============
-
-First make sure:
-- You have followed the steps in the troubleshooting section above
-- You don't find a solution either on http://hackspire.unsads.com
-  or http://www.omnimaga.org/index.php?board=136.0
-
-Then count if you can:
-- the number of vertical bars of random pixels which appear at the top of the 
-  screen at installation time
-- The number of dotted lines which appear at the bottom of the screen
-
-E-mail this with anything which might help the authors to fix the issue.
 
 Legal stuff
 ===========
