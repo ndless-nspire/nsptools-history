@@ -48,6 +48,16 @@ few seconds. Now:
  If you can't install Ndless after multiple attempts, jump to the section 
  'Problem report' below.
 
+How do I install it on nspire_emu/Ncubate?
+==========================================
+
+Use the "connect" command of the emulator, then send 'ndless_installer.tns' and 
+'ndless_resources.tns' from the calcbin/ directory to any directory of the 
+emulated calculator.
+
+Open 'ndless_installer' from the Documents screen of the calculator and wait a 
+few seconds for the installation.
+
 How do I upgrade from v1.0/v1.1?
 ================================
 
