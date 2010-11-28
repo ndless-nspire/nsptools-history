@@ -8,6 +8,9 @@ What is it?
 Ndless combines an executable loader and utilities to open the TI-Nspire to 
 third-party C and assembly development.
 
+As a TI-Nspire user, installing Ndless on your calculator is required to run 
+assembly programs.
+
 What do I need to install it on a TI-Nspire?
 ============================================
 
@@ -15,7 +18,7 @@ What do I need to install it on a TI-Nspire?
 - OS v1.7 installed on it
 - Any linking program such as TI-Nspire Computer Link Software
 
-Ndless is currently not compatible with Touchpad TI-Nspire models.
+Touchpad TI-Nspire models currently require a clickpad to install Ndless.
 
 How do I install it?
 ====================
@@ -39,7 +42,7 @@ few seconds. Now:
 
  - The calculator may display a frozen clock and possibly 1, 2 or 3 vertical 
  bars of random pixels on the screen. You are out of luck, the installation 
- failed. The TI-Nspire should reboot by itself after a few seconds.
+ failed. The TI-Nspire may reboot by itself after a few seconds.
  If not, force a reboot by unplugging the USB cable if plugged in, then removing 
  and putting back a battery. Retry the installation again.
  If you can't install Ndless after multiple attempts, jump to the section 
@@ -103,7 +106,7 @@ are documented here: http://hackspire.unsads.com/wiki/index.php/Ndless
 What we hope you will be able to see in the next releases
 =========================================================
 
-- Installation on recent OS versions
+- Installation on recent OS versions and on Touchpad models
 - More syscalls definitions
 - Basic routines as static libraries
 - A fully-fledged executable runner, with complete relocation support, library 
@@ -120,7 +123,7 @@ hwti (OS info, 64-bit support), squalyl (Hackspire and development tools
 hosting), TI-Bank (data hosting).
 
 Thanks to all the contributors and beta testers: apcalc, bsl, bwang, 
-calc84maniac, Levak.
+calc84maniac, critor, Levak.
 
 Development team
 ================

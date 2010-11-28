@@ -13,4 +13,4 @@ MakeLoader$(EXEEXT): MakeLoader.c
 	$(CC) $(CFLAGS) $< -o ../../bin/$@
 
 clean:
-	@cd ../../bin && rm -rf MakeLoader$(EXEEXT)
+	 rm -f ../../bin/MakeLoader$(EXEEXT)

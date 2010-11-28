@@ -39,7 +39,7 @@ distsrc: clean
 	mkdir -p dist/src
 	cp -r `ls | grep -v dist` dist/src
 	@# exclude some resources we don't want to distribute
-	find dist -name Makefile.config -o -name ndless_tests.tns | xargs rm -rf
+	find dist -name Makefile.config | xargs rm -rf
 
 cleandist:
 	rm -rf dist

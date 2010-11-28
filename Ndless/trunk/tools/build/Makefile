@@ -12,4 +12,4 @@ scripts:
 	cp $(SCRIPTS) ../../bin
 
 clean:
-	@cd ../../bin && rm -rf $(SCRIPTS)
+	cd ../../bin && rm -f $(SCRIPTS) || :

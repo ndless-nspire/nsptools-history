@@ -7,19 +7,25 @@ ifeq (${OBJCOPY},"")
 	OBJCOPY := arm-none-eabi-objcopy
 endif
 OBJS = tests.o
-DISTDIR = ../../calcbin
+DISTDIR = ../../calcbin/tests
 vpath %.tns $(DISTDIR)
 
-all: ndless_tests.tns
+all: distdir ndless_tests.tns doc
+
+distdir:
+	@mkdir -p $(DISTDIR)
 
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<
 
 ndless_tests.tns: $(OBJS)
 	$(LD) $(LDFLAGS) $^ -o $(@:.tns=.elf)
-	mkdir -p $(DISTDIR)
 	$(OBJCOPY) -O binary $(@:.tns=.elf) $(DISTDIR)/$@
+
+doc:
+	@cp ReadMe.txt $(DISTDIR)
 
 clean:
 	rm -f *.o *.elf
 	rm -f $(DISTDIR)/ndless_tests.tns
+	rm -f $(DISTDIR)/ReadMe.txt
