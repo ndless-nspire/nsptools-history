@@ -58,6 +58,7 @@ extern unsigned const ins_lowmem_hook_addrs[];
 extern unsigned ints_scextnum;
 extern unsigned *sc_addrs_ptr;
 void ints_setup_handlers(void);
+#define INTS_INIT_HANDLER_ADDR 0x20
 #define INTS_UNDEF_INSTR_HANDLER_ADDR 0x24
 #define INTS_SWI_HANDLER_ADDR 0x28
 #define INTS_PREFETCH_ABORT_HANDLER_ADDR 0x2C

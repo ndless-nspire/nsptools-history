@@ -31,12 +31,13 @@ extern void ints_swi_handler(void);
 extern void ints_prefetch_abort_handler(void);
 extern void ints_data_abort_handler(void);
 
-
 void ints_setup_handlers(void) {
 #ifdef _NDLS_LIGHT
 	*(void**)INTS_SWI_HANDLER_ADDR = &ints_swi_handler;
 #else
-	void **adr_ptr = (void**)INTS_UNDEF_INSTR_HANDLER_ADDR;
+	void **adr_ptr = (void**)INTS_INIT_HANDLER_ADDR;
+	// The address is used by nspire_emu for OS version detection and must be restored to the OS value
+	*adr_ptr++ = *(void**)(OS_BASE_ADDRESS + INTS_INIT_HANDLER_ADDR);
 	*adr_ptr++ = &ints_undef_instr_handler;
 	*adr_ptr++ = &ints_swi_handler;
 	*adr_ptr++ = &ints_prefetch_abort_handler;
