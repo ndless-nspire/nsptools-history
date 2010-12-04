@@ -24,9 +24,11 @@ LRESULT CALLBACK message_wnd_proc(__attribute__((unused)) HWND hWnd, UINT uMsg, 
 			case ID_SAVE_STATE:
 				save_state();
 				break;
+			case ID_SAVE_FLASH:
+				flash_save_changes();
+				break;
 			case ID_SAVE_FLASH_AS:
 				flash_save_as();
-				save_state();
 				break;
 			case ID_RELOAD_STATE:
 				reload_state();
@@ -341,6 +343,7 @@ LRESULT CALLBACK emu_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			break;
 		case ID_SAVE_STATE:
 		case ID_RELOAD_STATE:
+		case ID_SAVE_FLASH:
 		case ID_DEBUGGER:
 		case ID_INCREASE_SPEED:
 		case ID_DECREASE_SPEED:

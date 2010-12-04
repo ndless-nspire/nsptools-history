@@ -269,7 +269,7 @@ int main(int argc, char **argv) {
 	static FILE *boot2_file = NULL;
 	static char *boot1_filename = NULL, *boot2_filename = NULL;
 	char *debug_cmds_filename = NULL;
-	bool new_flash_image = false;
+	bool new_flash_image = false, state_reload = true;
 	volatile int gdb_port = 0;
 	volatile bool debug_on_startup = false;
 	char *preload_boot2 = NULL, *preload_diags = NULL, *preload_os = NULL;
@@ -362,6 +362,9 @@ int main(int argc, char **argv) {
 					if (*arg == '=') arg++;
 					debug_cmds_filename = arg;
 					break;
+				case 'S':
+					state_reload = false;
+					break;
 				default:
 usage:
 					printf(
@@ -379,7 +382,8 @@ usage:
 						"  /PB=boot2.img - preload flash with BOOT2 (.img file)\n"
 						"  /PD=diags.img - preload flash with DIAGS image\n"
 						"  /PO=osfile - preload flash with OS (.tnc/.tno file)\n"
-						"  /R=cmdfile - run debugger commands on startup\n");
+						"  /R=cmdfile - run debugger commands on startup\n"
+						"  /S       - don't load the saved state\n");
 					return 1;
 			}
 		} else {
@@ -455,7 +459,7 @@ usage:
 	if (gdb_port)
 		gdbstub_init(gdb_port);
 
-	if (!reload_state()) {
+	if (!state_reload || !reload_state()) {
 reset:
 		memset(&arm, 0, sizeof arm);
 		arm.cpsr_low28 = MODE_SVC | 0xC0;

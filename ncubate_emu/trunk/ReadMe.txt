@@ -18,6 +18,7 @@ GUI:
   request a state reload with 'File -> Reload State'
   Caution, newer versions of Ncubate may fail to read .sav files produced by
   previous versions. Delete these files when upgrading.
+- NEW: Command-line option '/S' disables state reload on startup.
 - NEW: 'File -> Save Flash As...' suggests the current flash image name
 - NEW: several keyboard shortcuts added
 
@@ -70,6 +71,11 @@ Olivier Armand aka ExtendeD  -  < olivier dot calc at gmail dot com >
 
 Changelog
 =========
+
+* v032c - <unreleased>
+ - ADD: Command-line option /S
+ - CHG: restore the GUI option 'Save flash'
+ - FIX: GUI option 'Save flash as...' also incorrectly saved the state
 
 * v032b - 2010/11/06
  - ADD: GDB support

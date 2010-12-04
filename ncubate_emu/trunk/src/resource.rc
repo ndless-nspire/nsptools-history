@@ -7,6 +7,7 @@ BEGIN
 	BEGIN
 		MENUITEM "&Save State\tCtrl+S", ID_SAVE_STATE
 		MENUITEM "Reload State\tCtrl+R", ID_RELOAD_STATE
+		MENUITEM "&Save Flash", ID_SAVE_FLASH
 		MENUITEM "Save Flash &As...", ID_SAVE_FLASH_AS
 		MENUITEM "E&xit\tAlt+X", ID_EXIT
 	END

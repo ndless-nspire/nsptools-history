@@ -1,4 +1,5 @@
 #define IDM_MENU 1
+#define ID_SAVE_FLASH     0
 #define ID_SAVE_FLASH_AS  1
 #define ID_EXIT           2
 #define ID_DEBUGGER       3
