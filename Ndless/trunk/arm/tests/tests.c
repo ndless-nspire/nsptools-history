@@ -79,6 +79,8 @@ int main(int argc, char *argv[]) {
 	nl_relocdata((unsigned*)nl_relocdata_data, 1);
 	assertUIntEquals("nl_relocdata", 1, (unsigned)*nl_relocdata_data[0]);
 	
+	assertUIntEquals("chdir", 0, chdir("/"));
+	
 	sleep(100);
 	
 	if (!errcount)

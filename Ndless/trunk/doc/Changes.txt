@@ -28,6 +28,7 @@ Ndless - Changelog
          strlen, strncat, strrchar, vsprintf, abs, min, max, exit, sleep, 
          to_thumb, to_arm, got_get, got_var
   - NEW: va_list, va_start, va_arg, va_end (thanks apcalc)
+  - NEW: chdir (thanks critor)
 
 * v1.1.1 - <2010/10/16>
  Installer:

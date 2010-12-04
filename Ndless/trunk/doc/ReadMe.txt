@@ -105,6 +105,8 @@ Support and suggestions
 Forum: http://www.omnimaga.org/index.php?board=136.0
 Issues and enhancements tracker: http://www.unsads.com/projects/nsptools
 General TI-Nspire hacking wiki: http://hackspire.unsads.com
+Development version of the source code:
+  https://www.unsads.com/scm/svn/nsptools/Ndless/trunk (guest/guest)
 
 Installation problem report
 ===========================
@@ -150,7 +152,7 @@ Many thanks to
 ==============
 
 calc84maniac (GB/GBC emulator, HW info), Goplat (TI-Nspire emulator, HW info), 
-hwti (OS info, 64-bit support), squalyl (Hackspire and development tools 
+hwti (OS info, v1.0 64-bit support), squalyl (Hackspire and development tools 
 hosting), TI-Bank (data hosting).
 
 Thanks to all the contributors and beta testers: apcalc, bsl, bwang, 
