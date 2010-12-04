@@ -19,8 +19,9 @@ Ndless - Changelog
   - CHG: option -fpic moved to nspire-gcc
   - CHG: MakeTNS removed
   - FIX: Mac OS X support for symlinked tools
+  - FIX: compatibility of nspire-as and nspire-gcc with Ubuntu
  Samples:
-  - NEW: sample program 'hello'
+  - NEW: sample programs 'hello' and 'hella'
   - CHG: 'demo' renamed to 'particles' and moved to samples/
  Includes:
   - NEW: fseek, stat, NU_Get_First, NU_Get_Next, NU_Done, strcpy, strcmp, 
