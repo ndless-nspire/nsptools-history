@@ -1,11 +1,11 @@
 Ndless - Changelog
 ==================
 
-* v1.7 - <unreleased>
-  - NEW: Supports OS v1.7
-  - NEW: A computer (or Nspire8x) isn't required anymore, the installation 
+* v1.7 - 2010/12/04
+  - NEW: supports OS v1.7
+  - NEW: a computer (or Nspire8x) isn't required anymore, the installation 
          is much more easier and compatible with nspire_emu.
-  - NEW: Automated tests
+  - NEW: automated tests
  Hook:
   - NEW: the program format is not specific to an OS or hardware version anymore
   - NEW: syscalls can be called in thumb state
@@ -30,7 +30,7 @@ Ndless - Changelog
   - NEW: va_list, va_start, va_arg, va_end (thanks apcalc)
   - NEW: chdir (thanks critor)
 
-* v1.1.1 - <2010/10/16>
+* v1.1.1 - 2010/10/16
  Installer:
   - NEW: Diagnostic mode for problem reports (see "Troubleshooting" above)
   - CHG: Change file transfer path handling, which may fix some transfer errors
