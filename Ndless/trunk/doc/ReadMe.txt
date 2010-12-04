@@ -58,6 +58,9 @@ emulated calculator.
 Open 'ndless_installer' from the Documents screen of the calculator and wait a 
 few seconds for the installation.
 
+If the installation makes the calculator hang or reboot, retry the installation 
+on a OS image that has just been created.
+
 How do I upgrade from v1.0/v1.1?
 ================================
 
