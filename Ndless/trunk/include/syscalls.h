@@ -49,10 +49,11 @@
 #define e_strrchr 31
 #define e_vsprintf 32
 #define e_fseek 33
+#define e_NU_Current_Dir 34
 // END_OF_LIST (always keep this line after the last constant, used by mksyscalls.sh)
 
 // Must be kept up-to-date with the value of the last syscall
-#define __SYSCALLS_LAST 33
+#define __SYSCALLS_LAST 34
 
 // Flag: 3 higher bits of the 3-bytes comment field of the swi instruction
 #define __SYSCALLS_ISEXT 0x200000

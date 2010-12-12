@@ -80,6 +80,7 @@ int main(int argc, char *argv[]) {
 	assertUIntEquals("nl_relocdata", 1, (unsigned)*nl_relocdata_data[0]);
 	
 	assertUIntEquals("chdir", 0, chdir("/"));
+	assertUIntEquals("NU_Current_Dir", 0, NU_Current_Dir("A:", buf100));
 	
 	sleep(100);
 	
