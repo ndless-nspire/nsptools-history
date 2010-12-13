@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "emu.h"
 
 #include "disasm.c"
@@ -93,7 +94,7 @@ bool gdb_connected = false;
 FILE *debugger_stdin;
 
 static void native_debugger(void) {
-	char line[80];
+	char line[300];
 	char *cmd;
 	u32 *cur_insn = virt_mem_ptr(arm.reg[15] & ~3, 4);
 
@@ -140,6 +141,10 @@ readstdin:
 				"jn - set PC to next instruction\n"
 				"k <address> <+r|+w|+x(default)|-r|-w|-x> - add/remove breakpoint\n"
 				"k - show breakpoints\n"
+				"ln c - connect\n"
+				"ln d - disconnect\n"
+				"ln s <file> - sen a file\n"
+				"ln st <dir> - set target directory\n"
 				"n - continue until next instruction\n"
 				"q - quit\n"
 				"r - show registers\n"
@@ -282,6 +287,39 @@ readstdin:
 			disasm(disasm_arm_insn);
 		} else if (!stricmp(cmd, "ut")) {
 			disasm(disasm_thumb_insn);
+		} else if (!stricmp(cmd, "ln")) {
+			char *ln_cmd = strtok(NULL, " \n");
+			if (!ln_cmd) continue;
+			if (!stricmp(ln_cmd, "c")) {
+				usblink_connect();
+				break; // and continue, ARM code needs to be run
+			} else if (!stricmp(ln_cmd, "d")) {
+				usblink_disconnect();
+				break; // and continue
+			} else if (!stricmp(ln_cmd, "s")) {
+				char *file = strtok(NULL, "\n");
+				if (!file)
+					printf("Missing file parameter.\n");					
+				else {
+					// remove optional surrounding quotes
+					if (*file == '"') file++;
+					size_t len = strlen(file);
+					if (*(file + len - 1) == '"')
+						*(file + len - 1) = '\0';
+					if (access(file, R_OK))
+						printf("Cannot read file.\n");
+					else {
+						usblink_put_file(file, target_folder);
+						break; // and continue
+					}
+				}
+			} else if (!stricmp(ln_cmd, "st")) {
+				char *dir = strtok(NULL, " \n");
+				if (dir)
+					strncpy(target_folder, dir, sizeof target_folder);
+				else
+					printf("Missing directory parameter.\n");
+			}
 		} else if (!stricmp(cmd, "taskinfo")) {
 			u32 task = strtoul(strtok(NULL, " \n"), 0, 16);
 			u8 *p = virt_mem_ptr(task, 52);
