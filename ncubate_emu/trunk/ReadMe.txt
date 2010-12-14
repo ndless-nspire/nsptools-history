@@ -32,8 +32,8 @@ Debugger:
 - NEW: Command 'ss' to search a string in memory
 - NEW: "+x" is the default flag for the breakpoint command 'k'
 - NEW: Command 'wf' to load a file to memory
-- NEW: Link connection commands 'ln c', 'ln d', 'ln f' and 'ln st'. Most of 
-  these commands exit the debug mode because ARM instructions need to be executed.
+- NEW: Link commands 'ln c', 'ln d', 'ln f' and 'ln st'. Most of these commands 
+  exit the debug mode because ARM instructions need to be executed.
 - NEW: Command-line option /R=cmdfile can be used to automatically run debugger 
   commands on startup. Use a single line for each command. At the end of the file, 
   the debugger switches to the standard input. You can use 'c' as the last
@@ -76,7 +76,7 @@ Changelog
 
 * v032c - <unreleased>
  - ADD: Command-line option /S
- - ADD: Link connection debugger commands 'ln c', 'ln d', 'ln f' and 'ln st'
+ - ADD: Link debugger commands 'ln c', 'ln d', 'ln f' and 'ln st'
  - CHG: restore the GUI option 'Save flash'
  - FIX: GUI option 'Save flash as...' also incorrectly saved the state
 
