@@ -695,7 +695,7 @@
  	MakeName	(0X102A85B4,	 "strrchr");
  	MakeName	(0X102A8848,	 "memrev");
  	MakeName	(0X102A89B8,	 "atof");
- 	MakeName	(0X10058678,	 "_fputc");			//
+ 	MakeName	(0X10058678,	 "fputc");			//
  	MakeName	(0X102A99AC,	 "chdir");
  	MakeName	(0X102A9B10,	 "close");
  	MakeName	(0X102AA874,	 "mkdir");

@@ -873,7 +873,7 @@
 	MakeName	(0X102A65A4,	"strrchr");
 	MakeName	(0X102A6838,	"memrev");
 	MakeName	(0X102A69A8,	"atof");
-	MakeName	(0X102A6FE8,	"_fputc");
+	MakeName	(0X102A6FE8,	"fputc");
 	MakeName	(0X102A799C,	"chdir");
 	MakeName	(0X102A7B00,	"close");
 	MakeName	(0X102A8864,	"mkdir");
