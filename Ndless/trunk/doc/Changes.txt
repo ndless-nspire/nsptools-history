@@ -4,6 +4,12 @@ Ndless - Changelog
 * v2.0 - <not yet released>
  Includes:
   - NEW: NU_Current_Dir (thanks apcalc)
+  - NEW: isalnum, isalpha, isascii, isdigit, islower, isprint, isspace, isupper, 
+    isxdigit, toupper, atoi, atof, calloc, realloc, fprintf, fgetc, fgets, fputc,
+    memmove, memrev, strchr, strncmp, strncpy, strpbrk, rename, rmdir, unlink, 
+    NU_Set_Current_Dir (thanks bsl)
+  - FIX: GCC may incorrectly cache memory values between calls to syscalls with
+    pointer arguments such as mempcy
 
 * v1.7 - 2010/12/04
   - NEW: supports OS v1.7

@@ -366,7 +366,7 @@ static inline void idle(void) {
 #define ARCHIVE 0x20 
 #define ANORMAL 0x00 
 
-struct dstat {
+typedef struct dstat {
 	char unknown1[13];
   char filepath[266];        /* Null terminated: A:\... */
   unsigned char fattribute;  /* File attributes: see A* constants above */
@@ -378,7 +378,7 @@ struct dstat {
   void *unknown6, *unknown7;
   unsigned int unknown8;
   unsigned short unknown9;
-};
+} DSTAT;
  
 /***********************************
  * POSIX

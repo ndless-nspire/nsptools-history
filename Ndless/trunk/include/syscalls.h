@@ -50,10 +50,36 @@
 #define e_vsprintf 32
 #define e_fseek 33
 #define e_NU_Current_Dir 34
+#define e_read_unaligned_longword 35
+#define e_read_unaligned_word 36
+#define e_isalnum 37
+#define e_isalpha 38
+#define e_isascii 39
+#define e_isdigit 40
+#define e_islower 41
+#define e_isprint 42
+#define e_isspace 43
+#define e_isupper 44
+#define e_isxdigit 45
+#define e_tolower 46
+#define e_atoi 47
+#define e_atof 48
+#define e_calloc 49
+#define e_realloc 50
+#define e_strpbrk 51
+#define e_fgetc 52
+#define e_NU_Set_Current_Dir 53
+#define e_fputc 54
+#define e_memmove 55
+#define e_memrev 56
+#define e_strchr 57
+#define e_strncmp 58
+#define e_strncpy 59
+
 // END_OF_LIST (always keep this line after the last constant, used by mksyscalls.sh)
 
 // Must be kept up-to-date with the value of the last syscall
-#define __SYSCALLS_LAST 34
+#define __SYSCALLS_LAST 59
 
 // Flag: 3 higher bits of the 3-bytes comment field of the swi instruction
 #define __SYSCALLS_ISEXT 0x200000

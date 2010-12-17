@@ -34,23 +34,24 @@ extern int __base;
 	register unsigned __r0 asm("r0"); \
 	asm volatile( \
 		" swi " STRINGIFY(_SYSCALL_ENUM(funcname)) \
-		:"=r" (__r0) :: "r0", "r1", "r2", "r3", "r12", "lr"); \
+		:"=r" (__r0) :: "memory", "r0", "r1", "r2", "r3", "r12", "lr"); \
 	return (rettype)__r0; \
 }
 #define _SYSCALL1(rettype, funcname, type1) static inline rettype funcname(type1 __param1) { \
 	register unsigned __r0 asm("r0") = (unsigned)__param1; \
 	asm volatile( \
 		" swi " STRINGIFY(_SYSCALL_ENUM(funcname)) \
-		: "=r" (__r0) : "r" (__r0) :  "r1", "r2", "r3", "r12", "lr"); \
+		: "=r" (__r0) : "r" (__r0) :  "memory", "r1", "r2", "r3", "r12", "lr"); \
 	return (rettype)__r0; \
 }
-// __r1 in output operand list givse an hint to GCC that r1 is clobbered. As an asm-specifier for __r1, r1 cannot be put in the clobber list.
+// __r1 in output operand list gives an hint to GCC that r1 is clobbered. As an asm-specifier for __r1, r1 cannot be put in the clobber list.
+// "memory" in the list of the clobbered register is required for pointer parameters used for writes by the syscall, to avoid any caching.
 #define _SYSCALL2(rettype, funcname, type1, type2) static inline rettype funcname(type1 __param1, type2 __param2) { \
 	register unsigned __r0 asm("r0") = (unsigned)__param1; \
 	register unsigned __r1 asm("r1") = (unsigned)__param2; \
 	asm volatile( \
 		" swi " STRINGIFY(_SYSCALL_ENUM(funcname)) \
-		: "=r" (__r0), "=r" (__r1) : "r" (__r0), "r" (__r1) : "r2", "r3", "r12", "lr"); \
+		: "=r" (__r0), "=r" (__r1) : "r" (__r0), "r" (__r1) : "memory", "r2", "r3", "r12", "lr"); \
 	return (rettype)__r0; \
 }
 #define _SYSCALL3(rettype, funcname, type1, type2, type3) static inline rettype funcname(type1 __param1, type2 __param2, type3 __param3) { \
@@ -59,7 +60,7 @@ extern int __base;
 	register unsigned __r2 asm("r2") = (unsigned)__param3; \
 	asm volatile( \
 		" swi " STRINGIFY(_SYSCALL_ENUM(funcname)) \
-		: "=r" (__r0), "=r" (__r1), "=r" (__r2) : "r" (__r0), "r" (__r1), "r" (__r2) : "r3", "r12", "lr"); \
+		: "=r" (__r0), "=r" (__r1), "=r" (__r2) : "r" (__r0), "r" (__r1), "r" (__r2) : "memory", "r3", "r12", "lr"); \
 	return (rettype)__r0; \
 }
 #define _SYSCALL4(rettype, funcname, type1, type2, type3, type4) static inline rettype funcname(type1 __param1, type2 __param2,  type3 __param3,  type4 __param4) { \
@@ -69,7 +70,7 @@ extern int __base;
 	register unsigned __r3 asm("r3") = (unsigned)__param4; \
 	asm volatile( \
 		" swi " STRINGIFY(_SYSCALL_ENUM(funcname)) \
-		: "=r" (__r0), "=r" (__r1), "=r" (__r2), "=r" (__r3) : "r" (__r0), "r" (__r1), "r" (__r2) , "r" (__r3) : "r12", "lr"); \
+		: "=r" (__r0), "=r" (__r1), "=r" (__r2), "=r" (__r3) : "r" (__r0), "r" (__r1), "r" (__r2) , "r" (__r3) : "memory", "r12", "lr"); \
 	return (rettype)__r0; \
 }
 /* used to access through the got the global variable _syscallvar_savedlr. Returns the ptr to reg1. */
@@ -108,7 +109,7 @@ extern int __base;
 		" push {lr} \n" \
 		" swi " STRINGIFY(_SYSCALL_ENUM(funcname)) "\n" \
 	  " pop {pc}" \
-		: "=r" (__r0):: "r1", "r2", "r3"); \
+		: "=r" (__r0):: "memory", "r1", "r2", "r3"); \
 	return (rettype)__r0; \
 }
 #else
@@ -123,7 +124,7 @@ extern int __base;
 		" swi " STRINGIFY(_SYSCALL_ENUM(funcname)) "\n" \
 		_SYSCALL_GETSAVEDLR_PTR(r1, r2) \
 		" ldr pc, [r1] \n" \
-		: "=r" (__r0):: "r1", "r2", "r3"); \
+		: "=r" (__r0):: "memory", "r1", "r2", "r3"); \
 	return (rettype)__r0; \
 }
 #else // slightly less optimized
@@ -139,7 +140,7 @@ extern int __base;
 		_SYSCALL_GETSAVEDLR_PTR(r1, r2) \
 		" ldr r1, [r1] \n" \
 		" bx r1 \n" \
-		: "=r" (__r0):: "r1", "r2", "r3"); \
+		: "=r" (__r0):: "memory", "r1", "r2", "r3"); \
 	return (rettype)__r0; \
 }
 #endif // ndef __thumb__
@@ -159,7 +160,7 @@ static __attribute__ ((unused)) unsigned _syscallvar_savedlr;
 		" swi " STRINGIFY(_SYSCALL_ENUM(funcname)) "\n" \
 		_SYSCALL_GETSAVEDLR_PTR(r1, r2) \
 		" ldr pc, [r1] \n" \
-		: "=r" (__r0):: "r1", "r2", "r3"); \
+		: "=r" (__r0):: "memory", "r1", "r2", "r3"); \
 	return (rettype)__r0; \
 }
 #else // slightly less optimized
@@ -175,7 +176,7 @@ static __attribute__ ((unused)) unsigned _syscallvar_savedlr;
 		_SYSCALL_GETSAVEDLR_PTR(r1, r2) \
 		" ldr r1, [r1] \n" \
 		" bx r1 \n" \
-		: "=r" (__r0):: "r1", "r2", "r3"); \
+		: "=r" (__r0):: "memory", "r1", "r2", "r3"); \
 	return (rettype)__r0; \
 }
 #endif // ndef __thumb__
@@ -189,39 +190,79 @@ static __attribute__ ((unused)) unsigned _syscallvar_savedlr;
 #define SYSCALL_CUSTOM(addresses, rettype, ...) ((rettype(*)(__VA_ARGS__))nl_osvalue((int*)addresses, sizeof(addresses)/sizeof(addresses[0])))
 
 /* OS syscalls */
-_SYSCALL1(void*, malloc, size_t)
+_SYSCALL1(size_t, read_unaligned_longword, void *)
+_SYSCALL1(int, read_unaligned_word, void *)
+_SYSCALL3(void, ascii2utf16, void *, const char *, int)
+_SYSCALL3(void, show_dialog_box2, int /* undef */, const char * /* title */, const char * /* msg */)
+
+_SYSCALL1(int, isalnum, int) 
+_SYSCALL1(int, isalpha, int)
+_SYSCALL1(int, isascii, int)
+_SYSCALL1(int, isdigit, int)
+_SYSCALL1(int, islower, int)
+_SYSCALL1(int, isprint, int)
+_SYSCALL1(int, isspace, int)
+_SYSCALL1(int, isupper, int)
+_SYSCALL1(int, isxdigit, int)
+_SYSCALL1(int, tolower, int)
+_SYSCALL1(int, atoi, const char *)
+_SYSCALL1(double, atof, char *)
+
+_SYSCALL1(void *, malloc, size_t)
 _SYSCALL1(void, free, void *)
-_SYSCALL3(void*, memset, void *, int, size_t)
-_SYSCALL3(void*, memcpy, void *, const void *, size_t)
+_SYSCALL2(void *, calloc, size_t, size_t)
+_SYSCALL2(void *, realloc, void *, size_t)
+_SYSCALL3(void *, memset, void *, int, size_t)
+_SYSCALL3(void *, memcpy, void *, const void *, size_t)
 _SYSCALL3(int, memcmp, const void *, const void *, size_t)
+_SYSCALL3(void *, memmove, void *, const void *, size_t)
+_SYSCALL2(void, memrev, char *, size_t)
 _SYSCALL2(char *, strcpy, char *, const char *)
+_SYSCALL3(char *, strncpy, char *, const char *, size_t)
 _SYSCALL2(int, strcmp, const char *, const char *)
+_SYSCALL3(int, strncmp, const char *, const char *, size_t)
 _SYSCALL1(int, strlen, const char *)
 _SYSCALL3(char *, strncat, char *, char *, size_t)
-_SYSCALL2(const char*, strrchr, const char *, int);
-_SYSCALLVAR(int, __attribute__((__format__(__printf__,1,2))), printf, __attribute__((unused)) const char *format, ...)
-_SYSCALLVAR(int, __attribute__((__format__(__printf__,2,3))), sprintf, __attribute__((unused)) char *s, __attribute__((unused)) const char *format, ...)
+_SYSCALL2(char *, strchr, const char *, int)
+_SYSCALL2(char *, strrchr, const char *, int)
+_SYSCALL2(char *, strpbrk, const char *, const char *)
+
 typedef char *va_list;
 #define va_start(ap,p)  (ap = (char*)(&(p) + 1))
 #define va_arg(ap,type) ((type*)(ap += sizeof(type)))[-1]
 #define va_end(ap)
-_SYSCALL3(int, vsprintf, char *, const char *, va_list);
+
+_SYSCALLVAR(int, __attribute__((__format__(__printf__,1,2))), printf, __attribute__((unused)) const char *format, ...)
+_SYSCALLVAR(int, __attribute__((__format__(__printf__,2,3))), sprintf, __attribute__((unused)) char *s, __attribute__((unused)) const char *format, ...)
+_SYSCALLVAR(int, __attribute__((__format__(__printf__,2,3))), fprintf, __attribute__((unused)) FILE *stream, __attribute__((unused)) const char *format, ...)
+_SYSCALL3(int, vsprintf, char *, const char *, va_list)
+
 _SYSCALL1(int, puts, const char *)
-_SYSCALL1(int, TCT_Local_Control_Interrupts, int)
-_SYSCALL2(FILE*, fopen, const char *, const char *)
+
+_SYSCALL2(int, fputc, int, FILE *)
+_SYSCALL1(int, fgetc, FILE *)
+_SYSCALL3(char *, fgets, char *, int, FILE *)
+
+_SYSCALL2(FILE *, fopen, const char *, const char *)
 _SYSCALL4(size_t, fread, void *, size_t, size_t, FILE *)
 _SYSCALL4(size_t, fwrite, const void *, size_t, size_t, FILE *)
 _SYSCALL1(int, fclose, FILE *)
 _SYSCALL3(int, fseek, FILE *, long int, int)
-_SYSCALL2(int, mkdir, const char*, int)
+
+_SYSCALL2(int, mkdir, const char *, int)
+_SYSCALL1(int, chdir, char *)
+_SYSCALL1(int, rmdir, const char *)
 _SYSCALL2(int, stat, const char *, struct stat *)
-_SYSCALL1(int, chdir, char*)
+_SYSCALL2(int, rename, const char *, const char *)
+_SYSCALL1(int, unlink, const char *)
+
+_SYSCALL1(int, TCT_Local_Control_Interrupts, int)
+
 _SYSCALL2(int, NU_Current_Dir, const char *, const char *)
 _SYSCALL2(int, NU_Get_First, struct dstat *, const char * /* pattern */)
 _SYSCALL1(int,  NU_Get_Next, struct dstat *)
 _SYSCALL1(void, NU_Done, struct dstat *)
-_SYSCALL3(void, ascii2utf16, void *, const char *, int)
-_SYSCALL3(void, show_dialog_box2, int /* undef */, const char * /* title */, const char * /* msg */)
+_SYSCALL1(int, NU_Set_Current_Dir, const char *)
 
 /* Ndless extensions. Not available in thumb state. */
 // Given a list of OS-specific value and its size, returns the value for the current OS.
