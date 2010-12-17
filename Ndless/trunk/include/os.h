@@ -190,7 +190,7 @@ static __attribute__ ((unused)) unsigned _syscallvar_savedlr;
 #define SYSCALL_CUSTOM(addresses, rettype, ...) ((rettype(*)(__VA_ARGS__))nl_osvalue((int*)addresses, sizeof(addresses)/sizeof(addresses[0])))
 
 /* OS syscalls */
-_SYSCALL1(size_t, read_unaligned_longword, void *)
+_SYSCALL1(int, read_unaligned_longword, void *)
 _SYSCALL1(int, read_unaligned_word, void *)
 _SYSCALL3(void, ascii2utf16, void *, const char *, int)
 _SYSCALL3(void, show_dialog_box2, int /* undef */, const char * /* title */, const char * /* msg */)
