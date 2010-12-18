@@ -1,6 +1,6 @@
 GCC = nspire-gcc
 LD = nspire-ld
-GCCFLAGS = -O0 -g -Wall -W
+GCCFLAGS = -Os -Wall -W
 LDFLAGS = 
 OBJCOPY := "$(shell which arm-elf-objcopy 2>/dev/null)"
 ifeq (${OBJCOPY},"")

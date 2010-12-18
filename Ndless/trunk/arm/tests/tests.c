@@ -96,11 +96,10 @@ int main(int argc, char *argv[]) {
 	/* syscalls */
 	buf[0] = 1; buf[1] = 2; buf[2] = 3; buf[3] = 4; buf[4] = 5;
 	assertUIntEquals("read_unaligned_longword", 0x05040302, read_unaligned_longword(buf + 1));
-	assertUIntEquals("read_unaligned_longword", 0x0302, read_unaligned_word(buf + 1));
+	assertUIntEquals("read_unaligned_word", 0x0302, read_unaligned_word(buf + 1));
 	ascii2utf16(buf, "abc", sizeof(buf));
 	assertUIntEquals("ascii2utf16", 'a', buf[0]);
 	
-	assertUIntEquals("isalnum", TRUE, isalnum('0'));
 	assertUIntEquals("isalpha", TRUE, isalpha('a'));
 	assertUIntEquals("isascii", TRUE, isascii('+'));
 	assertUIntEquals("isdigit", TRUE, isdigit('0'));
