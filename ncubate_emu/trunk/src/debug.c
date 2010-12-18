@@ -143,7 +143,7 @@ readstdin:
 				"k - show breakpoints\n"
 				"ln c - connect\n"
 				"ln d - disconnect\n"
-				"ln s <file> - sen a file\n"
+				"ln s <file> - send a file\n"
 				"ln st <dir> - set target directory\n"
 				"n - continue until next instruction\n"
 				"q - quit\n"
