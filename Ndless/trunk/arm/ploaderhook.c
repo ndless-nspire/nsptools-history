@@ -30,12 +30,26 @@
 
 // When opening a document
 HOOK_DEFINE(plh_hook) {
-	char *halfpath; // docfolder/file.tns
+	char *halfpath; // [docfolder/]file.tns
+	char *ptr;
 	char docpath[100];
 	int ret;
-	halfpath =  (char*)(HOOK_SAVED_REGS(plh_hook)[11] /* r11 */ - 0x124); // on the stack
+	if (ut_os_version_index < 2)
+		halfpath = (char*)(HOOK_SAVED_REGS(plh_hook)[11] /* r11 */ - 0x124); // on the stack
+	else
+		halfpath = (char*)(HOOK_SAVED_REGS(plh_hook)[11] /* r11 */ + 12); // on the stack of the caller
 	// the hook is called at installation time. Show the installation message.
-	if (!strcmp("ndless_installer.tns", strrchr(halfpath, '/') + 1)) {
+	ptr = strrchr(halfpath, '/');
+	if (ptr)
+		ptr++;
+	else
+		ptr = halfpath; 
+	char title[20];
+	char msg[150];
+  ascii2utf16(title, "Ndless", sizeof(title));
+  ascii2utf16(msg, ptr, sizeof(msg));
+  show_dialog_box2(0, title, msg);
+	if (!strcmp("ndless_installer.tns", ptr)) {
 		char title[20];
 		char msg[150];
 	  ascii2utf16(title, "Ndless", sizeof(title));

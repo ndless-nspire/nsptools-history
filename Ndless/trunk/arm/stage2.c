@@ -29,7 +29,7 @@
 #include "ndless.h"
 
 // after the inflate loop, we want to simulate a null-return check and quit
-static unsigned const s2_tizip_hook_addrs[] = {0x1019708C, 0x101990A4};
+static unsigned const s2_tizip_hook_addrs[] = {0x1019708C, 0x101990A4, 0x101EAC68, 0}; // TODO CAS
 
 static void s2_run_install(void);
 
@@ -64,11 +64,14 @@ static void s2_run_install(void) {
 	struct stat res_stat;
 	unsigned stage2_size;
 	char respath[0x300 + 40];
+	char *path = respath;
 	sprintf(respath, "/documents/%s/ndless_resources.tns",
 	        (char*)ut_currentdocdir_addr[ut_os_version_index]);
-	if (stat(respath, &res_stat))
+	if (ut_os_version_index >= 2)
+		path += 11; // strlen("/documents/"). Already included in ut_currentdocdir_addr for these OS versions.
+	if (stat(path, &res_stat))
 		ut_panic("s2st");
-	FILE *res_file = fopen(respath, "rb");
+	FILE *res_file = fopen(path, "rb");
 	if (!res_file)
 		ut_panic("s2fo");
 	// ndless_resources.tns starts with the size of stage2

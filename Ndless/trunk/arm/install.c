@@ -27,12 +27,14 @@
 #include "ndless.h"
 
 // OS-specific
-// call to the dialog box display telling that the format isn't recognized
-static unsigned const ins_ploader_hook_addrs[] = {0x1000921C, 0x100091F0};
+// Call to the dialog box display telling that the format isn't recognized.
+// On OS 2.x, it has been moved to a sub-function.
+static unsigned const ins_ploader_hook_addrs[] = {0x1000921C, 0x100091F0, 0x10008BCC, 0}; // TODO CAS
 
 // OS-specific
-// call to the dialog box display warning about low memory
-unsigned const ins_lowmem_hook_addrs[] = {0x10012F24, 0x10012E6C};
+// Call to the dialog box display warning about low memory.
+// OS 2.x don't use show_dialog_box2.
+unsigned const ins_lowmem_hook_addrs[] = {0x10012F24, 0x10012E6C, 0x10013F6C, 0}; // TODO CAS
 
 BOOL ins_lowmem_hook_installed = TRUE; 
 

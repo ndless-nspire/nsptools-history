@@ -39,6 +39,10 @@ extern unsigned syscalls_light_ncas_1_7[];
 extern unsigned syscalls_light_cas_1_7[];
 extern unsigned syscalls_ncas_1_7[];
 extern unsigned syscalls_cas_1_7[];
+extern unsigned syscalls_light_ncas_2_0_1[];
+extern unsigned syscalls_light_cas_2_0_1[];
+extern unsigned syscalls_ncas_2_0_1[];
+extern unsigned syscalls_cas_2_0_1[];
 
 /* Writes to ut_os_version_index a zero-based index identifying the OS version and HW model.
  * Also sets up the syscalls table.
@@ -49,6 +53,7 @@ void ut_read_os_version_index(void) {
 	 * The address is read from the RAM copy and not the real vector which is
 	 * destroyed at installation time */
 	switch (*(unsigned*)(OS_BASE_ADDRESS + 0x20)) {
+#if 0
 		// OS-specific
 		case 0x10211290:  // 1.7 non-CAS
 			ut_os_version_index = 0;
@@ -66,6 +71,23 @@ void ut_read_os_version_index(void) {
 			sc_addrs_ptr = syscalls_cas_1_7;
 #endif
 			break;
+#endif
+		case 0x10266030:  // 2.0.1.60 non-CAS
+			ut_os_version_index = 2;
+#ifdef _NDLS_LIGHT
+			sc_addrs_ptr = syscalls_light_ncas_2_0_1;
+#else
+			sc_addrs_ptr = syscalls_ncas_2_0_1;
+#endif
+			break;
+		case 0:  // TODO 2.0.1.60 CAS
+			ut_os_version_index = 3;
+#ifdef _NDLS_LIGHT
+			sc_addrs_ptr = syscalls_light_cas_2_0_1;
+#else
+			sc_addrs_ptr = syscalls_cas_2_0_1;
+#endif
+			break;
 #ifndef STAGE1
 		default:
 			ut_panic("v?");
@@ -74,8 +96,8 @@ void ut_read_os_version_index(void) {
 }
 
 /* OS-specific: addresses of the name of the directory containing the document
- * being opened */
-unsigned const ut_currentdocdir_addr[] = {0x10669A9C, 0x1069BD64};
+ * being opened. Prefixed with '/documents/' on OS 2.0 and higher. */
+unsigned const ut_currentdocdir_addr[] = {0x10669A9C, 0x1069BD64, 0x1088F164, 0}; // TODO CAS
 
 void __attribute__ ((noreturn)) ut_calc_reboot(void) {
 	*(unsigned*)0x900A0008 = 2; //CPU reset

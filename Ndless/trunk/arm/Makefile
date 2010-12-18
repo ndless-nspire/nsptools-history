@@ -15,8 +15,8 @@ ifeq (${7Z},"")
 endif
 DISTDIR = ../calcbin
 # OS-specific
-SYSCALLS_LIGHT_OBJS = syscalls-light_ncas-1.7.o syscalls-light_cas-1.7.o
-SYSCALLS_OBJS = syscalls_ncas-1.7.o syscalls_cas-1.7.o
+SYSCALLS_LIGHT_OBJS = syscalls-light_ncas-2.0.1.o syscalls-light_cas-2.0.1.o
+SYSCALLS_OBJS = syscalls_ncas-1.7.o syscalls_cas-1.7.o syscalls_ncas-2.0.1.o syscalls_cas-2.0.1.o
 vpath %.tns $(DISTDIR)
 
 all: static ndless_installer.tns ndless_resources.tns subdirs
