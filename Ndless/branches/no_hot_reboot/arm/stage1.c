@@ -32,13 +32,16 @@
 void s1_load(void) {
 	unsigned stage2_size;
 	char respath[0x300 + 40];
+	char *path = respath;
 	ut_debug_trace(INSTTR_S1_LOAD);
 	sprintf(respath, "/documents/%s/ndless_resources.tns",
 	        (char*)ut_currentdocdir_addr[ut_os_version_index]);
+	if (ut_os_version_index >= 2)
+		path += 11; // strlen("/documents/"). Already included in ut_currentdocdir_addr for these OS versions.
 	// We can't malloc in this low-memory conditions.
 	// The screen is used as a temporary buffer for stage2. Copy it below stage1.
 	void *stage2_dest = (char*)SCREEN_BASE_ADDRESS + (SCREEN_WIDTH/2) * 80;
-	FILE *res_file = fopen(respath, "rb");
+	FILE *res_file = fopen(path, "rb");
 	if (!res_file)
 		;//ut_panic("ldfo");
 	// ndless_resources.tns starts with the size of stage2

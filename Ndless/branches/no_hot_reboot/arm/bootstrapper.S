@@ -157,7 +157,7 @@ frame_found:
 	beq   pop_and_cleanup      @ the first frame is the current frame: no need to restore the registers
 	@ point to the saved registers of the previous frame, as in a function prologue.
 	@ Caution, this will only work for functions pushing r4-r11 (inflate() and sub_1009DF50 (OS 1.7)),
-	@ and we should be one of them
+	@ and we should be in one of them
 	sub   r5, r5, #0x28
 	to_arm r1
 	ldmfd r5, {r4-r11,sp}      @ pop the regiters saved by the sub-function (but not pc)
@@ -171,12 +171,14 @@ pop_and_cleanup:
 	got_var ut_os_version_index
 
 @ OS-specific
-@ Each OS version is on its own line:
+@ Each OS version has its own line:
 @ 0) After the prologue of the caller of inflate()
 @ 1) Cleanup code of this function
 	.align 2
 bs_stack_unwind_addrs:
 	.long 0x101975FC, 0x10197700
+	.long 0x0, 0x0 @ TODO
+	.long 0x101EB1D8, 0x101EB2DC
 	.long 0x0, 0x0 @ TODO
 
 @ Exception handlers for bootstrapping

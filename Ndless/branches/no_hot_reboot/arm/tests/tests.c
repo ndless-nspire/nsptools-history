@@ -29,7 +29,7 @@ int global_int;
 int* nl_relocdata_data[] = {&global_int};
 
 static unsigned const custom_sprintf_addrs[] = {0x102A280C, 0};
-#define custom_sprintf SYSCALL_CUSTOM(custom_sprintf_addrs, int __attribute__((__format__(__printf__,2,3))), sprintf, char *s, const char *format, ...)
+#define custom_sprintf SYSCALL_CUSTOM(custom_sprintf_addrs, int __attribute__((__format__(__printf__,2,3))), char *s, const char *format, ...)
 
 int main(int argc, char *argv[]) {
 	char buf100[100];
