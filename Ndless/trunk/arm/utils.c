@@ -80,7 +80,7 @@ void ut_read_os_version_index(void) {
 			sc_addrs_ptr = syscalls_ncas_2_0_1;
 #endif
 			break;
-		case 0:  // TODO 2.0.1.60 CAS
+		case 0x10266900:  // 2.0.1.60 CAS
 			ut_os_version_index = 3;
 #ifdef _NDLS_LIGHT
 			sc_addrs_ptr = syscalls_light_cas_2_0_1;
@@ -96,8 +96,9 @@ void ut_read_os_version_index(void) {
 }
 
 /* OS-specific: addresses of the name of the directory containing the document
- * being opened. Prefixed with '/documents/' on OS 2.0 and higher. */
-unsigned const ut_currentdocdir_addr[] = {0x10669A9C, 0x1069BD64, 0x1088F164, 0}; // TODO CAS
+ * being opened. Prefixed with '/documents/' on OS 2.0 and higher.
+ * Found at development time with a full memory search thanks to Ncubate's "ss" command.*/
+unsigned const ut_currentdocdir_addr[] = {0x10669A9C, 0x1069BD64, 0x1088F164, 0x10857154};
 
 void __attribute__ ((noreturn)) ut_calc_reboot(void) {
 	*(unsigned*)0x900A0008 = 2; //CPU reset

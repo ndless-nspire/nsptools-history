@@ -28,8 +28,9 @@
 #include <os.h>
 #include "ndless.h"
 
+// OS-specific
 // after the inflate loop, we want to simulate a null-return check and quit
-static unsigned const s2_tizip_hook_addrs[] = {0x1019708C, 0x101990A4, 0x101EAC68, 0}; // TODO CAS
+static unsigned const s2_tizip_hook_addrs[] = {0x1019708C, 0x101990A4, 0x101EAC68, 0x101EB530};
 
 static void s2_run_install(void);
 
