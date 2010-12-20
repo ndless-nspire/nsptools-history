@@ -15,7 +15,7 @@ What do I need to install it on a TI-Nspire?
 ============================================
 
 - A TI-Nspire CAS or non-CAS
-- OS v1.7 installed on it
+- OS v1.7 or v2.0.1 installed on it
 - Any linking program such as TI-Nspire Computer Link Software
 
 Touchpad TI-Nspire models currently require a clickpad to install Ndless.
@@ -23,7 +23,7 @@ Touchpad TI-Nspire models currently require a clickpad to install Ndless.
 How do I install it?
 ====================
 
-Make sure OS v1.7 is installed.
+Make sure OS v1.7 or v2.0.1 is installed.
 
 Send with the linking program the documents 'ndless_installer.tns' and 
 'ndless_resources.tns' from the calcbin/ directory of Ndless to any directory of 
@@ -61,10 +61,10 @@ few seconds for the installation.
 If the installation makes the calculator hang or reboot, retry the installation 
 on a OS image that has just been created.
 
-How do I upgrade from v1.0/v1.1?
-================================
+How do I upgrade from v1.7?
+===========================
 
-Install OS v1.7, then follow the installation steps above.
+First follow the uninstallation steps below, then the installation steps above.
 
 How do I run an executable?
 ===========================

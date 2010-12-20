@@ -179,7 +179,7 @@ bs_stack_unwind_addrs:
 	.long 0x101975FC, 0x10197700
 	.long 0x10199614, 0x10199718
 	.long 0x101EB1D8, 0x101EB2DC
-	.long 0x101EBAA0, 0x101EBB88
+	.long 0x101EBAA0, 0x101ebba4
 
 @ Exception handlers for bootstrapping
 @ Defined here to be reference with pc-relative instructions for a lighter installer

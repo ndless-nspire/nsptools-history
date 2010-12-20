@@ -2,6 +2,7 @@ Ndless - Changelog
 ==================
 
 * v2.0 - <not yet released>
+  - NEW: supports OS v2.0.1
  Includes:
   - NEW: NU_Current_Dir (thanks apcalc)
   - NEW: isalnum, isalpha, isascii, isdigit, islower, isprint, isspace, isupper, 
