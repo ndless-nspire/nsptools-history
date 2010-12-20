@@ -824,7 +824,7 @@
 	MakeRptCmt	(0X102A10E8,	"R0=\\r");
 	MakeName	(0X102A10F8,	"isupper");
 	MakeName	(0X102A110C,	"isxdigit");
-	MakeName	(0X102A115C,	"toupper");
+	MakeName	(0X102A115C,	"tolower");
 	MakeName	(0X102A1178,	"calloc");
 	MakeName	(0X102A11BC,	"free");
 	MakeName	(0X102A11C8,	"malloc");

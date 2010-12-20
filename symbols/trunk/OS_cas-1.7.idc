@@ -655,7 +655,7 @@
  	MakeName	(0X101C1860,	 "isspace");
  	MakeName	(0X102A3108,	 "isupper");
  	MakeName	(0X100BE2F0,	 "isxdigit");			//
- 	MakeName	(0X102A316C,	 "toupper");
+ 	MakeName	(0X102A316C,	 "tolower");
  	MakeName	(0X102A3188,	 "calloc");
  	MakeName	(0X102A31CC,	 "free");
  	MakeName	(0X102A31D8,	 "malloc");
