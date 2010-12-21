@@ -27,10 +27,10 @@ Make sure OS v1.7 or v2.0.1 is installed.
 
 Send with the linking program the documents 'ndless_installer.tns' and 
 'ndless_resources.tns' from the calcbin/ directory of Ndless to any directory of 
-the calculator. The two documents must be in the same directory.
+the calculator.  Make sure that the name of the directory doesn't contain any 
+special characters such as '.' The two documents must be in the same directory.
 
-Unplug the calculator from the computer (it may be required for some 
-configurations).
+Unplug the calculator from the computer (trust us, it is important).
 
 Open 'ndless_installer' from the Documents screen of the calculator and wait a 
 few seconds. Now:
