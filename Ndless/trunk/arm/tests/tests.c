@@ -193,6 +193,7 @@ int main(int argc, char *argv[]) {
 	NU_Done(&dstat);
 	
 	/* libndls */
+	assertUIntEquals("isalnum", TRUE, isalnum('0'));
 	assertUIntEquals("abs,min,max", 4, max(min(abs(-3), 2), 4));
 	sleep(100);
 	

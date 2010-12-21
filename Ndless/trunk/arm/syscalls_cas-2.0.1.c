@@ -37,7 +37,7 @@ unsigned syscalls_cas_2_0_1[] = {
 	, 0X102FED44
 	, 0X101EF150
 	, 0X101EF170
-	, 0x0
+	, 0X102F87A8
 	, 0X102F30E8
 	, 0X102F312C
 	, 0X102F313C
@@ -59,5 +59,4 @@ unsigned syscalls_cas_2_0_1[] = {
 	, 0X102F9588
 	, 0X102F85D8
 	, 0X102F8748
-	, 0X102F87A8
 };

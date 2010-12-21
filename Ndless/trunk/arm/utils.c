@@ -97,7 +97,8 @@ void ut_read_os_version_index(void) {
 
 /* OS-specific: addresses of the name of the directory containing the document
  * being opened. Prefixed with '/documents/' on OS 2.0 and higher.
- * Found at development time with a full memory search thanks to Ncubate's "ss" command.*/
+ * Caution, special characters such as '.' are filtered out of the name.
+ * Found at development time with a full memory search thanks to Ncubate's "ss" command. */
 unsigned const ut_currentdocdir_addr[] = {0x10669A9C, 0x1069BD64, 0x1088F164, 0x10857154};
 
 void __attribute__ ((noreturn)) ut_calc_reboot(void) {
