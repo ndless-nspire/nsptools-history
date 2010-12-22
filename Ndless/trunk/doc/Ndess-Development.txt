@@ -42,11 +42,21 @@ From Ndless root directory:
 * make dist: builds the artificats and create a release directory (dist)
 * make distbin: incremental dist during development
 
-Generating the syscalls header files
-====================================
+Upgrading Ndless to a newer OS version
+======================================
 
-The syscalls header files for the different OS are generated.
+- Search in all the source code the marker string "OS-specific", and add
+  the addresses for the new OS version
+- Regenerate the syscalls files (see below)
+
+Generating the syscalls files
+=============================
+
+The syscalls  files for the different OS are generated.
 This generated files are ditributed with Ndless's source code.
 
 To regenerate these files, run the following command:
 cd tools/Makesyscalls && make
+
+The generation depends on external IDA files (.idc) containing the address
+of the symbols for the different OS versions.

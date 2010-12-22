@@ -44,7 +44,7 @@ HOOK_DEFINE(plh_hook) {
 		ptr++;
 	else
 		ptr = halfpath;
-	if (!strcmp("ndless_installer.tns", ptr)) {
+	if (!strncmp("ndless_installer_os-", ptr, sizeof("ndless_installer_os-") - 1)) {
 		char title[20];
 		char msg[150];
 	  ascii2utf16(title, "Ndless", sizeof(title));

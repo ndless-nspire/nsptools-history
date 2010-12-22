@@ -214,8 +214,8 @@ got_var_\var:
 /** GNU C Compiler */
 #else
 
-#include "libndls.h"
-
+#define _CONCAT(a,b) a##b
+#define CONCAT(a,b) _CONCAT(a,b)
 #define _STRINGIFY(s) #s
 #define STRINGIFY(s) _STRINGIFY(s)
 #define NULL ((void*)0)
@@ -243,6 +243,8 @@ typedef struct {
 #define max(a,b) ({typeof(a) __a = (a); typeof(b) __b = (b); (__a > __b) ? __a : __b;})
 #define min(a,b) ({typeof(a) __a = (a); typeof(b) __b = (b); (__a < __b) ? __a : __b;})
 #endif
+
+#include "libndls.h"
 
 /***********************************
  * Misc inline functions

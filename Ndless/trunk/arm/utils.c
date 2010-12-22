@@ -53,28 +53,32 @@ void ut_read_os_version_index(void) {
 	 * The address is read from the RAM copy and not the real vector which is
 	 * destroyed at installation time */
 	switch (*(unsigned*)(OS_BASE_ADDRESS + 0x20)) {
-#if 0
 		// OS-specific
 		case 0x10211290:  // 1.7 non-CAS
 			ut_os_version_index = 0;
-#ifdef _NDLS_LIGHT
+#if defined STAGE1
+		sc_addrs_ptr = CONCAT(syscalls_light_ncas_,OS_VERSION);
+#elif defined STAGE2
 			sc_addrs_ptr = syscalls_light_ncas_1_7;
-#else
+#else 
 			sc_addrs_ptr = syscalls_ncas_1_7;
 #endif
 			break;
 		case 0x102132A0:  // 1.7 CAS
 			ut_os_version_index = 1;
-#ifdef _NDLS_LIGHT
+#if defined STAGE1
+		sc_addrs_ptr = CONCAT(syscalls_light_cas_,OS_VERSION);
+#elif defined STAGE2
 			sc_addrs_ptr = syscalls_light_cas_1_7;
 #else
 			sc_addrs_ptr = syscalls_cas_1_7;
 #endif
 			break;
-#endif
 		case 0x10266030:  // 2.0.1.60 non-CAS
 			ut_os_version_index = 2;
-#ifdef _NDLS_LIGHT
+#if defined STAGE1
+		sc_addrs_ptr = CONCAT(syscalls_light_ncas_,OS_VERSION);
+#elif defined STAGE2
 			sc_addrs_ptr = syscalls_light_ncas_2_0_1;
 #else
 			sc_addrs_ptr = syscalls_ncas_2_0_1;
@@ -82,7 +86,9 @@ void ut_read_os_version_index(void) {
 			break;
 		case 0x10266900:  // 2.0.1.60 CAS
 			ut_os_version_index = 3;
-#ifdef _NDLS_LIGHT
+#if defined STAGE1
+		sc_addrs_ptr = CONCAT(syscalls_light_cas_,OS_VERSION);
+#elif defined STAGE2
 			sc_addrs_ptr = syscalls_light_cas_2_0_1;
 #else
 			sc_addrs_ptr = syscalls_cas_2_0_1;

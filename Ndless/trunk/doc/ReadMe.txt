@@ -25,10 +25,14 @@ How do I install it?
 
 Make sure OS v1.7 or v2.0.1 is installed.
 
-Send with the linking program the documents 'ndless_installer.tns' and 
-'ndless_resources.tns' from the calcbin/ directory of Ndless to any directory of 
-the calculator.  Make sure that the name of the directory doesn't contain any 
-special characters such as '.' The two documents must be in the same directory.
+First locate the file 'ndless_installer_os-<version>.tns' in the calcbin/ 
+directory of Ndless where <version> matches the OS version currently installed 
+on the calculator.
+
+Send this file along with the file 'ndless_resources.tns' to any directory of 
+the calculator.  Make sure that the name of the target directory doesn't contain 
+any special characters such as '.' The two documents must be in the same 
+directory.
 
 Unplug the calculator from the computer (trust us, it is important).
 
