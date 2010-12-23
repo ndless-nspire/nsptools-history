@@ -6,11 +6,10 @@ OBJCOPY := "$(shell which arm-elf-objcopy 2>/dev/null)"
 ifeq (${OBJCOPY},"")
 	OBJCOPY := arm-none-eabi-objcopy
 endif
-OBJS = tests.o
 DISTDIR = ../../calcbin/tests
 vpath %.tns $(DISTDIR)
 
-all: distdir ndless_tests.tns doc
+all: distdir ndless_tests.tns ndless_keys.tns doc
 
 distdir:
 	@mkdir -p $(DISTDIR)
@@ -18,9 +17,12 @@ distdir:
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<
 
-ndless_tests.tns: $(OBJS)
+%.tns:
 	$(LD) $(LDFLAGS) $^ -o $(@:.tns=.elf)
 	$(OBJCOPY) -O binary $(@:.tns=.elf) $(DISTDIR)/$@
+
+ndless_tests.tns: tests.o
+ndless_keys.tns: keys.o
 
 doc:
 	@cp ReadMe.txt $(DISTDIR)
@@ -28,4 +30,5 @@ doc:
 clean:
 	rm -f *.o *.elf
 	rm -f $(DISTDIR)/ndless_tests.tns
+	rm -f $(DISTDIR)/ndless_keys.tns
 	rm -f $(DISTDIR)/ReadMe.txt

@@ -84,7 +84,7 @@ asm(
 " biceq r0, r0, #0xFF000000 \n"
 " ldrneh r0, [lr, #-3]    @ thumb state (-2-1, because of the previous +1) \n"
 " bicne r0, r0, #0xFF00 \n"
-#ifndef _NDLS_LIGHT // with syscalls extension/emu syscalls support
+#ifndef _NDLS_LIGHT // with extension/emu support
 " mov   r1, r0            @ syscall number \n"
 " and   r1, #0xE00000   @ keep the 3-bit flag \n"
 " bic   r0, #0xE00000   @ clear the flag \n"
@@ -93,19 +93,27 @@ asm(
 " cmp   r1, #" STRINGIFY(__SYSCALLS_ISEMU) "\n"
 " beq   is_emu_syscall \n"
 #endif
-" ldr   r1, sc_addrs_ptr  @ OS syscalls table \n"
+" ldr   r2, sc_addrs_ptr  @ OS syscalls table \n"
+" ldr   r0, [r2, r0, lsl #2] @ syscall address \n"
+#ifndef _NDLS_LIGHT // with var support
+" cmp   r1, #" STRINGIFY(__SYSCALLS_ISVAR) "\n"
+" bne   jmp_to_syscall \n"
+" str   r0, [sp]          @ overwrite the saved r0 \n"
+" ldmfd sp!, {r0-r3} \n"
+" bx    lr                @ return from the swi. r0 is the return value. \n"
+#endif
 "jmp_to_syscall: \n"
-" ldr   r0, [r1, r0, lsl #2] @ syscall address \n"
-" str   r0, [sp, #12]      @ overwrite the dummy register previously saved \n"
+" str   r0, [sp, #12]     @ overwrite the dummy register previously saved \n"
 " ldmfd sp!, {r0-r2, pc}  @ restore the regs and jump to the syscall. lr is still the return address \n"
 
-#ifndef _NDLS_LIGHT // with syscalls extension/emu support
+#ifndef _NDLS_LIGHT // with extension/emu support
 "is_ext_syscall: \n"
 " ldr   r1, get_ext_table_reloc @ from here...\n"
 " ldr   r2, get_ext_table_reloc+4 \n"
 "get_ext_table: \n"
 " add   r1, pc \n"
-" ldr   r1, [r1, r2]      @ ...to there: GOT-based access to sc_ext_table (defined in another .o). TODO: Could be optimized with http://gcc.gnu.org/bugzilla/show_bug.cgi?id=43129 once available? \n"
+" ldr   r2, [r1, r2]      @ ...to there: GOT-based access to sc_ext_table (defined in another .o). TODO: Could be optimized with http://gcc.gnu.org/bugzilla/show_bug.cgi?id=43129 once available? \n"
+" ldr   r0, [r2, r0, lsl #2] @ syscall address \n"
 " b jmp_to_syscall \n"
 
 "is_emu_syscall: \n"

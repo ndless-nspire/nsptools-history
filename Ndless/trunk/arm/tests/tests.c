@@ -32,32 +32,45 @@ static void error(const char *tstname, const char *errmsg) {
 	errcount++;
 }
 
+#define assert(expr, format, ...) \
+	do { \
+		char sbuf[100]; \
+		if (!(expr)) { \
+			sprintf(sbuf, "%s(" format ")", __func__, __VA_ARGS__); \
+			error(tstname, sbuf); \
+		} \
+	} while(0)
+
 static void assertUIntEquals(const char *tstname, unsigned expected, unsigned actual) {
-	char sbuf[100];
-	if (expected != actual) {
-		sprintf(sbuf, "%s(%u, %u)", __func__, expected, actual);
-		error(tstname, sbuf);
-	}
+	assert(expected == actual, "%u, %u", expected, actual);
+}
+
+__attribute__((unused)) static void assertUIntGreater(const char *tstname, unsigned expected, unsigned actual) {
+	assert(expected < actual, "%u, %u", expected, actual);
+}
+
+static void assertUIntLower(const char *tstname, unsigned expected, unsigned actual) {
+	assert(expected > actual, "%u, %u", expected, actual);
 }
 
 static void assertZero(const char *tstname, unsigned actual) {
-	assertUIntEquals(tstname, 0, actual);
+	assert(!actual, "%u", actual);
+}
+
+static void assertNonZero(const char *tstname, unsigned actual) {
+	assert(actual, "%u", actual);
+}
+
+static void assertTrue(const char *tstname, BOOL actual) {
+	assert(actual, "%s", actual ? "TRUE" : "FALSE");
 }
 
 static void assertStrEquals(const char *tstname, const char *expected, const char *actual) {
-	char sbuf[100];
-	if (strcmp(expected, actual)) {
-		sprintf(sbuf, "%s(\"%s\", \"%s\")", __func__, expected, actual);
-		error(tstname, sbuf);
-	}
+	assert(!strcmp(expected, actual), "\"%s\", \"%s\"", expected, actual);
 }
 
 static void assertNotNull(const char *tstname, void *actual) {
-	char sbuf[100];
-	if (!actual) {
-		sprintf(sbuf, "%s(\"%p\")", __func__, actual);
-		error(tstname, sbuf);
-	}
+	assert(actual, "%p", actual);
 }
 
 int global_int;
@@ -192,9 +205,14 @@ int main(int argc, char *argv[]) {
 	assertZero("NU_Get_Next-2", strcmp(dstat.filepath, "tmp"));
 	NU_Done(&dstat);
 	
+	assertUIntLower("keypad_type", 4, *keypad_type());
+	assertNonZero("keypad_type", *keypad_type());
+	
+	
 	/* libndls */
 	assertUIntEquals("isalnum", TRUE, isalnum('0'));
 	assertUIntEquals("abs,min,max", 4, max(min(abs(-3), 2), 4));
+	assertTrue("is_touchpad", *keypad_type() != 3 || is_touchpad);
 	sleep(100);
 	
 	if (!errcount)

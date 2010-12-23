@@ -16,6 +16,7 @@
 #ifdef GNU_AS
 // unfortunately using a GAS macro for this is not possible
 #define syscall(syscall_name) swi e_##syscall_name
+#define osvar(osvar_name) swi (__SYSCALLS_ISVAR|e_##osvar_name)
 
 /* GNU C Compiler */
 #else
@@ -188,6 +189,14 @@ static __attribute__ ((unused)) unsigned _syscallvar_savedlr;
  * static const unsigned puts_addrs[] = {<1.7-address>, <1.7-CAS-address>, ...}; // see nl_osvalue for the order of the addresses
  * #define puts SYSCALL_CUSTOM(puts_addrs, int, const char *) */
 #define SYSCALL_CUSTOM(addresses, rettype, ...) ((rettype(*)(__VA_ARGS__))nl_osvalue((int*)addresses, sizeof(addresses)/sizeof(addresses[0])))
+/* Access to OS variables */
+#define _SYSCALL_OSVAR(type, name) static inline type name(void) { \
+	register unsigned __r0 asm("r0"); \
+	asm volatile( \
+		" swi " STRINGIFY(__SYSCALLS_ISVAR|_SYSCALL_ENUM(name)) \
+		: "=r" (__r0) : "r" (__r0) :  "r1", "r2", "r3", "r12", "lr"); \
+	return (type)__r0; \
+}
 
 /* OS syscalls */
 _SYSCALL1(int, read_unaligned_longword, void *)
@@ -259,9 +268,12 @@ _SYSCALL1(int, TCT_Local_Control_Interrupts, int)
 
 _SYSCALL2(int, NU_Current_Dir, const char *, const char *)
 _SYSCALL2(int, NU_Get_First, struct dstat *, const char * /* pattern */)
-_SYSCALL1(int,  NU_Get_Next, struct dstat *)
+_SYSCALL1(int, NU_Get_Next, struct dstat *)
 _SYSCALL1(void, NU_Done, struct dstat *)
 _SYSCALL1(int, NU_Set_Current_Dir, const char *)
+
+/* 1: clickpad, 2: 84+, 3: touchpad */
+_SYSCALL_OSVAR(unsigned char *, keypad_type)
 
 /* Ndless extensions. Not available in thumb state. */
 // Given a list of OS-specific value and its size, returns the value for the current OS.

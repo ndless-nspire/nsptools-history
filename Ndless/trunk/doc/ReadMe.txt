@@ -18,8 +18,6 @@ What do I need to install it on a TI-Nspire?
 - OS v1.7 or v2.0.1 installed on it
 - Any linking program such as TI-Nspire Computer Link Software
 
-Touchpad TI-Nspire models currently require a clickpad to install Ndless.
-
 How do I install it?
 ====================
 
@@ -146,7 +144,7 @@ are documented here: http://hackspire.unsads.com/wiki/index.php/Ndless
 What we hope you will be able to see in the next releases
 =========================================================
 
-- Installation on recent OS versions and on Touchpad models
+- Installation on recent OS versions
 - More syscalls definitions
 - Basic routines as static libraries
 - A fully-fledged executable runner, with complete relocation support, library 

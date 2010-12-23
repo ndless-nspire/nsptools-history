@@ -2,7 +2,11 @@ Ndless - Changelog
 ==================
 
 * v2.0 - <not yet released>
-  - NEW: supports OS v2.0.1
+  - NEW: supports OS v2.0.1.
+  - NEW: supports Touchpad calculators. Programs should be rebuilt with this 
+    version of Ndless to handle correctly the key layout of Touchpads.
+ Hook:
+  - NEW: OS variables can be accessed in a portable manner.
  Includes:
   - NEW: NU_Current_Dir (thanks apcalc)
   - NEW: isalnum, isalpha, isascii, isdigit, islower, isprint, isspace, isupper, 

@@ -59,4 +59,5 @@ unsigned syscalls_ncas_1_7[] = {
 	, 0X102A6838
 	, 0X102A6380
 	, 0X102A64A8
+	, 0X106DA9E4
 };

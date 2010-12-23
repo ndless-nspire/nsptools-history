@@ -8,4 +8,7 @@
 int isalnum(int c);
 void sleep(unsigned millisec);
 
+/* defined in crt0.S */
+extern BOOL is_touchpad;
+
 #endif

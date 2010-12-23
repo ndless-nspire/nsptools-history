@@ -74,16 +74,18 @@
 #define e_memrev 56
 #define e_strchr 57
 #define e_strncmp 58
-
+#define e_keypad_type 59
 
 // END_OF_LIST (always keep this line after the last constant, used by mksyscalls.sh)
 
 // Must be kept up-to-date with the value of the last syscall
-#define __SYSCALLS_LAST 58
+#define __SYSCALLS_LAST 59
 
 // Flag: 3 higher bits of the 3-bytes comment field of the swi instruction
 #define __SYSCALLS_ISEXT 0x200000
 #define __SYSCALLS_ISEMU 0x400000
+/* Access to OS variables */
+#define __SYSCALLS_ISVAR 0x800000
 
 /* Ndless extensions.
  * Not automatically parsed. Starts from 0. The recommandations for the standard syscalls enumeration apply.
@@ -104,7 +106,7 @@
 #define NDLSEMU_DEBUG_ALLOC (__SYSCALLS_ISEMU | 0)
 #define NDLSEMU_DEBUG_FREE (__SYSCALLS_ISEMU | 1)
 
-// Must be kept up-to-date with the value of the last syscalls extension without __SYSCALLS_ISEXT
+// Must be kept up-to-date with the value of the last emu extension without __SYSCALLS_ISEMU
 #define __SYSCALLS_LASTEMU 1
 
 #endif
