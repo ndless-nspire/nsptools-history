@@ -98,9 +98,8 @@ asm(
 #ifndef _NDLS_LIGHT // with var support
 " cmp   r1, #" STRINGIFY(__SYSCALLS_ISVAR) "\n"
 " bne   jmp_to_syscall \n"
-" str   r0, [sp]          @ overwrite the saved r0 \n"
-" ldmfd sp!, {r0-r3} \n"
-" bx    lr                @ return from the swi. r0 is the return value. \n"
+" str   r0, [sp]          @ overwrite the saved r0: it's the return valeu \n"
+" mov   r0, lr            @ return from the swi instead of jumping to the syscall \n"
 #endif
 "jmp_to_syscall: \n"
 " str   r0, [sp, #12]     @ overwrite the dummy register previously saved \n"

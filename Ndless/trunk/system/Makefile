@@ -4,13 +4,16 @@ AS = nspire-as
 GCC = nspire-gcc
 GCCFLAGS = -Os
 
-all: crt0.o crt0sym.o osstub.o
+all: crt0.o crt0light.o crt0sym.o osstub.o
 
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<
 
 %.o: %.S
 	$(AS) $(GCCFLAGS) -c $<
+
+crt0light.o: crt0.S
+	$(AS) $(GCCFLAGS) -D _NDLS_LIGHT -c $< -o $@
 
 clean:
 	rm -rf *.o

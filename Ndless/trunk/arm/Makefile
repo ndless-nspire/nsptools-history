@@ -95,13 +95,13 @@ utils_light.o: utils.c
 	$(GCC) $(GCCFLAGS) -c $< -o $@
 ndless_stage2.elf: GCCFLAGS:=$(GCCFLAGS_DEFAULT) -D _NDLS_LIGHT -D STAGE2
 ndless_stage2.elf: $(STAGE2_OBJS)
-	$(LD) $(LDFLAGS) $^ -o $@
+	$(LD) --light-startup  $(LDFLAGS) $^ -o $@
 
 ndless_stage2.bin: ndless_stage2.elf
 	$(OBJCOPY) -O binary $< $@
 
 ndless_core.elf: $(CORE_OBJS)
-	$(LD) $(LDFLAGS) $^ -o $@
+	$(LD) --light-startup $(LDFLAGS) $^ -o $@
 
 ndless_core.bin: ndless_core.elf
 	$(OBJCOPY) -O binary $< $@

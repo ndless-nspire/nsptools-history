@@ -2,6 +2,7 @@
 # bash and not sh: we use bash arrays
 # Available non-GCC options:
 # --no-startup: do not link with the startup code
+# --light-startup: use crt0light.o instead
 
 UNAME=`uname -s | tr '[A-Z]' '[a-z]'`
 DIRNAME=`dirname "$0"`
@@ -26,12 +27,14 @@ fi
 
 nostdlib=false
 nostartup=false
+lightstartup=false
 # an array is used to change the arguments while supporting arguments with spaces
 declare -a args
 for arg in "$@"; do
 	case $arg in
 		-nostdlib) nostdlib=true; args=("${args[@]}" $arg);;
 		--no-startup) nostartup=true;;
+		--light-startup) lightstartup=true;;
 		*) args=("${args[@]}" $arg);;
 	esac
 done
@@ -49,7 +52,8 @@ if [ $ret -ne 0 ]; then
 	exit $ret
 fi
 if [ $nostartup = false ]; then
-	args=("$DIRNAME/../system/crt0.o" "${args[@]}")
+	[ $lightstartup = true ] && startupobj=crt0light.o || startupobj=crt0.o
+	args=("$DIRNAME/../system/$startupobj" "${args[@]}")
 fi
 # -nostartfiles: avoids newlib startup which would be added before ours
 "$GCC" -nostartfiles  -T "$DIRNAME/../system/ldscript" -e _nspire_start -L "$DIRNAME/../lib" -static "$DIRNAME/../system/crt0sym.o" "${args[@]}" -lndls
