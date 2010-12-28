@@ -52,11 +52,6 @@ HOOK_DEFINE(plh_hook) {
 	  show_dialog_box2(0, title, msg);
 		goto silent; // skip the error dialog
 	}
-	// Asynchronous uninstallation
-	if (ins_lowmem_hook_installed) {
-		HOOK_UNINSTALL(ins_lowmem_hook_addrs[ut_os_version_index], ins_lowmem_hook);
-		ins_lowmem_hook_installed = FALSE;
-	}
 	// TODO use snprintf
 	sprintf(docpath, "/documents/%s", halfpath);
 	struct stat docstat;
@@ -82,6 +77,11 @@ HOOK_DEFINE(plh_hook) {
 		if (!emu_debug_alloc_ptr)
 			free(docptr);
 		HOOK_RESTORE_RETURN(plh_hook);
+	}
+	// Asynchronous uninstallation. Not to early in the loader, else the installation popup will strangely not be displayed.
+	if (ins_lowmem_hook_installed) {
+		HOOK_UNINSTALL(ins_lowmem_hook_addrs[ut_os_version_index], ins_lowmem_hook);
+		ins_lowmem_hook_installed = FALSE;
 	}
 	int intmask = TCT_Local_Control_Interrupts(-1); /* TODO workaround: disable the interrupts to avoid the clock on the screen */
 	((void (*)(int argc, char *argv[]))(docptr + sizeof(PRGMSIG)))(1, (char*[]){docpath, NULL}); /* run the program */

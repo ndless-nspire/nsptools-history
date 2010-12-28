@@ -161,7 +161,7 @@ hwti (OS info, v1.0 64-bit support), squalyl (Hackspire and development tools
 hosting), TI-Bank (data hosting).
 
 Thanks to all the contributors and beta testers: apcalc, bsl, bwang, 
-calc84maniac, critor, Levak.
+calc84maniac, critor, Levak, shrear.
 
 Development team
 ================
