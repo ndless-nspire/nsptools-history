@@ -29,7 +29,8 @@ cache_keypad_type:
 	mov  r3, #0
 	ldrb r3, [r0]
 	mov  r0, r2          @ restore
-	cmp  r3, #3
+	cmp  r3, #3          @ prototype
+	cmpne r3, #4         @ normal
 	bne runmain
 	adr r2, is_touchpad
 	mov r3, #1           @ TRUE

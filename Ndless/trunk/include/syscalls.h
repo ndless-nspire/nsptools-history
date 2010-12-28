@@ -75,11 +75,26 @@
 #define e_strchr 57
 #define e_strncmp 58
 #define e_keypad_type 59
+#define e_freopen 60
+#define e_errno_addr 61
+#define e_toupper 62
+#define e_strtod 63
+#define e_strtol 64
+#define e_ungetc 65
+#define e_strerror 66
+#define e_strcat 67
+#define e_strstr 68
+#define e_fflush 69
+#define e_remove 70
+#define e_stdin 71
+#define e_stdout 72
+#define e_stderr 73
+#define e_ferror 74
 
 // END_OF_LIST (always keep this line after the last constant, used by mksyscalls.sh)
 
 // Must be kept up-to-date with the value of the last syscall
-#define __SYSCALLS_LAST 59
+#define __SYSCALLS_LAST 73
 
 // Flag: 3 higher bits of the 3-bytes comment field of the swi instruction
 #define __SYSCALLS_ISEXT 0x200000

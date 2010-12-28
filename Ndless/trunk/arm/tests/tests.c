@@ -45,6 +45,10 @@ static void assertUIntEquals(const char *tstname, unsigned expected, unsigned ac
 	assert(expected == actual, "%u, %u", expected, actual);
 }
 
+static void assertIntEquals(const char *tstname, int expected, int actual) {
+	assert(expected == actual, "%i, %i", expected, actual);
+}
+
 __attribute__((unused)) static void assertUIntGreater(const char *tstname, unsigned expected, unsigned actual) {
 	assert(expected < actual, "%u, %u", expected, actual);
 }
@@ -88,6 +92,7 @@ int main(int argc, char *argv[]) {
 	struct stat sstat;
 	DSTAT dstat;
 
+	assertUIntEquals("TCT_Local_Control_Interrupts", 0xFFFFFFFF, TCT_Local_Control_Interrupts(0));
 	assertUIntEquals("argc", 1, argc);
 	assertStrEquals("argv", "ndless_tests.tns", strrchr(argv[0], '/') + 1);
 	
@@ -122,8 +127,10 @@ int main(int argc, char *argv[]) {
 	assertUIntEquals("isupper", TRUE, isupper('A'));
 	assertUIntEquals("isxdigit", TRUE, isxdigit('f'));
 	assertUIntEquals("tolower", 'a', tolower('A'));
+	assertUIntEquals("toupper", 'A', toupper('a'));
 	assertUIntEquals("atoi", 1, atoi("1"));
 	// assertDblEquals("atof", 1.1, atof("1.1")); // TODO fails
+	// strtod TODO fails
 	
 	ptr = malloc(100);
 	assertNotNull("malloc", ptr);
@@ -157,6 +164,9 @@ int main(int argc, char *argv[]) {
 	strcpy(buf, "abc");
 	assertZero("strncmp", strncmp(buf, "a", 1));
 	strcpy(buf, "a");
+	strcat(buf, "bc");
+	assertZero("strcat", strcmp(buf, "abc"));
+	strcpy(buf, "a");
 	strncat(buf, "bc", 1);
 	assertZero("strncat", strcmp(buf, "ab"));
 	ptr = strchr("abc", 'b');
@@ -165,33 +175,61 @@ int main(int argc, char *argv[]) {
 	assertUIntEquals("strrchr", 'a', *ptr);
 	ptr = strpbrk("abc", "dc");
 	assertUIntEquals("strpbrk", 'c', *ptr);
+	assertUIntEquals("strcspn", 3, strcspn("123abc", "abc"));
+	assertUIntEquals("strspn", 3, strspn("abcdef", "abc"));
+	file = fopen("unexist.ent", "r");
+  assertStrEquals("strerror,errno", "No Such File Or Directory", strerror(errno));
+	assertIntEquals("strtol", -1, strtol("-1", NULL, 10));
+	assertIntEquals("strtoul", 1, strtoul("1", NULL, 10));
+	assertStrEquals("strstr", "def", strstr("abcdef", "def"));
 	
 	sprintf(buf, "%s", "abc");
-	assertZero("sprintf", strcmp(buf, "abc"));
+	assertStrEquals("sprintf", "abc", buf);
 	
 	strncpy(buf, argv[0], sizeof(buf));
 	*(strrchr(buf, '/') + 1) = '\0'; // keep the folder
 	strncat(buf, "__testfile.tns", sizeof(buf)); // buf = temp file path
-	file = fopen(buf, "w+");
+	file = fopen(buf, "wb+");
 	assertNotNull("fopen", file);
+	file = freopen(buf, "wb+", file);
+	assertNotNull("freopen", file);
 	assertUIntEquals("fwrite", 4, fwrite("abc", 1, 4, file));
-	assertZero("fseek", fseek(file, 0, SEEK_SET));
+	assertZero("fflush", fflush(file));
+	rewind(file);
 	assertUIntEquals("fread-1", 4, fread(buf2, 1, 4, file));
-	assertZero("fread-2", strcmp(buf2, "abc"));
+	assertStrEquals("fread-2", "abc", buf2);
+	assertZero("fseek", fseek(file, 0, SEEK_SET));
 	assertUIntEquals("fprintf", 3, fprintf(file, "%s", "abc"));
-	fseek(file, 0, SEEK_SET);
+	rewind(file);
 	assertUIntEquals("fputc", 'a', fputc('a', file));
 	fseek(file, -1, SEEK_CUR);
 	assertUIntEquals("fgetc", 'a', fgetc(file));
-	fseek(file, 0, SEEK_SET);
-	fprintf(file, "%s", "abc\n");
-	fseek(file, 0, SEEK_SET);
-	fgets(buf2, sizeof(buf2), file);
-	assertZero("fgets", strcmp(buf2, "abc\n"));
+	rewind(file);
+	assertUIntEquals("getc", 'a', getc(file));
+	rewind(file);
+	assertNonZero("fputs", fputs("abc\ndef", file));
+	rewind(file);
+	assertStrEquals("fgets", "abc\n", fgets(buf2, 10, file));
+	rewind(file);
+	fputc('a', file);
+	rewind(file);
+	assertUIntEquals("ungetc-1", 'a', ungetc(fgetc(file), file));
+	assertUIntEquals("ungetc-2", 'a', fgetc(file));
 	assertZero("fclose", fclose(file));
 	
 	assertZero("stat", stat(buf, &sstat));
 	assertZero("unlink", unlink(buf));
+	file = fopen(buf, "wb+");
+	assertNonZero("feof-1", feof(file));
+	fputc('a', file);
+	rewind(file);
+	assertZero("feof-2", feof(file));
+	fclose(file);
+	file = fopen(buf, "wb");
+	fread(buf2, 1, 1, file);
+	assertNonZero("ferror", ferror(file));
+	fclose(file);
+	assertZero("remove", remove(buf));
 	assertZero("mkdir", mkdir("/tmp/__testdir", 0));
 	assertZero("rename", rename("/tmp/__testdir", "/tmp/__testdir2"));
 	assertZero("chdir", chdir("/tmp"));
@@ -199,24 +237,26 @@ int main(int argc, char *argv[]) {
 	
 	assertZero("NU_Set_Current_Dir", NU_Set_Current_Dir("A:\\tmp"));
 	assertZero("NU_Current_Dir-1", NU_Current_Dir("A:", buf));
-	assertZero("NU_Current_Dir-2", strcmp(buf, "\\tmp\\"));
+	assertStrEquals("NU_Current_Dir-2", "\\tmp\\", buf);
 	assertZero("NU_Get_First", NU_Get_First(&dstat, "A:\\*.*"));
 	assertZero("NU_Get_Next-1", NU_Get_Next(&dstat));
-	assertZero("NU_Get_Next-2", strcmp(dstat.filepath, "tmp"));
+	assertStrEquals("NU_Get_Next-2", "tmp", dstat.filepath);
 	NU_Done(&dstat);
 	
-	assertUIntLower("keypad_type", 4, *keypad_type());
-	assertNonZero("keypad_type", *keypad_type());
-	
+	assertUIntLower("keypad_type", 5, *keypad_type);
+	assertNonZero("keypad_type", *keypad_type);
 	
 	/* libndls */
 	assertUIntEquals("isalnum", TRUE, isalnum('0'));
+	assertUIntEquals("iscntrl", TRUE, iscntrl('\0'));
 	assertUIntEquals("abs,min,max", 4, max(min(abs(-3), 2), 4));
-	assertTrue("is_touchpad", *keypad_type() != 3 || is_touchpad);
+	assertTrue("is_touchpad", (*keypad_type != 3  &&  *keypad_type != 4) || is_touchpad);
 	sleep(100);
 	
-	if (!errcount)
-		puts("Successful!");
+	if (!errcount) {
+		fputc('S', stdout);
+		puts("uccessful!");
+	}
 	else
 		printf("%u test(s) failed.\n", errcount);
 	exit(0); // tests exit()

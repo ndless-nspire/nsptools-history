@@ -42,7 +42,7 @@
 #define KEY_NSPIRE_Y            KEY_(0x10, 0x040)
 #define KEY_NSPIRE_0            KEY_(0x10, 0x080)
 #define KEY_NSPIRE_X            KEYTPAD_(0x10, 0x100, 0x12, 0x001)
-#define KEY_NSPIRE_THETA        KEY_(0x10, 0x400)
+#define KEY_NSPIRE_THETA        KEYTPAD_(0x10, 0x400, _KEY_DUMMY_ROW, _KEY_DUMMY_COL)
 #define KEY_NSPIRE_COMMA        KEYTPAD_(0x12, 0x001, 0x1E, 0x400)
 #define KEY_NSPIRE_PLUS         KEYTPAD_(0x12, 0x002, 0x1C, 0x004)
 #define KEY_NSPIRE_W            KEYTPAD_(0x12, 0x004, 0x12, 0x002)
@@ -76,7 +76,7 @@
 #define KEY_NSPIRE_7            KEY_(0x16, 0x080)
 #define KEY_NSPIRE_L            KEYTPAD_(0x16, 0x100, 0x16, 0x001)
 #define KEY_NSPIRE_SQU          KEYTPAD_(0x16, 0x200, 0x14, 0x200)
-#define KEY_NSPIRE_II           KEY_(0x16, 0x400)
+#define KEY_NSPIRE_II           KEYTPAD_(0x16, 0x400, _KEY_DUMMY_ROW, _KEY_DUMMY_COL)
 #define KEY_NSPIRE_QUOTE        KEYTPAD_(0x18, 0x001, _KEY_DUMMY_ROW, _KEY_DUMMY_COL)
 #define KEY_NSPIRE_DIVIDE       KEYTPAD_(0x18, 0x002, 0x16, 0x100)
 #define KEY_NSPIRE_K            KEYTPAD_(0x18, 0x004, 0x16, 0x002)
@@ -87,7 +87,7 @@
 #define KEY_NSPIRE_SIN          KEYTPAD_(0x18, 0x080, _KEY_DUMMY_ROW, _KEY_DUMMY_COL)
 #define KEY_NSPIRE_H            KEYTPAD_(0x18, 0x100, 0x16, 0x020)
 #define KEY_NSPIRE_EXP          KEYTPAD_(0x18, 0x200, 0x18, 0x200)
-#define KEY_NSPIRE_GTHAN        KEY_(0x18, 0x400)
+#define KEY_NSPIRE_GTHAN        KEYTPAD_(0x18, 0x400, _KEY_DUMMY_ROW, _KEY_DUMMY_COL)
 #define KEY_NSPIRE_APOSTROPHE   KEY_(0x1A, 0x001)
 #define KEY_NSPIRE_CAT          KEYTPAD_(0x1A, 0x002, 0x1A, 0x080)
 #define KEY_NSPIRE_G            KEYTPAD_(0x1A, 0x004, 0x16, 0x040)
@@ -97,10 +97,11 @@
 #define KEY_NSPIRE_E            KEYTPAD_(0x1A, 0x040, 0x18, 0x002)
 #define KEY_NSPIRE_VAR          KEYTPAD_(0x1A, 0x080, 0x1A, 0x002)
 #define KEY_NSPIRE_D            KEYTPAD_(0x1A, 0x100, 0x18, 0x004)
-#define KEY_NSPIRE_CAPS         KEY_(0x1A, 0x200)
-#define KEY_NSPIRE_LTHAN        KEY_(0x1A, 0x400)
+#define KEY_NSPIRE_CAPS         KEYTPAD_(0x1A, 0x200, _KEY_DUMMY_ROW, _KEY_DUMMY_COL)
+#define KEY_NSPIRE_DEL          KEYTPAD_(_KEY_DUMMY_ROW, _KEY_DUMMY_COL, 0x1A, 0x200)
+#define KEY_NSPIRE_LTHAN        KEYTPAD_(0x1A, 0x400, _KEY_DUMMY_ROW, _KEY_DUMMY_COL)
 #define KEY_NSPIRE_FLAG         KEY_(0x1C, 0x001)
-#define KEY_NSPIRE_CLICK        KEY_(0x1C, 0x002)
+#define KEY_NSPIRE_CLICK        KEYTPAD_(0x1C, 0x002, 0x1A, 0x040)
 #define KEY_NSPIRE_C            KEYTPAD_(0x1C, 0x004, 0x18, 0x010)
 #define KEY_NSPIRE_HOME         KEYTPAD_(0x1C, 0x008, _KEY_DUMMY_ROW, _KEY_DUMMY_COL)
 #define KEY_NSPIRE_B            KEYTPAD_(0x1C, 0x010, 0x18, 0x020)
@@ -110,18 +111,20 @@
 #define KEY_NSPIRE_BAR          KEY_(0x1C, 0x100)
 #define KEY_NSPIRE_TAB          KEY_(0x1C, 0x200)
 #define KEY_NSPIRE_EQU          KEYTPAD_(0x1C, 0x400, 0x18, 0x080)
-#define KEY_NSPIRE_UP           KEYTPAD_(0x1E, 0x001, 0x1E, 0x004)
-#define KEY_NSPIRE_UPRIGHT      KEY_(0x1E, 0x002)
-#define KEY_NSPIRE_RIGHT        KEYTPAD_(0x1E, 0x004, 0x1E, 0x001)
-#define KEY_NSPIRE_RIGHTDOWN    KEYTPAD_(0x1E, 0x008, 0x1E, 0x080)
-#define KEY_NSPIRE_DOWN         KEYTPAD_(0x1E, 0x010, 0x1E, 0x040)
-#define KEY_NSPIRE_DOWNLEFT     KEY_(0x1E, 0x020)
-#define KEY_NSPIRE_LEFT         KEYTPAD_(0x1E, 0x040, 0x1E, 0x010)
-#define KEY_NSPIRE_LEFTUP       KEYTPAD_(0x1E, 0x080, 0x1E, 0x008)
-#define KEY_NSPIRE_CLEAR        KEY_(0x1E, 0x100)
+#define KEY_NSPIRE_UP           KEYTPAD_(0x1E, 0x001, 0x1C, 0x040)
+#define KEY_NSPIRE_UPRIGHT      KEYTPAD_(0x1E, 0x002, 0x16, 0x008)
+#define KEY_NSPIRE_RIGHT        KEYTPAD_(0x1E, 0x004, 0x14, 0x008)
+#define KEY_NSPIRE_RIGHTDOWN    KEYTPAD_(0x1E, 0x008, 0x12, 0x008)
+#define KEY_NSPIRE_DOWN         KEYTPAD_(0x1E, 0x010, 0x1C, 0x010)
+#define KEY_NSPIRE_DOWNLEFT     KEYTPAD_(0x1E, 0x020, 0x12, 0x080)
+#define KEY_NSPIRE_LEFT         KEYTPAD_(0x1E, 0x040, 0x14, 0x080)
+#define KEY_NSPIRE_LEFTUP       KEYTPAD_(0x1E, 0x080, 0x16, 0x080)
+#define KEY_NSPIRE_CLEAR        KEYTPAD_(0x1E, 0x100, _KEY_DUMMY_ROW, _KEY_DUMMY_COL)
+#define KEY_NSPIRE_SHIFT        KEYTPAD_(_KEY_DUMMY_ROW, _KEY_DUMMY_COL, 0x1E, 0x100)
 #define KEY_NSPIRE_CTRL         KEY_(0x1E, 0x200)
 #define KEY_NSPIRE_DOC          KEYTPAD_(_KEY_DUMMY_ROW, _KEY_DUMMY_COL, 0x1C, 0x008)
 #define KEY_NSPIRE_TRIG         KEYTPAD_(_KEY_DUMMY_ROW, _KEY_DUMMY_COL, 0x12, 0x200)
+#define KEY_NSPIRE_SCRATCHPAD   KEYTPAD_(_KEY_DUMMY_ROW, _KEY_DUMMY_COL, 0x1A, 0x400)
 
 /* TI-84+ Keypad Mappings */
 #define KEY_84_DOWN            KEY_(0x10, 0x001)
@@ -221,19 +224,27 @@ got_var_\var:
 /** GNU C Compiler */
 #else
 
+#include <stddef.h>
+
 #define _CONCAT(a,b) a##b
 #define CONCAT(a,b) _CONCAT(a,b)
 #define _STRINGIFY(s) #s
 #define STRINGIFY(s) _STRINGIFY(s)
-#define NULL ((void*)0)
 typedef enum bool {FALSE = 0, TRUE = 1} BOOL;
+/* stdlib.h */
+#define EXIT_FAILURE 1
+#define EXIT_SUCCESS 0
+/* stdio.h */
 typedef struct{} FILE;
-typedef unsigned long size_t;
 #ifndef SEEK_SET
-#define SEEK_SET 0
-#define SEEK_CUR 1
-#define SEEK_END 2
+ #define SEEK_SET 0
+ #define SEEK_CUR 1
+ #define SEEK_END 2
 #endif
+/* Unknown, arbitrary */
+#define BUFSIZ 4096
+#define EOF (-1)
+
 
 typedef struct {
   int row, col, tpad_row, tpad_col;

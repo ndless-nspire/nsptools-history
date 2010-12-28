@@ -7,15 +7,20 @@ Ndless - Changelog
     version of Ndless to handle correctly the key layout of Touchpads.
  Hook:
   - NEW: OS variables can be accessed in a portable manner.
- Includes:
+ Standard libraries:
   - NEW: NU_Current_Dir (thanks apcalc)
   - NEW: isalnum, isalpha, isascii, isdigit, islower, isprint, isspace, isupper, 
-    isxdigit, toupper, atoi, atof, calloc, realloc, fprintf, fgetc, fgets, fputc,
-    memmove, memrev, strchr, strncmp, strncpy, strpbrk, rename, rmdir, unlink, 
-    NU_Set_Current_Dir (thanks bsl)
+    isxdigit, toupper, atoi, atof, calloc, realloc, fprintf, fgetc, fgets, fputc, 
+    memmove, memrev, strchr, strncmp, strncpy, strpbrk, rename, rmdir, unlink,
+    iscntrl, NU_Set_Current_Dir (thanks bsl)
+  - NEW: freopen, errno, toupper, strtod , strtol, strspn, strerror, strcat, 
+    strstr, fflush,  remove, ungetc, stdin, stdout, stderr, feof, rewind, 
+    strcpsn, fputs, fgets, putc, getc, strtoul, strcoll, ferror
   - FIX: GCC may incorrectly cache memory values between calls to syscalls with
     pointer arguments such as mempcy
-
+ libndls:
+  - NEW: any_key_pressed, clrscr, is_touchpad
+ 
 * v1.7 - 2010/12/04
   - NEW: supports OS v1.7
   - NEW: a computer (or Nspire8x) isn't required anymore, the installation 

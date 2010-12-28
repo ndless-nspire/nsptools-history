@@ -35,7 +35,7 @@ extern int __base;
 	register unsigned __r0 asm("r0"); \
 	asm volatile( \
 		" swi " STRINGIFY(_SYSCALL_ENUM(funcname)) \
-		:"=r" (__r0) :: "memory", "r0", "r1", "r2", "r3", "r12", "lr"); \
+		:"=r" (__r0) :: "memory", "r1", "r2", "r3", "r12", "lr"); \
 	return (rettype)__r0; \
 }
 #define _SYSCALL1(rettype, funcname, type1) static inline rettype funcname(type1 __param1) { \
@@ -204,6 +204,9 @@ _SYSCALL1(int, read_unaligned_word, void *)
 _SYSCALL3(void, ascii2utf16, void *, const char *, int)
 _SYSCALL3(void, show_dialog_box2, int /* undef */, const char * /* title */, const char * /* msg */)
 
+_SYSCALL0(int *, errno_addr)
+#define errno (*errno_addr())
+
 _SYSCALL1(int, isalpha, int)
 _SYSCALL1(int, isascii, int)
 _SYSCALL1(int, isdigit, int)
@@ -213,8 +216,12 @@ _SYSCALL1(int, isspace, int)
 _SYSCALL1(int, isupper, int)
 _SYSCALL1(int, isxdigit, int)
 _SYSCALL1(int, tolower, int)
+_SYSCALL1(int, toupper, int)
 _SYSCALL1(int, atoi, const char *)
 _SYSCALL1(double, atof, char *)
+_SYSCALL2(double, strtod, const char *, char *)
+_SYSCALL3(long int, strtol, const char *, char **, int)
+#define strtoul(s,e,b) ((unsigned long int)strtol((s),(e),(b)))
 
 _SYSCALL1(void *, malloc, size_t)
 _SYSCALL1(void, free, void *)
@@ -228,12 +235,16 @@ _SYSCALL2(void, memrev, char *, size_t)
 _SYSCALL2(char *, strcpy, char *, const char *)
 _SYSCALL3(char *, strncpy, char *, const char *, size_t)
 _SYSCALL2(int, strcmp, const char *, const char *)
+#define strcoll strcmp
 _SYSCALL3(int, strncmp, const char *, const char *, size_t)
 _SYSCALL1(int, strlen, const char *)
-_SYSCALL3(char *, strncat, char *, char *, size_t)
+_SYSCALL3(char *, strncat, char *, const char *, size_t)
 _SYSCALL2(char *, strchr, const char *, int)
 _SYSCALL2(char *, strrchr, const char *, int)
 _SYSCALL2(char *, strpbrk, const char *, const char *)
+_SYSCALL1(char *, strerror, int)
+_SYSCALL2(char *, strcat, char *, const char *)
+_SYSCALL2(char *, strstr, const char *, const char *)
 
 typedef char *va_list;
 #define va_start(ap,p)  (ap = (char*)(&(p) + 1))
@@ -246,16 +257,28 @@ _SYSCALLVAR(int, __attribute__((__format__(__printf__,2,3))), fprintf, __attribu
 _SYSCALL3(int, vsprintf, char *, const char *, va_list)
 
 _SYSCALL1(int, puts, const char *)
-
 _SYSCALL2(int, fputc, int, FILE *)
+#define putc fputc
 _SYSCALL1(int, fgetc, FILE *)
-_SYSCALL3(char *, fgets, char *, int, FILE *)
+#define getc fgetc
+_SYSCALL2(int, ungetc, int, FILE *)
+
+_SYSCALL_OSVAR(FILE *, stdin)
+#define stdin stdin()
+_SYSCALL_OSVAR(FILE *, stdout)
+#define stdout stdout()
+_SYSCALL_OSVAR(FILE *, stderr)
+#define stderr stderr()
 
 _SYSCALL2(FILE *, fopen, const char *, const char *)
+_SYSCALL3(FILE *, freopen, const char *, const char *, FILE *)
 _SYSCALL4(size_t, fread, void *, size_t, size_t, FILE *)
 _SYSCALL4(size_t, fwrite, const void *, size_t, size_t, FILE *)
+_SYSCALL1(int, fflush, FILE *)
 _SYSCALL1(int, fclose, FILE *)
+_SYSCALL1(int, ferror, FILE *)
 _SYSCALL3(int, fseek, FILE *, long int, int)
+_SYSCALL1(int, remove, const char *)
 
 _SYSCALL2(int, mkdir, const char *, int)
 _SYSCALL1(int, chdir, char *)
@@ -272,8 +295,9 @@ _SYSCALL1(int, NU_Get_Next, struct dstat *)
 _SYSCALL1(void, NU_Done, struct dstat *)
 _SYSCALL1(int, NU_Set_Current_Dir, const char *)
 
-/* 1: clickpad, 2: 84+, 3: touchpad */
+/* 1: clickpad, 2: 84+, 3: touchpad prototype, 4: touchpad */
 _SYSCALL_OSVAR(unsigned char *, keypad_type)
+#define keypad_type keypad_type()
 
 /* Ndless extensions. Not available in thumb state. */
 // Given a list of OS-specific value and its size, returns the value for the current OS.

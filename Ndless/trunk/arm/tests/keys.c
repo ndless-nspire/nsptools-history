@@ -25,7 +25,9 @@
 
 int main(void) {
 	TCT_Local_Control_Interrupts(0);
-	while (!isKeyPressed(KEY_NSPIRE_ESC)) {
+	while(any_key_pressed());
+	while (1) {
+		while(!any_key_pressed());
 		if (isKeyPressed(KEY_NSPIRE_RET)) puts("KEY_NSPIRE_RET");
 		if (isKeyPressed(KEY_NSPIRE_ENTER)) puts("KEY_NSPIRE_ENTER");
 		if (isKeyPressed(KEY_NSPIRE_SPACE)) puts("KEY_NSPIRE_SPACE");
@@ -91,6 +93,7 @@ int main(void) {
 		if (isKeyPressed(KEY_NSPIRE_VAR)) puts("KEY_NSPIRE_VAR");
 		if (isKeyPressed(KEY_NSPIRE_D)) puts("KEY_NSPIRE_D");
 		if (isKeyPressed(KEY_NSPIRE_CAPS)) puts("KEY_NSPIRE_CAPS");
+		if (isKeyPressed(KEY_NSPIRE_DEL)) puts("KEY_NSPIRE_DEL");
 		if (isKeyPressed(KEY_NSPIRE_LTHAN)) puts("KEY_NSPIRE_LTHAN");
 		if (isKeyPressed(KEY_NSPIRE_FLAG)) puts("KEY_NSPIRE_FLAG");
 		if (isKeyPressed(KEY_NSPIRE_CLICK)) puts("KEY_NSPIRE_CLICK");
@@ -99,7 +102,7 @@ int main(void) {
 		if (isKeyPressed(KEY_NSPIRE_B)) puts("KEY_NSPIRE_B");
 		if (isKeyPressed(KEY_NSPIRE_MENU)) puts("KEY_NSPIRE_MENU");
 		if (isKeyPressed(KEY_NSPIRE_A)) puts("KEY_NSPIRE_A");
-		if (isKeyPressed(KEY_NSPIRE_ESC)) puts("KEY_NSPIRE_ESC");
+		if (isKeyPressed(KEY_NSPIRE_ESC)) { puts("KEY_NSPIRE_ESC"); return 0; }
 		if (isKeyPressed(KEY_NSPIRE_BAR)) puts("KEY_NSPIRE_BAR");
 		if (isKeyPressed(KEY_NSPIRE_TAB)) puts("KEY_NSPIRE_TAB");
 		if (isKeyPressed(KEY_NSPIRE_EQU)) puts("KEY_NSPIRE_EQU");
@@ -112,9 +115,12 @@ int main(void) {
 		if (isKeyPressed(KEY_NSPIRE_LEFT)) puts("KEY_NSPIRE_LEFT");
 		if (isKeyPressed(KEY_NSPIRE_LEFTUP)) puts("KEY_NSPIRE_LEFTUP");
 		if (isKeyPressed(KEY_NSPIRE_CLEAR)) puts("KEY_NSPIRE_CLEAR");
+		if (isKeyPressed(KEY_NSPIRE_SHIFT)) puts("KEY_NSPIRE_SHIFT");
 		if (isKeyPressed(KEY_NSPIRE_CTRL)) puts("KEY_NSPIRE_CTRL");
 		if (isKeyPressed(KEY_NSPIRE_DOC)) puts("KEY_NSPIRE_DOC");
 		if (isKeyPressed(KEY_NSPIRE_TRIG)) puts("KEY_NSPIRE_TRIG");
+		if (isKeyPressed(KEY_NSPIRE_SCRATCHPAD)) puts("KEY_NSPIRE_SCRATCHPAD");
+		while(any_key_pressed());
 	}
 	return 0;
 }
