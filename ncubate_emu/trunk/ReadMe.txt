@@ -28,6 +28,7 @@ Debugger:
 - NEW: The register PC can be changed with the command 'rs
 - NEW: Command 'j' to jump to the next instruction. This is useful for example 
   to jump over an halt() call in an Ndless program.
+- NEW: Command 'dw' to read a word at an address. Can be used to read I/O ports.
 - NEW: Command 'ww' to write a word to an address
 - NEW: Command 'ss' to search a string in memory
 - NEW: "+x" is the default flag for the breakpoint command 'k'
@@ -77,6 +78,7 @@ Changelog
 * v040 - <unreleased>
  - Migrate to nspire_emu v040
  - ADD: Command-line option /S
+ - ADD: Debugger command 'dw'
  - ADD: Link debugger commands 'ln c', 'ln d', 'ln f' and 'ln st'
  - ADD: GDB support for OS 2.0.1
  - CHG: restore the GUI option 'Save flash'

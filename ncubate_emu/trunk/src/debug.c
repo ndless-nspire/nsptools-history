@@ -177,6 +177,7 @@ readstdin:
 				"b - stack backtrace\n"
 				"c - continue\n"
 				"d <address> - dump memory\n"
+				"dw <address|io port> - read a word\n"
 				"jn - set PC to next instruction\n"
 				"k <address> <+r|+w|+x(default)|-r|-w|-x> - add/remove breakpoint\n"
 				"k - show breakpoints\n"
@@ -319,6 +320,14 @@ readstdin:
 			else {
 				u32 addr = parse_expr(arg);
 				dump(addr);
+			}
+		} else if (!stricmp(cmd, "dw")) {
+			char *arg = strtok(NULL, " \n");
+			if (!arg)
+				printf("Missing address parameter.\n");
+			else {
+				u32 addr = parse_expr(arg);
+				printf("%08X: %08X\n", addr, read_word_map[addr >> 26](mmu_translate(addr, NULL)));
 			}
 		} else if (!stricmp(cmd, "u")) {
 			disasm(disasm_insn);

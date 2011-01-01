@@ -282,6 +282,7 @@ struct mem_area_desc {
 extern const struct mem_area_desc mem_areas[3];
 void *phys_mem_ptr(u32 addr, u32 size);
 void *virt_mem_ptr(u32 addr, u32 size);
+u32  (*read_word_map[64])(u32 addr);
 
 /* Each word of memory has a flag word associated with it. For fast access,
  * flags are located at a constant offset from the memory data itself.
