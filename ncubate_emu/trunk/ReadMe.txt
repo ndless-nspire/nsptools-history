@@ -10,7 +10,7 @@ Ncubate Emu is an enhanced version of the TI-Nspire emulator nspire_emu.
 Features
 ========
 
-Ncubate adds the following features to nspire_emu v032:
+Ncubate adds the following features to nspire_emu v040:
 
 GUI:
 - NEW: 'File -> Save State' let you save the whole emulator state to a file 
@@ -74,9 +74,11 @@ Olivier Armand aka ExtendeD  -  < olivier dot calc at gmail dot com >
 Changelog
 =========
 
-* v032c - <unreleased>
+* v040 - <unreleased>
+ - Migrate to nspire_emu v040
  - ADD: Command-line option /S
  - ADD: Link debugger commands 'ln c', 'ln d', 'ln f' and 'ln st'
+ - ADD: GDB support for OS 2.0.1
  - CHG: restore the GUI option 'Save flash'
  - FIX: GUI option 'Save flash as...' also incorrectly saved the state
 

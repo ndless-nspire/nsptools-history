@@ -195,7 +195,7 @@ void gdbstub_reload_state(void *state);
 void gui_initialize();
 void get_messages();
 #ifdef _WINUSER_H
-extern HWND hwndMain;
+extern HWND hwndMain, hwndGfx;
 #endif
 char target_folder[256];
 void *gui_save_state(size_t *size);
@@ -308,6 +308,8 @@ void *virt_mem_ptr(u32 addr, u32 size);
 #define OS_VERSION_1_1_NON_CAS 0x1014A9C0
 #define OS_VERSION_1_7_CAS 0x102132A0
 #define OS_VERSION_1_7_NON_CAS 0x10211290
+#define OS_VERSION_2_0_1_CAS 0x10266900
+#define OS_VERSION_2_0_1_NON_CAS 0x10266030 
 
 u8 bad_read_byte(u32 addr);
 u16 bad_read_half(u32 addr);
@@ -407,6 +409,26 @@ void fix_pc_for_fault();
 void *translate_save_state(size_t *size);
 void translate_reload_state(void *state);
 
+/* Declarations for usb.c */
+
+u8 usb_read_byte(u32 addr);
+u16 usb_read_half(u32 addr);
+u32 usb_read_word(u32 addr);
+void usb_write_word(u32 addr, u32 value);
+
+  /* Declarations for usblink.c */
+  
+  void usblink_put_file(char *filepath, char *folder);
+  void usblink_send_os(char *filepath);
+
+#define USBLINK_NUM_HOOKS 5
+extern u32 usblink_hooks[USBLINK_NUM_HOOKS];
+void usblink_reset();
+int usblink_hook(int hook);
+  void usblink_connect();
+  void usblink_disconnect();
+
+
 /* Declarations for usblink.c */
 
 void usblink_put_file(char *filepath, char *folder);
@@ -414,12 +436,6 @@ void usblink_send_os(char *filepath);
 void usblink_connect();
 void usblink_disconnect();
 
-extern u32 usblink_addr_schedule;
-extern u32 usblink_addr_submit_read_buffer;
-extern u32 usblink_addr_submit_write_buffer;
-void usblink_hook_schedule();
-void usblink_hook_submit_read_buffer();
-void usblink_hook_submit_write_buffer();
-
 void *usblink_save_state(size_t *size);
 void usblink_reload_state(void *state);
+

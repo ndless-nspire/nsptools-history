@@ -436,6 +436,14 @@ LRESULT CALLBACK emu_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			}
 			break;
 		}
+		case ID_KEYPAD_1:
+		case ID_KEYPAD_2:
+		case ID_KEYPAD_3:
+		case ID_KEYPAD_4:
+			keypad_type = LOWORD(wParam) - ID_KEYPAD_1;
+			CheckMenuRadioItem(hMenu, ID_KEYPAD_1, ID_KEYPAD_4, LOWORD(wParam), MF_BYCOMMAND);
+			InvalidateRect(hwndKeys, NULL, FALSE);
+			break;
 		}
 		return 0;
 	case WM_DESTROY:
@@ -485,6 +493,7 @@ DWORD CALLBACK gui_thread(LPVOID hEvent) {
 		CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top,
 		NULL, NULL, NULL, NULL);
 	hMenu = GetMenu(hwndMain);
+	CheckMenuRadioItem(hMenu, ID_KEYPAD_1, ID_KEYPAD_4, ID_KEYPAD_1 + keypad_type, MF_BYCOMMAND);
 
 	hAccel = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDA_ACCEL));
 

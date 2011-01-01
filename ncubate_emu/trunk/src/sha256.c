@@ -76,7 +76,6 @@ static void process_block() {
 }
 
 u32 sha256_read_word(u32 addr) {
-	logprintf(LOG_HASH, "read %08x\n", addr);
 	switch (addr & 0x3FFFFFF) {
 		case 0x000: return 0; // bit 0 = busy
 		case 0x008: return 0x100; //?
@@ -88,7 +87,6 @@ u32 sha256_read_word(u32 addr) {
 }
 
 void sha256_write_word(u32 addr, u32 value) {
-	logprintf(LOG_HASH, "write %08x %08x\n", addr, value);
 	switch (addr & 0x3FFFFFF) {
 		case 0x000:
 			if (value == 0x10 || value == 0x00) {

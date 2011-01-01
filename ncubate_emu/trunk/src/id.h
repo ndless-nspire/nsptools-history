@@ -15,8 +15,12 @@
 #define ID_SEND_OS        13
 #define ID_DISCONNECT     14
 #define ID_SEND_TI84_FILE 15
-#define ID_SAVE_STATE     16
-#define ID_RELOAD_STATE   17
+#define ID_KEYPAD_1       16
+#define ID_KEYPAD_2       17
+#define ID_KEYPAD_3       18
+#define ID_KEYPAD_4       19
+#define ID_SAVE_STATE     20
+#define ID_RELOAD_STATE   21
 
 #define IDA_ACCEL 1
 

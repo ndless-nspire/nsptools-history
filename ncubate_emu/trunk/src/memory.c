@@ -118,18 +118,24 @@ void unknown_8C_write_word(u32 addr, u32 value) {
 	bad_write_word(addr, value);
 }
 
-/* A9000000: SPI - newly used in OS 2.1 */
+/* A9000000: SPI */
 u32 spi_read_word(u32 addr) {
 	switch (addr - 0xA9000000) {
-		case 0x10: return -1; // returning 0 hangs
-		case 0x1C: return 0;
+		case 0x0C: return 0;
+		case 0x10: return 1;
+		case 0x14: return 0;
+		case 0x18: return -1;
+		case 0x1C: return -1;
 		case 0x20: return 0;
 	}
 	return bad_read_word(addr);
 }
 void spi_write_word(u32 addr, u32 value) {
 	switch (addr - 0xA9000000) {
+		case 0x08: return;
 		case 0x0C: return;
+		case 0x14: return;
+		case 0x18: return;
 		case 0x1C: return;
 		case 0x20: return;
 	}
@@ -190,59 +196,6 @@ void sdio_write_word(u32 addr, u32 value) {
 		case 0x00: return;
 		case 0x08: return;
 		case 0x20: return;
-	}
-	bad_write_word(addr, value);
-}
-
-/* B0000000 (and B4000000?): USB */
-u8 usb_read_byte(u32 addr) {
-	if ((addr & 0x1FF) == 0x100) return 0x40; // operational registers start at +40
-	return bad_read_byte(addr);
-}
-u16 usb_read_half(u32 addr) {
-	if ((addr & 0x1FF) == 0x102) return 0x0100; // EHCI 1.0
-	return bad_read_half(addr);
-}
-u32 usb_read_word(u32 addr) {
-	switch (addr & 0x1FF) {
-		case 0x00C: return 0;
-		case 0x100: return 0x01000040; // EHCI 1.0, operational registers start at +40
-		case 0x104: return 0x00010011; // Port indicator control, port power control, 1 port
-		case 0x108: return 6;
-		case 0x10C: return 0;
-		case 0x124: return 0;
-		case 0x140: return 0;
-		case 0x148: return 0;
-		case 0x164: return 0;
-		case 0x180: return 0;
-		case 0x184: return 0;
-		case 0x188: return 0;
-		// returning 0 causes OS 1.1 to detect a "probe" (?)
-		// and hang trying to communicate with it
-		case 0x1A4: return -1;
-		case 0x1B0: return 0;
-		case 0x1B4: return 0;
-		case 0x1C0: return 0;
-	}
-	return bad_read_word(addr);
-}
-void usb_write_word(u32 addr, u32 value) {
-	switch (addr & 0x1FF) {
-		case 0x080: return; // used by diags
-		case 0x084: return; // used by diags
-		case 0x140: return;
-		case 0x144: return;
-		case 0x148: return;
-		case 0x150: return;
-		case 0x158: return;
-		case 0x180: return;
-		case 0x184: return;
-		case 0x188: return;
-		case 0x1A4: return;
-		case 0x1A8: return;
-		case 0x1AC: return;
-		case 0x1B4: return;
-		case 0x1C0: return;
 	}
 	bad_write_word(addr, value);
 }

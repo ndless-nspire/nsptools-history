@@ -18,10 +18,12 @@ entry_points_list:    @ defined by SNIPPETS_EP_*
 	.word load_snippet - entry_points_list
 
 syscalls_tables_list:
-	.word 1 @ size
+	.word 4 @ size
 	@ format: OS_VERSION_*, offset from start
-@	.word 0x102132A0, syscalls_1_7_cas - start
+	.word 0x102132A0, syscalls_1_7_cas - start
 	.word 0x10211290, syscalls_1_7_non_cas - start
+	.word 0, syscalls_2_0_1_cas - start
+	.word 0x10266030, syscalls_2_0_1_non_cas - start
 
 	.equ TCC_Current_HISR_Pointer_patch, 0
 	.equ fopen, 1
@@ -46,6 +48,12 @@ syscalls_1_7_non_cas:
 	.word 0x102A11BC @ free
 	.word 0x102AA2CC @ stat
 	.word 0x102A11C8 @ malloc
+
+syscalls_2_0_1_non_cas:
+@ TODO
+
+syscalls_2_0_1_cas:
+@ TODO
 
 	.macro syscall id
 	mov lr, pc

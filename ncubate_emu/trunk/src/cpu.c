@@ -673,6 +673,7 @@ void cpu_interpret_instruction(u32 insn) {
 				if (arm.interrupts == 0) {
 					arm.reg[15] -= 4;
 					cpu_events |= EVENT_WAITING;
+					//is_halting = 10;
 				}
 				break;
 			case 0x080025: /* MCR p15, 0, <Rd>, c8, c5, 1: Invalidate instruction TLB entry */
@@ -871,7 +872,7 @@ enter_debugger:
 					case 0x6: /* SBC */ res = *dst = add(*dst, ~src, arm.cpsr_c, true); break;
 					case 0x7: /* ROR */ res = *dst = shift(3, *dst, src & 0xFF, true); break;
 					case 0x8: /* TST */ res = *dst & src; break;
-					case 0x9: /* NEG */ res = *dst = -src; break;
+					case 0x9: /* NEG */ res = *dst = add(0, ~src, 1, true); break;
 					case 0xA: /* CMP */ res = add(*dst, ~src, 1, true); break;
 					case 0xB: /* CMN */ res = add(*dst, src, 0, true); break;
 					case 0xC: /* ORR */ res = *dst |= src; break;

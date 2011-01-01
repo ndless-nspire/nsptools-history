@@ -85,20 +85,12 @@ void throttle_timer_off() {
 
 int exec_hack() {
 	u32 pc = arm.reg[15];
-	//if (pc == 0x1194D0A8) {
-	//	arm.reg[0] = 1000000;	// navnet log level
-	//	return 0;
-	//} else
-	if (pc == usblink_addr_schedule) {
-		usblink_hook_schedule();
-		return 1;
-	} else if (pc == usblink_addr_submit_read_buffer) {
-		usblink_hook_submit_read_buffer();
-		return 1;
-	} else if (pc == usblink_addr_submit_write_buffer) {
-		usblink_hook_submit_write_buffer();
-		return 1;
-	}
+	int i;
+
+	for (i = 0; i < USBLINK_NUM_HOOKS; i++)
+		if (pc == usblink_hooks[i])
+			return usblink_hook(i);
+
 	return 0;
 }
 
@@ -153,7 +145,7 @@ static void get_saved_state_filename(char out_filename[MAX_PATH]) {
 }
 
 /* increment each time the save file format is changed */
-#define SAVE_STATE_VERSION 3
+#define SAVE_STATE_VERSION 4
 void save_state(void) {
 	char state_filename[MAX_PATH+1];
 	get_saved_state_filename(state_filename);
@@ -368,7 +360,7 @@ int main(int argc, char **argv) {
 				default:
 usage:
 					printf(
-						"nspire emulator v0.32\n"
+						"nspire emulator v0.40\n"
 						"  /1=boot1 - location of BOOT1 image\n"
 						"  /B=boot2 - location of decompressed BOOT2 image\n"
 						"  /C       - emulate CAS hardware version\n"
@@ -504,6 +496,8 @@ reset:
 	if (debug_on_startup)
 		cpu_events |= EVENT_DEBUG_STEP;
 
+	usblink_reset();
+
 	setjmp(restart_after_exception);
 
 	while (!exiting) {
@@ -570,7 +564,7 @@ reset:
 				static LARGE_INTEGER prev;
 				LONGLONG time = interval_end.QuadPart - prev.QuadPart;
 				if (time >= (perffreq.QuadPart >> 5)) {
-					InvalidateRect(hwndMain, NULL, FALSE);
+					InvalidateRect(hwndGfx, NULL, FALSE);
 					prev = interval_end;
 				}
 			}
@@ -590,8 +584,8 @@ reset:
 				}
 			}
 
-			if (!turbo_mode)
-				WaitForSingleObject(hTimerEvent, INFINITE);
+ 			if (!turbo_mode)
+  				WaitForSingleObject(hTimerEvent, INFINITE);
 
 #if 0
 			if (log_enabled[LOG_ICOUNT]) {

@@ -59,13 +59,52 @@ static void dump(u32 addr) {
 	}
 }
 
+static u32 parse_expr(char *str) {
+	u32 sum = 0;
+	int sign = 1;
+	if (str == NULL)
+		return 0;
+	while (*str) {
+		int reg;
+		if (isxdigit(*str)) {
+			sum += sign * strtoul(str, &str, 16);
+			sign = 1;
+		} else if (*str == '+') {
+			str++;
+		} else if (*str == '-') {
+			sign = -1;
+			str++;
+		} else if (*str == 'r') {
+			reg = strtoul(str + 1, &str, 10);
+			sum += sign * arm.reg[reg];
+			sign = 1;
+		} else if (isxdigit(*str)) {
+			sum += sign * strtoul(str, &str, 16);
+			sign = 1;
+		} else {
+			for (reg = 13; reg < 16; reg++) {
+				if (!memcmp(str, reg_name[reg], 2)) {
+					str += 2;
+					sum += sign * arm.reg[reg];
+					sign = 1;
+					goto ok;
+				}
+			}
+			printf("syntax error\n");
+			return 0;
+			ok:;
+		}
+	}
+	return sum;
+}
+
 u32 disasm_insn(u32 pc) {
 	return arm.cpsr_low28 & 0x20 ? disasm_thumb_insn(pc) : disasm_arm_insn(pc);
 }
 
 static void disasm(u32 (*dis_func)(u32 pc)) {
 	char *arg = strtok(NULL, " \n");
-	u32 addr = arg ? strtoul(arg, 0, 16) : arm.reg[15];
+	u32 addr = arg ? parse_expr(arg) : arm.reg[15];
 	int i;
 	for (i = 0; i < 16; i++) {
 		u32 len = dis_func(addr);
@@ -159,7 +198,7 @@ readstdin:
 				"ww <address> <value> - write a word to memory\n");
 		} else if (!stricmp(cmd, "b")) {
 			char *fp = strtok(NULL, " \n");
-			backtrace(fp ? strtoul(fp, 0, 16) : arm.reg[11]);
+			backtrace(fp ? parse_expr(fp) : arm.reg[11]);
 		} else if (!stricmp(cmd, "r")) {
 			int i, show_spsr;
 			u32 cpsr = get_cpsr();
@@ -199,7 +238,7 @@ readstdin:
 		      printf("Missing value parameter.\n");
 		    else {
     			int regi = atoi(reg);
-    			int valuei = strtoul(value, NULL, 16);
+    			int valuei = strtoul(strtok(NULL, " \n"), NULL, 16);
     			if (!strcmp(reg, "pc"))
     			  arm.reg[15] = valuei;
   			  else if (regi >= 0 && regi < 15)
@@ -212,7 +251,7 @@ readstdin:
 			char *addr_str = strtok(NULL, " \n");
 			char *flag_str = strtok(NULL, " \n");
 			if (addr_str) {
-				u32 addr = strtoul(addr_str, 0, 16);
+				u32 addr = parse_expr(addr_str);
 				void *ptr = virt_mem_ptr(addr & ~3, 4);
 				if (ptr) {
 					if (!flag_str)
@@ -278,7 +317,7 @@ readstdin:
 			if (!arg)
 				printf("Missing address parameter.\n");
 			else {
-				u32 addr = strtoul(arg, 0, 16);
+				u32 addr = parse_expr(arg);
 				dump(addr);
 			}
 		} else if (!stricmp(cmd, "u")) {
@@ -321,7 +360,7 @@ readstdin:
 					printf("Missing directory parameter.\n");
 			}
 		} else if (!stricmp(cmd, "taskinfo")) {
-			u32 task = strtoul(strtok(NULL, " \n"), 0, 16);
+			u32 task = parse_expr(strtok(NULL, " \n"));
 			u8 *p = virt_mem_ptr(task, 52);
 			if (p) {
 				printf("Previous:	%08x\n", *(u32 *)&p[0]);
@@ -353,7 +392,7 @@ readstdin:
 				}
 			}
 		} else if (!stricmp(cmd, "tasklist")) {
-			u32 tasklist = strtoul(strtok(NULL, " \n"), 0, 16);
+			u32 tasklist = parse_expr(strtok(NULL, " \n"));
 			u8 *p = virt_mem_ptr(tasklist, 4);
 			if (p) {
 				u32 first = *(u32 *)p;
@@ -394,10 +433,10 @@ readstdin:
 				printf("Parameters are missing.\n");
 				continue;
 			}
-			u32 start = strtoul(start_str, 0, 16);
+			u32 start = parse_expr(start_str);
 			u32 size = 0;
 			if (size_str)
-				size = strtoul(size_str, 0, 16);
+				size = parse_expr(size_str);
 			void *ram = virt_mem_ptr(start, size);
 			if (!ram) {
 				printf("Address range %08x-%08x is not in RAM.\n", start, start + size - 1);
@@ -423,13 +462,13 @@ readstdin:
 				printf("Missing address parameter.\n");
 				continue;
 			}
-			u32 addr = strtoul(arg, 0, 16);
+			u32 addr = parse_expr(arg);
 			arg = strtok(NULL, " \n");
 			if (!arg) {
 				printf("Missing value parameter.\n");
 				continue;
 			}
-			u32 val = strtoul(arg, 0, 16);
+			u32 val = parse_expr(arg);
 			void *ram = virt_mem_ptr(addr, 4);
 			if (!ram) {
 				printf("Address is not in RAM.\n");
@@ -443,8 +482,8 @@ readstdin:
 			if (!addr_str || !len_str || !string)
 				printf("Missing parameters.\n");
 			else {
-				u32 addr = strtoul(addr_str, 0, 16);
-				u32 len = strtoul(len_str, 0, 16);
+				u32 addr = parse_expr(addr_str);
+				u32 len = parse_expr(len_str);
 				char *strptr = virt_mem_ptr(addr, len);
 				char *ptr = strptr;
 				char *endptr = strptr + len;

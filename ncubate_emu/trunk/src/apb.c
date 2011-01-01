@@ -15,7 +15,7 @@ u32 gpio_read(u32 addr) {
 			case 0x10: case 0x14: case 0x1C: case 0x20: case 0x24:
 				return 0;
 			case 0x18:
-				return i == 1 ? 1 : 0;
+				return 0x0104 >> (i * 8) & 0xFF;
 		}
 	}
 	return bad_read_word(addr);
@@ -99,87 +99,81 @@ void timer_advance(struct timerpair *tp, int ticks) {
 }
 
 /* 90020000 */
-u8 serial_rx_char;
-int serial_rx_ready;
-int serial_tx_ready;
-u8 serial_DLL;
-u8 serial_DLM;
-u8 serial_IER;
-u8 serial_LCR;
-
-void serial_byte_in(u8 byte) {
-	serial_rx_char = byte;
-	serial_rx_ready = 1;
-	int_set(INT_SERIAL, 1);
-}
+struct serial {
+	u8 rx_char;
+	u8 interrupts;
+	u8 DLL;
+	u8 DLM;
+	u8 IER;
+	u8 LCR;
+} serial;
 
 static inline void serial_int_check() {
-	if (!(serial_rx_ready || serial_tx_ready))
-		int_set(INT_SERIAL, 0);
+	int_set(INT_SERIAL, serial.interrupts & serial.IER);
+}
+
+void serial_byte_in(u8 byte) {
+	serial.rx_char = byte;
+	serial.interrupts |= 1;
+	serial_int_check();
 }
 
 u32 serial_read(u32 addr) {
 	switch (addr & 0x3F) {
 		case 0x00:
-			if (serial_LCR & 0x80)
-				return serial_DLL; /* Divisor Latch LSB */
-			if (!serial_rx_ready)
+			if (serial.LCR & 0x80)
+				return serial.DLL; /* Divisor Latch LSB */
+			if (!(serial.interrupts & 1))
 				error("Attempted to read empty RBR");
-			serial_rx_ready = 0;
+			serial.interrupts &= ~1;
 			serial_int_check();
-			return serial_rx_char;
+			return serial.rx_char;
 		case 0x04:
-			if (serial_LCR & 0x80)
-				return serial_DLM; /* Divisor Latch MSB */
-			return serial_IER; /* Interrupt Enable Register */
+			if (serial.LCR & 0x80)
+				return serial.DLM; /* Divisor Latch MSB */
+			return serial.IER; /* Interrupt Enable Register */
 		case 0x08: /* Interrupt Identification Register */
-			if (serial_rx_ready) {
+			if (serial.interrupts & serial.IER & 1) {
 				return 4;
-			} else if (serial_tx_ready) {
-				serial_tx_ready = 0;
+			} else if (serial.interrupts & serial.IER & 2) {
+				serial.interrupts &= ~2;
 				serial_int_check();
 				return 2;
 			} else {
 				return 1;
 			}
 		case 0x0C: /* Line Control Register */
-			return serial_LCR;
+			return serial.LCR;
 		case 0x14: /* Line Status Register */
-			return 0x60 | serial_rx_ready;
+			return 0x60 | (serial.interrupts & 1);
 	}
 	return bad_read_word(addr);
 }
 void serial_write(u32 addr, u32 value) {
 	switch (addr & 0x3F) {
 		case 0x00:
-			if (serial_LCR & 0x80) {
-				serial_DLL = value;
+			if (serial.LCR & 0x80) {
+				serial.DLL = value;
 			} else {
 				putchar(value);
-				serial_tx_ready = 1;
-				int_set(INT_SERIAL, 1);
+				serial.interrupts |= 2;
+				serial_int_check();
 			}
 			return;
 		case 0x04:
-			if (serial_LCR & 0x80) {
-				serial_DLM = value;
+			if (serial.LCR & 0x80) {
+				serial.DLM = value;
 			} else {
-				if (value & 0xF0)
-					error("Serial IER = %02X\n", value);
-				serial_IER = value;
-				logprintf(LOG_IO, "Serial: write IER = %02X\n", value);
+				serial.IER = value & 0x0F;
+				serial_int_check();
 			}
 			return;
-		case 0x08: /* FIFO Control Register */
-			logprintf(LOG_IO, "Serial: write FCR = %02X\n", value);
-			if (value & (u8)~0x06)
-				warn("Serial FIFOs not implemented");
-			return;
 		case 0x0C: /* Line Control Register */
-			serial_LCR = value;
+			serial.LCR = value;
 			return;
+		case 0x08: /* FIFO Control Register */
 		case 0x10: /* Modem Control Register */
-			logprintf(LOG_IO, "Serial: write MCR = %02X\n", value);
+		case 0x20: /* unknown, used by DIAGS */
 			return;
 	}
 	bad_write_word(addr, value);
@@ -419,13 +413,7 @@ void apb_write_word(u32 addr, u32 value) {
 }
 
 struct apb_saved_state {
-	u8 serial_rx_char;
-	int serial_rx_ready;
-	int serial_tx_ready;
-	u8 serial_DLL;
-	u8 serial_DLM;
-	u8 serial_IER;
-	u8 serial_LCR;
+	struct serial serial;
 	u32 keypad_int_active;
 	u32 keypad_int_enable;
 	struct timerpair timerpairs[3];
@@ -434,13 +422,7 @@ struct apb_saved_state {
 void *apb_save_state(size_t *size) {
 	*size = sizeof(struct apb_saved_state);
 	struct apb_saved_state *state = malloc(*size);
-	state->serial_rx_char = serial_rx_char;
-	state->serial_rx_ready = serial_rx_ready;
-	state->serial_tx_ready = serial_tx_ready;
-	state->serial_DLL = serial_DLL;
-	state->serial_DLM = serial_DLM;
-	state->serial_IER = serial_IER;
-	state->serial_LCR = serial_LCR;
+	memcpy(&state->serial, &serial, sizeof(serial));
 	state->keypad_int_active = keypad_int_active;
 	state->keypad_int_enable = keypad_int_enable;
 	memcpy(&state->timerpairs, timerpairs, sizeof(timerpairs));
@@ -449,13 +431,7 @@ void *apb_save_state(size_t *size) {
 
 void apb_reload_state(void *state) {
 	struct apb_saved_state *_state = (struct apb_saved_state *)state;
-	serial_rx_char = _state->serial_rx_char;
-	serial_rx_ready = _state->serial_rx_ready;
-	serial_tx_ready = _state->serial_tx_ready;
-	serial_DLL = _state->serial_DLL;
-	serial_DLM = _state->serial_DLM;
-	serial_IER = _state->serial_IER;
-	serial_LCR = _state->serial_LCR;
+	memcpy(&serial, &_state->serial, sizeof(serial));
 	keypad_int_active = _state->keypad_int_active;
 	keypad_int_enable = _state->keypad_int_enable;
 	memcpy(timerpairs, &_state->timerpairs, sizeof(timerpairs));
