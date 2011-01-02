@@ -84,8 +84,12 @@ HOOK_DEFINE(plh_hook) {
 		ins_lowmem_hook_installed = FALSE;
 	}
 	int intmask = TCT_Local_Control_Interrupts(-1); /* TODO workaround: disable the interrupts to avoid the clock on the screen */
+	void *savedscr = malloc(SCREEN_BYTES_SIZE);
+	memcpy(savedscr, SCREEN_BASE_ADDRESS, SCREEN_BYTES_SIZE);
 	clear_cache();
 	((void (*)(int argc, char *argv[]))(docptr + sizeof(PRGMSIG)))(1, (char*[]){docpath, NULL}); /* run the program */
+	memcpy(SCREEN_BASE_ADDRESS, savedscr, SCREEN_BYTES_SIZE);
+	free(savedscr);
 	TCT_Local_Control_Interrupts(intmask);
 	if (!emu_debug_alloc_ptr)
 		free(docptr);
