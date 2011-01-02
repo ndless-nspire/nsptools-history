@@ -347,13 +347,13 @@ typedef struct {
  * Any use must come with a call to HOOK_SKIP_VAR() outside of the hook function */
 #define HOOK_RESTORE_RETURN_SKIP(hookname, offset) do { \
 	asm volatile( \
-		" adr r0, " STRINGIFY(__##hookname##_return_skip##offset) "\n" \
+		" adr r0, " STRINGIFY(__##hookname##_return_skip##__COUNTER__) "\n" \
 		"	str %0, [r0] \n" \
 		:: "r"(__##hookname##_end_instrs[3] + offset) : "r0"); \
 	HOOK_RESTORE(hookname); \
 	asm volatile( \
 		" ldr pc, [pc, #-4] \n" \
-	  STRINGIFY(__##hookname##_return_skip##offset) ":" \
+	  STRINGIFY(__##hookname##_return_skip##__COUNTER__) ":" \
 		" .long 0"); \
 	} while (0)
 

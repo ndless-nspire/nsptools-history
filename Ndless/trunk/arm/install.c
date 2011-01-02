@@ -29,12 +29,12 @@
 // OS-specific
 // Call to the dialog box display telling that the format isn't recognized.
 // On OS 2.x, it has been moved to a sub-function.
-static unsigned const ins_ploader_hook_addrs[] = {0x1000921C, 0x100091F0, 0x10008BCC, 0x10008B9C};
+static unsigned const ins_ploader_hook_addrs[] = {0x1000921C, 0x100091F0, 0x10008BCC, 0x10008B9C, 0x10008D94, 0x10008D64};
 
 // OS-specific
 // Call to the dialog box display warning about low memory.
 // OS 2.x don't use show_dialog_box2.
-unsigned const ins_lowmem_hook_addrs[] = {0x10012F24, 0x10012E6C, 0x10013F6C, 0x10013E94};
+unsigned const ins_lowmem_hook_addrs[] = {0x10012F24, 0x10012E6C, 0x10013F6C, 0x10013E94, 0x100145A0, 0x100144E4};
 
 BOOL ins_lowmem_hook_installed = TRUE; 
 

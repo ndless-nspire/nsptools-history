@@ -30,7 +30,7 @@
 
 // OS-specific
 // after the inflate loop, we want to simulate a null-return check and quit
-static unsigned const s2_tizip_hook_addrs[] = {0x1019708C, 0x101990A4, 0x101EAC68, 0x101EB530};
+static unsigned const s2_tizip_hook_addrs[] = {0x1019708C, 0x101990A4, 0x101EAC68, 0x101EB530, 0x101FE9CC, 0x101FF294};
 
 static void s2_run_install(void);
 
@@ -42,7 +42,8 @@ HOOK_DEFINE(s2_tizip_hook) {
 	ut_debug_trace(INSTTR_S2_END);
 	// Jump to the function's exit code (TI_ZIPArchive_Uncompress) to abort the decompression loop.
 	// Caution, the offset may depend on the OS version.
-	HOOK_RESTORE_RETURN_SKIP(s2_tizip_hook, 0x24);
+	int skip_offset = ut_os_version_index <= 3 ? 0x24 : -0x20;
+	HOOK_RESTORE_RETURN_SKIP(s2_tizip_hook, skip_offset);
 }
 
 void main(void) {

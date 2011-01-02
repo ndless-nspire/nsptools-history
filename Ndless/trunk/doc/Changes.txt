@@ -2,9 +2,9 @@ Ndless - Changelog
 ==================
 
 * v2.0 - <not yet released>
-  - NEW: supports OS v2.0.1.
-  - NEW: supports Touchpad calculators. Programs should be rebuilt with this 
-    version of Ndless to handle correctly the key layout of Touchpads.
+  - NEW: compatible with OS v2.0.1 and v2.1.0.
+  - NEW: compatible with Touchpad calculators. Programs should be rebuilt with 
+    this version of Ndless to handle correctly the key layout of Touchpads.
  Hook:
   - NEW: OS variables can be accessed in a portable manner.
  Standard libraries:

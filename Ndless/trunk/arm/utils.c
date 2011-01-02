@@ -43,6 +43,10 @@ extern unsigned syscalls_light_ncas_2_0_1[];
 extern unsigned syscalls_light_cas_2_0_1[];
 extern unsigned syscalls_ncas_2_0_1[];
 extern unsigned syscalls_cas_2_0_1[];
+extern unsigned syscalls_light_ncas_2_1_0[];
+extern unsigned syscalls_light_cas_2_1_0[];
+extern unsigned syscalls_ncas_2_1_0[];
+extern unsigned syscalls_cas_2_1_0[];
 
 /* Writes to ut_os_version_index a zero-based index identifying the OS version and HW model.
  * Also sets up the syscalls table.
@@ -74,7 +78,7 @@ void ut_read_os_version_index(void) {
 			sc_addrs_ptr = syscalls_cas_1_7;
 #endif
 			break;
-		case 0x10266030:  // 2.0.1.60 non-CAS
+		case 0x10266030:  // 2.0.1 non-CAS
 			ut_os_version_index = 2;
 #if defined STAGE1
 		sc_addrs_ptr = CONCAT(syscalls_light_ncas_,OS_VERSION);
@@ -84,7 +88,7 @@ void ut_read_os_version_index(void) {
 			sc_addrs_ptr = syscalls_ncas_2_0_1;
 #endif
 			break;
-		case 0x10266900:  // 2.0.1.60 CAS
+		case 0x10266900:  // 2.0.1 CAS
 			ut_os_version_index = 3;
 #if defined STAGE1
 		sc_addrs_ptr = CONCAT(syscalls_light_cas_,OS_VERSION);
@@ -94,6 +98,25 @@ void ut_read_os_version_index(void) {
 			sc_addrs_ptr = syscalls_cas_2_0_1;
 #endif
 			break;
+		case 0x10279D70:  // 2.1.0 non-CAS
+			ut_os_version_index = 4;
+#if defined STAGE1
+		sc_addrs_ptr = CONCAT(syscalls_light_ncas_,OS_VERSION);
+#elif defined STAGE2
+			sc_addrs_ptr = syscalls_light_ncas_2_1_0;
+#else
+			sc_addrs_ptr = syscalls_ncas_2_1_0;
+#endif
+			break;
+		case 0x1027A640:  // 2.1.0 CAS
+			ut_os_version_index = 5;
+#if defined STAGE1
+		sc_addrs_ptr = CONCAT(syscalls_light_cas_,OS_VERSION);
+#elif defined STAGE2
+			sc_addrs_ptr = syscalls_light_cas_2_1_0;
+#else
+			sc_addrs_ptr = syscalls_cas_2_1_0;
+#endif
 #ifndef STAGE1
 		default:
 			ut_panic("v?");
@@ -105,7 +128,7 @@ void ut_read_os_version_index(void) {
  * being opened. Prefixed with '/documents/' on OS 2.0 and higher.
  * Caution, special characters such as '.' are filtered out of the name.
  * Found at development time with a full memory search thanks to Ncubate's "ss" command. */
-unsigned const ut_currentdocdir_addr[] = {0x10669A9C, 0x1069BD64, 0x1088F164, 0x10857154};
+unsigned const ut_currentdocdir_addr[] = {0x10669A9C, 0x1069BD64, 0x1088F164, 0x10857154, 0x109A2B74, 0x10966B74};
 
 void __attribute__ ((noreturn)) ut_calc_reboot(void) {
 	*(unsigned*)0x900A0008 = 2; //CPU reset
@@ -119,15 +142,15 @@ void __attribute__ ((noreturn)) ut_panic(const char *msg) {
 }
 #endif
 
+#if !defined(_NDLS_LIGHT)
 /* draw a dotted line. Line 0 is at the bottom of the screen (to avoid overwriting the installer) */
 void ut_debug_trace(unsigned line) {
-#if 0 /* Unfortunately not enough space in the installer to enable it */
 	volatile unsigned *ptr = (unsigned*)((char*)SCREEN_BASE_ADDRESS + (SCREEN_WIDTH/2) * (SCREEN_HEIGHT - 1 - line));
 	unsigned i;
 	for (i = 0; i < (SCREEN_WIDTH/2) / 4; i++)
 		*ptr++ = line & 1 ? 0xFFFF0000 : 0x0000FFFF;
-#endif
 }
+#endif
 
 #ifndef _NDLS_LIGHT
 /* synchronous and doesn't require the IRQ to be enabled (actually the IRQ *must* be disabled) */

@@ -117,8 +117,10 @@ main_copy:
 	@ we are now in service mode
 	to_thumb r0
 	push  {r5-r7}              @ registers used and required by the cleanup code when jumping at pop_and_cleanup. Only popped if the IRQ was triggered directly in sub_101975EC (on OS 1.7)
+#ifdef DEBUG
 	mov   r0, #INSTTR_BS_STACKUNWIND
 	bl    ut_debug_trace
+#endif
 	mov   r4, r11              @ required later for stack unwinding
 	bl    ints_setup_handlers
 	bl    ut_read_os_version_index
@@ -147,11 +149,15 @@ stack_unwind_loop:
 	b     stack_unwind_loop
 
 frame_found:
+#ifdef DEBUG
 	mov   r0, #INSTTR_BS_LOADS1
 	bl    ut_debug_trace
+#endif
 	bl    s1_load              @ load stage1, which will load stage2, which will install its hooks
+#ifdef DEBUG
 	mov   r0, #INSTTR_BS_CLEANUP
 	bl    ut_debug_trace
+#endif
 	ldr   r0, [r6]             @ cleanup code
 	@ We want to restore the registers for this frame to able to run the cleanup code.
 	cmp   r7, #0               @ check the depth
@@ -180,7 +186,9 @@ bs_stack_unwind_addrs:
 	.long 0x101975FC, 0x10197700
 	.long 0x10199614, 0x10199718
 	.long 0x101EB1D8, 0x101EB2DC
-	.long 0x101EBAA0, 0x101ebba4
+	.long 0x101EBAA0, 0x101EBBA4
+	.long 0x101FEF18, 0x101FF01C
+	.long 0x101FF7E0, 0x101FF8E4
 
 @ Exception handlers for bootstrapping
 @ Defined here to be reference with pc-relative instructions for a lighter installer

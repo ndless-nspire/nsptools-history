@@ -15,13 +15,11 @@ What do I need to install it on a TI-Nspire?
 ============================================
 
 - A TI-Nspire CAS or non-CAS
-- OS v1.7 or v2.0.1 installed on it
+- OS v1.7, v2.0.1 or v2.1.0 installed on it
 - Any linking program such as TI-Nspire Computer Link Software
 
 How do I install it?
 ====================
-
-Make sure OS v1.7 or v2.0.1 is installed.
 
 First locate the file 'ndless_installer_os-<version>.tns' in the calcbin/ 
 directory of Ndless where <version> matches the OS version currently installed 

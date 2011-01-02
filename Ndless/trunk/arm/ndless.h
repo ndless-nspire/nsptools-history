@@ -83,7 +83,11 @@ void ut_read_os_version_index(void);
 extern unsigned const ut_currentdocdir_addr[];
 void __attribute__ ((noreturn)) ut_calc_reboot(void);
 void __attribute__ ((noreturn)) ut_panic(const char * msg);
+#if !defined(_NDLS_LIGHT) || defined(DEBUG)
 void ut_debug_trace(unsigned line);
+#else
+#define ut_debug_trace(dummy) do {} while(0)
+#endif
 void ut_puts(const char *str);
 void ut_printf(const char *fmt, ...);
 static inline struct next_descriptor *ut_get_next_descriptor(void) {

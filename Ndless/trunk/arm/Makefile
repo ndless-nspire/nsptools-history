@@ -17,12 +17,14 @@ DISTDIR := ../calcbin
 vpath %.tns $(DISTDIR)
 
 # OS-specific
-OS_VERSIONS := 1.7 2.0.1
+OS_VERSIONS := 1.7 2.0.1 2.1.0
 # Since the installer is built specifically for an OS version, the version must be passed to the code.
 # Unfortunately Makefile doesn't allow target-specific variable values to extract the stem from pattern rules,
 # this list must be maintained manually.
+# OS-specific
 ndless_installer_os-1.7.elf: GCCFLAGS=$(call GCCFLAGS_INSTALLER,1.7)
 ndless_installer_os-2.0.1.elf: GCCFLAGS=$(call GCCFLAGS_INSTALLER,2.0.1)
+ndless_installer_os-2.1.0.elf: GCCFLAGS=$(call GCCFLAGS_INSTALLER,2.1.0)
 
 # One installer for each OS version, because it is size constrained, and each OS version requires its own syscall table.
 INSTALLER_TNS := $(foreach os_version, $(OS_VERSIONS), ndless_installer_os-$(os_version).tns)
