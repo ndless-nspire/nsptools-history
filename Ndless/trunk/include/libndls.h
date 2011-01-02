@@ -5,7 +5,15 @@
 #ifndef _LIBNDLS_H_
 #define _LIBNDLS_H_
 
+#ifdef GNU_AS
+	.macro halt
+halt\@: b halt\@
+	.endm
+
+#else /* GNU_AS */
+
 BOOL any_key_pressed(void);
+void clear_cache(void);
 void clrscr(void);
 int feof(FILE * stream);
 char *fgets(char * str, int num, FILE *stream);
@@ -20,4 +28,14 @@ size_t strspn(const char * str1, const char * str2);
 /* defined in crt0.S */
 extern BOOL is_touchpad;
 
-#endif
+static inline void halt(void) {
+  asm volatile("0: b 0b");
+}
+
+static inline void idle(void) {
+  unsigned int sbz = 0;
+  asm volatile("mcr p15, 0, %0, c7, c0, 4" : "=r"(sbz) );
+}
+
+#endif /* GNU_AS */
+#endif /* _LIBNDLS_H_ */

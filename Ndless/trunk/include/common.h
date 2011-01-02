@@ -189,10 +189,6 @@
     tst     r0, \col
   .endm
   
-  .macro halt
-halt\@: b halt\@
-  .endm
-
 	.macro to_thumb reg
 	add \reg, pc, #1
 	bx \reg
@@ -220,6 +216,8 @@ got_var_\var:
 	.long _GLOBAL_OFFSET_TABLE_-(got_get_\var+4) 
 	.long \var(GOT) 
 	.endm
+
+#include "libndls.h"
 
 /** GNU C Compiler */
 #else
@@ -271,16 +269,6 @@ typedef struct {
  * Misc inline functions
  ***********************************/
 
-static inline void halt(void) {
-  asm volatile("0: b 0b");
-}
-
-/* switch to low-power state until next interrupt */
-static inline void idle(void) {
-  unsigned int sbz = 0;
-  asm volatile("mcr p15, 0, %0, c7, c0, 4" : "=r"(sbz) );
-}
-
 /* Hooked functions and hooks must be built in ARM and not Thumb */
 #define HOOK_INSTALL(address, hookname) do { \
 	void hookname(void); \
@@ -291,6 +279,7 @@ static inline void idle(void) {
 	__##hookname##_end_instrs[1] = *(unsigned*)((address) + 4); \
 	*(unsigned*)((address) + 4) = (unsigned)hookname; \
 	__##hookname##_end_instrs[2] = 0xE51FF004; /* ldr pc, [pc, #-4] */ \
+	clear_cache(); \
 	} while (0)
 
 /* Caution, hooks aren't re-entrant.

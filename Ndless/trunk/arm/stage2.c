@@ -88,5 +88,6 @@ static void s2_run_install(void) {
 		ut_panic("s2fr");
 	fclose(res_file);
 	ut_debug_trace(INSTTR_S2_LOADINST);
+	clear_cache();
 	((void (*)(void))(char*)(hook_dest + sizeof("PRG")))(); // Run the core installation
 }

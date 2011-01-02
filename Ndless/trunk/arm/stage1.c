@@ -53,5 +53,6 @@ void s1_load(void) {
 		;//ut_panic("ldfr");
 	fclose(res_file);
 	ut_debug_trace(INSTTR_S1_LOADS2);
+	clear_cache();
 	((void (*)(void))(char*)(stage2_dest + sizeof("PRG")))(); // Run stage2
 }

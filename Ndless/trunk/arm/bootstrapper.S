@@ -86,6 +86,7 @@ relocate_loop:
 	b   relocate_loop
 
 relocated:
+	bl clear_cache
 	add   r3, #main_copy-ints_vectors+1 @ +1: still in thumb state
 	bx    r3            @ jump to main_copy in the copy
 
