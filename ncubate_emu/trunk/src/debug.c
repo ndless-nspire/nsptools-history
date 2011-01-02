@@ -239,7 +239,7 @@ readstdin:
 		      printf("Missing value parameter.\n");
 		    else {
     			int regi = atoi(reg);
-    			int valuei = strtoul(strtok(NULL, " \n"), NULL, 16);
+    			int valuei = strtoul(value, NULL, 16);
     			if (!strcmp(reg, "pc"))
     			  arm.reg[15] = valuei;
   			  else if (regi >= 0 && regi < 15)
