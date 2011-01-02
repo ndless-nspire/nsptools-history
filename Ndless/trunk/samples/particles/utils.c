@@ -75,9 +75,9 @@ float sqrtf(float num) {
   return c;
 }
 
-void fade(int n) {
+void fade(void *scrbuf, int n) {
   int i, color1, color2;
-  unsigned char* p = (unsigned char*)SCREEN_BASE_ADDRESS;
+  unsigned char *p = (unsigned char*)scrbuf;
 
   for (i = 1; i < SCREEN_BYTES_SIZE;  ++i) {
     color1 = (*p & 0x0F) + n;
@@ -90,4 +90,5 @@ void fade(int n) {
     *p = (color2 << 4) | (color1 & 0xF);
     p++;
   }
+  memcpy(SCREEN_BASE_ADDRESS, scrbuf, SCREEN_BYTES_SIZE);
 }
