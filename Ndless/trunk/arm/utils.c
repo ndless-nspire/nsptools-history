@@ -117,6 +117,7 @@ void ut_read_os_version_index(void) {
 #else
 			sc_addrs_ptr = syscalls_cas_2_1_0;
 #endif
+			break;
 #ifndef STAGE1
 		default:
 			ut_panic("v?");

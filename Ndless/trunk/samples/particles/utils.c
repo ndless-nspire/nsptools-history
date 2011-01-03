@@ -55,7 +55,9 @@ void showSimpleDialogBox(const char* title, const char* msg) {
 
   ascii2utf16(buffTitle, title, 0x80);
   ascii2utf16(buffMsg, msg, 0x200);
+  int mask = TCT_Local_Control_Interrupts(0);
   show_dialog_box2(0, buffTitle, buffMsg);
+	TCT_Local_Control_Interrupts(mask);
 
   free(buffTitle);
   free(buffMsg);
