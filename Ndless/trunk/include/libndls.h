@@ -25,6 +25,8 @@ void show_msgbox(const char *title, const char *msg);
 void sleep(unsigned millisec);
 size_t strcspn(const char * str1, const char * str2);
 size_t strspn(const char * str1, const char * str2);
+void wait_key_pressed(void);
+void wait_no_key_pressed(void);
 
 /* defined in crt0.S */
 extern BOOL is_touchpad;

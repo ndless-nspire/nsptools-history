@@ -23,7 +23,8 @@ Ndless - Changelog
   - FIX: GCC may incorrectly cache memory values between calls to syscalls with
     pointer arguments such as mempcy
  libndls:
-  - NEW: any_key_pressed, clrscr, clear_cache, is_touchpad, show_msgbox
+  - NEW: any_key_pressed, wait_key_pressed, wait_no_key_pressed, clrscr, 
+    clear_cache, is_touchpad, show_msgbox
  
 * v1.7 - 2010/12/04
   - NEW: supports OS v1.7
