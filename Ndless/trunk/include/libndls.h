@@ -18,6 +18,7 @@ void clrscr(void);
 int feof(FILE * stream);
 char *fgets(char * str, int num, FILE *stream);
 int fputs(const char *str, FILE *stream);
+void idle(void);
 int isalnum(int c);
 int iscntrl(int c);
 void rewind(FILE * stream);
@@ -33,11 +34,6 @@ extern BOOL is_touchpad;
 
 static inline void halt(void) {
 	__asm volatile("0: b 0b");
-}
-
-static inline void idle(void) {
-  unsigned int sbz = 0;
-  __asm volatile("mcr p15, 0, %0, c7, c0, 4" : "=r"(sbz) );
 }
 
 #endif /* GNU_AS */

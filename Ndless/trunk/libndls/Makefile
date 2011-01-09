@@ -22,7 +22,7 @@ all: static $(LIB)
 	$(LD) $(LDFLAGS) $^ -o $@
 
 # Force ARM mode for functions which uses non-Thumb inline assembly
-clear_cache.o: GCCFLAGS+=-marm
+clear_cache.o idle.o: GCCFLAGS+=-marm
 
 static:
 	@mkdir -p $(DISTDIR)
