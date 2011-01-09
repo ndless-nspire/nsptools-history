@@ -1,7 +1,7 @@
 SUBDIRS := tests
 AS := nspire-as
 GCC := nspire-gcc
-GCCFLAGS := -Os -nostdlib
+GCCFLAGS := -Os -nostdlib -Wall -W -Wno-strict-aliasing
 GCCFLAGS_DEFAULT := $(GCCFLAGS)
 LD := nspire-ld
 LDFLAGS := -nostdlib

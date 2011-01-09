@@ -46,7 +46,7 @@ HOOK_DEFINE(s2_tizip_hook) {
 	HOOK_RESTORE_RETURN_SKIP(s2_tizip_hook, skip_offset);
 }
 
-void main(void) {
+int main(void) {
 	ut_debug_trace(INSTTR_S2_HOOK);
 	ut_read_os_version_index();
 	ints_setup_handlers();
@@ -60,6 +60,7 @@ void main(void) {
 			ut_panic("unknown N-ext");
 	}
 	HOOK_INSTALL(s2_tizip_hook_addrs[ut_os_version_index], s2_tizip_hook);
+	return 0;
 }
 
 static void s2_run_install(void) {

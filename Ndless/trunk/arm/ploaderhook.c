@@ -45,11 +45,7 @@ HOOK_DEFINE(plh_hook) {
 	else
 		ptr = halfpath;
 	if (!strncmp("ndless_installer_os-", ptr, sizeof("ndless_installer_os-") - 1)) {
-		char title[20];
-		char msg[150];
-	  ascii2utf16(title, "Ndless", sizeof(title));
-	  ascii2utf16(msg, "Ndless installed successfully!", sizeof(msg));
-	  show_dialog_box2(0, title, msg);
+		show_msgbox("Ndless", "Ndless installed successfully!");
 		goto silent; // skip the error dialog
 	}
 	// TODO use snprintf

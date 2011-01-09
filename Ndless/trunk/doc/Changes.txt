@@ -7,6 +7,9 @@ Ndless - Changelog
     this version of Ndless to handle correctly the key layout of Touchpads.
  Hook:
   - NEW: OS variables can be accessed in a portable manner.
+ Tools:
+  - NEW: Program can be built with the GCC option "-std=c99" to use ISO C99 
+   features
  Standard libraries:
   - NEW: NU_Current_Dir (thanks apcalc)
   - NEW: isalnum, isalpha, isascii, isdigit, islower, isprint, isspace, isupper, 
@@ -16,10 +19,11 @@ Ndless - Changelog
   - NEW: freopen, errno, toupper, strtod , strtol, strspn, strerror, strcat, 
     strstr, fflush,  remove, ungetc, stdin, stdout, stderr, feof, rewind, 
     strcpsn, fputs, fgets, putc, getc, strtoul, strcoll, ferror
+  - CHG: show_dialog_box2 is now deprecated. Use show_msgbox.
   - FIX: GCC may incorrectly cache memory values between calls to syscalls with
     pointer arguments such as mempcy
  libndls:
-  - NEW: any_key_pressed, clrscr, clear_cache, is_touchpad
+  - NEW: any_key_pressed, clrscr, clear_cache, is_touchpad, show_msgbox
  
 * v1.7 - 2010/12/04
   - NEW: supports OS v1.7

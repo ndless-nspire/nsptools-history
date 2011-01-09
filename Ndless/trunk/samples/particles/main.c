@@ -29,7 +29,7 @@ int main(void) {
   t_particle* p;
   int i;
   
-  showSimpleDialogBox(
+  show_msgbox(
     "Ndless - Particle System Demo",
     "------------------------\n"
     "       Particle System Demo\n" \

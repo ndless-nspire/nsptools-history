@@ -42,15 +42,19 @@ void s1_load(void) {
 	// The screen is used as a temporary buffer for stage2. Copy it below stage1.
 	void *stage2_dest = (char*)SCREEN_BASE_ADDRESS + (SCREEN_WIDTH/2) * 80;
 	FILE *res_file = fopen(path, "rb");
-	if (!res_file)
+	if (!res_file) {
 		;//ut_panic("ldfo");
+	}
 	// ndless_resources.tns starts with the size of stage2
-	if (fread(&stage2_size, sizeof(stage2_size), 1, res_file) != 1)
+	if (fread(&stage2_size, sizeof(stage2_size), 1, res_file) != 1) {
 		;//ut_panic("ldfrs");
-	if (stage2_size > 0xFFFF)
+	}
+	if (stage2_size > 0xFFFF) {
 		;//ut_panic("ldrs");
-	if (fread(stage2_dest, stage2_size, 1, res_file) != 1)
+	}
+	if (fread(stage2_dest, stage2_size, 1, res_file) != 1) {
 		;//ut_panic("ldfr");
+	}
 	fclose(res_file);
 	ut_debug_trace(INSTTR_S1_LOADS2);
 	clear_cache();

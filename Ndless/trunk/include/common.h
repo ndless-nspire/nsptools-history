@@ -289,12 +289,12 @@ typedef struct {
 #define HOOK_DEFINE(hookname) \
 	unsigned __##hookname##_end_instrs[4]; \
 	extern unsigned __##hookname##_saved_sp; \
-	asm(STRINGIFY(__##hookname##_saved_sp) ": .long 0"); /* accessed with pc-relative instruction */ \
+	__asm(STRINGIFY(__##hookname##_saved_sp) ": .long 0"); /* accessed with pc-relative instruction */ \
 	void __##hookname##_body(void); \
 	void __attribute__((naked)) hookname(void) { \
-		asm volatile(" stmfd sp!, {r0-r12,lr}"); /* used by HOOK_RESTORE_STATE() */ \
+		__asm volatile(" stmfd sp!, {r0-r12,lr}"); /* used by HOOK_RESTORE_STATE() */ \
 		/* save sp */ \
-		asm volatile( \
+		__asm volatile( \
 			" str r0, [sp, #-4] @ push r0 but don't change sp \n " \
 			" adr r0," STRINGIFY(__##hookname##_saved_sp) "\n" \
 			" str sp, [r0] \n" \
@@ -306,7 +306,7 @@ typedef struct {
 
 /* Jump out of the body */
 #define HOOK_RESTORE_SP(hookname) do { \
-	asm volatile( \
+	__asm volatile( \
 		" str lr, [sp, #-4]! @ push lr \n" \
 		" adr lr," STRINGIFY(__##hookname##_saved_sp) "\n" \
 		" ldr lr, [lr] \n" \
@@ -319,11 +319,11 @@ typedef struct {
 #define HOOK_SAVED_REGS(hookname) ((unsigned*) __##hookname##_saved_sp)
 
 #define HOOK_RESTORE_STATE() do { \
-	asm volatile(" ldmfd sp!, {r0-r12,lr}"); \
+	__asm volatile(" ldmfd sp!, {r0-r12,lr}"); \
 } while (0)
 
 
-/* Call HOOK_RESTORE() alone to return manually with asm(). */
+/* Call HOOK_RESTORE() alone to return manually with __asm(). */
 #define HOOK_RESTORE(hookname) { \
 	HOOK_RESTORE_SP(hookname); \
 	HOOK_RESTORE_STATE(); \
@@ -333,7 +333,7 @@ typedef struct {
  * set the registers then call HOOK_RETURN. Caution, only assembly without local
  * variables can between the 2 calls. */
 #define HOOK_RETURN(hookname) do { \
-	asm volatile(" b " STRINGIFY(__##hookname##_end_instrs)); \
+	__asm volatile(" b " STRINGIFY(__##hookname##_end_instrs)); \
 } while (0)
 
 /* Standard hook return */
@@ -346,12 +346,12 @@ typedef struct {
  * The 2 instructions overwritten by the hook are always skipped, the offset is based from the third instruction.
  * Any use must come with a call to HOOK_SKIP_VAR() outside of the hook function */
 #define HOOK_RESTORE_RETURN_SKIP(hookname, offset) do { \
-	asm volatile( \
+	__asm volatile( \
 		" adr r0, " STRINGIFY(__##hookname##_return_skip##__COUNTER__) "\n" \
 		"	str %0, [r0] \n" \
 		:: "r"(__##hookname##_end_instrs[3] + offset) : "r0"); \
 	HOOK_RESTORE(hookname); \
-	asm volatile( \
+	__asm volatile( \
 		" ldr pc, [pc, #-4] \n" \
 	  STRINGIFY(__##hookname##_return_skip##__COUNTER__) ":" \
 		" .long 0"); \

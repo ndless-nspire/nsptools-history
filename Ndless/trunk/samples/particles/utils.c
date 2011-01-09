@@ -46,23 +46,6 @@ int rand() {
   return (m_z << 16) + m_w;
 }
 
-void showSimpleDialogBox(const char* title, const char* msg) {
-  char* buffTitle;
-  char* buffMsg;
-
-  buffTitle = (char*)malloc(0x200);
-  buffMsg = (char*)malloc(0x800);
-
-  ascii2utf16(buffTitle, title, 0x80);
-  ascii2utf16(buffMsg, msg, 0x200);
-  int mask = TCT_Local_Control_Interrupts(0);
-  show_dialog_box2(0, buffTitle, buffMsg);
-	TCT_Local_Control_Interrupts(mask);
-
-  free(buffTitle);
-  free(buffMsg);
-}
-
 float sqrtf(float num) {
   float mod = 1;
   float c = 0;

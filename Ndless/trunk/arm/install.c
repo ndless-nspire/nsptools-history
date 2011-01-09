@@ -44,11 +44,12 @@ HOOK_DEFINE(ins_lowmem_hook) {
   HOOK_RESTORE_RETURN_SKIP(ins_lowmem_hook, 4); // skip the original warning display
 }
 
-void main(void) {
+int main(void) {
 	ut_debug_trace(INSTTR_INS_INSTALL);
 	ut_read_os_version_index();
 	sc_setup();
 	ints_setup_handlers();
 	HOOK_INSTALL(ins_ploader_hook_addrs[ut_os_version_index], plh_hook);
 	HOOK_INSTALL(ins_lowmem_hook_addrs[ut_os_version_index], ins_lowmem_hook);
+	return 0;
 }

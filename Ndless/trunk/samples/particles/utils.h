@@ -40,7 +40,6 @@ extern inline void clearScreen();
 extern inline int getPixel(int x, int y);
 extern inline void setPixel(int x, int y, int color);
 extern int rand();
-extern void showSimpleDialogBox(const char* title, const char* msg);
 extern float sqrtf(float num);
 extern void fade(void *scrbuf, int n);
 

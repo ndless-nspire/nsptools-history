@@ -4,7 +4,7 @@ ifeq (${AR},"")
 	AR := arm-none-eabi-ar
 endif
 GCC = nspire-gcc
-GCCFLAGS = -Os -nostdlib
+GCCFLAGS = -Os -nostdlib -std=c99
 LD = nspire-ld
 LDFLAGS = -nostdlib
 OBJCOPY := "$(shell which arm-elf-objcopy 2>/dev/null)"

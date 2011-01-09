@@ -32,44 +32,44 @@ extern int __base;
  * - A macro for variadic syscalls
  * Caution, lr is destroyed by our swi calling convention (and r0-r3,r12 by the C calling convention of the syscalls) */
 #define _SYSCALL0(rettype, funcname) static inline rettype funcname(void) { \
-	register unsigned __r0 asm("r0"); \
-	asm volatile( \
+	register unsigned __r0 __asm("r0"); \
+	__asm volatile( \
 		" swi " STRINGIFY(_SYSCALL_ENUM(funcname)) \
 		:"=r" (__r0) :: "memory", "r1", "r2", "r3", "r12", "lr"); \
 	return (rettype)__r0; \
 }
 #define _SYSCALL1(rettype, funcname, type1) static inline rettype funcname(type1 __param1) { \
-	register unsigned __r0 asm("r0") = (unsigned)__param1; \
-	asm volatile( \
+	register unsigned __r0 __asm("r0") = (unsigned)__param1; \
+	__asm volatile( \
 		" swi " STRINGIFY(_SYSCALL_ENUM(funcname)) \
 		: "=r" (__r0) : "r" (__r0) :  "memory", "r1", "r2", "r3", "r12", "lr"); \
 	return (rettype)__r0; \
 }
-// __r1 in output operand list gives an hint to GCC that r1 is clobbered. As an asm-specifier for __r1, r1 cannot be put in the clobber list.
+// __r1 in output operand list gives an hint to GCC that r1 is clobbered. As an __asm-specifier for __r1, r1 cannot be put in the clobber list.
 // "memory" in the list of the clobbered register is required for pointer parameters used for writes by the syscall, to avoid any caching.
 #define _SYSCALL2(rettype, funcname, type1, type2) static inline rettype funcname(type1 __param1, type2 __param2) { \
-	register unsigned __r0 asm("r0") = (unsigned)__param1; \
-	register unsigned __r1 asm("r1") = (unsigned)__param2; \
-	asm volatile( \
+	register unsigned __r0 __asm("r0") = (unsigned)__param1; \
+	register unsigned __r1 __asm("r1") = (unsigned)__param2; \
+	__asm volatile( \
 		" swi " STRINGIFY(_SYSCALL_ENUM(funcname)) \
 		: "=r" (__r0), "=r" (__r1) : "r" (__r0), "r" (__r1) : "memory", "r2", "r3", "r12", "lr"); \
 	return (rettype)__r0; \
 }
 #define _SYSCALL3(rettype, funcname, type1, type2, type3) static inline rettype funcname(type1 __param1, type2 __param2, type3 __param3) { \
-	register unsigned __r0 asm("r0") = (unsigned)__param1; \
-	register unsigned __r1 asm("r1") = (unsigned)__param2; \
-	register unsigned __r2 asm("r2") = (unsigned)__param3; \
-	asm volatile( \
+	register unsigned __r0 __asm("r0") = (unsigned)__param1; \
+	register unsigned __r1 __asm("r1") = (unsigned)__param2; \
+	register unsigned __r2 __asm("r2") = (unsigned)__param3; \
+	__asm volatile( \
 		" swi " STRINGIFY(_SYSCALL_ENUM(funcname)) \
 		: "=r" (__r0), "=r" (__r1), "=r" (__r2) : "r" (__r0), "r" (__r1), "r" (__r2) : "memory", "r3", "r12", "lr"); \
 	return (rettype)__r0; \
 }
 #define _SYSCALL4(rettype, funcname, type1, type2, type3, type4) static inline rettype funcname(type1 __param1, type2 __param2,  type3 __param3,  type4 __param4) { \
-	register unsigned __r0 asm("r0") = (unsigned)__param1; \
-	register unsigned __r1 asm("r1") = (unsigned)__param2; \
-	register unsigned __r2 asm("r2") = (unsigned)__param3; \
-	register unsigned __r3 asm("r3") = (unsigned)__param4; \
-	asm volatile( \
+	register unsigned __r0 __asm("r0") = (unsigned)__param1; \
+	register unsigned __r1 __asm("r1") = (unsigned)__param2; \
+	register unsigned __r2 __asm("r2") = (unsigned)__param3; \
+	register unsigned __r3 __asm("r3") = (unsigned)__param4; \
+	__asm volatile( \
 		" swi " STRINGIFY(_SYSCALL_ENUM(funcname)) \
 		: "=r" (__r0), "=r" (__r1), "=r" (__r2), "=r" (__r3) : "r" (__r0), "r" (__r1), "r" (__r2) , "r" (__r3) : "memory", "r12", "lr"); \
 	return (rettype)__r0; \
@@ -105,8 +105,8 @@ extern int __base;
 /* all parameters must be marked with  __attribute__((unused)) */
 #ifdef _NDLS_LIGHT // can't use _SYSCALL_GETSAVEDLR_PTR which depends on the GOT: save lr to the stack, syscallvars with more than 4 parameters can't be used
 #define _SYSCALLVAR(rettype, attributes, funcname, param1, ...) static inline rettype attributes __attribute__((naked)) funcname(param1, __VA_ARGS__) { \
-	register unsigned __r0 asm("r0"); \
-	asm volatile( \
+	register unsigned __r0 __asm("r0"); \
+	__asm volatile( \
 		" push {lr} \n" \
 		" swi " STRINGIFY(_SYSCALL_ENUM(funcname)) "\n" \
 	  " pop {pc}" \
@@ -116,8 +116,8 @@ extern int __base;
 #else
 #ifndef __thumb__
 #define _SYSCALLVAR(rettype, attributes, funcname, param1, ...) static inline rettype attributes __attribute__((naked)) funcname(param1, __VA_ARGS__) { \
-	register unsigned __r0 asm("r0"); \
-	asm volatile( \
+	register unsigned __r0 __asm("r0"); \
+	__asm volatile( \
 		" push {r4, r5} \n" \
 		_SYSCALL_GETSAVEDLR_PTR(r4, r5) \
 		" str lr, [r4] \n" \
@@ -130,8 +130,8 @@ extern int __base;
 }
 #else // slightly less optimized
 #define _SYSCALLVAR(rettype, attributes, funcname, param1, ...) static inline rettype attributes __attribute__((naked)) funcname(param1, __VA_ARGS__) { \
-	register unsigned __r0 asm("r0"); \
-	asm volatile( \
+	register unsigned __r0 __asm("r0"); \
+	__asm volatile( \
 		" push {r4, r5} \n" \
 		_SYSCALL_GETSAVEDLR_PTR(r4, r5) \
 		" mov r5, lr \n" \
@@ -152,8 +152,8 @@ static __attribute__ ((unused)) unsigned _syscallvar_savedlr;
 /* Force the use of the stack for the parameters */
 #ifndef __thumb__
 #define _SYSCALL_SWI(rettype, attributes, funcname, param1) static inline rettype attributes __attribute__((naked)) funcname##_swi(param1, ...) { \
-	register unsigned __r0 asm("r0"); \
-	asm volatile( \
+	register unsigned __r0 __asm("r0"); \
+	__asm volatile( \
 		" push {r4, r5} \n" \
 		_SYSCALL_GETSAVEDLR_PTR(r4, r5) \
 		" str lr, [r4] \n" \
@@ -166,8 +166,8 @@ static __attribute__ ((unused)) unsigned _syscallvar_savedlr;
 }
 #else // slightly less optimized
 #define _SYSCALL_SWI(rettype, attributes, funcname, param1) static inline rettype attributes __attribute__((naked)) funcname##_swi(param1, ...) { \
-	register unsigned __r0 asm("r0"); \
-	asm volatile( \
+	register unsigned __r0 __asm("r0"); \
+	__asm volatile( \
 		" push {r4, r5} \n" \
 		_SYSCALL_GETSAVEDLR_PTR(r4, r5) \
 		" mov r5, lr \n" \
@@ -191,8 +191,8 @@ static __attribute__ ((unused)) unsigned _syscallvar_savedlr;
 #define SYSCALL_CUSTOM(addresses, rettype, ...) ((rettype(*)(__VA_ARGS__))nl_osvalue((int*)addresses, sizeof(addresses)/sizeof(addresses[0])))
 /* Access to OS variables */
 #define _SYSCALL_OSVAR(type, name) static inline type name(void) { \
-	register unsigned __r0 asm("r0"); \
-	asm volatile( \
+	register unsigned __r0 __asm("r0"); \
+	__asm volatile( \
 		" swi " STRINGIFY(__SYSCALLS_ISVAR|_SYSCALL_ENUM(name)) \
 		: "=r" (__r0) : "r" (__r0) :  "r1", "r2", "r3", "r12", "lr"); \
 	return (type)__r0; \
@@ -313,7 +313,7 @@ _SYSCALL3(void, nl_relocdatab, unsigned * /* dataptr */, unsigned /* size */, vo
 extern unsigned __crt0exit;
 extern unsigned __crt0_savedsp;
 static inline void __attribute__((noreturn, naked)) exit(int __attribute__((unused)) status) {
-	asm volatile(
+	__asm volatile(
 		" mov sp, %0 \n"
 		" mov pc, %1"
 		:: "r" (__crt0_savedsp), "r" (&__crt0exit));
