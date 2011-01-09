@@ -2,8 +2,11 @@
 
 int main(void) {
 	// required because stdout needs the interrupts currently disabled by Ndless
-	unsigned intmask = TCT_Local_Control_Interrupts(0);
 	puts("hello world!");
-	TCT_Local_Control_Interrupts(intmask);
+	clrscr();
+	wait_key_pressed();
+	puts("done");
+	memset(SCREEN_BASE_ADDRESS, 0, SCREEN_BYTES_SIZE);
+	wait_key_pressed();
 	return 0;
 }

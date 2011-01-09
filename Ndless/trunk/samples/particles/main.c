@@ -49,7 +49,7 @@ int main(void) {
 	memcpy(scrbuf, SCREEN_BASE_ADDRESS, SCREEN_BYTES_SIZE);
   for (i = 0; i < 0x0F; ++i) {
     fade(scrbuf, 1);
-    WAIT("0x1FFFFF", "fade");
+    sleep(70);
     if (isKeyPressed(KEY_NSPIRE_ESC)) {
     	free(scrbuf);
     	return 0;

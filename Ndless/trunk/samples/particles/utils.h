@@ -14,17 +14,6 @@
 #ifndef _UTILS_H_
 #define _UTILS_H_
 
-#define WAIT(n, name) \
-  asm ( \
-    "ldmfd sp!, {r0}\n" \
-    "ldr r0, ="n"\n" \
-    "_loop_"name":\n" \
-    "cmp r0, #0\n" \
-    "sub r0, r0, #1\n" \
-    "bne _loop_"name"\n" \
-    "stmfd sp!, {r0}\n" \
-  );
-
 typedef struct {
   int x, y, w, h;
 } t_rect;

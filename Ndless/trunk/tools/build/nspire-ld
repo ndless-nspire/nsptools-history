@@ -43,8 +43,7 @@ if [ $nostdlib = false ]; then
 fi
 
 # some newlib symbols are not found if ld is used...
-GCC=`which arm-elf-gcc 2>/dev/null`
-GCC=${GCC:=arm-none-eabi-gcc}
+GCC=`(which arm-elf-gcc arm-none-eabi-gcc arm-linux-gnueabi-gcc | head -1) 2>/dev/null`
 # lazy system build: must be built with the same toolchain
 (cd "$DIRNAME/../system" && make -s all)
 ret=$?

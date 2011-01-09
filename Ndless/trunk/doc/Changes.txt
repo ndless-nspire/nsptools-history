@@ -10,6 +10,7 @@ Ndless - Changelog
  Tools:
   - NEW: Program can be built with the GCC option "-std=c99" to use ISO C99 
    features
+  - NEW: Compatible with Ubuntu Linux's GCC package
  Standard libraries:
   - NEW: NU_Current_Dir (thanks apcalc)
   - NEW: isalnum, isalpha, isascii, isdigit, islower, isprint, isspace, isupper, 

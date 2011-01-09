@@ -1,9 +1,6 @@
 AS = nspire-as
 LD = nspire-ld
-OBJCOPY := "$(shell which arm-elf-objcopy 2>/dev/null)"
-ifeq (${OBJCOPY},"")
-	OBJCOPY := arm-none-eabi-objcopy
-endif
+OBJCOPY := "$(shell (which arm-elf-objcopy arm-none-eabi-objcopy arm-linux-gnueabi-objcopy | head -1) 2>/dev/null)"
 OBJS = hella.o
 DISTDIR = ../../calcbin/samples
 vpath %.tns $(DISTDIR)

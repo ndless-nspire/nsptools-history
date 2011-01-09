@@ -21,6 +21,5 @@ if [ "$UNAME" = "cygwin" ]; then
 fi
 
 # gcc instead of as, to call the C preprocessor
-GCC=`which arm-elf-gcc 2>/dev/null`
-GCC=${GCC:=arm-none-eabi-gcc}
+GCC=`(which arm-elf-gcc arm-none-eabi-gcc arm-linux-gnueabi-gcc | head -1) 2>/dev/null`
 "$GCC" -mcpu=arm7tdmi -I "$DIRNAME/../include" -D GNU_AS "$@"

@@ -2,17 +2,10 @@ SUBDIRS := tests
 AS := nspire-as
 GCC := nspire-gcc
 GCCFLAGS := -Os -nostdlib -Wall -W -Wno-strict-aliasing
-GCCFLAGS_DEFAULT := $(GCCFLAGS)
 LD := nspire-ld
 LDFLAGS := -nostdlib
-OBJCOPY := "$(shell which arm-elf-objcopy 2>/dev/null)"
-ifeq (${OBJCOPY},"")
-	OBJCOPY := arm-none-eabi-objcopy
-endif
-7Z := "$(shell which 7z 2>/dev/null)"
-ifeq (${7Z},"")
-	7Z := 7za
-endif
+OBJCOPY := "$(shell (which arm-elf-objcopy arm-none-eabi-objcopy arm-linux-gnueabi-objcopy | head -1) 2>/dev/null)"
+7Z := "$(shell (which 7z 7za | head -1) 2>/dev/null)"
 DISTDIR := ../calcbin
 vpath %.tns $(DISTDIR)
 
@@ -22,9 +15,9 @@ OS_VERSIONS := 1.7 2.0.1 2.1.0
 # Unfortunately Makefile doesn't allow target-specific variable values to extract the stem from pattern rules,
 # this list must be maintained manually.
 # OS-specific
-ndless_installer_os-1.7.elf: GCCFLAGS=$(call GCCFLAGS_INSTALLER,1.7)
-ndless_installer_os-2.0.1.elf: GCCFLAGS=$(call GCCFLAGS_INSTALLER,2.0.1)
-ndless_installer_os-2.1.0.elf: GCCFLAGS=$(call GCCFLAGS_INSTALLER,2.1.0)
+ndless_installer_os-1.7.elf: GCCFLAGS+=$(call GCCFLAGS_INSTALLER,1.7)
+ndless_installer_os-2.0.1.elf: GCCFLAGS+=$(call GCCFLAGS_INSTALLER,2.0.1)
+ndless_installer_os-2.1.0.elf: GCCFLAGS+=$(call GCCFLAGS_INSTALLER,2.1.0)
 
 # One installer for each OS version, because it is size constrained, and each OS version requires its own syscall table.
 INSTALLER_TNS := $(foreach os_version, $(OS_VERSIONS), ndless_installer_os-$(os_version).tns)
@@ -64,7 +57,7 @@ stage1.o: stage1.c
 # Use with $(call GCCFLAGS_INSTALLER, <os_version>)
 # OS_VERSION has its '.' replaced by '_' by this function.
 # OS_VERSION_INT only contains digits for easier case testing with the C preprocessing.
-GCCFLAGS_INSTALLER = $(GCCFLAGS_DEFAULT) -D _NDLS_LIGHT -D STAGE1 -mthumb-interwork -mthumb -D OS_VERSION=$(subst .,_,$(1)) -D OS_VERSION_INT=$(subst .,,$(1))
+GCCFLAGS_INSTALLER =-D _NDLS_LIGHT -D STAGE1 -mthumb-interwork -mthumb -D OS_VERSION=$(subst .,_,$(1)) -D OS_VERSION_INT=$(subst .,,$(1))
 
 # Required for $$*. Caution, applies to all the following targets.
 .SECONDEXPANSION:
@@ -95,7 +88,7 @@ syscalls_light.o: syscalls.c
 	$(GCC) $(GCCFLAGS) -c $< -o $@
 utils_light.o: utils.c
 	$(GCC) $(GCCFLAGS) -c $< -o $@
-ndless_stage2.elf: GCCFLAGS:=$(GCCFLAGS_DEFAULT) -D _NDLS_LIGHT -D STAGE2
+ndless_stage2.elf: GCCFLAGS+=-D _NDLS_LIGHT -D STAGE2
 ndless_stage2.elf: $(STAGE2_OBJS)
 	$(LD) --light-startup  $(LDFLAGS) $^ -o $@
 
