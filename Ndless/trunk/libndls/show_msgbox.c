@@ -21,14 +21,15 @@
 
 #include <os.h>
 
-/* As a non-inline function to be called from Thumb state */
-void clear_cache(void) {
-	unsigned dummy;
-	__asm volatile(
-		" .arm \n"
-		"0: mrc p15, 0, r15, c7, c10, 3 @ test and clean DCache \n"
-		" bne 0b \n"
-		" mov %0, #0 \n"
-		" mcr p15, 0, %0, c7, c7, 0 @ invalidate ICache and DCache \n"
-	: "=r" (dummy));
+void * alloca (size_t size);
+
+void show_msgbox(const char *title, const char *msg) {
+	/* required since OS 2.1 for OS key scan */
+	int orig_mask = TCT_Local_Control_Interrupts(0);
+	char title16[(strlen(title) + 1) * 2];
+	char msg16[(strlen(msg) + 1) * 2];
+	ascii2utf16(title16, title, sizeof(title16));
+	ascii2utf16(msg16, msg, sizeof(msg16));
+	show_dialog_box2(0, title16, msg16);
+	TCT_Local_Control_Interrupts(orig_mask);
 }
