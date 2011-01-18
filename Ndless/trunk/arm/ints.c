@@ -111,6 +111,7 @@ asm(
 " ldr   r2, get_ext_table_reloc+4 \n"
 "get_ext_table: \n"
 " add   r1, pc \n"
+"get_table: \n"
 " ldr   r2, [r1, r2]      @ ...to there: GOT-based access to sc_ext_table (defined in another .o). TODO: Could be optimized with http://gcc.gnu.org/bugzilla/show_bug.cgi?id=43129 once available? \n"
 " ldr   r0, [r2, r0, lsl #2] @ syscall address \n"
 " b jmp_to_syscall \n"
@@ -120,8 +121,7 @@ asm(
 " ldr   r2, get_emu_table_reloc+4 \n"
 "get_emu_table: \n"
 " add   r1, pc \n"
-" ldr   r1, [r1, r2] \n"
-" b jmp_to_syscall \n"
+" b get_table \n"
 #endif
 
 "sc_addrs_ptr: .global sc_addrs_ptr @ defined here because accessed with pc-relative instruction \n"
