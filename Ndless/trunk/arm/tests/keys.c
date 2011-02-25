@@ -85,6 +85,7 @@ int main(void) {
 		if (isKeyPressed(KEY_NSPIRE_GTHAN)) puts("KEY_NSPIRE_GTHAN");
 		if (isKeyPressed(KEY_NSPIRE_APOSTROPHE)) puts("KEY_NSPIRE_APOSTROPHE");
 		if (isKeyPressed(KEY_NSPIRE_CAT)) puts("KEY_NSPIRE_CAT");
+		if (isKeyPressed(KEY_NSPIRE_FRAC)) puts("KEY_NSPIRE_FRAC");
 		if (isKeyPressed(KEY_NSPIRE_G)) puts("KEY_NSPIRE_G");
 		if (isKeyPressed(KEY_NSPIRE_RP)) puts("KEY_NSPIRE_RP");
 		if (isKeyPressed(KEY_NSPIRE_F)) puts("KEY_NSPIRE_F");
