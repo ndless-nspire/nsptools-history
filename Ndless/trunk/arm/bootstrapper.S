@@ -44,6 +44,7 @@ ints_data_addr:
 	.long 0 @ reserved
 ints_irq_addr:
 	.long main @ IRQ - our entry point by default
+ints_fiq_addr:
 	.long main @ FIQ
 
 @ First set of instructions executed at installation time, as an IRQ handler
@@ -107,9 +108,8 @@ main_copy:
 	ldr   r2, [r1]
 	add   r1, #4
 	str   r2, [r0, #ints_irq_addr-ints_vectors]  @ restore the IRQ handler of the OS (and keep it)
-	add   r0, #4
 	ldr   r3, [r1]
-	str   r3, [r0]             @ restore the FIQ handler of the OS
+	str   r3, [r0, #ints_fiq_addr-ints_vectors] @ restore the FIQ handler of the OS
 	to_arm r0
 	add   lr, pc, #4           @ lr=return address+4 for IRQ interrupts. Will return to our code.
 	bx    r2                   @ jump to the IRQ handler of the OS
