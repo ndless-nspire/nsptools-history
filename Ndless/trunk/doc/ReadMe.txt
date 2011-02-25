@@ -1,5 +1,5 @@
 =============================
-= Ndless for TI-Nspire v2.0 =
+= Ndless v2.0 for TI-Nspire =
 =============================
 
 What is it?
