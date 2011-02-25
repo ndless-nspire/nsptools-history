@@ -77,11 +77,24 @@ static void assertNotNull(const char *tstname, void *actual) {
 	assert(actual, "%p", actual);
 }
 
+
 int global_int;
 int* nl_relocdata_data[] = {&global_int};
 
 static const unsigned custom_sprintf_addrs[] = {0x102A280C}; // only non-CAS 1.7
 #define custom_sprintf SYSCALL_CUSTOM(custom_sprintf_addrs, int __attribute__((__format__(__printf__,2,3))), char *s, const char *format, ...)
+
+/* the actual parameters should be: dummy, (char)1, char(0x20) */
+static void test_va(char __attribute__((unused)) dummy, ...) {
+	char buf[10];
+	va_list vl;
+	va_start(vl, dummy);
+	unsigned char c = va_arg(vl, int);
+	assertUIntEquals("va_arg", 1, c);
+	vsprintf(buf, "%c", vl);
+	assertStrEquals("vsprintf", " ", buf);
+	va_end(vl);
+}
 
 int main(int argc, char *argv[]) {
 	char buf[100];
@@ -183,6 +196,7 @@ int main(int argc, char *argv[]) {
 	assertIntEquals("strtoul", 1, strtoul("1", NULL, 10));
 	assertStrEquals("strstr", "def", strstr("abcdef", "def"));
 	
+	test_va(0, (char)1, (char)0x20);
 	sprintf(buf, "%s", "abc");
 	assertStrEquals("sprintf", "abc", buf);
 	

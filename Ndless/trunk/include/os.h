@@ -246,15 +246,17 @@ _SYSCALL1(char *, strerror, int)
 _SYSCALL2(char *, strcat, char *, const char *)
 _SYSCALL2(char *, strstr, const char *, const char *)
 
-typedef char *va_list;
-#define va_start(ap,p)  (ap = (char*)(&(p) + 1))
-#define va_arg(ap,type) ((type*)(ap += sizeof(type)))[-1]
-#define va_end(ap)
+typedef __builtin_va_list va_list;
+#define va_start(ap,p)  __builtin_va_start(ap, p)
+#define va_arg(ap,type) __builtin_va_arg(ap, type)
+#define va_end(ap) __builtin_va_end(ap)
 
 _SYSCALLVAR(int, __attribute__((__format__(__printf__,1,2))), printf, __attribute__((unused)) const char *format, ...)
 _SYSCALLVAR(int, __attribute__((__format__(__printf__,2,3))), sprintf, __attribute__((unused)) char *s, __attribute__((unused)) const char *format, ...)
 _SYSCALLVAR(int, __attribute__((__format__(__printf__,2,3))), fprintf, __attribute__((unused)) FILE *stream, __attribute__((unused)) const char *format, ...)
-_SYSCALL3(int, vsprintf, char *, const char *, va_list)
+// wrapper with cast to avoid the GCC warning "error: aggregate value used where an integer was expected"
+#define vsprintf(str, fmt, arg) _vsprintf(str, fmt, *(void**)&arg)
+_SYSCALL3(int, _vsprintf, char *, const char *, void*)
 
 _SYSCALL1(int, puts, const char *)
 _SYSCALL2(int, fputc, int, FILE *)

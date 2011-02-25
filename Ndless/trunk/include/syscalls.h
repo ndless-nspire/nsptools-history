@@ -47,7 +47,7 @@
 #define e_strlen 29
 #define e_show_dialog_box2 30
 #define e_strrchr 31
-#define e_vsprintf 32
+#define e__vsprintf 32
 #define e_fseek 33
 #define e_NU_Current_Dir 34
 #define e_read_unaligned_longword 35

@@ -23,6 +23,7 @@ Ndless - Changelog
   - CHG: show_dialog_box2 is now deprecated. Use show_msgbox.
   - FIX: GCC may incorrectly cache memory values between calls to syscalls with
     pointer arguments such as mempcy
+  - FIX: broken va_list and va_arg with char parameters
  libndls:
   - NEW: any_key_pressed, wait_key_pressed, wait_no_key_pressed, clrscr, 
     clear_cache, is_touchpad, show_msgbox
