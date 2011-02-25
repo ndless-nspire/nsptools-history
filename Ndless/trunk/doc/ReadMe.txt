@@ -79,6 +79,17 @@ You may try the particles demo available in the calcbin/samples/ directory.
 Programs built for Ndless v1.0/v1.1 won't work with this version until they are 
 updated by their authors.
 
+What is the key mapping for Touchpad models?
+============================================
+
+Support for the Touchpad area is currently unavailable. As a workaround programs 
+built with this version of the Ndless SDK use the following key map:
+ 8 = up
+ 4 = left
+ 5 = down
+ 6 = right
+ 2 = click
+
 How do I uninstall it?
 ======================
 
