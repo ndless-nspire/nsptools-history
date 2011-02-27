@@ -55,7 +55,7 @@ Ndless - Changelog
  Includes:
   - NEW: fseek, stat, NU_Get_First, NU_Get_Next, NU_Done, strcpy, strcmp, 
          strlen, strncat, strrchar, vsprintf, abs, min, max, exit, sleep, 
-         to_thumb, to_arm, got_get, got_var
+         to_thumb, to_arm, got_get, got_var, swap16, swap32
   - NEW: va_list, va_start, va_arg, va_end (thanks apcalc)
   - NEW: chdir (thanks critor)
 

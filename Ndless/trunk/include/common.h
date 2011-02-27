@@ -5,6 +5,8 @@
 #ifndef _COMMON_H_
 #define _COMMON_H_
 
+#include <stdint.h>
+
 /***********************************
  * Hardware
  ***********************************/
@@ -263,6 +265,24 @@ typedef struct {
 #define max(a,b) ({typeof(a) __a = (a); typeof(b) __b = (b); (__a > __b) ? __a : __b;})
 #define min(a,b) ({typeof(a) __a = (a); typeof(b) __b = (b); (__a < __b) ? __a : __b;})
 #endif
+
+#define bswap16(x) \
+({ \
+	uint16_t __x = (x); \
+	((uint16_t)( \
+		(((uint16_t)(__x) & (uint16_t)0x00FFU) << 8) | \
+		(((uint16_t)(__x) & (uint16_t)0xFF00U) >> 8) )); \
+})
+
+#define bswap32(x) \
+({ \
+	uint32_t __x = (x); \
+	((uint32_t)( \
+		(((uint32_t)(__x) & (uint32_t)0x000000FFUL) << 24) | \
+		(((uint32_t)(__x) & (uint32_t)0x0000FF00UL) <<  8) | \
+		(((uint32_t)(__x) & (uint32_t)0x00FF0000UL) >>  8) | \
+		(((uint32_t)(__x) & (uint32_t)0xFF000000UL) >> 24) )); \
+})
 
 #include "libndls.h"
 

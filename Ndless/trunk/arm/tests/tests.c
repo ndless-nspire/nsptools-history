@@ -264,6 +264,9 @@ int main(int argc, char *argv[]) {
 	assertUIntEquals("isalnum", TRUE, isalnum('0'));
 	assertUIntEquals("iscntrl", TRUE, iscntrl('\0'));
 	assertUIntEquals("abs,min,max", 4, max(min(abs(-3), 2), 4));
+	assertUIntEquals("bswap16", 0x0100, bswap16(0x0001));
+	assertUIntEquals("bswap32", 0x03020100, bswap32(0x00010203));
+	
 	assertTrue("is_touchpad", (*keypad_type != 3  &&  *keypad_type != 4) || is_touchpad);
 	sleep(100);
 	
