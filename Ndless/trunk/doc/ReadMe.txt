@@ -6,16 +6,18 @@ What is it?
 ===========
 
 Ndless combines an executable loader and utilities to open the TI-Nspire to 
-third-party C and assembly development.
+third-party C and assembly development.
 
-As a TI-Nspire user, installing Ndless on your calculator is required to run 
-assembly programs.
+As a TI-Nspire user, installing Ndless on your calculator will enhance the 
+Operating System with the functions required to run assembly programs until the 
+next reboot.
 
 What do I need to install it on a TI-Nspire?
 ============================================
 
 - A TI-Nspire CAS or non-CAS
-- OS v1.7, v2.0.1 or v2.1.0 installed on it
+- OS v1.7, v2.0.1 or v2.1.0 installed on it. v2.0.0 is not supported, you
+  should update your OS.
 - Any linking program such as TI-Nspire Computer Link Software
 
 How do I install it?
@@ -126,6 +128,8 @@ Installation problem report
 ===========================
 
 First make sure:
+- You are using the right 'ndless_installer_os-<version>.tns' file compatible 
+  with the Operating System (OS) version currently installed on your calculator
 - You have followed the steps in the troubleshooting section above
 - You don't find a solution on the web sites above
 
