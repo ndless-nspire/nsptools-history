@@ -845,7 +845,7 @@
 	MakeName	(0X102A2778,	"unknown_vsprintf_");
 	MakeName	(0X102A280C,	"sprintf");
 	MakeName	(0X102A2838,	"vfprintf_limit256");
-	MakeName	(0X102A29D8,	"vsprintf");
+	MakeName	(0X102A29D8,	"_vsprintf");
 	MakeName	(0X102A3190,	"vsprintf_limit256");
 	MakeName	(0X102A45C4,	"file_undef1");
 	MakeName	(0X102A46B4,	"fclose");
@@ -858,6 +858,7 @@
 	MakeName	(0X102A4DB4,	"freopen");
 	MakeName	(0X102A4EB0,	"fread");
 	MakeName	(0X102A4FEC,	"fseek");
+	MakeName	(0X102A513C,	"ftell");
 	MakeName	(0X102A5264,	"fwrite");
 	MakeName	(0X102A5458,	"putc");
 	MakeName	(0X102A54C4,	"puts");
