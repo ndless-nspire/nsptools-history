@@ -5,14 +5,14 @@
 #ifndef _LIBNDLS_H_
 #define _LIBNDLS_H_
 
-#include <stdint.h>
-
 #ifdef GNU_AS
 	.macro halt
 halt\@: b halt\@
 	.endm
 
 #else /* GNU_AS */
+
+#include <stdint.h>
 
 typedef struct {
 	uint16_t width;

@@ -5,8 +5,6 @@
 #ifndef _COMMON_H_
 #define _COMMON_H_
 
-#include <stdint.h>
-
 /***********************************
  * Hardware
  ***********************************/
@@ -219,6 +217,7 @@ got_var_\var:
 #else
 
 #include <stddef.h>
+#include <stdint.h>
 
 #define _CONCAT(a,b) a##b
 #define CONCAT(a,b) _CONCAT(a,b)
