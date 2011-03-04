@@ -300,6 +300,10 @@ _SYSCALL1(int, NU_Set_Current_Dir, const char *)
 /* 1: clickpad, 2: 84+, 3: touchpad prototype, 4: touchpad */
 _SYSCALL_OSVAR(unsigned char *, keypad_type)
 #define keypad_type keypad_type()
+// For internal use by libndls. Returns 0 on failure, 1 on success.
+_SYSCALL3(int, touchpad_read, unsigned char /* start */, unsigned char /* end */, void * /* buf */)
+// For internal use by libndls. Returns 0 on failure, 1 on success.
+_SYSCALL3(int, touchpad_write, unsigned char /* start */, unsigned char /* end */, void * /* buf */)
 
 /* Ndless extensions. Not available in thumb state. */
 // Given a list of OS-specific value and its size, returns the value for the current OS.

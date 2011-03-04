@@ -6,10 +6,11 @@ OBJCOPY := "$(shell (which arm-elf-objcopy arm-none-eabi-objcopy arm-linux-gnuea
 ifeq (${OBJCOPY},"")
 	OBJCOPY := arm-none-eabi-objcopy
 endif
+EXE = ndless_tests.tns ndless_keys.tns ndless_tpad.tns
 DISTDIR = ../../calcbin/tests
 vpath %.tns $(DISTDIR)
 
-all: distdir ndless_tests.tns ndless_keys.tns doc
+all: distdir $(EXE) doc
 
 distdir:
 	@mkdir -p $(DISTDIR)
@@ -17,18 +18,14 @@ distdir:
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<
 
-%.tns:
+%.tns: %.o
 	$(LD) $(LDFLAGS) $^ -o $(@:.tns=.elf)
 	$(OBJCOPY) -O binary $(@:.tns=.elf) $(DISTDIR)/$@
-
-ndless_tests.tns: tests.o
-ndless_keys.tns: keys.o
 
 doc:
 	@cp ReadMe.txt $(DISTDIR)
 
 clean:
 	rm -f *.o *.elf
-	rm -f $(DISTDIR)/ndless_tests.tns
-	rm -f $(DISTDIR)/ndless_keys.tns
+	(cd $(DISTDIR) && rm -f $(EXE))
 	rm -f $(DISTDIR)/ReadMe.txt

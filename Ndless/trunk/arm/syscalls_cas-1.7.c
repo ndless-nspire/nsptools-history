@@ -75,4 +75,6 @@ unsigned syscalls_cas_1_7[] = {
 	, 0X1081C8BC
 	, 0X1081C908
 	, 0X102A6740
+	, 0x0
+	, 0x0
 };

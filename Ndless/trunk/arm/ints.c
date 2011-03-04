@@ -155,7 +155,7 @@ asm(
 " mrs   r2, cpsr \n"
 " bic   r2, #0b1111       @ to user mode, to be able to call syscalls \n"
 " msr   cpsr, r2 \n"
-" bl ut_printf \n"
+" bl nprintf \n"
 " mov r0, #" STRINGIFY(INTS_EXCEPTION_SLEEP_CNT) "\n"
 "0: \n"
 " subs r0, #1 \n"

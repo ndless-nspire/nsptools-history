@@ -104,7 +104,7 @@
 #define KEY_NSPIRE_DEL          KEYTPAD_(_KEY_DUMMY_ROW, _KEY_DUMMY_COL, 0x1A, 0x200)
 #define KEY_NSPIRE_LTHAN        KEYTPAD_(0x1A, 0x400, _KEY_DUMMY_ROW, _KEY_DUMMY_COL)
 #define KEY_NSPIRE_FLAG         KEY_(0x1C, 0x001)
-#define KEY_NSPIRE_CLICK        KEYTPAD_(0x1C, 0x002, 0x1C, 0x010)
+#define KEY_NSPIRE_CLICK        KEYTPAD_ARROW_(0x1E, 0x001, TPAD_ARROW_CLICK)
 #define KEY_NSPIRE_C            KEYTPAD_(0x1C, 0x004, 0x18, 0x010)
 #define KEY_NSPIRE_HOME         KEYTPAD_(0x1C, 0x008, _KEY_DUMMY_ROW, _KEY_DUMMY_COL)
 #define KEY_NSPIRE_B            KEYTPAD_(0x1C, 0x010, 0x18, 0x020)
@@ -114,14 +114,14 @@
 #define KEY_NSPIRE_BAR          KEY_(0x1C, 0x100)
 #define KEY_NSPIRE_TAB          KEY_(0x1C, 0x200)
 #define KEY_NSPIRE_EQU          KEYTPAD_(0x1E, 0x400, 0x18, 0x080)
-#define KEY_NSPIRE_UP           KEYTPAD_(0x1E, 0x001, 0x1C, 0x040)
-#define KEY_NSPIRE_UPRIGHT      KEYTPAD_(0x1E, 0x002, 0x16, 0x008)
-#define KEY_NSPIRE_RIGHT        KEYTPAD_(0x1E, 0x004, 0x14, 0x008)
-#define KEY_NSPIRE_RIGHTDOWN    KEYTPAD_(0x1E, 0x008, 0x12, 0x008)
-#define KEY_NSPIRE_DOWN         KEYTPAD_(0x1E, 0x010, 0x1A, 0x040)
-#define KEY_NSPIRE_DOWNLEFT     KEYTPAD_(0x1E, 0x020, 0x12, 0x080)
-#define KEY_NSPIRE_LEFT         KEYTPAD_(0x1E, 0x040, 0x14, 0x080)
-#define KEY_NSPIRE_LEFTUP       KEYTPAD_(0x1E, 0x080, 0x16, 0x080)
+#define KEY_NSPIRE_UP           KEYTPAD_ARROW_(0x1E, 0x001, TPAD_ARROW_UP)
+#define KEY_NSPIRE_UPRIGHT      KEYTPAD_ARROW_(0x1E, 0x002, TPAD_ARROW_UPRIGHT)
+#define KEY_NSPIRE_RIGHT        KEYTPAD_ARROW_(0x1E, 0x004, TPAD_ARROW_RIGHT)
+#define KEY_NSPIRE_RIGHTDOWN    KEYTPAD_ARROW_(0x1E, 0x008, TPAD_ARROW_RIGHTDOWN)
+#define KEY_NSPIRE_DOWN         KEYTPAD_ARROW_(0x1E, 0x010, TPAD_ARROW_DOWN)
+#define KEY_NSPIRE_DOWNLEFT     KEYTPAD_ARROW_(0x1E, 0x020, TPAD_ARROW_DOWNLEFT)
+#define KEY_NSPIRE_LEFT         KEYTPAD_ARROW_(0x1E, 0x040, TPAD_ARROW_LEFT)
+#define KEY_NSPIRE_LEFTUP       KEYTPAD_ARROW_(0x1E, 0x080, TPAD_ARROW_LEFTUP)
 #define KEY_NSPIRE_CLEAR        KEYTPAD_(0x1E, 0x100, _KEY_DUMMY_ROW, _KEY_DUMMY_COL)
 #define KEY_NSPIRE_SHIFT        KEYTPAD_(_KEY_DUMMY_ROW, _KEY_DUMMY_COL, 0x1E, 0x100)
 #define KEY_NSPIRE_CTRL         KEY_(0x1E, 0x200)
@@ -184,13 +184,6 @@
 #ifdef GNU_AS
   #define SHARP(s)          #
   #define ADDR_(addr)       addr
-  #define KEY_(row, col)    row, SHARP(s)##col
-
-  .macro isKeyPressed row, col
-    ldr     r0, =(KEY_MAP + \row)
-    ldrh    r0, [r0]
-    tst     r0, \col
-  .endm
   
 	.macro to_thumb reg
 	add \reg, pc, #1
@@ -220,7 +213,7 @@ got_var_\var:
 	.long \var(GOT) 
 	.endm
 
-#include "libndls.h"
+#include <libndls.h>
 
 /** GNU C Compiler */
 #else
@@ -231,7 +224,7 @@ got_var_\var:
 #define CONCAT(a,b) _CONCAT(a,b)
 #define _STRINGIFY(s) #s
 #define STRINGIFY(s) _STRINGIFY(s)
-typedef enum bool {FALSE = 0, TRUE = 1} BOOL;
+typedef enum BOOL {FALSE = 0, TRUE = 1} BOOL;
 /* stdlib.h */
 #define EXIT_FAILURE 1
 #define EXIT_SUCCESS 0
@@ -245,18 +238,6 @@ typedef struct{} FILE;
 /* Unknown, arbitrary */
 #define BUFSIZ 4096
 #define EOF (-1)
-
-
-typedef struct {
-  int row, col, tpad_row, tpad_col;
-} t_key;
-
-#define ADDR_(addr) (void*)addr
-/* Use when the row and column are the same for both models */
-#define KEY_(row, col) (t_key){row, col, row, col}
-#define KEYTPAD_(row, col, tpad_row, tpad_col) (t_key){row, col, tpad_row, tpad_col}
-#define isKeyPressed(key) (is_touchpad ? !((*(volatile short*)(KEY_MAP + (key).tpad_row)) & (key).tpad_col) \
-	: !((*(volatile short*)(KEY_MAP + (key).row)) & (key).col))
 
 #ifndef abs
 #define abs(x) ({typeof(x) __x = (x); __x >= 0 ? __x : -__x;})
@@ -284,7 +265,25 @@ typedef struct {
 		(((uint32_t)(__x) & (uint32_t)0xFF000000UL) >> 24) )); \
 })
 
-#include "libndls.h"
+/* Now we can libnls.h that depends on the definitions above */
+#include <libndls.h>
+
+/* And the following definitions may depend on libndls.h */
+
+typedef struct {
+  int row, col, tpad_row, tpad_col;
+  tpad_arrow_t tpad_arrow;
+} t_key;
+
+#define ADDR_(addr) (void*)addr
+/* Use when the row and column are the same for both models */
+#define KEY_(row, col) (t_key){row, col, row, col, TPAD_ARROW_NONE}
+#define KEYTPAD_(row, col, tpad_row, tpad_col) (t_key){row, col, tpad_row, tpad_col, TPAD_ARROW_NONE}
+#define KEYTPAD_ARROW_(row, col, tpad_arrow) (t_key){row, col, row, col, tpad_arrow}
+#define isKeyPressed(key) ( \
+	(key).tpad_arrow != TPAD_ARROW_NONE && is_touchpad ? touchpad_arrow_pressed((key).tpad_arrow) \
+	                                    : (is_touchpad ? !((*(volatile short*)(KEY_MAP + (key).tpad_row)) & (key).tpad_col) \
+	                                                   : !((*(volatile short*)(KEY_MAP + (key).row)) & (key).col) ) )
 
 /***********************************
  * Misc inline functions

@@ -88,8 +88,6 @@ void ut_debug_trace(unsigned line);
 #else
 #define ut_debug_trace(dummy) do {} while(0)
 #endif
-void ut_puts(const char *str);
-void ut_printf(const char *fmt, ...);
 static inline struct next_descriptor *ut_get_next_descriptor(void) {
 	if (*(*(unsigned**)(OS_BASE_ADDRESS + INTS_SWI_HANDLER_ADDR) - 2) != NEXT_SIGNATURE)
 		return NULL;

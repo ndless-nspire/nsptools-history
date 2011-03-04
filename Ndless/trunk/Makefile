@@ -51,3 +51,16 @@ clean: cleandist
 	@# may fail because of nspire_emu keeping a lock on it
 	-rm -rf calcbin
 	rm -rf $(SDKDISTDIRS)
+
+# Useful shortcuts
+.PHONY: libndls
+libndls:
+	(cd libndls && make)
+rlibndls:
+	(cd libndls && make clean all)
+
+.PHONY: tests
+tests:
+	(cd arm/tests && make)
+rtests:
+	(cd arm/tests && make clean all)

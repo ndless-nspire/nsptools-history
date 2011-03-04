@@ -152,26 +152,3 @@ void ut_debug_trace(unsigned line) {
 		*ptr++ = line & 1 ? 0xFFFF0000 : 0x0000FFFF;
 }
 #endif
-
-#ifndef _NDLS_LIGHT
-/* synchronous and doesn't require the IRQ to be enabled (actually the IRQ *must* be disabled) */
-void ut_puts(const char *str) {
-	volatile unsigned *line_status_reg = (unsigned*)0x90020014;
-	volatile unsigned *xmit_holding_reg = (unsigned*)0x90020000;
-	while(*str) {
-		while(!(*line_status_reg & 0b100000)); // wait for empty xmit holding reg
-		*xmit_holding_reg = *str++;
-	}
-}
-
-/* synchronous and doesn't require the IRQ to be enabled (actually the IRQ *must* be disabled) */
-void ut_printf(const char *fmt, ...) {
-	char sbuf[200];
-	va_list vl;
-	va_start(vl, fmt);
-	// TODO use vnsprintf?
-	vsprintf(sbuf, fmt, vl);
-  va_end(vl);
-	ut_puts(sbuf);
-}
-#endif

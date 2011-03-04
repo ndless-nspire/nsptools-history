@@ -6,7 +6,7 @@ What is it?
 ===========
 
 Ndless combines an executable loader and utilities to open the TI-Nspire to 
-third-party C and assembly development.
+third-party C and assembly development.
 
 As a TI-Nspire user, installing Ndless on your calculator will enhance the 
 Operating System with the functions required to run assembly programs until the 
@@ -28,8 +28,8 @@ directory of Ndless where <version> matches the OS version currently installed
 on the calculator.
 
 Send this file along with the file 'ndless_resources.tns' to any directory of 
-the calculator.  Make sure that the name of the target directory doesn't contain 
-any special characters such as '.' The two documents must be in the same 
+the calculator. Make sure that the name of the target directory doesn't contain 
+any special characters such as '.'. The two documents must be in the same 
 directory.
 
 Unplug the calculator from the computer (trust us, it is important).
@@ -80,17 +80,6 @@ You may try the particles demo available in the calcbin/samples/ directory.
 
 Programs built for Ndless v1.0/v1.1 won't work with this version until they are 
 updated by their authors.
-
-What is the key mapping for Touchpad models?
-============================================
-
-Support for the Touchpad area is currently unavailable. As a workaround programs 
-built with this version of the Ndless SDK use the following key map:
- 8 = up
- 4 = left
- 5 = down
- 6 = right
- 2 = click
 
 How do I uninstall it?
 ======================

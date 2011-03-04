@@ -5,13 +5,11 @@ Ndless - Changelog
   - NEW: compatible with OS v2.0.1 and v2.1.0.
   - NEW: compatible with Touchpad calculators. Programs should be rebuilt with 
     this version of Ndless to handle correctly the key layout of Touchpads.
-    The Touchpad area is currently not supported.
  Hook:
   - NEW: OS variables can be accessed in a portable manner.
  Tools:
   - NEW: Program can be built with the GCC option "-std=c99" to use ISO C99 
    features
-  - NEW: Compatible with Ubuntu Linux's GCC package
  Standard libraries:
   - NEW: NU_Current_Dir (thanks apcalc)
   - NEW: isalnum, isalpha, isascii, isdigit, islower, isprint, isspace, isupper, 
@@ -58,6 +56,7 @@ Ndless - Changelog
          to_thumb, to_arm, got_get, got_var, swap16, swap32
   - NEW: va_list, va_start, va_arg, va_end (thanks apcalc)
   - NEW: chdir (thanks critor)
+  - CHG: remove assembly defintion for isKeyPressed
 
 * v1.1.1 - 2010/10/16
  Installer:
