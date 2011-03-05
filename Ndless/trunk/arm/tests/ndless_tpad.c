@@ -28,22 +28,44 @@ static void setPixel(int x, int y, int color) {
   *p = (x & 1) ? ((*p & 0xF0) | color) : ((*p & 0x0F) | (color << 4));
 }
 
+#define PROXIMITY_BAR_HEIGHT 10
+
+static void draw_click_line(void) {
+	unsigned char *p;
+	for (p = SCREEN_BASE_ADDRESS; p < (unsigned char *)(SCREEN_BASE_ADDRESS + (SCREEN_WIDTH/2) * PROXIMITY_BAR_HEIGHT); p += SCREEN_WIDTH/2) {
+		p[0x18] = 0x0F;
+	}
+}
+
 int main(void) {
 	touchpad_report_t tpad_report;
 	touchpad_info_t *tpad_info;
 	uint16_t x, y;
+	unsigned char previous_proximity = 0;
+	unsigned char *p;
 	if (!is_touchpad)
 		return 0;
 	clrscr();
 	tpad_info = touchpad_getinfo();
 	if (!tpad_info)
 		return 0;
+	draw_click_line();
 	while (1) {
 		idle();
 		if (isKeyPressed(KEY_NSPIRE_ESC))
 			return 0;
 		touchpad_scan(&tpad_report);
-		if (tpad_report.contact) {
+		if (tpad_report.proximity != previous_proximity) {
+			previous_proximity = tpad_report.proximity;
+			/* Show the proximity */
+			memset(SCREEN_BASE_ADDRESS, 0xFF, PROXIMITY_BAR_HEIGHT * (SCREEN_WIDTH/2)); // clear the bar
+			draw_click_line();
+			for (p = SCREEN_BASE_ADDRESS; p < (unsigned char*)(SCREEN_BASE_ADDRESS + (SCREEN_WIDTH/2) * PROXIMITY_BAR_HEIGHT); p += SCREEN_WIDTH/2) {
+				memset(p, 0, tpad_report.proximity / 2);
+			}
+		}
+		if (tpad_report.proximity) {
+			/* Show the position */
 			x = tpad_report.x * (SCREEN_WIDTH - 1) / tpad_info->width;
 			y = (SCREEN_HEIGHT - 1) - (tpad_report.y * (SCREEN_HEIGHT - 1) / tpad_info->height);
 			setPixel(x, y, 0);
