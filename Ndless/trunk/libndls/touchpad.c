@@ -78,7 +78,7 @@ BOOL touchpad_arrow_pressed(tpad_arrow_t arrow) {
 			return report.y >= touchpad_info.height/TPAD_RATIO && report.y <= (touchpad_info.height * (TPAD_RATIO - 1))/TPAD_RATIO && report.x >= (touchpad_info.width * (TPAD_RATIO - 1))/TPAD_RATIO;
 			break;
 		case TPAD_ARROW_RIGHTDOWN:
-			return report.y >= (touchpad_info.height * (TPAD_RATIO - 1))/TPAD_RATIO && report.x <= touchpad_info.width/TPAD_RATIO;
+			return report.y <= touchpad_info.height/TPAD_RATIO && report.x >= (touchpad_info.width * (TPAD_RATIO - 1))/TPAD_RATIO;
 			break;
 		case TPAD_ARROW_DOWN:
 			return report.y <= touchpad_info.height/TPAD_RATIO && report.x >= touchpad_info.width/TPAD_RATIO && report.x <= (touchpad_info.width * (TPAD_RATIO - 1))/TPAD_RATIO;
