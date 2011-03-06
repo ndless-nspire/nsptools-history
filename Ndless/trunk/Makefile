@@ -59,6 +59,12 @@ libndls:
 rlibndls:
 	(cd libndls && make clean all)
 
+.PHONY: samples
+samples:
+	(cd samples && make)
+rsamples:
+	(cd samples && make clean all)
+
 .PHONY: tests
 tests:
 	(cd arm/tests && make)

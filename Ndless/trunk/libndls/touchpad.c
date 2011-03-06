@@ -48,12 +48,12 @@ touchpad_info_t *touchpad_getinfo(void) {
 	return &touchpad_info;
 }
 
-/* Returns non-zero on error. report->contact is always FALSE on Clickpad. */
+/* Returns non-zero on error. report->contact and report->pressed are always FALSE on Clickpad. */
 int touchpad_scan(touchpad_report_t *report) {
-	report->contact = 0;
+	report->contact = report->pressed = 0;
 	if (!is_touchpad)
 		return 0;
-	if (!touchpad_read(0x00, 0x05, report))
+	if (!touchpad_read(0x00, 0x0A, report))
 		return 1;
 	report->x = bswap16(report->x);
 	report->y = bswap16(report->y);
@@ -66,7 +66,7 @@ BOOL touchpad_arrow_pressed(tpad_arrow_t arrow) {
 	touchpad_report_t report;
 	touchpad_getinfo();
 	touchpad_scan(&report);
-	if (!report.contact) return FALSE;
+	if (!report.pressed) return FALSE;
 	switch (arrow) {
 		case TPAD_ARROW_UP:
 			return report.y >= (touchpad_info.height * (TPAD_RATIO - 1))/TPAD_RATIO && report.x >= touchpad_info.width/TPAD_RATIO && report.x <= (touchpad_info.width * (TPAD_RATIO - 1))/TPAD_RATIO;

@@ -20,10 +20,14 @@ typedef struct {
 } touchpad_info_t;
 
 typedef struct {
-	unsigned char contact; /* TRUE or FALSE */
+	unsigned char contact; /* "touched". TRUE or FALSE */
 	unsigned char proximity;
 	uint16_t x;
 	uint16_t y;
+	unsigned char x_velocity;
+	unsigned char y_velocity;
+	uint16_t dummy;
+	unsigned char pressed; /* "key pressed". TRUE or FALSE */
 } touchpad_report_t;
 
 /* internal */

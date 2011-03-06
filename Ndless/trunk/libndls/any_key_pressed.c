@@ -26,7 +26,7 @@ BOOL any_key_pressed(void) {
 	volatile int *addr;
 	touchpad_report_t report;
 	touchpad_scan(&report);
-	if (report.contact) return TRUE;
+	if (report.pressed) return TRUE;
 	for (addr = KEY_MAP + 0x10; addr < (volatile int *)(KEY_MAP + 0x20); addr += 1) {
 		if (*addr != -1)
 			return TRUE;

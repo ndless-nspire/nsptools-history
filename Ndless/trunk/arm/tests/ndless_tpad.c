@@ -30,7 +30,7 @@ static void setPixel(int x, int y, int color) {
 
 #define PROXIMITY_BAR_HEIGHT 10
 
-static void draw_click_line(void) {
+static void draw_touched_line(void) {
 	unsigned char *p;
 	for (p = SCREEN_BASE_ADDRESS; p < (unsigned char *)(SCREEN_BASE_ADDRESS + (SCREEN_WIDTH/2) * PROXIMITY_BAR_HEIGHT); p += SCREEN_WIDTH/2) {
 		p[0x18] = 0x0F;
@@ -49,7 +49,7 @@ int main(void) {
 	tpad_info = touchpad_getinfo();
 	if (!tpad_info)
 		return 0;
-	draw_click_line();
+	draw_touched_line();
 	while (1) {
 		idle();
 		if (isKeyPressed(KEY_NSPIRE_ESC))
@@ -59,7 +59,7 @@ int main(void) {
 			previous_proximity = tpad_report.proximity;
 			/* Show the proximity */
 			memset(SCREEN_BASE_ADDRESS, 0xFF, PROXIMITY_BAR_HEIGHT * (SCREEN_WIDTH/2)); // clear the bar
-			draw_click_line();
+			draw_touched_line();
 			for (p = SCREEN_BASE_ADDRESS; p < (unsigned char*)(SCREEN_BASE_ADDRESS + (SCREEN_WIDTH/2) * PROXIMITY_BAR_HEIGHT); p += SCREEN_WIDTH/2) {
 				memset(p, 0, tpad_report.proximity / 2);
 			}
