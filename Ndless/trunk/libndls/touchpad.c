@@ -48,53 +48,40 @@ touchpad_info_t *touchpad_getinfo(void) {
 	return &touchpad_info;
 }
 
+static tpad_arrow_t touchpad_getarrow(touchpad_report_t *report) {
+	touchpad_getinfo();
+	if (!report->pressed) return TPAD_ARROW_NONE;
+	if (report->y >= (touchpad_info.height * 2)/3) {
+		if (report->x >= (touchpad_info.width * 2)/3) return TPAD_ARROW_UPRIGHT;
+		if (report->x <= (touchpad_info.width * 1)/3) return TPAD_ARROW_LEFTUP;
+		return TPAD_ARROW_UP;
+	}
+	if (report->y <= (touchpad_info.height * 1)/3) {
+		if (report->x >= (touchpad_info.width * 2)/3) return TPAD_ARROW_RIGHTDOWN;
+		if (report->x <= (touchpad_info.width * 1)/3) return TPAD_ARROW_DOWNLEFT;
+		return TPAD_ARROW_DOWN;
+	}
+	if (report->x >= (touchpad_info.width * 2)/3) return TPAD_ARROW_RIGHT;
+	if (report->x <= (touchpad_info.width * 1)/3) return TPAD_ARROW_LEFT;
+	return TPAD_ARROW_CLICK;
+}
+
 /* Returns non-zero on error. report->contact and report->pressed are always FALSE on Clickpad. */
 int touchpad_scan(touchpad_report_t *report) {
 	report->contact = report->pressed = 0;
+	report->arrow = TPAD_ARROW_NONE;
 	if (!is_touchpad)
 		return 0;
 	if (!touchpad_read(0x00, 0x0A, report))
 		return 1;
 	report->x = bswap16(report->x);
 	report->y = bswap16(report->y);
+	report->arrow = touchpad_getarrow(report);
 	return 0;
 }
 
-#define TPAD_RATIO 3
-
 BOOL touchpad_arrow_pressed(tpad_arrow_t arrow) {
 	touchpad_report_t report;
-	touchpad_getinfo();
 	touchpad_scan(&report);
-	if (!report.pressed) return FALSE;
-	switch (arrow) {
-		case TPAD_ARROW_UP:
-			return report.y >= (touchpad_info.height * (TPAD_RATIO - 1))/TPAD_RATIO && report.x >= touchpad_info.width/TPAD_RATIO && report.x <= (touchpad_info.width * (TPAD_RATIO - 1))/TPAD_RATIO;
-			break;
-		case TPAD_ARROW_UPRIGHT:
-			return report.y >= (touchpad_info.height * (TPAD_RATIO - 1))/TPAD_RATIO && report.x >= (touchpad_info.width * (TPAD_RATIO - 1))/TPAD_RATIO;
-			break;
-		case TPAD_ARROW_RIGHT:
-			return report.y >= touchpad_info.height/TPAD_RATIO && report.y <= (touchpad_info.height * (TPAD_RATIO - 1))/TPAD_RATIO && report.x >= (touchpad_info.width * (TPAD_RATIO - 1))/TPAD_RATIO;
-			break;
-		case TPAD_ARROW_RIGHTDOWN:
-			return report.y <= touchpad_info.height/TPAD_RATIO && report.x >= (touchpad_info.width * (TPAD_RATIO - 1))/TPAD_RATIO;
-			break;
-		case TPAD_ARROW_DOWN:
-			return report.y <= touchpad_info.height/TPAD_RATIO && report.x >= touchpad_info.width/TPAD_RATIO && report.x <= (touchpad_info.width * (TPAD_RATIO - 1))/TPAD_RATIO;
-			break;
-		case TPAD_ARROW_DOWNLEFT:
-			return report.y <= touchpad_info.height/TPAD_RATIO && report.x <= touchpad_info.width/TPAD_RATIO;
-			break;
-		case TPAD_ARROW_LEFT:
-			return report.y >= touchpad_info.height/TPAD_RATIO && report.y <= (touchpad_info.height * (TPAD_RATIO - 1))/TPAD_RATIO && report.x <= touchpad_info.width/TPAD_RATIO;
-			break;
-		case TPAD_ARROW_LEFTUP:
-			return report.y >= (touchpad_info.height * (TPAD_RATIO - 1))/TPAD_RATIO && report.x <= touchpad_info.width/TPAD_RATIO;
-			break;
-		case TPAD_ARROW_CLICK:
-			return report.y > touchpad_info.height/TPAD_RATIO && report.y < (touchpad_info.height * (TPAD_RATIO - 1))/TPAD_RATIO && report.x > touchpad_info.width/TPAD_RATIO && report.x < (touchpad_info.width * (TPAD_RATIO - 1))/TPAD_RATIO;
-		default:
-			return FALSE;
-	}
+	return report.arrow == arrow;
 }

@@ -28,9 +28,9 @@ typedef struct {
 	unsigned char y_velocity;
 	uint16_t dummy;
 	unsigned char pressed; /* "key pressed". TRUE or FALSE */
+	unsigned char arrow; /* area of the pad currently touched. see tpad_arrow_t. */
 } touchpad_report_t;
 
-/* internal */
 typedef enum tpad_arrow {TPAD_ARROW_NONE, TPAD_ARROW_UP, TPAD_ARROW_UPRIGHT, TPAD_ARROW_RIGHT, TPAD_ARROW_RIGHTDOWN, TPAD_ARROW_DOWN, TPAD_ARROW_DOWNLEFT, TPAD_ARROW_LEFT, TPAD_ARROW_LEFTUP, TPAD_ARROW_CLICK} tpad_arrow_t;
 
 /* os.h's dependencies depend on the definitions above... */
