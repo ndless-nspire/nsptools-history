@@ -16,12 +16,16 @@
  * Portions created by the Initial Developer are Copyright (C) 2010
  * the Initial Developer. All Rights Reserved.
  *
- * Contributor(s): 
+ * Contributor(s): Goplat
  ****************************************************************************/
 
 #include <os.h>
 
 void idle(void) {
-  unsigned int sbz;
-  __asm volatile("mcr p15, 0, %0, c7, c0, 4" : "=r"(sbz) );
+	int irq_mask = *(volatile int *)0xDC000008;
+	*(volatile int *)0xDC00000C = ~(1 << 19); // Disable all IRQs except timer
+  __asm volatile("mcr p15, 0, %0, c7, c0, 4" : : "r"(0) ); // Wait for an interrupt to occur
+	*(volatile int *)0x900A0020 = 1; // Acknowledge timer interrupt at source
+	*(volatile int *)0xDC000028; // Make interrupt controller stop asserting nIRQ if there aren't any active IRQs left
+	*(volatile int *)0xDC000008 = irq_mask; // Re-enable disabled IRQs
 }
