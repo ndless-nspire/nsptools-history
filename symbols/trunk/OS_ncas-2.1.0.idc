@@ -334,6 +334,7 @@
 	MakeName	(0X10208380,	"inflateSyncPoint");
 	MakeName	(0X1020852C,	"inflate_table");
 	MakeName	(0X10208C00,	"_tr_init");
+	MakeName	(0X1020AE24,	"zlibVersion");
 	MakeName	(0X1020AE30,	"zlibCompileFlags");
 	MakeName	(0X1020AE6C,	"adler32");
 	MakeName	(0X1020B264,	"compress2");

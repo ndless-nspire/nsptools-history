@@ -25,6 +25,9 @@ Ndless - Changelog
   - FIX: broken va_list and va_arg with char parameters
   - FIX: wrong KEY_NSPIRE_EQU constant
   - FIX: idle() makes battery drain quickly
+  - NEW: adler32, crc32, crc32_combine, zlibVersion, zlibCompileFlags,
+    deflateInit2_, deflate, deflateEnd, inflateInit2_, inflate, inflateEnd
+    (debrouxl)
  libndls:
   - NEW: any_key_pressed, wait_key_pressed, wait_no_key_pressed, clrscr, 
     clear_cache, is_touchpad, show_msgbox

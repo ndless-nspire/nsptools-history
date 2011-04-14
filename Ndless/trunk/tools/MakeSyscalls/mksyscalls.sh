@@ -31,31 +31,35 @@ for os_version in "$@"; do
 	while [ $((syscallh_linenum + 1)) -le $syscallh_last_value_line ]; do
 		syscallh_linenum=$((syscallh_linenum + 1))
 		scallh_line=`head -$syscallh_linenum "$syscallfile" | tail -1`
-		syscall_name=`echo "$scallh_line" | sed 's/.\+\?e_\(\w\+\).*/\1/'`
-		if [ -z "$syscall_name" ]; then
-			continue
-		fi
-		idcline=`grep \"$syscall_name\" "$idcfile" | grep MakeName`
-		if [ $? -ne 0 ]; then
-			if ! $lastwarn; then
-				echo ""
+		syscall_addr=0X0
+		#contains_comment=`echo "$scallh_line" | egrep "^//"`;
+		# If line not empty then
+		if [ "x`echo $scallh_line | sed 's/\\r//g' | sed 's/\\n//g'`" != "x" ]; then
+			syscall_name=`echo "$scallh_line" | sed 's/.\+\?e_\(\w\+\).*/\1/'`
+			if [ -z "$syscall_name" ]; then
+				continue
 			fi
-			echo -e "WARNING: symbol '$syscall_name' of '$syscallfilename' not found in '$idcname'"
-			lastwarn=true
-			syscall_addr=0x0
-		else
-			lastwarn=false
-			syscall_addr=`echo "$idcline" | sed 's/.*\(0X[0-9A-F]\+\),.*/\1/g'`
+			idcline=`grep \"$syscall_name\" "$idcfile" | grep MakeName`
+			if [ $? -ne 0 ]; then
+				if ! $lastwarn; then
+					echo ""
+				fi
+				echo -e "WARNING: symbol '$syscall_name' of '$syscallfilename' not found in '$idcname'"
+				lastwarn=true
+			else
+				lastwarn=false
+				syscall_addr=`echo "$idcline" | sed 's/.*\(0X[0-9A-F]\+\),.*/\1/g'`
+			fi
+			if [ $syscallh_linenum -eq $syscallh_first_value_line ]; then
+				echo -en "\t  " >> "$outfile"
+			else
+				echo -en "\t, " >> "$outfile"
+			fi
+			if ! $lastwarn; then
+				echo -n '.'
+			fi
+			echo "$syscall_addr" >> "$outfile"
 		fi
-		if [ $syscallh_linenum -eq $syscallh_first_value_line ]; then
-			echo -en "\t  " >> "$outfile"
-		else
-			echo -en "\t, " >> "$outfile"
-		fi
-		if ! $lastwarn; then
-			echo -n '.'
-		fi
-		echo "$syscall_addr" >> "$outfile"
 	done
 	echo "};" >> "$outfile"
 	echo ""

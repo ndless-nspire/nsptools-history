@@ -648,6 +648,7 @@
 	MakeName	(0X101A0AB4,	"inflateCopy");
 	MakeName	(0X101A0C10,	"inflate_table");
 	MakeName	(0X101A12E4,	"_tr_init");
+	MakeName	(0X101A3508,	"zlibVersion");
 	MakeName	(0X101A3514,	"zlibCompileFlags");
 	MakeName	(0X101A351C,	"zError");
 	MakeName	(0X101A3530,	"zcalloc");

@@ -521,6 +521,7 @@
 	MakeName	(0X101A2A7C,	"inflateSyncPoint");
 	MakeName	(0X101A2C28,	"inflate_table");
 	MakeName	(0X101A32FC,	"_tr_init");
+	MakeName	(0X101A5520,	"zlibVersion");
 	MakeName	(0X101A552C,	"zlibCompileFlags");
 	MakeName	(0X101A5534,	"zError");
 	MakeName	(0X101A5548,	"zcalloc");

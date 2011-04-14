@@ -151,7 +151,7 @@ extern int __base;
 static __attribute__ ((unused)) unsigned _syscallvar_savedlr;
 /* Force the use of the stack for the parameters */
 #ifndef __thumb__
-#define _SYSCALL_SWI(rettype, attributes, funcname, param1) static inline rettype attributes __attribute__((naked)) funcname##_swi(param1, ...) { \
+#define _SYSCALL_SWI(rettype, attributes, funcname, param1) static inline rettype attributes __attribute__((naked)) funcname##_swi() { \
 	register unsigned __r0 __asm("r0"); \
 	__asm volatile( \
 		" push {r4, r5} \n" \
@@ -165,7 +165,7 @@ static __attribute__ ((unused)) unsigned _syscallvar_savedlr;
 	return (rettype)__r0; \
 }
 #else // slightly less optimized
-#define _SYSCALL_SWI(rettype, attributes, funcname, param1) static inline rettype attributes __attribute__((naked)) funcname##_swi(param1, ...) { \
+#define _SYSCALL_SWI(rettype, attributes, funcname, param1) static inline rettype attributes __attribute__((naked)) funcname##_swi() { \
 	register unsigned __r0 __asm("r0"); \
 	__asm volatile( \
 		" push {r4, r5} \n" \
@@ -181,7 +181,7 @@ static __attribute__ ((unused)) unsigned _syscallvar_savedlr;
 	return (rettype)__r0; \
 }
 #endif // ndef __thumb__
-#define _SYSCALL(rettype, funcname, param1, ...) _SYSCALL_SWI(rettype, funcname, param1) static inline rettype funcname(param1, __VA_ARGS__)
+#define _SYSCALL(rettype, funcname, param1, ...) _SYSCALL_SWI(rettype, , funcname, param1) static inline rettype funcname(param1, __VA_ARGS__)
 // Use in conjunction with _SYSCALL for 5+ parameters
 #define _SYSCALL_ARGS(rettype, funcname, param1, ...) {return funcname##_swi(param1, __VA_ARGS__);}
 /* Custom syscalls: these are syscalls currently not implemented by Ndless you want to define yourself.
@@ -304,6 +304,70 @@ _SYSCALL_OSVAR(unsigned char *, keypad_type)
 _SYSCALL3(int, touchpad_read, unsigned char /* start */, unsigned char /* end */, void * /* buf */)
 // For internal use by libndls. Returns 0 on failure, 1 on success.
 _SYSCALL3(int, touchpad_write, unsigned char /* start */, unsigned char /* end */, void * /* buf */)
+
+
+#define Z_NO_FLUSH      0
+#define Z_PARTIAL_FLUSH 1
+#define Z_SYNC_FLUSH    2
+#define Z_FULL_FLUSH    3
+#define Z_FINISH        4
+#define Z_BLOCK         5
+#define Z_TREES         6
+/* Allowed flush values; see deflate() and inflate() below for details */
+
+#define Z_OK            0
+#define Z_STREAM_END    1
+#define Z_NEED_DICT     2
+#define Z_ERRNO        (-1)
+#define Z_STREAM_ERROR (-2)
+#define Z_DATA_ERROR   (-3)
+#define Z_MEM_ERROR    (-4)
+#define Z_BUF_ERROR    (-5)
+#define Z_VERSION_ERROR (-6)
+
+#define Z_NULL  0  /* for initializing zalloc, zfree, opaque */
+
+typedef void * (*zlib_alloc_func)(void * opaque, uint32_t items, uint32_t size);
+typedef void   (*zlib_free_func) (void * opaque, void * address);
+
+struct internal_state;
+
+typedef struct z_stream_s {
+    uint8_t  *next_in;  /* next input byte */
+    uint32_t avail_in;  /* number of bytes available at next_in */
+    uint32_t total_in;  /* total nb of input bytes read so far */
+
+    uint8_t  *next_out; /* next output byte should be put there */
+    uint32_t avail_out; /* remaining free space at next_out */
+    uint32_t total_out; /* total nb of bytes output so far */
+
+    char     *msg;      /* last error message, NULL if no error */
+    struct internal_state *state; /* not visible by applications */
+
+    zlib_alloc_func zalloc;  /* used to allocate the internal state */
+    zlib_free_func  zfree;   /* used to free the internal state */
+    void *  opaque;  /* private data object passed to zalloc and zfree */
+
+    uint8_t  data_type;  /* best guess about the data type: binary or text */
+    uint32_t adler;      /* adler32 value of the uncompressed data */
+    uint32_t reserved;   /* reserved for future use */
+} z_stream, *z_streamp;
+
+_SYSCALL3(uint32_t, adler32, uint32_t /* adler */ , const uint8_t * /* buf */, uint32_t /* len */)
+_SYSCALL3(uint32_t, crc32, uint32_t /* crc */ , const uint8_t * /* buf */ , uint32_t /* len */)
+_SYSCALL3(uint32_t, crc32_combine, uint32_t /* crc1 */, uint32_t /* crc2 */, uint32_t /* len2 */)
+
+_SYSCALL0(const char *, zlibVersion)
+_SYSCALL_OSVAR(uint32_t, zlibCompileFlags)
+
+_SYSCALL(uint32_t, deflateInit2_, z_streamp strm, uint32_t level, uint32_t method, uint32_t windowBits, uint32_t memLevel, uint32_t strategy, const char * version, uint32_t stream_size) _SYSCALL_ARGS(uint32_t, deflateInit2_, strm, level, method, windowBits, memLevel, strategy, version, stream_size)
+//_SYSCALL4(uint32_t, deflateInit_, z_streamp /* strm */, uint32_t /* level */, const char * /* version */, uint32_t /* stream_size */)
+_SYSCALL2(uint32_t, deflate, z_streamp /* strm */, uint32_t /* flush */)
+_SYSCALL1(uint32_t, deflateEnd, z_streamp /* strm */)
+_SYSCALL4(uint32_t, inflateInit2_, z_streamp /* strm */, uint32_t /* windowBits */, const char * /* version */, uint32_t /* stream_size */)
+_SYSCALL2(uint32_t, inflate, z_streamp /* strm */, uint32_t /* flush */)
+_SYSCALL1(uint32_t, inflateEnd, z_streamp /* strm */)
+
 
 /* Ndless extensions. Not available in thumb state. */
 // Given a list of OS-specific value and its size, returns the value for the current OS.
