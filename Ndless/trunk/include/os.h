@@ -358,7 +358,7 @@ _SYSCALL3(uint32_t, crc32, uint32_t /* crc */ , const uint8_t * /* buf */ , uint
 _SYSCALL3(uint32_t, crc32_combine, uint32_t /* crc1 */, uint32_t /* crc2 */, uint32_t /* len2 */)
 
 _SYSCALL0(const char *, zlibVersion)
-_SYSCALL_OSVAR(uint32_t, zlibCompileFlags)
+_SYSCALL0(uint32_t, zlibCompileFlags)
 
 _SYSCALL(uint32_t, deflateInit2_, z_streamp strm, uint32_t level, uint32_t method, uint32_t windowBits, uint32_t memLevel, uint32_t strategy, const char * version, uint32_t stream_size) _SYSCALL_ARGS(uint32_t, deflateInit2_, strm, level, method, windowBits, memLevel, strategy, version, stream_size)
 //_SYSCALL4(uint32_t, deflateInit_, z_streamp /* strm */, uint32_t /* level */, const char * /* version */, uint32_t /* stream_size */)
