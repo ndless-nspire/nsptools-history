@@ -10,7 +10,8 @@ DISTDIR := ../calcbin
 vpath %.tns $(DISTDIR)
 
 # OS-specific
-OS_VERSIONS := 1.7 2.0.1 2.1.0
+OS_VERSIONS := 1.7 2.0.1 2.1.0 3.0.1
+LUA_BOOSTRAPPED_OS := 3.0.1
 # Since the installer is built specifically for an OS version, the version must be passed to the code.
 # Unfortunately Makefile doesn't allow target-specific variable values to extract the stem from pattern rules,
 # this list must be maintained manually.
@@ -18,6 +19,7 @@ OS_VERSIONS := 1.7 2.0.1 2.1.0
 ndless_installer_os-1.7.elf: GCCFLAGS+=$(call GCCFLAGS_INSTALLER,1.7)
 ndless_installer_os-2.0.1.elf: GCCFLAGS+=$(call GCCFLAGS_INSTALLER,2.0.1)
 ndless_installer_os-2.1.0.elf: GCCFLAGS+=$(call GCCFLAGS_INSTALLER,2.1.0)
+ndless_installer_os-3.0.1.elf: GCCFLAGS+=$(call GCCFLAGS_INSTALLER,3.0.1)
 
 # One installer for each OS version, because it is size constrained, and each OS version requires its own syscall table.
 INSTALLER_TNS := $(foreach os_version, $(OS_VERSIONS), ndless_installer_os-$(os_version).tns)
@@ -65,9 +67,18 @@ GCCFLAGS_INSTALLER =-D _NDLS_LIGHT -D STAGE1 -mthumb-interwork -mthumb -D OS_VER
 ndless_installer_os-%.elf: bootstrapper.o stage1.o ints_light_thumb.o syscalls_light_thumb.o utils_light_thumb_os-$$*.o syscalls-light_ncas-%.o syscalls-light_cas-%.o
 	$(LD) --no-startup $(LDFLAGS) $^ -o $@
 
-ndless_installer_os-%.tns: ndless_installer_os-%.elf
+%.bin: %.elf
 	$(OBJCOPY) -O binary $< $(@:.tns=.bin)
-	../bin/MakeLoader $(@:.tns=.bin) Document.xml
+
+# Lua bootstrapping
+$(foreach os_version, $(LUA_BOOSTRAPPED_OS), ndless_installer_os-$(os_version).tns): %.tns: %.bin
+	printf '%*s' 20000000 ' ' | cat - $< > $(<:.bin=.tmp)
+	lua2tns.sh $(DISTDIR)/$@ $(<:.bin=.tmp)
+	rm $(<:.bin=.tmp)
+
+# 1.7/2.x bootstrapping
+ndless_installer_os-%.tns: ndless_installer_os-%.bin
+	../bin/MakeLoader $< Document.xml
 	rm -f $@ $(@:.tns=.zip)
 	$(7Z) a $(@:.tns=.zip) Document.xml
 	mv $(@:.tns=.zip) $(DISTDIR)/$@
@@ -77,7 +88,7 @@ SYSCALLS_LIGHT_OBJS :=  $(foreach os_version, $(OS_VERSIONS), $(foreach model, n
 STAGE2_OBJS := stage2.o ints_light.o syscalls_light.o utils_light.o $(SYSCALLS_LIGHT_OBJS)
 SYSCALLS_OBJS :=  $(foreach os_version, $(OS_VERSIONS), $(foreach model, ncas cas, syscalls_$(model)-$(os_version).o))
 CORE_OBJS := install.o ploaderhook.o ints.o syscalls.o utils.o emu.o $(SYSCALLS_OBJS)
-RES_OBJS := $(STAGE2_OBJS) $(CORE_OBJS)
+RES_OBJS := $(STAGE2_OBJS) $(CORE_OBJS)d
 
 # Build with the light switch (temporarily added to $GCCFLAGS)
 # because the "stage2" part of ndless_resources.tns is run from a small temporary buffer
@@ -126,7 +137,7 @@ cleanres:
 	rm -rf ndless_stage2.elf ndless_core.elf $(RES_OBJS)
 
 cleanbin:
-	rm -rf *.o *.bin *.elf *.xml *.zip
+	rm -rf *.o *.bin *.elf *.xml *.zip *.tmp
 
 cleansubdirs:
 	@for i in $(SUBDIRS); do \

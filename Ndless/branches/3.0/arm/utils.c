@@ -47,6 +47,10 @@ extern unsigned syscalls_light_ncas_2_1_0[];
 extern unsigned syscalls_light_cas_2_1_0[];
 extern unsigned syscalls_ncas_2_1_0[];
 extern unsigned syscalls_cas_2_1_0[];
+extern unsigned syscalls_light_ncas_3_0_1[];
+extern unsigned syscalls_light_cas_3_0_1[];
+extern unsigned syscalls_ncas_3_0_1[];
+extern unsigned syscalls_cas_3_0_1[];
 
 /* Writes to ut_os_version_index a zero-based index identifying the OS version and HW model.
  * Also sets up the syscalls table.
