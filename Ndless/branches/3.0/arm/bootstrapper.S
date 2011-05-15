@@ -25,6 +25,7 @@
 #include <os.h>
 #include "ndless.h"
 
+bootstrapper: .global bootstrapper
 ints_vectors:
 	@ Interrupt vectors: jump instructions
  .byte 0x18, 0xF0, 0x9F, 0xE5

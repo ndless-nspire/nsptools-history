@@ -1,0 +1,8 @@
+- lua2tns: shouldn't escape special characters?
+- bootstrapper: different stack unwinding
+- stage2: conditional hooks based on OS version
+- install: low mem hook required?
+- ploaderhook: "the hook is called at installation time" -> really on OS 3.0?
+- mksyscalls.sh/OS_VERSIONS: renable. Define missing symbols. Define CAS 3.0.1 CAS.
+- Check all "OS-specific" markers
+- LUAtoTNS not compatible with MSYS

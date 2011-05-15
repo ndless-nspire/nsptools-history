@@ -1,5 +1,5 @@
 UNAME := $(shell uname)
-SUBDIRS = build MakeLoader
+SUBDIRS = ascii85 build MakeLoader
 
 all:
 ifneq ($(findstring CYGWIN,$(UNAME)),)
