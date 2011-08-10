@@ -47,6 +47,7 @@ int isalnum(int c);
 int iscntrl(int c);
 void nputs(const char *str);
 void nprintf(const char *fmt, ...);
+BOOL on_key_pressed(void);
 void rewind(FILE * stream);
 void show_msgbox(const char *title, const char *msg);
 void sleep(unsigned millisec);

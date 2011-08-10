@@ -120,6 +120,7 @@ int main(void) {
 		if (isKeyPressed(KEY_NSPIRE_DOC)) nputs("KEY_NSPIRE_DOC");
 		if (isKeyPressed(KEY_NSPIRE_TRIG)) nputs("KEY_NSPIRE_TRIG");
 		if (isKeyPressed(KEY_NSPIRE_SCRATCHPAD)) nputs("KEY_NSPIRE_SCRATCHPAD");
+		if (on_key_pressed()) nputs("ON");
 		wait_no_key_pressed();
 	}
 	return 0;
