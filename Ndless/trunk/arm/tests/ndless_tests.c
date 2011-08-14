@@ -42,7 +42,7 @@ static void error(const char *tstname, const char *errmsg) {
 	} while(0)
 
 static void assertUIntEquals(const char *tstname, unsigned expected, unsigned actual) {
-	assert(expected == actual, "%u, %u", expected, actual);
+	assert(expected == actual, "%x, %x", expected, actual);
 }
 
 static void assertIntEquals(const char *tstname, int expected, int actual) {
@@ -50,19 +50,19 @@ static void assertIntEquals(const char *tstname, int expected, int actual) {
 }
 
 __attribute__((unused)) static void assertUIntGreater(const char *tstname, unsigned expected, unsigned actual) {
-	assert(expected < actual, "%u, %u", expected, actual);
+	assert(expected < actual, "%x, %x", expected, actual);
 }
 
 static void assertUIntLower(const char *tstname, unsigned expected, unsigned actual) {
-	assert(expected > actual, "%u, %u", expected, actual);
+	assert(expected > actual, "%x, %x", expected, actual);
 }
 
 static void assertZero(const char *tstname, unsigned actual) {
-	assert(!actual, "%u", actual);
+	assert(!actual, "%x", actual);
 }
 
 static void assertNonZero(const char *tstname, unsigned actual) {
-	assert(actual, "%u", actual);
+	assert(actual, "%x", actual);
 }
 
 static void assertTrue(const char *tstname, BOOL actual) {
@@ -270,6 +270,9 @@ int main(int argc, char *argv[]) {
 	assertTrue("is_touchpad", (*keypad_type != 3  &&  *keypad_type != 4) || is_touchpad);
 	sleep(100);
 	
+	unsigned orig_cpu_speed = set_cpu_speed(CPU_SPEED_150MHZ); // not emulated by nspire_emu, cannot be checked
+	set_cpu_speed(orig_cpu_speed);
+		
 	if (!errcount) {
 		fputc('S', stdout);
 		puts("uccessful!");

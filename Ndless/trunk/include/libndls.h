@@ -33,6 +33,11 @@ typedef struct {
 
 typedef enum tpad_arrow {TPAD_ARROW_NONE, TPAD_ARROW_UP, TPAD_ARROW_UPRIGHT, TPAD_ARROW_RIGHT, TPAD_ARROW_RIGHTDOWN, TPAD_ARROW_DOWN, TPAD_ARROW_DOWNLEFT, TPAD_ARROW_LEFT, TPAD_ARROW_LEFTUP, TPAD_ARROW_CLICK} tpad_arrow_t;
 
+/* for set_cpu_speed() */
+#define CPU_SPEED_150MHZ 0x00000002
+#define CPU_SPEED_120MHZ 0x000A1002
+#define CPU_SPEED_90MHZ  0x00141002
+
 /* os.h's dependencies depend on the definitions above... */
 #include <os.h>
 
@@ -49,6 +54,7 @@ void nputs(const char *str);
 void nprintf(const char *fmt, ...);
 BOOL on_key_pressed(void);
 void rewind(FILE * stream);
+unsigned set_cpu_speed(unsigned speed);
 void show_msgbox(const char *title, const char *msg);
 void sleep(unsigned millisec);
 size_t strcspn(const char * str1, const char * str2);
