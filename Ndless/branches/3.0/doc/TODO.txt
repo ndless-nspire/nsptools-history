@@ -5,4 +5,6 @@
 - ploaderhook: "the hook is called at installation time" -> really on OS 3.0?
 - mksyscalls.sh/OS_VERSIONS: renable. Define missing symbols. Define CAS 3.0.1 CAS.
 - Check all "OS-specific" markers
-- LUAtoTNS not compatible with MSYS
+- Merge back the last commits from the trunk
+- Disable teststr from decode85.S
+- Update known issues?

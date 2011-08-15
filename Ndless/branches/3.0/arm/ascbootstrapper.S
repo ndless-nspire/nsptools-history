@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is Olivier ARMAND
  * <olivier.calc@gmail.com>.
- * Portions created by the Initial Developer are Copyright (C) 2010
+ * Portions created by the Initial Developer are Copyright (C) 2011
  * the Initial Developer. All Rights Reserved.
  *
  ****************************************************************************/
@@ -55,4 +55,4 @@ ccache_loop:
 
 	.include "decode85.S"
 
-bootstrapper: @ appended here by the build chain
+bootstrapper: @ encoded bootstrapper appended here by the build chain

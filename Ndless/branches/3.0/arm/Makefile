@@ -52,7 +52,7 @@ utils_light_thumb_os-%.o: utils.c
 .PRECIOUS: utils_light_thumb_os-%.o
 
 # Explicit dependencies strangely required for the target to avoid being rebuilt when not really needed
-ascbootstrapper.o: ascbootstrapper.S
+ascbootstrapper.o: ascbootstrapper.S decode85.S
 bootstrapper.o: bootstrapper.S
 stage1.o: stage1.c
 
@@ -76,7 +76,7 @@ $(foreach os_version, $(LUA_BOOSTRAPPED_OS), ndless_installer_os-$(os_version).t
 	@# -w 0: no new line, not supported by the decoder
 	../bin/encode85 -w 0 $< > $(<:.bin=.tmp)
 	printf '%*s' 20000000 ' ' >> $(<:.bin=.tmp)
-	lua2tns.sh $(DISTDIR)/$@ $(<:.bin=.tmp)
+	luna $(<:.bin=.tmp) $(DISTDIR)/$@
 	rm $(<:.bin=.tmp)
 
 # 1.7/2.x bootstrapping

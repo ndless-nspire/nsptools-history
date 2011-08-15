@@ -22,7 +22,7 @@
 
 #include <os.h>
 
-#if 0
+@#if 0
 main: .global main
 	stmfd sp!, {r0-r12, lr}
 	adr r0, teststr
@@ -38,10 +38,9 @@ teststr:
 out:
 	.ascii "                "
 	.align
-#endif
+@#endif
 	
 @ Algorithm based on http://www.stillhq.com/svn/trunk/ascii85/decode85.c
-@ TODO: in Thumb state
 @ The text should *not* contain space characters (including \b, \n, ...)
 @ r0=void *src, r1=void *dest
 @ destroys r0-r6, r12
@@ -67,9 +66,8 @@ wput4:
 check_tilde:
 	cmp  r4, #'~'
 	bne  default
-	cmp  r3, #0
+	movs r6, r3
 	beq  quit
-	mov  r6, r3
 	lsl  r6, r6, #2
 	ldr  r6, [r5, r6]
 	add  r2, r2, r6  @ tuple += pow85[count]
@@ -99,7 +97,6 @@ wput_loop:
 	add  r1, #1
 	sub  r6, #8
 	sub  r3, r3, #1
-	cmp  r3, #0
 	bne  wput_loop
 	bx   lr
 

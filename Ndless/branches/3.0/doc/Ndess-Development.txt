@@ -18,10 +18,10 @@ C
 - Optionally install dash for MSYS: http://sourceforge.net/projects/mingw/files/MSYS/dash
   It may be used for compatibility check when maintaining the shell scripts.
 - 7-zip: http://www.7-zip.org/download.html
-- LUAtoTNS: http://hackspire.unsads.com/wiki/index.php?title=Lua_Programming
+- Luna: http://www.ticalc.org/archives/files/fileinfo/441/44113.html
 - Make sure you are using GCC v4.5.x for ARM
 
-* Add 7-zip and LUAtoTNS's folders to your PATH environment variable
+* Add 7-zip and Luna's folders to your PATH environment variable
 * Copy Ndless/Makefile.config.tpl to Ndless/Makefile.config and configure the latter
 
 ARM
