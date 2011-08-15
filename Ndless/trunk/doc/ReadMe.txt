@@ -104,6 +104,19 @@ Troubleshooting
   message: "Sorry. Could not open document 'xxx.tns'", Ndless has not been 
   correctly installed. Run 'ndless_installer' again after a reboot.
 
+Known issues
+============
+
+A more complete list of known isues can be found in the tracker:
+http://www.unsads.com/projects/nsptools
+
+* The installation confirmation message may not be displayed in some 
+configuration. An error about the document format being not supported is 
+displayed instead.
+
+* The installation may crash when ndless-installer is run from the directory 
+MyLib/.
+
 Support and suggestions
 =======================
 
