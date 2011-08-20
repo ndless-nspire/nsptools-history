@@ -1,5 +1,5 @@
 ============================
-= Luna v0.1a for TI-Nspire =
+= Luna v0.1b for TI-Nspire =
 ============================
 
 Luna is a portable command-line converter of Lua programs to TNS (executable)
@@ -9,6 +9,7 @@ Usage
 =====
 
 luna [INFILE.lua] [OUTFILE.tns]
+If [INFILE.lua] is '-', reads the file from the standard input.
 
 Contact
 =======
@@ -43,7 +44,11 @@ On Windows:
 History
 =======
 
-2011-08-0: v0.1a
+2011-08-??: v0.1b
+ * NEW: lua file can be provided from stdin
+ * FIX: crash if input file doesn't exist
+
+2011-08-06: v0.1a
  * Can be built on Linux
 
 2011-08-05: v0.1

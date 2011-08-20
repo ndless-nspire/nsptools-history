@@ -28,21 +28,42 @@ void *xml_compress(char *inf_name, size_t *obuf_size) {
 		"\x07\x3C\x73\x63\x3A\x73\x63\x72\x69\x70\x74\x3E\x0A";
 	static const char footer[]= "\x0E\x08\x0E\x05\x0E\x02\x0E\x00";
 
-	FILE *inf = fopen(inf_name, "rb");
-	fseek(inf, 0, SEEK_END);
-	unsigned long in_size = ftell(inf);
-	*obuf_size = in_size + sizeof(header) - 1 + sizeof(footer) - 1;
+	FILE *inf;
+	if (!strcmp(inf_name, "-"))
+		inf = stdin;
+	else
+		inf = fopen(inf_name, "rb");
+	if (!inf) {
+		puts("can't open input file");
+		return NULL;
+	}
+	#define FREAD_BLOCK_SIZE 1024
+	*obuf_size = sizeof(header) - 1 + FREAD_BLOCK_SIZE + sizeof(footer) - 1;
 	char *in_buf = malloc(*obuf_size);
 	if (!in_buf) {
-		puts("can't malloc in_buf");
+		puts("can't realloc in_buf");
 		return NULL;
 	}
 	memcpy(in_buf, header, sizeof(header) - 1);
-	fseek(inf, 0, SEEK_SET);
-	if (fread(in_buf + sizeof(header) - 1, in_size, 1, inf) != 1) {
-		puts("can't fread input file");
-		return NULL;
+	size_t in_offset = sizeof(header) - 1;
+	while(1) {
+		size_t read_size;
+		if ((read_size = fread(in_buf + in_offset, 1, FREAD_BLOCK_SIZE, inf)) != FREAD_BLOCK_SIZE) {
+			*obuf_size -= FREAD_BLOCK_SIZE - read_size;
+			if (!(in_buf = realloc(in_buf, *obuf_size))) {
+				puts("can't realloc in_buf");
+				return NULL;
+			}
+			break;
+		}
+		*obuf_size += FREAD_BLOCK_SIZE;
+		if (!(in_buf = realloc(in_buf, *obuf_size))) {
+			puts("can't realloc in_buf");
+			return NULL;
+		}
+		in_offset += read_size;
 	}
+	size_t in_size = *obuf_size - (sizeof(header) - 1) - (sizeof(footer) - 1);
 	fclose(inf);
 	
 	/* escape special XML characters */
@@ -56,6 +77,7 @@ void *xml_compress(char *inf_name, size_t *obuf_size) {
 		*obuf_size += extend_with;
 		void *tmp_in_buf;
 		if (!(tmp_in_buf = realloc(in_buf, *obuf_size))) {
+			puts("can't realloc in_buf for special characters");
 			free(in_buf);
 			return NULL;
 		}
@@ -185,7 +207,8 @@ unlink_quit:
 int main(int argc, char *argv[]) {
 	if (argc != 3) {
 		puts("Usage: luna [INFILE.lua] [OUTFILE.tns]\n"
-				 "Convert a Lua script to a TNS document.");
+				 "Converts a Lua script to a TNS document.\n"
+				 "If INFILE.lua is '-', reads it from the standard input.");
 		return 0;
 	}
 	size_t xmlc_buf_size;
@@ -200,7 +223,7 @@ int main(int argc, char *argv[]) {
 		"\x4D\xB3\x29\x24\x70\x60\x49\x38\x1C\x30\xF8\x99\x00\x4B\x92\x64\xE4\x58\xE6\xBC";
 	void *def_buf = malloc(def_size + sizeof(tien_crypted_header) - 1);
 	if (!def_buf) {
-		puts("can't malloc def_buf");
+		puts("can't realloc def_buf");
 		return 1;
 	}
 	z_stream zstream;
