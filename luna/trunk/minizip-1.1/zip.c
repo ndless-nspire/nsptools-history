@@ -26,7 +26,8 @@
  * - Change LOCALHEADERMAGIC to LOCALHEADERMAGIC1/2/3 (first entry) and STDLOCALHEADERMAGIC (next entries)
  * - zipCloseFileInZipRaw64(): fix offsets due to new LOCALHEADERMAGIC* length
  * - Change ENDHEADERMAGIC
- * - zipOpen*: if pathname is NULL, write to stdout
+ * - zipOpen*(): if pathname is NULL, write to stdout
+ * - zipClose(): don't close stdout
  */
 
 
