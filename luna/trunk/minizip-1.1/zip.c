@@ -26,8 +26,6 @@
  * - Change LOCALHEADERMAGIC to LOCALHEADERMAGIC1/2/3 (first entry) and STDLOCALHEADERMAGIC (next entries)
  * - zipCloseFileInZipRaw64(): fix offsets due to new LOCALHEADERMAGIC* length
  * - Change ENDHEADERMAGIC
- * - zipOpen*(): if pathname is NULL, write to stdout
- * - zipClose(): don't close stdout
  */
 
 
@@ -871,18 +869,14 @@ extern zipFile ZEXPORT zipOpen3 (const void *pathname, int append, zipcharpc* gl
     else
         ziinit.z_filefunc = *pzlib_filefunc64_32_def;
 
-    if (!pathname)
-    	ziinit.filestream = stdout;
-    else {
-	    ziinit.filestream = ZOPEN64(ziinit.z_filefunc,
-	                  pathname,
-	                  (append == APPEND_STATUS_CREATE) ?
-	                  (ZLIB_FILEFUNC_MODE_READ | ZLIB_FILEFUNC_MODE_WRITE | ZLIB_FILEFUNC_MODE_CREATE) :
-	                    (ZLIB_FILEFUNC_MODE_READ | ZLIB_FILEFUNC_MODE_WRITE | ZLIB_FILEFUNC_MODE_EXISTING));
-	
-	    if (ziinit.filestream == NULL)
-	        return NULL;
-	    }
+    ziinit.filestream = ZOPEN64(ziinit.z_filefunc,
+                  pathname,
+                  (append == APPEND_STATUS_CREATE) ?
+                  (ZLIB_FILEFUNC_MODE_READ | ZLIB_FILEFUNC_MODE_WRITE | ZLIB_FILEFUNC_MODE_CREATE) :
+                    (ZLIB_FILEFUNC_MODE_READ | ZLIB_FILEFUNC_MODE_WRITE | ZLIB_FILEFUNC_MODE_EXISTING));
+
+    if (ziinit.filestream == NULL)
+        return NULL;
 
     if (append == APPEND_STATUS_CREATEAFTER)
         ZSEEK64(ziinit.z_filefunc,ziinit.filestream,0,SEEK_END);
@@ -1956,11 +1950,9 @@ extern int ZEXPORT zipClose (zipFile file, const char* global_comment)
     if(err == ZIP_OK)
       err = Write_GlobalComment(zi, global_comment);
 
-		if (zi->filestream != stdout) {
-	    if (ZCLOSE64(zi->z_filefunc,zi->filestream) != 0)
-	        if (err == ZIP_OK)
-	            err = ZIP_ERRNO;
-    }
+    if (ZCLOSE64(zi->z_filefunc,zi->filestream) != 0)
+        if (err == ZIP_OK)
+            err = ZIP_ERRNO;
 
 #ifndef NO_ADDFILEINEXISTINGZIP
     TRYFREE(zi->globalcomment);

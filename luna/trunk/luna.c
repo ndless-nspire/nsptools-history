@@ -1,7 +1,6 @@
 #include <openssl/opensslconf.h>                        
 #include OPENSSL_UNISTD                                 
 #include <openssl/des.h>
-#include <sys/fcntl.h>
 #include <stdio.h>                                      
 #include <stdlib.h>                                     
 #include <string.h>
@@ -166,14 +165,7 @@ int make_tns(void *in_buf, long in_size, const char *of_name) {
 	strncpy(filename, of_name, MAXFILENAME - 1);
 	/* strncpy doesnt append the trailing NULL, if the string is too long. */
 	filename[MAXFILENAME] = '\0';
-	char *filename_param = filename;
-	if (!strcmp(of_name, "-")) {
-		filename_param = NULL;
-#ifdef WIN32	
-		setmode(fileno(stdout), O_BINARY);
-#endif
-	}
-	if (!(zf = zipOpen(filename_param, 0))) {
+	if (!(zf = zipOpen(filename, 0))) {
 		puts("can't open zip file for writing");
 		return 1;
 	}
@@ -186,8 +178,7 @@ int make_tns(void *in_buf, long in_size, const char *of_name) {
 close_quit:
 		zipClose(zf, NULL);
 unlink_quit:
-		if (!strcmp(of_name, "-"))
-			unlink(of_name);
+		unlink(of_name);
 		return 1;
 	}
 	if (zipWriteInFileInZip(zf, document_xml, sizeof(document_xml) - 1) != ZIP_OK) {
@@ -217,8 +208,7 @@ int main(int argc, char *argv[]) {
 	if (argc != 3) {
 		puts("Usage: luna [INFILE.lua] [OUTFILE.tns]\n"
 				 "Converts a Lua script to a TNS document.\n"
-				 "If INFILE.lua is '-', reads it from the standard input.\n"
-				 "If OUTFILE.tns is '-', writes it to the standard output.");
+				 "If INFILE.lua is '-', reads it from the standard input.");
 		return 0;
 	}
 	size_t xmlc_buf_size;
