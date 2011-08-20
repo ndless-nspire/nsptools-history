@@ -9,7 +9,8 @@ Usage
 =====
 
 luna [INFILE.lua] [OUTFILE.tns]
-If [INFILE.lua] is '-', reads the file from the standard input.
+If [INFILE.lua] is '-', reads it from the standard input.
+If [OUTFILE.tns] is '-', writes it to the standard output.
 
 Contact
 =======
@@ -45,7 +46,7 @@ History
 =======
 
 2011-08-??: v0.1b
- * NEW: lua file can be provided from stdin
+ * NEW: lua and tns files can be provided and writtent to stdin and stdout
  * FIX: crash if input file doesn't exist
 
 2011-08-06: v0.1a
