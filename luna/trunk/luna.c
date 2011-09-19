@@ -8,9 +8,115 @@
 #include <zlib.h>
 #include "minizip-1.1/zip.h"
 
+/* sub-routine of xml_compress() to escape the Lua script string. Returns the new in_buf or NULL */
+void *escape_special_xml_chars(char *in_buf, size_t header_size, size_t in_size, size_t *obuf_size) {
+	char *p;
+	unsigned extend_with = 0;
+	for (p = in_buf + header_size; p <  in_buf + header_size + in_size; p++) {
+		if (*p == '&') extend_with += 4; // amp;
+		else if (*p == '<') extend_with += 3; // lt;
+	}
+	if (extend_with) {
+		*obuf_size += extend_with;
+		void *tmp_in_buf;
+		if (!(tmp_in_buf = realloc(in_buf, *obuf_size))) {
+			puts("can't realloc in_buf for special characters");
+			free(in_buf);
+			return NULL;
+		}
+		in_buf = tmp_in_buf;
+		unsigned new_written = 0;
+		for (p = in_buf + header_size; p <  in_buf + header_size + in_size; p++) {
+			if (*p == '&') {
+				memmove(p + 5, p + 1,  in_buf + header_size + in_size + new_written - p - 1);
+				memcpy(p, "&amp;", 5);
+				new_written += 4;
+			} else if (*p == '<') {
+				memmove(p + 4, p + 1, in_buf + header_size + in_size + new_written - p - 1);
+				memcpy(p, "&lt;", 4);
+				new_written += 3;
+			}
+		}
+		in_size += extend_with;
+	}
+	return in_buf;
+}
+
+/* sub-routine of xml_compress() in case of an XML problem as input. Returns the new in_buf or NULL */
+void *reformat_xml_doc(char *in_buf, size_t header_size, size_t in_size, size_t *obuf_size) {
+	char *out_buf = malloc(header_size + in_size);
+	if (!out_buf) {
+		puts("reformat_xml_doc: can't alloc");
+		return NULL;
+	}
+	memcpy(out_buf, in_buf, header_size);
+	char *in_ptr = in_buf;
+	char *xml_start = NULL;
+	while(in_ptr < in_buf + in_size + header_size - 5) {
+		if (!memcmp(in_ptr, "<prob", 5)) {
+			xml_start = in_ptr;
+			break;
+		}
+		in_ptr++;
+	}
+	if (!xml_start) {
+		puts("input isn't a TI-Nspire problem");
+reformat_xml_quit:
+		free(out_buf);
+		return NULL;
+	}
+	int size_written = 0, read_offset = -1, size_to_read = in_size + header_size - (xml_start - in_buf);
+	unsigned tagid_stack[100];
+	unsigned tagid_head_index = 0;
+	int last_tagid = -1;
+	char *out_ptr = out_buf + header_size;
+	// very weak XML parsing: all < must be escaped
+	while(++read_offset <= size_to_read - 1) {
+		if (xml_start[read_offset] == '<') {
+			if (read_offset + 1 >= size_to_read) {
+invalid_problem:
+				puts("input problem is not a valid XML document");
+				goto reformat_xml_quit;
+			}
+			if (xml_start[read_offset + 1] == '/') { // closing tag
+				if (tagid_head_index == 0) {
+					goto invalid_problem;
+				}
+				read_offset++;
+				out_ptr[size_written++] = 0x0E;
+				out_ptr[size_written++] = tagid_stack[--tagid_head_index];
+				// skip the closing tag
+				while(++read_offset <= size_to_read - 1 && xml_start[read_offset] != '>')
+					;
+				if (read_offset > size_to_read - 1) {
+					goto invalid_problem;
+				}
+			}
+			else { // opening tag
+				if (tagid_head_index >= sizeof(tagid_stack)) {
+					puts("input problem XML too deep");
+					goto reformat_xml_quit;
+				}
+				tagid_stack[tagid_head_index++] = ++last_tagid;
+				out_ptr[size_written++] = xml_start[read_offset];
+			}
+		} else {
+			out_ptr[size_written++] = xml_start[read_offset];
+		}
+	}
+	*obuf_size = header_size + size_written;
+	out_buf = realloc(out_buf, *obuf_size);
+	if (!out_buf) {
+		puts("reformat_xml_doc: can't realloc out_buf");
+		goto reformat_xml_quit;
+	}
+	free(in_buf);
+	return out_buf;
+}
+
 /* Returns the output buffer, NULL on error. Fills obuf_size. */
-void *xml_compress(char *inf_name, size_t *obuf_size) {
-	static const char header[] =
+void *xml_compress(char *inf_name, size_t *obuf_size, int infile_is_xml) {
+	static const char lua_header[] =
 		"\x54\x49\x58\x43\x30\x31\x30\x30\x2D\x31\x2E\x30\x3F\x3E\x3C\x70\x72"
 		"\x6F\x62\x20\x78\x6D\x6C\x6E\x73\x3D\x22\x75\x72\x6E\x3A\x54\x49\x2E"
 		"\x50\xA8\x5F\x5B\x1F\x0A\x22\x20\x76\x65\x72\x3D\x22\x31\x2E\x30\x22"
@@ -26,8 +132,13 @@ void *xml_compress(char *inf_name, size_t *obuf_size) {
 		"\x3D\x22\x31\x2E\x30\x22\x3E\x3C\x73\x63\x3A\x6D\x46\x6C\x61\x67\x73"
 		"\x3E\x30\x0E\x06\x3C\x73\x63\x3A\x76\x61\x6C\x75\x65\x3E\x2D\x31\x0E"
 		"\x07\x3C\x73\x63\x3A\x73\x63\x72\x69\x70\x74\x3E\x0A";
-	static const char footer[]= "\x0E\x08\x0E\x05\x0E\x02\x0E\x00";
+	static const char lua_footer[] = "\x0E\x08\x0E\x05\x0E\x02\x0E\x00";
+	static const char xml_header[] =
+		"\x54\x49\x58\x43\x30\x31\x30\x30\x2D\x31\x2E\x30\x3F\x3E";
 
+	const char *header = infile_is_xml ? xml_header : lua_header;
+	size_t header_size = (infile_is_xml ? sizeof(xml_header) : sizeof(lua_header)) - 1;
+	size_t footer_size = infile_is_xml ? 0 : (sizeof(lua_footer) - 1);
 	FILE *inf;
 	if (!strcmp(inf_name, "-"))
 		inf = stdin;
@@ -38,14 +149,14 @@ void *xml_compress(char *inf_name, size_t *obuf_size) {
 		return NULL;
 	}
 	#define FREAD_BLOCK_SIZE 1024
-	*obuf_size = sizeof(header) - 1 + FREAD_BLOCK_SIZE + sizeof(footer) - 1;
+	*obuf_size = header_size + FREAD_BLOCK_SIZE + footer_size;
 	char *in_buf = malloc(*obuf_size);
 	if (!in_buf) {
 		puts("can't realloc in_buf");
 		return NULL;
 	}
-	memcpy(in_buf, header, sizeof(header) - 1);
-	size_t in_offset = sizeof(header) - 1;
+	memcpy(in_buf, header, header_size);
+	size_t in_offset = header_size;
 	while(1) {
 		size_t read_size;
 		if ((read_size = fread(in_buf + in_offset, 1, FREAD_BLOCK_SIZE, inf)) != FREAD_BLOCK_SIZE) {
@@ -63,41 +174,17 @@ void *xml_compress(char *inf_name, size_t *obuf_size) {
 		}
 		in_offset += read_size;
 	}
-	size_t in_size = *obuf_size - (sizeof(header) - 1) - (sizeof(footer) - 1);
+	size_t in_size = *obuf_size - header_size - footer_size;
 	fclose(inf);
-	
-	/* escape special XML characters */
-	char *p;
-	unsigned extend_with = 0;
-	for (p = in_buf + sizeof(header) - 1; p <  in_buf + sizeof(header) - 1 + in_size; p++) {
-		if (*p == '&') extend_with += 4; // amp;
-		else if (*p == '<') extend_with += 3; // lt;
-	}
-	if (extend_with) {
-		*obuf_size += extend_with;
-		void *tmp_in_buf;
-		if (!(tmp_in_buf = realloc(in_buf, *obuf_size))) {
-			puts("can't realloc in_buf for special characters");
-			free(in_buf);
+
+	if (infile_is_xml) {
+		return reformat_xml_doc(in_buf, header_size, in_size, obuf_size);
+	} else {
+		if (!(in_buf = escape_special_xml_chars(in_buf, header_size, in_size, obuf_size)))
 			return NULL;
-		}
-		in_buf = tmp_in_buf;
-		unsigned new_written = 0;
-		for (p = in_buf + sizeof(header) - 1; p <  in_buf + sizeof(header) - 1 + in_size; p++) {
-			if (*p == '&') {
-				memmove(p + 5, p + 1,  in_buf + sizeof(header) - 1 + in_size + new_written - p - 1);
-				memcpy(p, "&amp;", 5);
-				new_written += 4;
-			} else if (*p == '<') {
-				memmove(p + 4, p + 1, in_buf + sizeof(header) - 1 + in_size + new_written - p - 1);
-				memcpy(p, "&lt;", 4);
-				new_written += 3;
-			}
-		}
-		in_size += extend_with;
+		memcpy(in_buf + header_size + in_size, lua_footer, sizeof(lua_footer));
+		return in_buf;
 	}
-	memcpy(in_buf + sizeof(header) - 1 + in_size, footer, sizeof(footer) - 1);
-	return in_buf;
 }
 
 int doccrypt(void *inout, long in_size) {
@@ -206,13 +293,14 @@ unlink_quit:
 
 int main(int argc, char *argv[]) {
 	if (argc != 3) {
-		puts("Usage: luna [INFILE.lua] [OUTFILE.tns]\n"
-				 "Converts a Lua script to a TNS document.\n"
-				 "If INFILE.lua is '-', reads it from the standard input.");
+		puts("Usage: luna [INFILE.lua|Problem.xml] [OUTFILE.tns]\n"
+				 "Converts a Lua script or a Problem to a TNS document.\n"
+				 "If the input file '-', reads it from the standard input.");
 		return 0;
 	}
 	size_t xmlc_buf_size;
-	void *xmlc_buf = xml_compress(argv[1], &xmlc_buf_size);
+	int infile_is_xml = strlen(argv[1]) >= 5 && !strcmp(".xml", argv[1] + strlen(argv[1]) - 4);
+	void *xmlc_buf = xml_compress(argv[1], &xmlc_buf_size, infile_is_xml);
 	if (!xmlc_buf)
 		return 1;
 

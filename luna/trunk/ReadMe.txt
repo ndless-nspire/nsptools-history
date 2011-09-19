@@ -1,15 +1,20 @@
-============================
-= Luna v0.1b for TI-Nspire =
-============================
+===========================
+= Luna v0.2 for TI-Nspire =
+===========================
 
 Luna is a portable command-line converter of Lua programs to TNS (executable)
 TI-Nspire documents, compatible with OS 3.0.2.
 
+It can also be used to convert any TI-Nspire problems in XML format to TNS
+documents.
+
 Usage
 =====
 
-luna [INFILE.lua] [OUTFILE.tns]
-If [INFILE.lua] is '-', reads the file from the standard input.
+Lua program convertion:    luna [INFILE.lua]  [OUTFILE.tns]
+Problem conversion:        luna [Problem.xml] [OUTFILE.tns]
+
+If the input is '-', reads the file from the standard input.
 
 Contact
 =======
@@ -44,7 +49,11 @@ On Windows:
 History
 =======
 
-2011-08-??: v0.1b
+2011-09-19: v0.2
+ * NEW: supports arbitrary TI-Nspire problem conversion, useful to build
+        third-party document generators
+
+2011-08-08: v0.1b
  * NEW: lua file can be provided from stdin
  * FIX: crash if input file doesn't exist
 
