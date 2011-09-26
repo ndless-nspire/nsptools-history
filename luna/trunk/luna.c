@@ -334,10 +334,10 @@ int main(int argc, char *argv[]) {
 		puts("can't deflateEnd");
 		return 1;
 	}
-	if (doccrypt(def_buf + sizeof(tien_crypted_header) - 1, def_size))
+	if (doccrypt(def_buf + sizeof(tien_crypted_header) - 1, zstream.total_out))
 		return 1;
 	memcpy(def_buf, tien_crypted_header, sizeof(tien_crypted_header) - 1);
-	if (make_tns(def_buf, def_size + sizeof(tien_crypted_header) - 1, argv[2]))
+	if (make_tns(def_buf, zstream.total_out + sizeof(tien_crypted_header) - 1, argv[2]))
 		return 1;
 
 	return 0;
