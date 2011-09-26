@@ -49,6 +49,11 @@ On Windows:
 History
 =======
 
+<not yet released>: v0.2a
+ * FIX: characters at the end of a Lua script might no be correctly XML-escaped
+ * FIX: wrong buffer size handling might cause '<' and '&' characters in Lua 
+        scripts to produce bad TNS files.
+
 2011-09-19: v0.2
  * NEW: supports arbitrary TI-Nspire problem conversion, useful to build
         third-party document generators

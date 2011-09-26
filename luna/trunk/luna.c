@@ -1,8 +1,8 @@
-#include <openssl/opensslconf.h>                        
-#include OPENSSL_UNISTD                                 
+#include <openssl/opensslconf.h>
+#include OPENSSL_UNISTD
 #include <openssl/des.h>
-#include <stdio.h>                                      
-#include <stdlib.h>                                     
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <zlib.h>
@@ -12,7 +12,7 @@
 void *escape_special_xml_chars(char *in_buf, size_t header_size, size_t in_size, size_t *obuf_size) {
 	char *p;
 	unsigned extend_with = 0;
-	for (p = in_buf + header_size; p <  in_buf + header_size + in_size; p++) {
+	for (p = in_buf + header_size; p < in_buf + header_size + in_size; p++) {
 		if (*p == '&') extend_with += 4; // amp;
 		else if (*p == '<') extend_with += 3; // lt;
 	}
@@ -26,9 +26,9 @@ void *escape_special_xml_chars(char *in_buf, size_t header_size, size_t in_size,
 		}
 		in_buf = tmp_in_buf;
 		unsigned new_written = 0;
-		for (p = in_buf + header_size; p <  in_buf + header_size + in_size; p++) {
+		for (p = in_buf + header_size; p < in_buf + header_size + in_size + new_written; p++) {
 			if (*p == '&') {
-				memmove(p + 5, p + 1,  in_buf + header_size + in_size + new_written - p - 1);
+				memmove(p + 5, p + 1, in_buf + header_size + in_size + new_written - p - 1);
 				memcpy(p, "&amp;", 5);
 				new_written += 4;
 			} else if (*p == '<') {
@@ -37,7 +37,6 @@ void *escape_special_xml_chars(char *in_buf, size_t header_size, size_t in_size,
 				new_written += 3;
 			}
 		}
-		in_size += extend_with;
 	}
 	return in_buf;
 }
@@ -182,6 +181,7 @@ void *xml_compress(char *inf_name, size_t *obuf_size, int infile_is_xml) {
 	} else {
 		if (!(in_buf = escape_special_xml_chars(in_buf, header_size, in_size, obuf_size)))
 			return NULL;
+		in_size = *obuf_size - header_size - footer_size;
 		memcpy(in_buf + header_size + in_size, lua_footer, sizeof(lua_footer));
 		return in_buf;
 	}
