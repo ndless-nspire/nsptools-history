@@ -49,13 +49,13 @@ On Windows:
 History
 =======
 
-<not yet released>: v0.2a
+2011-09-27: v0.2a
  * FIX: characters at the end of a Lua script might no be correctly XML-escaped
         (thanks Goplat)
  * FIX: wrong buffer size handling might cause '<' and '&' characters in Lua 
         scripts to produce bad TNS files (thanks Goplat)
- * FIX: TNS documents were abnormally big because of traiing garbage data being
-        crypted (thanks Levak)
+ * FIX: TNS documents were abnormally big because of trailing garbage data being
+        encrypted (thanks Levak)
 
 2011-09-19: v0.2
  * NEW: supports arbitrary TI-Nspire problem conversion, useful to build
