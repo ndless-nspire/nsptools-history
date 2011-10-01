@@ -1,3 +1,4 @@
+CC = gcc
 CFLAGS = -W -Wall
 
 all: idcmigrate.exe
