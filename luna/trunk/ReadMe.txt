@@ -1,5 +1,5 @@
 ============================
-= Luna v0.2a for TI-Nspire =
+= Luna v0.2b for TI-Nspire =
 ============================
 
 Luna is a portable command-line converter of Lua programs to TNS (executable)
@@ -48,6 +48,9 @@ On Windows:
 
 History
 =======
+
+?: v0.2b
+ * FIX: buffer overflow
 
 2011-09-27: v0.2a
  * FIX: characters at the end of a Lua script might no be correctly XML-escaped

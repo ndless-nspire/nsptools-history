@@ -182,7 +182,7 @@ void *xml_compress(char *inf_name, size_t *obuf_size, int infile_is_xml) {
 		if (!(in_buf = escape_special_xml_chars(in_buf, header_size, in_size, obuf_size)))
 			return NULL;
 		in_size = *obuf_size - header_size - footer_size;
-		memcpy(in_buf + header_size + in_size, lua_footer, sizeof(lua_footer));
+		memcpy(in_buf + header_size + in_size, lua_footer, sizeof(lua_footer) - 1);
 		return in_buf;
 	}
 }
