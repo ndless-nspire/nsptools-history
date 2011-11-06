@@ -1,4 +1,10 @@
+ARM reference manual is used to determine instruction encoding.
+- end of decode85-utf-8.S
+- Check that decode85-utf-8.S is UTF-8 compliant
+- decode85-utf-8: relayout 'adr' and branch instructions offsets to follow the "add" rule
 - lua2tns: shouldn't escape special characters?
+- Migrate to luna
+- bootstrapper : écrire en ASCII ??
 - bootstrapper: different stack unwinding
 - stage2: conditional hooks based on OS version
 - install: low mem hook required?
@@ -7,4 +13,4 @@
 - Check all "OS-specific" markers
 - Merge back the last commits from the trunk
 - Disable teststr from decode85.S
-- Update known issues?
+- Update none issues?

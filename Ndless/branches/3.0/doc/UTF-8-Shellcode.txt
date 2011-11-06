@@ -1,4 +1,4 @@
-Here are the constrains to follow to write a shellcode complying to the UTF-8 encoding.
+Here are the constrains to follow to write a Thumb shellcode complying to the UTF-8 encoding.
 
 ASCII:    0x20   ->   0x7F
        0010 0000    0111 1111
@@ -20,39 +20,48 @@ These patterns are also are valid in UTF-8:
                                              The long branch with link required, and the absence of branch with a positive offset to skip it
                                              make it not really useful.
 
-[E] Constrains on instructions finishing with 2 registers (RbRd):
-    Rb is 1xx (4, 5, 6, 7)
-    or Rb is r1 and Rd is r1 with the 2 higher bits set to 00
-    or Rb is r1 and Rd is r2     "
-    or Rb is r1 and Rd is r5     "
+[E] Constrains on instructions finishing with 2 registers (xRbRd):
+    The bit before (x) is set -> no constraints
+    The bit before (x) is cleared -> Rb between r4 and r7
 
 ===========
 = Allowed =
 ===========
 
-mov|cmp|add|sub immediate
--------------------------
+mov|cmp|adds|subs immediate
+---------------------------
 
 001x xxxx Offset8
 
 mov|cmp|add|sub Rd, #Offset8     where Offset8 is one of [B]
 mov with sub/add can be used to write other values.
+mov Rd, #0 can be replaced by eor Rd, Rd.
+cmp Rd, #0 can be replaced by adds Rd, #0x20 / subs Rd, #0x20
+
+mov Rd, Rm
+----------
+
+Rm between r4 and r15, and Rd between r0 and r7
+
+add 2 regs
+----------
+
+add Rd, Rm
+01000100 H1H2RmRd. H1=0.
+
+TODO constaints on registers.
 
 push/pop registers
 ------------------
 
-Follows a dummy Branch+Link, see [D]
+Follows a dummy Branch+Link, see [D]. Cannot really be used.
 Example: 10110101 RList   (B5 xx) -> push {Rlist, LR}
 
 conditional branch
 ------------------
 
 1101 cond SOffset8   where SOffset is negative (10xxxxxx)
-
-unconditional branch
---------------------
-
-Use "adr", "push" and "pop {pc}" (a total of 8 bytes!)
+Must be followed by a dummy instruction from [D]
 
 load/store with register offset
 -------------------------------
@@ -60,16 +69,15 @@ load/store with register offset
 0101 LB0Ro1 Ro2RbRd   where Ro is x0x (0, 1, 4, 5)
                             Rb and Rd follow [E]
 
-load/store with immediate offset
---------------------------------
+load/store byte with immediate offset
+-------------------------------------
 
-0111BLOOO OORbRd    where the 2 lower bit of Offset are 0 or 1
-                          Rb and Rd follow [E]
+ldrb Rd, Rb, #immed_5
 
-adr (add  rx,pc,offset)
------------------------
-
-See add.
+0111BLOOO OORbRd    where the 2 lower bit of Offset are 00 or 01
+Rb and Rd follow [E]:
+ If Offset is odd, no constrains
+ If Offset is even, Rb between r4 and r7
 
 Hi register operations/branch exchange
 --------------------------------------
@@ -79,24 +87,50 @@ Example: 01000111 01110000 (4770)  -> bx lr
 ALU operations
 --------------
 
-0100 00Op OpRsrd    where Op is AND, EOR, ASR, ADC, TST, NEG, ORR or MUL
+0100 00Op OpRsRd    where Op is AND, EOR, ASR, ADC, TST, NEG, ORR or MUL
                           Rs and Rd follow [E]
+mul: no constraints on Rs and Rd
+
 
 =================
 = *Not* allowed =
 =================
 
-mov Rd, Rs
+add with small immediate
+------------------------
+
+add Rd, Rs, #immed_3
+
+add PC / adr
+------------
+
+add Rd, PC, #immed_8 * 4
+
+adr (add  rx,pc,offset)
+-----------------------
+
+add 3 regs
 ----------
 
-Replace with push/pop or one of [A].
+add Rd, Rn, Rm
+
 
 long branch with link
 ---------------------
 
 [D] doesn't make it possible to output the second half.
 
+Use mov r[0-7], pc and bx. But the return address is in r[0-7] and not lr.
+
+blx
+---
+
 lsl/lsr rx, #imm
 ----------------
 
-Use ASR if possible, and MOV+MUL.
+Use ASR if possible, or MOV+MUL, or multiple add Rd, Rm
+
+unconditional branch
+--------------------
+
+Use bx
