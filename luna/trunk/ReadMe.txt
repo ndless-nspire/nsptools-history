@@ -49,7 +49,7 @@ On Windows:
 History
 =======
 
-?: v0.2b
+2011-11-10: v0.2b
  * FIX: buffer overflow
 
 2011-09-27: v0.2a
