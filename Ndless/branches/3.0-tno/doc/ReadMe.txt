@@ -1,5 +1,5 @@
 =============================
-= Ndless v2.0 for TI-Nspire =
+= Ndless v3.1 for TI-Nspire =
 =============================
 
 What is it?
@@ -16,8 +16,8 @@ What do I need to install it on a TI-Nspire?
 ============================================
 
 - A TI-Nspire CAS or non-CAS
-- OS v1.7, v2.0.1 or v2.1.0 installed on it. v2.0.0 is not supported, you
-  should update your OS.
+- OS v1.7, v2.0.1, v2.1.0 or v3.0.1 installed on it. v2.0.0 is not supported, 
+  you should update your OS.
 - Any linking program such as TI-Nspire Computer Link Software
 
 How do I install it?
@@ -63,8 +63,8 @@ few seconds for the installation.
 If the installation makes the calculator hang or reboot, retry the installation 
 on a OS image that has just been created.
 
-How do I upgrade from v1.7?
-===========================
+How do I upgrade from v1.7/v2.0?
+================================
 
 First follow the uninstallation steps below, then the installation steps above.
 
@@ -110,13 +110,6 @@ Known issues
 A more complete list of known isues can be found in the tracker:
 http://www.unsads.com/projects/nsptools
 
-* The installation confirmation message may not be displayed in some 
-configuration. An error about the document format being not supported is 
-displayed instead.
-
-* The installation may crash when ndless-installer is run from the directory 
-MyLib/.
-
 Support and suggestions
 =======================
 
@@ -159,7 +152,6 @@ are documented here: http://hackspire.unsads.com/wiki/index.php/Ndless
 What we hope you will be able to see in the next releases
 =========================================================
 
-- Installation on recent OS versions
 - More syscalls definitions
 - Basic routines as static libraries
 - A fully-fledged executable runner, with complete relocation support, library 

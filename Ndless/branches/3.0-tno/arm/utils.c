@@ -35,18 +35,10 @@ struct next_descriptor ut_next_descriptor = {
 unsigned ut_os_version_index;
 
 // OS-specific
-extern unsigned syscalls_light_ncas_1_7[];
-extern unsigned syscalls_light_cas_1_7[];
-extern unsigned syscalls_ncas_1_7[];
-extern unsigned syscalls_cas_1_7[];
-extern unsigned syscalls_light_ncas_2_0_1[];
-extern unsigned syscalls_light_cas_2_0_1[];
-extern unsigned syscalls_ncas_2_0_1[];
-extern unsigned syscalls_cas_2_0_1[];
-extern unsigned syscalls_light_ncas_2_1_0[];
-extern unsigned syscalls_light_cas_2_1_0[];
-extern unsigned syscalls_ncas_2_1_0[];
-extern unsigned syscalls_cas_2_1_0[];
+extern unsigned syscalls_light_ncas_3_1_0[];
+extern unsigned syscalls_light_cas_3_1_0[];
+extern unsigned syscalls_ncas_3_1_0[];
+extern unsigned syscalls_cas_3_1_0[];
 
 /* Writes to ut_os_version_index a zero-based index identifying the OS version and HW model.
  * Also sets up the syscalls table.
@@ -58,64 +50,20 @@ void ut_read_os_version_index(void) {
 	 * destroyed at installation time */
 	switch (*(unsigned*)(OS_BASE_ADDRESS + 0x20)) {
 		// OS-specific
-		case 0x10211290:  // 1.7 non-CAS
+		case 0x102F0FA0:  // 3.1.0 non-CAS
 			ut_os_version_index = 0;
 #if defined STAGE1
 		sc_addrs_ptr = CONCAT(syscalls_light_ncas_,OS_VERSION);
-#elif defined STAGE2
-			sc_addrs_ptr = syscalls_light_ncas_1_7;
-#else 
-			sc_addrs_ptr = syscalls_ncas_1_7;
+#else
+			sc_addrs_ptr = syscalls_ncas_3_1_0;
 #endif
 			break;
-		case 0x102132A0:  // 1.7 CAS
+		case 0:  // 3.1.0 CAS
 			ut_os_version_index = 1;
 #if defined STAGE1
 		sc_addrs_ptr = CONCAT(syscalls_light_cas_,OS_VERSION);
-#elif defined STAGE2
-			sc_addrs_ptr = syscalls_light_cas_1_7;
 #else
-			sc_addrs_ptr = syscalls_cas_1_7;
-#endif
-			break;
-		case 0x10266030:  // 2.0.1 non-CAS
-			ut_os_version_index = 2;
-#if defined STAGE1
-		sc_addrs_ptr = CONCAT(syscalls_light_ncas_,OS_VERSION);
-#elif defined STAGE2
-			sc_addrs_ptr = syscalls_light_ncas_2_0_1;
-#else
-			sc_addrs_ptr = syscalls_ncas_2_0_1;
-#endif
-			break;
-		case 0x10266900:  // 2.0.1 CAS
-			ut_os_version_index = 3;
-#if defined STAGE1
-		sc_addrs_ptr = CONCAT(syscalls_light_cas_,OS_VERSION);
-#elif defined STAGE2
-			sc_addrs_ptr = syscalls_light_cas_2_0_1;
-#else
-			sc_addrs_ptr = syscalls_cas_2_0_1;
-#endif
-			break;
-		case 0x10279D70:  // 2.1.0 non-CAS
-			ut_os_version_index = 4;
-#if defined STAGE1
-		sc_addrs_ptr = CONCAT(syscalls_light_ncas_,OS_VERSION);
-#elif defined STAGE2
-			sc_addrs_ptr = syscalls_light_ncas_2_1_0;
-#else
-			sc_addrs_ptr = syscalls_ncas_2_1_0;
-#endif
-			break;
-		case 0x1027A640:  // 2.1.0 CAS
-			ut_os_version_index = 5;
-#if defined STAGE1
-		sc_addrs_ptr = CONCAT(syscalls_light_cas_,OS_VERSION);
-#elif defined STAGE2
-			sc_addrs_ptr = syscalls_light_cas_2_1_0;
-#else
-			sc_addrs_ptr = syscalls_cas_2_1_0;
+			sc_addrs_ptr = syscalls_cas_3_1_0;
 #endif
 			break;
 #ifndef STAGE1
@@ -124,13 +72,6 @@ void ut_read_os_version_index(void) {
 #endif
 	}
 }
-
-/* OS-specific: addresses of the name of the directory containing the document
- * being opened. Prefixed with '/documents/' on OS 2.0 and higher.
- * Caution, special characters such as '.' are filtered out of the name.
- * Found at development time with a full memory search thanks to Ncubate's "ss" command. */
-unsigned const ut_currentdocdir_addr[] = {0x10669A9C, 0x1069BD64, 0x1088F164, 0x10857154, 0x109A2B74, 0x10966B74};
-
 void __attribute__ ((noreturn)) ut_calc_reboot(void) {
 	*(unsigned*)0x900A0008 = 2; //CPU reset
 	__builtin_unreachable();

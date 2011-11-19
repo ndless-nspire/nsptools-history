@@ -3,8 +3,10 @@
 #include <os.h>
 
 __base: .global __base
+#ifndef _NDLS_LIGHT
 	@ signature identifying a program
 	.asciz "PRG"
+#endif
 
 	stmfd sp!, {r4-r11,lr} @ and never destroy r0 and r1 which are C's argc and argv
 	@ GOT-based relocation, required for C global variables. The program must be built with the GCC option -fpic.

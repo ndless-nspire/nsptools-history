@@ -31,23 +31,11 @@
 // When opening a document
 HOOK_DEFINE(plh_hook) {
 	char *halfpath; // [docfolder/]file.tns
-	char *ptr;
 	char docpath[100];
 	int ret;
-	if (ut_os_version_index < 2)
-		halfpath = (char*)(HOOK_SAVED_REGS(plh_hook)[11] /* r11 */ - 0x124); // on the stack
-	else
-		halfpath = (char*)(HOOK_SAVED_REGS(plh_hook)[11] /* r11 */ + 12); // on the stack of the caller
-	// the hook is called at installation time. Show the installation message.
+	char *ptr;
+	halfpath = (char*)(HOOK_SAVED_REGS(plh_hook)[5] /* r5 */ + 32);
 	ptr = strrchr(halfpath, '/');
-	if (ptr)
-		ptr++;
-	else
-		ptr = halfpath;
-	if (!strncmp("ndless_installer_os-", ptr, sizeof("ndless_installer_os-") - 1)) {
-		show_msgbox("Ndless", "Ndless installed successfully!");
-		goto silent; // skip the error dialog
-	}
 	// TODO use snprintf
 	sprintf(docpath, "/documents/%s", halfpath);
 	struct stat docstat;
@@ -74,11 +62,6 @@ HOOK_DEFINE(plh_hook) {
 			free(docptr);
 		HOOK_RESTORE_RETURN(plh_hook);
 	}
-	// Asynchronous uninstallation
-	if (ins_lowmem_hook_installed) {
-		HOOK_UNINSTALL(ins_lowmem_hook_addrs[ut_os_version_index], ins_lowmem_hook);
-		ins_lowmem_hook_installed = FALSE;
-	}
 	int intmask = TCT_Local_Control_Interrupts(-1); /* TODO workaround: disable the interrupts to avoid the clock on the screen */
 	void *savedscr = malloc(SCREEN_BYTES_SIZE);
 	memcpy(savedscr, SCREEN_BASE_ADDRESS, SCREEN_BYTES_SIZE);
@@ -89,6 +72,5 @@ HOOK_DEFINE(plh_hook) {
 	TCT_Local_Control_Interrupts(intmask);
 	if (!emu_debug_alloc_ptr)
 		free(docptr);
-silent:
-	HOOK_RESTORE_RETURN_SKIP(plh_hook, 4); // skip the error dialog about the unrecognized format
+	HOOK_RESTORE_RETURN_SKIP(plh_hook, -0xDC); // skip the error dialog about the unsupported format
 }

@@ -36,7 +36,7 @@
 #define e_stat 18
 #define e_unlink 19
 #define e_rename 20
-#define e_power_off 21
+// deprecated. Never used, can be replaced. #define e_power_off 21
 #define e_puts 22
 #define e_NU_Get_First 23
 #define e_NU_Get_Next 24
@@ -45,7 +45,7 @@
 #define e_strcpy 27
 #define e_strncat 28
 #define e_strlen 29
-#define e_show_dialog_box2 30
+#define e_show_dialog_box2_ 30
 #define e_strrchr 31
 #define e__vsprintf 32
 #define e_fseek 33

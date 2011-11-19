@@ -1,6 +1,6 @@
 /****************************************************************************
  * Stage 1 of the installation.
- * Loads stage 2 from ndless_resources.
+ * Loads the installer.
  * Error checking is disabled due to the size constraint of ndless_installer.
  *
  * The contents of this file are subject to the Mozilla Public
@@ -29,34 +29,37 @@
 /* The error handling is commented and only enabled for debugging purposes
  * because of the size constraints of the installer.
  */
-void s1_load(void) {
-	unsigned stage2_size;
-	char respath[0x300 + 40];
-	char *path = respath;
-	ut_debug_trace(INSTTR_S1_LOAD);
-	sprintf(respath, "/documents/%s/ndless_resources.tns",
-	        (char*)ut_currentdocdir_addr[ut_os_version_index]);
-	if (ut_os_version_index >= 2)
-		path += 11; // strlen("/documents/"). Already included in ut_currentdocdir_addr for these OS versions.
-	// We can't malloc in this low-memory conditions.
-	// The screen is used as a temporary buffer for stage2. Copy it below stage1.
-	void *stage2_dest = (char*)SCREEN_BASE_ADDRESS + (SCREEN_WIDTH/2) * 80;
-	FILE *res_file = fopen(path, "rb");
-	if (!res_file) {
-		;//ut_panic("ldfo");
+int main(void) {
+	struct stat res_stat;
+	unsigned *uptr;
+	unsigned *osptr;
+	unsigned i;
+	int ret;
+	
+	// Restore a few bytes at 0 destroyed by the TNO installation
+	
+	for (i = 0, uptr = 0, osptr = OS_BASE_ADDRESS; i < 5; i++)
+		*uptr++ = *osptr++;
+	
+	ut_read_os_version_index();
+	ints_setup_handlers();
+	
+	const char *res_path = "/documents/ndless/ndless_resources.tns";
+	FILE *res_file = fopen(res_path, "rb");
+	ret = stat(res_path, &res_stat);
+	if (!res_file || ret) {
+		; //ut_panic(resnotfound);
 	}
-	// ndless_resources.tns starts with the size of stage2
-	if (fread(&stage2_size, sizeof(stage2_size), 1, res_file) != 1) {
-		;//ut_panic("ldfrs");
+	char *core = malloc(res_stat.st_size);
+	if (!core) {
+		; //ut_panic(cantmalloc);
 	}
-	if (stage2_size > 0xFFFF) {
-		;//ut_panic("ldrs");
-	}
-	if (fread(stage2_dest, stage2_size, 1, res_file) != 1) {
-		;//ut_panic("ldfr");
+	if (fread(core, res_stat.st_size, 1, res_file) != 1) {
+		; //ut_panic("s2fr");
 	}
 	fclose(res_file);
-	ut_debug_trace(INSTTR_S1_LOADS2);
+	ut_debug_trace(INSTTR_S2_LOADINST);
 	clear_cache();
-	((void (*)(void))(char*)(stage2_dest + sizeof("PRG")))(); // Run stage2
+	((void (*)(void))(char*)core)(); // Run the core installation
+	return 0;
 }

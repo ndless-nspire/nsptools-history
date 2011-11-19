@@ -202,7 +202,7 @@ static __attribute__ ((unused)) unsigned _syscallvar_savedlr;
 _SYSCALL1(int, read_unaligned_longword, void *)
 _SYSCALL1(int, read_unaligned_word, void *)
 _SYSCALL3(void, ascii2utf16, void *, const char *, int)
-_SYSCALL3(void, show_dialog_box2, int /* undef */, const char * /* title */, const char * /* msg */)
+_SYSCALL4(void, show_dialog_box2_, int /* undef */, const char * /* title */, const char * /* msg */, char * /* undef_buf[8] */)
 
 _SYSCALL0(int *, errno_addr)
 #define errno (*errno_addr())
@@ -371,7 +371,7 @@ _SYSCALL1(uint32_t, inflateEnd, z_streamp /* strm */)
 
 /* Ndless extensions. Not available in thumb state. */
 // Given a list of OS-specific value and its size, returns the value for the current OS.
-// The order must be: 1.7, 1.7 CAS, 2.0.1, 2.0.1 CAS, 2.1.0, 2.1.0 CAS
+// The order must be:  3.1.0, 3.1.0 CAS
 // If the array isn't enough long for the current OS, returns 0.
 // You may cast 'values' from unsigned* to int*.
 _SYSCALL2(int, nl_osvalue, const int * /* values */, unsigned /* size */)
