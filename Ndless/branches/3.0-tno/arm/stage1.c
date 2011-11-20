@@ -17,7 +17,7 @@
  *
  * The Initial Developer of the Original Code is Olivier ARMAND
  * <olivier.calc@gmail.com>.
- * Portions created by the Initial Developer are Copyright (C) 2010
+ * Portions created by the Initial Developer are Copyright (C) 2010-2011
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): 
@@ -36,8 +36,9 @@ int main(void) {
 	unsigned i;
 	int ret;
 	
-	// Restore a few bytes at 0 destroyed by the TNO installation
+	ut_debug_trace(INSTTR_S1_ENTER);
 	
+	// Restore a few bytes at 0 destroyed by the TNO installation
 	for (i = 0, uptr = 0, osptr = OS_BASE_ADDRESS; i < 5; i++)
 		*uptr++ = *osptr++;
 	
@@ -48,17 +49,17 @@ int main(void) {
 	FILE *res_file = fopen(res_path, "rb");
 	ret = stat(res_path, &res_stat);
 	if (!res_file || ret) {
-		; //ut_panic(resnotfound);
+		ut_panic("res not found");
 	}
 	char *core = malloc(res_stat.st_size);
 	if (!core) {
-		; //ut_panic(cantmalloc);
+		; //ut_panic("can't malloc for installer");
 	}
 	if (fread(core, res_stat.st_size, 1, res_file) != 1) {
-		; //ut_panic("s2fr");
+		; //ut_panic("can't fread for installer");
 	}
 	fclose(res_file);
-	ut_debug_trace(INSTTR_S2_LOADINST);
+	ut_debug_trace(INSTTR_S1_LOADINST);
 	clear_cache();
 	((void (*)(void))(char*)core)(); // Run the core installation
 	return 0;

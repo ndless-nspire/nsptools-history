@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is Olivier ARMAND
  * <olivier.calc@gmail.com>.
- * Portions created by the Initial Developer are Copyright (C) 2010
+ * Portions created by the Initial Developer are Copyright (C) 2010-2011
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): 
@@ -32,11 +32,12 @@
 static unsigned const ins_ploader_hook_addrs[] = {0x10009984};
 
 int main(void) {
-	ut_debug_trace(INSTTR_INS_INSTALL);
+	ut_debug_trace(INSTTR_INS_ENTER);
 	ut_read_os_version_index();
 	ints_setup_handlers();
 	sc_setup();
 	HOOK_INSTALL(ins_ploader_hook_addrs[ut_os_version_index], plh_hook);
+	ut_debug_trace(INSTTR_INS_END);
 	TCC_Terminate_Task(TCC_Current_Task_Pointer());
 	// Never reached
 	return 0;
