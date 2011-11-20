@@ -289,7 +289,11 @@ _SYSCALL2(int, stat, const char *, struct stat *)
 _SYSCALL2(int, rename, const char *, const char *)
 _SYSCALL1(int, unlink, const char *)
 
+
+typedef void NU_TASK;
 _SYSCALL1(int, TCT_Local_Control_Interrupts, int)
+_SYSCALL0(NU_TASK *, TCC_Current_Task_Pointer)
+_SYSCALL1(int, TCC_Terminate_Task, NU_TASK *)
 
 _SYSCALL2(int, NU_Current_Dir, const char *, const char *)
 _SYSCALL2(int, NU_Get_First, struct dstat *, const char * /* pattern */)

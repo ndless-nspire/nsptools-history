@@ -38,7 +38,7 @@ for os_version in "$@"; do
 				lastwarn=false
 				syscall_addr=0
 			else
-				syscall_name=`echo "$scallh_line" | sed 's/.\+\?e_\(\w\+\).*/\1/'`
+				syscall_name=`echo "$scallh_line" | sed 's/#define e_\(\w\+\).*/\1/'`
 				if [ -z "$syscall_name" ]; then
 					continue
 				fi

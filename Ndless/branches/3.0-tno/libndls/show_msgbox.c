@@ -32,6 +32,7 @@ void show_msgbox(const char *title, const char *msg) {
 	memset(undef_buf, 0, sizeof(undef_buf));
 	ascii2utf16(title16, title, sizeof(title16));
 	ascii2utf16(msg16, msg, sizeof(msg16));
+	*(char**)undef_buf = "DLG";
 	show_dialog_box2_(0, title16, msg16, undef_buf);
 	TCT_Local_Control_Interrupts(orig_mask);
 }

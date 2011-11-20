@@ -36,7 +36,7 @@
 #define e_stat 18
 #define e_unlink 19
 #define e_rename 20
-// deprecated. Never used, can be replaced. #define e_power_off 21
+#define e_TCC_Terminate_Task 21
 #define e_puts 22
 #define e_NU_Get_First 23
 #define e_NU_Get_Next 24
@@ -106,10 +106,12 @@
 #define e_inflateInit2_ 85
 #define e_inflate 86
 #define e_inflateEnd 87
+
+#define e_TCC_Current_Task_Pointer 88
 // END_OF_LIST (always keep this line after the last constant, used by mksyscalls.sh)
 
 // Must be kept up-to-date with the value of the last syscall
-#define __SYSCALLS_LAST 87
+#define __SYSCALLS_LAST 88
 
 // Flag: 3 higher bits of the 3-bytes comment field of the swi instruction
 #define __SYSCALLS_ISEXT 0x200000

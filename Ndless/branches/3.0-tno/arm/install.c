@@ -36,8 +36,8 @@ int main(void) {
 	ut_read_os_version_index();
 	ints_setup_handlers();
 	sc_setup();
-	puts("install");
 	HOOK_INSTALL(ins_ploader_hook_addrs[ut_os_version_index], plh_hook);
-	halt();
+	TCC_Terminate_Task(TCC_Current_Task_Pointer());
+	// Never reached
 	return 0;
 }
