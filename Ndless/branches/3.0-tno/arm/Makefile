@@ -7,7 +7,8 @@ LDFLAGS := -nostdlib
 OBJCOPY := "$(shell (which arm-elf-objcopy arm-none-eabi-objcopy arm-linux-gnueabi-objcopy | head -1) 2>/dev/null)"
 7Z := "$(shell (which 7z 7za | head -1) 2>/dev/null)"
 DISTDIR := ../calcbin
-vpath %.tno %.tns $(DISTDIR)
+vpath %.tno $(DISTDIR)
+vpath %.tns $(DISTDIR)
 
 # OS-specific
 # Comma-separated
@@ -17,6 +18,7 @@ OS_VERSIONS := 3.1.0
 # this list must be maintained manually.
 # OS-specific
 ndless_installer_os-3.1.0.elf: GCCFLAGS+=$(call GCCFLAGS_INSTALLER,3.1.0)
+ndless_installer_os-3.1.0.tno: OS_NAME=3.1.0-ncas
 
 # One installer for each OS version, because it is size constrained, and each OS version requires its own syscall table.
 INSTALLER_TNO := $(foreach os_version, $(OS_VERSIONS), ndless_installer_os-$(os_version).tno)
@@ -65,14 +67,8 @@ ndless_installer_os-%.elf: stage1.o ints_light_thumb.o syscalls_light_thumb.o ut
 
 ndless_installer_os-%.tno: ndless_installer_os-%.elf
 	$(OBJCOPY) -O binary $< $(@:.tno=.bin)
-	cp tnoparts/tno_header.bin $@
-	size=`stat -c %s $(@:.tno=.bin)` \
-	&& hexsize=`printf %04x $$((404 + size))` \
-	&& echo -e -n "\x$${hexsize:2:2}\x$${hexsize:0:2}" >> $@ \
-	&& cat tnoparts/tno_header2.bin $(@:.tno=.bin) >> $@ \
-	&& dd if=/dev/zero bs=1 count=$$((19301 - $$size)) >> $@ 2>/dev/null
-	cat tnoparts/tno_footer.bin >> $@
-	mv $@ $(DISTDIR)/$@
+	MakeTNO $(@:.tno=.bin) $(DISTDIR)/$@ $(OS_NAME)
+	@rm -f $(@:.tno=.bin)
 
 SYSCALLS_LIGHT_OBJS :=  $(foreach os_version, $(OS_VERSIONS), $(foreach model, ncas cas, syscalls-light_$(model)-$(os_version).o))
 # Prevent automatic deletion of these files considered as intermediate because not explicitely named as a target 
