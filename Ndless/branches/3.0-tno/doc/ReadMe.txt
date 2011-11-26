@@ -143,7 +143,7 @@ calc84maniac (GB/GBC emulator, HW info), Goplat (TI-Nspire emulator, HW info),
 hwti (OS info, v1.0 64-bit support), squalyl (Hackspire and development tools 
 hosting), TI-Planet (data hosting).
 
-Thanks to all the contributors and beta testers, including AdRiWeB, apcalc, 
+Thanks to all the contributors and beta testers, including Adriweb, apcalc, 
 BrandonW, bsl, bwang, calc84maniac, calcforth, chronomex, critor, Levak,
 Lionel Debroux, shrear.
 
