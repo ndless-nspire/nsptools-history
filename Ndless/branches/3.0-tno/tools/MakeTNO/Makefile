@@ -13,4 +13,4 @@ MakeTNO$(EXEEXT): MakeTNO.c
 	$(CC) $(CFLAGS) $< -o ../../bin/$@
 
 clean:
-	 rm -f ../../bin/MakeTNO$(EXEEXT
+	 rm -f ../../bin/MakeTNO$(EXEEXT)

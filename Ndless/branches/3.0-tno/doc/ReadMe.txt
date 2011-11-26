@@ -28,7 +28,7 @@ directory.
 
 Then locate the file 'ndless_installer-<version>.tnc|tno' in the calcbin/ 
 directory of Ndless where <version> matches the OS version currently installed 
-on the calculator.
+on the calculator.
  
 Send this file as an OS upgrade to the calculator. The calculator wuill display 
 a popup about the success of the installation. The linking software will display 
@@ -104,7 +104,7 @@ First make sure:
 - You are using the right 'ndless_installer-<version>.tno|tnc' file compatible 
   with the Operating System (OS) version currently installed on your calculator
 - You have followed the steps in the troubleshooting section above
-- You don't find a solution on the web sites above
+- You don't find a solution on the web sites above
 
 Then count if you the number of dotted lines which appear at the bottom of the 
 screen.
@@ -141,7 +141,7 @@ Many thanks to
 
 calc84maniac (GB/GBC emulator, HW info), Goplat (TI-Nspire emulator, HW info), 
 hwti (OS info, v1.0 64-bit support), squalyl (Hackspire and development tools 
-hosting), TI-Bank (data hosting).
+hosting), TI-Planet (data hosting).
 
 Thanks to all the contributors and beta testers, including AdRiWeB, apcalc, 
 BrandonW, bsl, bwang, calc84maniac, calcforth, chronomex, critor, Levak,
