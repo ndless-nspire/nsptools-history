@@ -29,7 +29,7 @@
 // OS-specific
 // Call to the dialog box display telling that the format isn't recognized.
 // On OS 2.x, it has been moved to a sub-function.
-static unsigned const ins_ploader_hook_addrs[] = {0x10009984};
+static unsigned const ins_ploader_hook_addrs[] = {0x10009984, 0x1000995C};
 
 int main(void) {
 	ut_debug_trace(INSTTR_INS_ENTER);

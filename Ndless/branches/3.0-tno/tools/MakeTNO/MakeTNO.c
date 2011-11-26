@@ -1,4 +1,6 @@
 /****************************************************************************
+ * There must be a tno_template.bin in the current directory.
+ * 
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of
@@ -40,14 +42,18 @@ unsigned file_size(FILE *f) {
 
 typedef struct {
 	const char *os_name;
-	unsigned addrs[3];
+	unsigned addrs[2];
 } s_os_addrs;
 
 // OS-specific
 s_os_addrs os_addrs[] = {
 	{
 		"3.1.0-ncas",
-		{}
+		{ 0x1004DE18 /* mov lr, #0 */, 0x1037BC8C /* strcpy */}
+	},
+	{
+		"3.1.0-cas",
+		{ 0x1004DD54 /* mov lr, #0 */, 0x1037C3BC /* strcpy */}
 	}
 };
 
@@ -73,6 +79,8 @@ int main(int argc, const char* argv[]) {
 	unsigned inst_size = file_size(finst);
 	*(uint16_t*)(outbuf + 86) = inst_size + 404; // ARM has the same endianness as x86
 	if (fread(outbuf + 494, inst_size, 1, finst) != 1) error("can't read input file");
+	*(uint32_t*)(outbuf + 450) = os_addrs[os_index].addrs[0];
+	*(uint32_t*)(outbuf + 490) = os_addrs[os_index].addrs[1];
 	if (fwrite(outbuf, tno_size, 1, ftno) != 1) {
 		fclose(finst);
 		unlink(argv[2]);

@@ -58,7 +58,7 @@ void ut_read_os_version_index(void) {
 			sc_addrs_ptr = syscalls_ncas_3_1_0;
 #endif
 			break;
-		case 0:  // 3.1.0 CAS
+		case 0x102F16D0:  // 3.1.0 CAS
 			ut_os_version_index = 1;
 #if defined STAGE1
 		sc_addrs_ptr = CONCAT(syscalls_light_cas_,OS_VERSION);

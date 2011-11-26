@@ -1,7 +1,7 @@
 include ../../Makefile.config
 
 # OS-specific
-OS_VERSIONS=ncas-3.1.0
+OS_VERSIONS=ncas-3.1.0 cas-3.1.0
 
 all: syscalls syscalls_light
 
