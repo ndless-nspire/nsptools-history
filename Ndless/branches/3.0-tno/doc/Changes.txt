@@ -1,7 +1,8 @@
 Ndless - Changelog
 ==================
 
-* v3.0 - <not yet released>
+* v3.1 - <not yet released>
+  - NEW: compatible with OS v3.1.0.
  libndls:
   - NEW: on_key_pressed (thanks t0xic_kitt3n), set_cpu_speed (thanks 
     t0xic_kitt3n and calc84maniac)

@@ -12,7 +12,7 @@ vpath %.tnc $(DISTDIR)
 vpath %.tns $(DISTDIR)
 
 # OS-specific
-INSTALLER_TNO := ndless_installer-3.1.0-ncas.tno ndless_installer-3.1.0-cas.tnc
+INSTALLER_TNO := ndless_installer-3.1.0.tno ndless_installer-3.1.0.tnc
 
 all: static $(INSTALLER_TNO) ndless_resources.tns subdirs
 res: ndless_resources.tns
@@ -25,12 +25,12 @@ OS_VERSIONS := 3.1.0
 # this list must be maintained manually.
 # OS-specific
 ndless_installer-3.1.0.elf: GCCFLAGS+=$(call GCCFLAGS_INSTALLER,3.1.0)
-ndless_installer-3.1.0-ncas.tno: ndless_installer-3.1.0.elf
-ndless_installer-3.1.0-ncas.tno: OS_NAME=3.1.0-ncas
-ndless_installer-3.1.0-ncas.tno: OS_VERSION=3.1.0
-ndless_installer-3.1.0-cas.tnc: ndless_installer-3.1.0.elf
-ndless_installer-3.1.0-cas.tnc: OS_NAME=3.1.0-cas
-ndless_installer-3.1.0-cas.tnc: OS_VERSION=3.1.0
+ndless_installer-3.1.0.tno: ndless_installer-3.1.0.elf
+ndless_installer-3.1.0.tno: OS_NAME=3.1.0-ncas
+ndless_installer-3.1.0.tno: OS_VERSION=3.1.0
+ndless_installer-3.1.0.tnc: ndless_installer-3.1.0.elf
+ndless_installer-3.1.0.tnc: OS_NAME=3.1.0-cas
+ndless_installer-3.1.0.tnc: OS_VERSION=3.1.0
 
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<
@@ -72,14 +72,14 @@ ndless_installer-%.elf: stage1.o ints_light_thumb.o syscalls_light_thumb.o utils
 	$(LD) --light-startup-no-header $(LDFLAGS) $^ -o $@
 
 ndless_installer-%.tno: tno_template.bin
-	$(OBJCOPY) -O binary ndless_installer-$(OS_VERSION).elf ndless_installer-$(OS_NAME).bin
-	MakeTNO ndless_installer-$(OS_NAME).bin $(DISTDIR)/ndless_installer-$(OS_NAME).tno $(OS_NAME)
-	@rm -f ndless_installer-$(OS_NAME).bin
+	$(OBJCOPY) -O binary ndless_installer-$(OS_VERSION).elf ndless_installer-$(OS_VERSION).bin
+	MakeTNO ndless_installer-$(OS_VERSION).bin $(DISTDIR)/ndless_installer-$(OS_VERSION).tno $(OS_NAME)
+	@rm -f ndless_installer-$(OS_VERSION).bin
 
 ndless_installer-%.tnc: tno_template.bin
-	$(OBJCOPY) -O binary ndless_installer-$(OS_VERSION).elf ndless_installer-$(OS_NAME).bin
-	MakeTNO ndless_installer-$(OS_NAME).bin $(DISTDIR)/ndless_installer-$(OS_NAME).tnc $(OS_NAME)
-	@rm -f ndless_installer-$(OS_NAME).bin
+	$(OBJCOPY) -O binary ndless_installer-$(OS_VERSION).elf ndless_installer-$(OS_VERSION).bin
+	MakeTNO ndless_installer-$(OS_VERSION).bin $(DISTDIR)/ndless_installer-$(OS_VERSION).tnc $(OS_NAME)
+	@rm -f ndless_installer-$(OS_VERSION).bin
 
 SYSCALLS_LIGHT_OBJS :=  $(foreach os_version, $(OS_VERSIONS), $(foreach model, ncas cas, syscalls-light_$(model)-$(os_version).o))
 # Prevent automatic deletion of these files considered as intermediate because not explicitely named as a target 

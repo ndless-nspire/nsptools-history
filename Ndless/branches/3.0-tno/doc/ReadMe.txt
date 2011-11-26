@@ -16,57 +16,38 @@ What do I need to install it on a TI-Nspire?
 ============================================
 
 - A TI-Nspire CAS or non-CAS
-- OS v1.7, v2.0.1, v2.1.0 or v3.0.1 installed on it. v2.0.0 is not supported, 
-  you should update your OS.
-- Any linking program such as TI-Nspire Computer Link Software
+- OS v3.1.0 installed on it
+- Any linking program such as TI-Nspire Student Software
 
 How do I install it?
 ====================
 
-First locate the file 'ndless_installer_os-<version>.tns' in the calcbin/ 
-directory of Ndless where <version> matches the OS version currently installed 
-on the calculator.
-
-Send this file along with the file 'ndless_resources.tns' to any directory of 
-the calculator. Make sure that the name of the target directory doesn't contain 
-any special characters such as '.'. The two documents must be in the same 
+Create a directory called 'ndless' on the calculator. Send the file 
+'ndless_resources.tns' from the calcbin/ directory of Ndless to this new 
 directory.
 
-Unplug the calculator from the computer (trust us, it is important).
+Then locate the file 'ndless_installer-<version>.tnc|tno' in the calcbin/ 
+directory of Ndless where <version> matches the OS version currently installed 
+on the calculator.
+ 
+Send this file as an OS upgrade to the calculator. The calculator wuill display 
+a popup about the success of the installation. The linking software will display 
+an error message. You may have to close and reopen it to use it again.
 
-Open 'ndless_installer' from the Documents screen of the calculator and wait a 
-few seconds. Now:
-
- - The calculator may display a popup about the success of the installation.
- That's it!
- The installation is not permanent: you need to reinstall Ndless after each 
- reboot.
-
- - The calculator may display a frozen clock and possibly 1, 2 or 3 vertical 
- bars of random pixels on the screen. You are out of luck, the installation 
- failed. The TI-Nspire may reboot by itself after a few seconds.
- If not, force a reboot by unplugging the USB cable if plugged in, then removing 
- and putting back a battery. Retry the installation again.
- If you can't install Ndless after multiple attempts, jump to the section 
- 'Installation problem report' below.
+That's it!  The installation is not permanent: you need to reinstall Ndless 
+after each reboot.
 
 How do I install it on nspire_emu/Ncubate?
 ==========================================
 
-Use the "connect" command of the emulator, then send 'ndless_installer.tns' and 
-'ndless_resources.tns' from the calcbin/ directory to any directory of the 
-emulated calculator.
+Create a folder named 'ndless'. Set the target to 'ndless' (menu Link->Set 
+target folder...). Send  'ndless_resources.tns' as a document, and 
+'ndless_installer-.tnc|tno' as an OS.
 
-Open 'ndless_installer' from the Documents screen of the calculator and wait a 
-few seconds for the installation.
-
-If the installation makes the calculator hang or reboot, retry the installation 
-on a OS image that has just been created.
-
-How do I upgrade from v1.7/v2.0?
+How do I upgrade from v2.0?
 ================================
 
-First follow the uninstallation steps below, then the installation steps above.
+Upgrade your OS version and install Ndless.
 
 How do I run an executable?
 ===========================
@@ -78,15 +59,12 @@ Executables have the extension .tns as standard documents.
 
 You may try the particles demo available in the calcbin/samples/ directory.
 
-Programs built for Ndless v1.0/v1.1 won't work with this version until they are 
-updated by their authors.
+Programs built for Ndless v2.x should work as is.
 
 How do I uninstall it?
 ======================
 
-Make sure the documents 'ndless_installer.tns' and 'ndless_resources.tns' are 
-still in the same directory on the calculator.
-Then open 'ndless_installer' from the Documents screen. A full reboot will be 
+Then open 'ndless_resources.tns' from the Documents screen. A full reboot will be 
 initiated.
 
 Troubleshooting
@@ -123,15 +101,13 @@ Installation problem report
 ===========================
 
 First make sure:
-- You are using the right 'ndless_installer_os-<version>.tns' file compatible 
+- You are using the right 'ndless_installer-<version>.tno|tnc' file compatible 
   with the Operating System (OS) version currently installed on your calculator
 - You have followed the steps in the troubleshooting section above
-- You don't find a solution on the web sites above
+- You don't find a solution on the web sites above
 
-Then count if you can:
-- the number of vertical bars of random pixels which appear at the top of the 
-  screen at installation time
-- The number of dotted lines which appear at the bottom of the screen
+Then count if you the number of dotted lines which appear at the bottom of the 
+screen.
 
 E-mail this with anything which might help the authors to fix the issue.
 
