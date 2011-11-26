@@ -1,0 +1,32 @@
+All the addresses mentioned are for OS 3.1 non-CAS.
+
+The ndlesss-installer*.tno is a well-formed TNO-file containing a single file 
+whose name's size is abnormally long in the zip local file header. This triggers 
+a stack overflow by the fread at 0x100B0920, in function 0x100B0864 called at 
+0x100B1728.
+
+
+Since the stack is in a uncached page of memory, we need to clear the instruction 
+cache of the CPU before running our shellcode. We do this by writing cache-
+cleansing instructions at the uncached paged at 0, executing them and jumping to 
+our shellcode.
+
+The return address of function 0x100B0864 is set by the stack overflow to a code 
+snippet found in the OS which sets lr to 0, writes to r7 + 8 as a side effect 
+(so r7 is set to SCREEN_BASE_ADDRESS), skip some bytes of the stack, pops 
+registers and returns.
+
+The second return address has been set to strcpy by the stack overflow. r0 = 0 
+returned by the function overflowed, r1 points to data in the stack written by 
+the overflow, which is our null-terminated cache-cleansing instructions. lr is 
+still set to 0 so strcpy returns to these instructions just copied. The 
+instruction cache doesn't interfer since the 0 page is uncached.
+
+r1 is left by strcpy pointing to the cache-cleansing instructions overflowed 
+onto the stack. We just add a few bytes to get the address of the shellcode 
+(stage1) and jump to it.
+
+stage1 needs to reset the interrupt vectors overwritten by the cache-cleansing 
+instructions. At the end of Ndless's installation, we can't return back to the 
+OS since the stack has been smashed. The current Nucleus task (API 100 in charge 
+of OS installation) is thus killed.
