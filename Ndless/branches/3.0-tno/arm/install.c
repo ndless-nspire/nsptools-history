@@ -34,9 +34,22 @@ static unsigned const ins_ploader_hook_addrs[] = {0x10009984, 0x1000995C};
 int main(void) {
 	ut_debug_trace(INSTTR_INS_ENTER);
 	ut_read_os_version_index();
+
+	struct next_descriptor *installed_next_descriptor = ut_get_next_descriptor();
+	if (installed_next_descriptor) {
+		if (*(unsigned*)installed_next_descriptor->ext_name == 0x534C444E) { // 'NDLS'
+			puts("uninstalling");
+			ut_calc_reboot();
+		}
+		else
+			ut_panic("unknown N-ext");
+	}
+
 	ints_setup_handlers();
 	sc_setup();
+
 	HOOK_INSTALL(ins_ploader_hook_addrs[ut_os_version_index], plh_hook);
+	show_msgbox("Ndless", "Ndless installed successfully!");
 	ut_debug_trace(INSTTR_INS_END);
 	TCC_Terminate_Task(TCC_Current_Task_Pointer());
 	// Never reached

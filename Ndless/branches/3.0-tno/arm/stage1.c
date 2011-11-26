@@ -61,6 +61,6 @@ int main(void) {
 	fclose(res_file);
 	ut_debug_trace(INSTTR_S1_LOADINST);
 	clear_cache();
-	((void (*)(void))(char*)core)(); // Run the core installation
+	((void (*)(void))(char*)core + sizeof(PRGMSIG))(); // Run the core installation
 	return 0;
 }

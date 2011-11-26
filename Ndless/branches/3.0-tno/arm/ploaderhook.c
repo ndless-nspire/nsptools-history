@@ -25,9 +25,6 @@
 #include <os.h>
 #include "ndless.h"
 
-// Marker at the beginning of a program
-#define PRGMSIG "PRG"
-
 // When opening a document
 HOOK_DEFINE(plh_hook) {
 	char *halfpath; // [docfolder/]file.tns

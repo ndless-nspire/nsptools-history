@@ -25,7 +25,8 @@
 #ifndef _NDLESS_H_
 #define _NDLESS_H_
 
-/* Common to asm and C code. Only define integer constants. */
+// Marker at the beginning of a program
+#define PRGMSIG "PRG"
 
 /* Debug levels for ut_debug_trace() for installation failure diagnostic. Keep in execution order. */
 #define INSTTR_S1_ENTER 0

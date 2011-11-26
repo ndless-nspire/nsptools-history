@@ -3,7 +3,7 @@
 #include <os.h>
 
 __base: .global __base
-#ifndef _NDLS_LIGHT
+#ifndef NO_PRGM_HEADER
 	@ signature identifying a program
 	.asciz "PRG"
 #endif

@@ -3,6 +3,7 @@
 # Available non-GCC options:
 # --no-startup: do not link with the startup code
 # --light-startup: use crt0light.o instead
+# --light-startup-no-header: use crt0lightnoheader.o instead
 
 UNAME=`uname -s | tr '[A-Z]' '[a-z]'`
 DIRNAME=`dirname "$0"`
@@ -28,6 +29,7 @@ fi
 nostdlib=false
 nostartup=false
 lightstartup=false
+noprgmheader=false
 # an array is used to change the arguments while supporting arguments with spaces
 declare -a args
 for arg in "$@"; do
@@ -35,6 +37,7 @@ for arg in "$@"; do
 		-nostdlib) nostdlib=true; args=("${args[@]}" $arg);;
 		--no-startup) nostartup=true;;
 		--light-startup) lightstartup=true;;
+		--light-startup-no-header) noprgmheader=true;;
 		*) args=("${args[@]}" $arg);;
 	esac
 done
@@ -51,7 +54,13 @@ if [ $ret -ne 0 ]; then
 	exit $ret
 fi
 if [ $nostartup = false ]; then
-	[ $lightstartup = true ] && startupobj=crt0light.o || startupobj=crt0.o
+	if [ $lightstartup = true ]; then
+		startupobj=crt0light.o
+	elif [ $noprgmheader = true ]; then
+		startupobj=crt0lightnoheader.o
+	else
+		startupobj=crt0.o
+	fi
 	args=("$DIRNAME/../system/$startupobj" "${args[@]}")
 fi
 # -nostartfiles: avoids newlib startup which would be added before ours
