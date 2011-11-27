@@ -9,10 +9,12 @@ OBJCOPY := "$(shell (which arm-elf-objcopy arm-none-eabi-objcopy arm-linux-gnuea
 DISTDIR := ../calcbin
 vpath %.tno $(DISTDIR)
 vpath %.tnc $(DISTDIR)
+vpath %.tco $(DISTDIR)
+vpath %.tcc $(DISTDIR)
 vpath %.tns $(DISTDIR)
 
 # OS-specific
-INSTALLER_TNO := ndless_installer-3.1.0.tno ndless_installer-3.1.0.tnc
+INSTALLER_TNO := ndless_installer-3.1.0.tno ndless_installer-3.1.0.tnc ndless_installer-3.1.0.tco
 
 all: static $(INSTALLER_TNO) ndless_resources.tns subdirs
 res: ndless_resources.tns
@@ -31,6 +33,9 @@ ndless_installer-3.1.0.tno: OS_VERSION=3.1.0
 ndless_installer-3.1.0.tnc: ndless_installer-3.1.0.elf
 ndless_installer-3.1.0.tnc: OS_NAME=3.1.0-cas
 ndless_installer-3.1.0.tnc: OS_VERSION=3.1.0
+ndless_installer-3.1.0.tco: ndless_installer-3.1.0.elf
+ndless_installer-3.1.0.tco: OS_NAME=3.1.0-ncascx
+ndless_installer-3.1.0.tco: OS_VERSION=3.1.0
 
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<
@@ -81,10 +86,20 @@ ndless_installer-%.tnc: tno_template.bin
 	MakeTNO ndless_installer-$(OS_VERSION).bin $(DISTDIR)/ndless_installer-$(OS_VERSION).tnc $(OS_NAME)
 	@rm -f ndless_installer-$(OS_VERSION).bin
 
-SYSCALLS_LIGHT_OBJS :=  $(foreach os_version, $(OS_VERSIONS), $(foreach model, ncas cas, syscalls-light_$(model)-$(os_version).o))
+ndless_installer-%.tco: tno_template.bin
+	$(OBJCOPY) -O binary ndless_installer-$(OS_VERSION).elf ndless_installer-$(OS_VERSION).bin
+	MakeTNO ndless_installer-$(OS_VERSION).bin $(DISTDIR)/ndless_installer-$(OS_VERSION).tco $(OS_NAME)
+	@rm -f ndless_installer-$(OS_VERSION).bin
+
+ndless_installer-%.tcc: tno_template.bin
+	$(OBJCOPY) -O binary ndless_installer-$(OS_VERSION).elf ndless_installer-$(OS_VERSION).bin
+	MakeTNO ndless_installer-$(OS_VERSION).bin $(DISTDIR)/ndless_installer-$(OS_VERSION).tcc $(OS_NAME)
+	@rm -f ndless_installer-$(OS_VERSION).bin
+
+SYSCALLS_LIGHT_OBJS :=  $(foreach os_version, $(OS_VERSIONS), $(foreach model, ncas cas ncascx cascx, syscalls-light_$(model)-$(os_version).o))
 # Prevent automatic deletion of these files considered as intermediate because not explicitely named as a target 
 .PRECIOUS: $(SYSCALLS_LIGHT_OBJS)
-SYSCALLS_OBJS :=  $(foreach os_version, $(OS_VERSIONS), $(foreach model, ncas cas, syscalls_$(model)-$(os_version).o))
+SYSCALLS_OBJS :=  $(foreach os_version, $(OS_VERSIONS), $(foreach model, ncas cas ncascx cascx, syscalls_$(model)-$(os_version).o))
 CORE_OBJS := install.o ploaderhook.o ints.o syscalls.o utils.o emu.o $(SYSCALLS_OBJS)
 RES_OBJS := $(CORE_OBJS)
 

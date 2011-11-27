@@ -39,6 +39,8 @@ extern unsigned syscalls_light_ncas_3_1_0[];
 extern unsigned syscalls_light_cas_3_1_0[];
 extern unsigned syscalls_ncas_3_1_0[];
 extern unsigned syscalls_cas_3_1_0[];
+extern unsigned syscalls_ncascx_3_1_0[];
+extern unsigned syscalls_cascx_3_1_0[];
 
 /* Writes to ut_os_version_index a zero-based index identifying the OS version and HW model.
  * Also sets up the syscalls table.
@@ -64,6 +66,14 @@ void ut_read_os_version_index(void) {
 		sc_addrs_ptr = CONCAT(syscalls_light_cas_,OS_VERSION);
 #else
 			sc_addrs_ptr = syscalls_cas_3_1_0;
+#endif
+			break;
+		case 0x102ECCD0:  // 3.1.0 non-CAS CX
+			ut_os_version_index = 2;
+#if defined STAGE1
+		sc_addrs_ptr = CONCAT(syscalls_light_cas_,OS_VERSION);
+#else
+			sc_addrs_ptr = syscalls_ncascx_3_1_0;
 #endif
 			break;
 #ifndef STAGE1

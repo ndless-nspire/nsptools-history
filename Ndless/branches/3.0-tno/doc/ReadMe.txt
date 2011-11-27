@@ -15,7 +15,7 @@ next reboot.
 What do I need to install it on a TI-Nspire?
 ============================================
 
-- A TI-Nspire CAS or non-CAS
+- A TI-Nspire CAS or non-CAS Clickpad, Touchpad or CX
 - OS v3.1.0 installed on it
 - Any linking program such as TI-Nspire Student Software
 
@@ -26,9 +26,9 @@ Create a directory called 'ndless' on the calculator. Send the file
 'ndless_resources.tns' from the calcbin/ directory of Ndless to this new 
 directory.
 
-Then locate the file 'ndless_installer-<version>.tnc|tno' in the calcbin/ 
-directory of Ndless where <version> matches the OS version currently installed 
-on the calculator.
+Then locate the file 'ndless_installer-<version>.tno|tnc|tco|tcc' in the 
+calcbin/ directory of Ndless where <version> matches the OS version currently 
+installed on the calculator.
  
 Send this file as an OS upgrade to the calculator. The calculator wuill display 
 a popup about the success of the installation. The linking software will display 
@@ -42,7 +42,7 @@ How do I install it on nspire_emu/Ncubate?
 
 Create a folder named 'ndless'. Set the target to 'ndless' (menu Link->Set 
 target folder...). Send  'ndless_resources.tns' as a document, and 
-'ndless_installer-.tnc|tno' as an OS.
+'ndless_installer-.tno|tnc|tco|tcc' as an OS.
 
 How do I upgrade from v2.0?
 ================================
@@ -101,8 +101,9 @@ Installation problem report
 ===========================
 
 First make sure:
-- You are using the right 'ndless_installer-<version>.tno|tnc' file compatible 
-  with the Operating System (OS) version currently installed on your calculator
+- You are using the right 'ndless_installer-<version>.tno|tnc|tco|tcc' file 
+  compatible with the Operating System (OS) version currently installed on your 
+  calculator
 - You have followed the steps in the troubleshooting section above
 - You don't find a solution on the web sites above
 

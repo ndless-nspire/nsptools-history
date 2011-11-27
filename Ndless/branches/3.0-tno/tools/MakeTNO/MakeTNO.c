@@ -54,6 +54,10 @@ s_os_addrs os_addrs[] = {
 	{
 		"3.1.0-cas",
 		{ 0x1004DD54 /* mov lr, #0 */, 0x1037C3BC /* strcpy */}
+	},
+	{
+		"3.1.0-ncascx",
+		{ 0x1004DE5C /* mov lr, #0 */, 0x1037580C /* strcpy */}
 	}
 };
 
