@@ -69,6 +69,7 @@ stage1.o: stage1.c
 # OS_VERSION has its '.' replaced by '_' by this function.
 # OS_VERSION_INT only contains digits for easier case testing with the C preprocessing.
 GCCFLAGS_INSTALLER =-D _NDLS_LIGHT -D STAGE1 -mthumb-interwork -D OS_VERSION=$(subst .,_,$(1)) -D OS_VERSION_INT=$(subst .,,$(1))
+GCCFLAGS_INSTALLER +=-D _NDLS_CX_WATCHDOG
 
 # Required for $$*. Caution, applies to all the following targets.
 .SECONDEXPANSION:

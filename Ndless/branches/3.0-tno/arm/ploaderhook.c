@@ -62,9 +62,13 @@ HOOK_DEFINE(plh_hook) {
 	int intmask = TCT_Local_Control_Interrupts(-1); /* TODO workaround: disable the interrupts to avoid the clock on the screen */
 	void *savedscr = malloc(SCREEN_BYTES_SIZE);
 	memcpy(savedscr, SCREEN_BASE_ADDRESS, SCREEN_BYTES_SIZE);
+	unsigned orig_lcd_control =  *(volatile unsigned *)0xC000001C;
+	// LCD configured with 4 bit per pixel by default for non-CX compatiblity
+	*(volatile unsigned *)0xC000001C = (orig_lcd_control & 0xFFFFFFF1) | 0b0100; // 4bpp
 	clear_cache();
 	((void (*)(int argc, char *argv[]))(docptr + sizeof(PRGMSIG)))(1, (char*[]){docpath, NULL}); /* run the program */
 	memcpy(SCREEN_BASE_ADDRESS, savedscr, SCREEN_BYTES_SIZE);
+	*(volatile unsigned *)0xC000001C = orig_lcd_control;
 	free(savedscr);
 	TCT_Local_Control_Interrupts(intmask);
 	if (!emu_debug_alloc_ptr)
