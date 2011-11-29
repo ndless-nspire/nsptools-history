@@ -1,6 +1,11 @@
 	MakeName	(0X100054C4,	"j_TMT_Retreive_Clock");
 	MakeName	(0X10005CE4,	"j_get_battery_door_detection_mode");
 	MakeName	(0X10008C1C,	"file_exists");
+	MakeName	(0X10009984,	"ndless_ploader");
+	MakeName	(0X100099B4,	"ndless_ploader2");
+	MakeName	(0X100099F4,	"ndless_ploader3");
+	MakeName	(0X10009B48,	"ndless_ploader4");
+	MakeName	(0X10009D40,	"j_ndless_ploader4");
 	MakeName	(0X10012F78,	"j_j_free");
 	MakeName	(0X100130AC,	"j_unlink");
 	MakeName	(0X100184BC,	"j_j_free_0");
@@ -14,6 +19,7 @@
 	MakeName	(0X100455DC,	"inflateInit");
 	MakeName	(0X1004AC9C,	"j_j_free_3");
 	MakeName	(0X1004B2B0,	"j_j_free_4");
+	MakeName	(0X1004DE18,	"ndless_maketno_lr0");
 	MakeName	(0X10050478,	"doc_save_images");
 	MakeName	(0X1005636C,	"read_ini_variable");
 	MakeName	(0X10056A10,	"parse_ini_content");
@@ -224,8 +230,8 @@
 	MakeName	(0X103747E8,	"islower");
 	MakeName	(0X10374814,	"isupper");
 	MakeName	(0X10374828,	"isxdigit");
-	MakeName	(0X10374874,	"toupper");
 	MakeName	(0X10374864,	"tolower");
+	MakeName	(0X10374874,	"toupper");
 	MakeName	(0X10374884,	"calloc");
 	MakeName	(0X103748C0,	"free");
 	MakeName	(0X103748F8,	"malloc");
