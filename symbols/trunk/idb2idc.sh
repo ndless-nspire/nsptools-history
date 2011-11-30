@@ -5,7 +5,7 @@
 for idb in $idbs; do
 	idc=${idb%%.idb}.idc
 	echo "$idc..."
-	idag -Sidb2idc.idc -A $idb 
+	idag -Sidb2idc.idc -A $idb | grep -v "Thank you"
 	./lighten_idc.sh < temp.idc > $idc
 done
-rm temp.idc idb2idc.idc
+rm temp.idc

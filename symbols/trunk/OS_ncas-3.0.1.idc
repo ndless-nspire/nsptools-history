@@ -19,8 +19,7 @@
 	MakeName	(0X1001B0F0,	"nn_ext_echo_callback");
 	MakeName	(0X1001B6F0,	"TI_NN_SendKeyPress");
 	MakeName	(0X1001EC3C,	"translateKey");
-	MakeName	(0X10021B50,	"show_dialog_box2_");
-	MakeName	(0X10021BE8,	"show_dialog_box2");
+	MakeName	(0X10021BE8,	"show_dialog_box2_");
 	MakeName	(0X10025E60,	"CMD_ADD_NEW_CARD");
 	MakeName	(0X1002DD9C,	"j_open_tns");
 	MakeName	(0X1002E688,	"j_j_free_0_1");

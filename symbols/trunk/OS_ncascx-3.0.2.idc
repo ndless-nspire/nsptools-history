@@ -6,7 +6,7 @@
 	MakeName	(0X1001A910,	"nn_ext_echo_callback");
 	MakeName	(0X1001ADE4,	"TI_NN_SendKeyPress");
 	MakeName	(0X1001E330,	"translateKey");
-	MakeName	(0X10021244,	"show_dialog_box2_");
+	MakeName	(0X100212DC,	"show_dialog_box2_");
 	MakeName	(0X1002DD7C,	"j_j_free_2");
 	MakeName	(0X10032194,	"compress_encrypt_tns");
 	MakeName	(0X10045468,	"inflateInit");

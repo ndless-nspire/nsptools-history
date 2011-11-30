@@ -58,6 +58,9 @@
 	MakeName	(0X1001DE54,	"setupUndoRedoInfo1");
 	MakeName	(0X1001FCB4,	"CMD_ADD_NEW_CARD");
 	MakeName	(0X10027B94,	"TI_PCL_Init");
+	MakeRptCmt	(0X1002B448,	"Problem1.xml");
+	MakeRptCmt	(0X1002B450,	"tns");
+	MakeRptCmt	(0X1002B4E8,	"encryption here?");
 	MakeName	(0X10030744,	"unknown_TI_XML_SettingsTag");
 	MakeName	(0X10039A4C,	"unknown_TI_ZIPArchive_Uncompress");
 	MakeName	(0X1003F92C,	"j_j_free__10");
@@ -648,7 +651,6 @@
 	MakeName	(0X101A0AB4,	"inflateCopy");
 	MakeName	(0X101A0C10,	"inflate_table");
 	MakeName	(0X101A12E4,	"_tr_init");
-	MakeName	(0X101A3508,	"zlibVersion");
 	MakeName	(0X101A3514,	"zlibCompileFlags");
 	MakeName	(0X101A351C,	"zError");
 	MakeName	(0X101A3530,	"zcalloc");
@@ -708,7 +710,8 @@
 	MakeName	(0X102109A8,	"TCC_Task_Sleep");
 	MakeName	(0X102109F8,	"TCC_Relinquish");
 	MakeName	(0X10210A74,	"TCC_Time_Slice");
-	MakeName	(0X10210B08,	"TCC_Current_HISR_Pointer");
+	MakeName	(0X10210B08,	"TCC_Current_Task_Pointer");
+	MakeName	(0X10210B38,	"TCC_Current_HISR_Pointer");
 	MakeName	(0X10210B68,	"TCC_Task_Shell");
 	MakeName	(0X10210BC4,	"TCC_Signal_Shell");
 	MakeName	(0X10210DA0,	"TCC_Dispatch_LISR");
