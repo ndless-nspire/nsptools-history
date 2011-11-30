@@ -35,12 +35,30 @@ struct next_descriptor ut_next_descriptor = {
 unsigned ut_os_version_index;
 
 // OS-specific
-extern unsigned syscalls_light_ncas_3_1_0[];
-extern unsigned syscalls_light_cas_3_1_0[];
+extern unsigned syscalls_ncas_3_0_1[];
+extern unsigned syscalls_light_ncas_3_0_1[];
+extern unsigned syscalls_cas_3_0_1[];
+extern unsigned syscalls_light_cas_3_0_1[];
+extern unsigned syscalls_ncascx_3_0_1[];
+extern unsigned syscalls_light_ncascx_3_0_1[];
+extern unsigned syscalls_cascx_3_0_1[];
+extern unsigned syscalls_light_cascx_3_0_1[];
+extern unsigned syscalls_ncas_3_0_2[];
+extern unsigned syscalls_light_ncas_3_0_2[];
+extern unsigned syscalls_cas_3_0_2[];
+extern unsigned syscalls_light_cas_3_0_2[];
+extern unsigned syscalls_ncascx_3_0_2[];
+extern unsigned syscalls_light_ncascx_3_0_2[];
+extern unsigned syscalls_cascx_3_0_2[];
+extern unsigned syscalls_light_cascx_3_0_2[];
 extern unsigned syscalls_ncas_3_1_0[];
+extern unsigned syscalls_light_ncas_3_1_0[];
 extern unsigned syscalls_cas_3_1_0[];
+extern unsigned syscalls_light_cas_3_1_0[];
 extern unsigned syscalls_ncascx_3_1_0[];
+extern unsigned syscalls_light_ncascx_3_1_0[];
 extern unsigned syscalls_cascx_3_1_0[];
+extern unsigned syscalls_light_cascx_3_1_0[];
 
 /* Writes to ut_os_version_index a zero-based index identifying the OS version and HW model.
  * Also sets up the syscalls table.
@@ -52,8 +70,72 @@ void ut_read_os_version_index(void) {
 	 * destroyed at installation time */
 	switch (*(unsigned*)(OS_BASE_ADDRESS + 0x20)) {
 		// OS-specific
-		case 0x102F0FA0:  // 3.1.0 non-CAS
+		case 0x102ED240:  // 3.0.1 non-CAS
 			ut_os_version_index = 0;
+#if defined STAGE1
+		sc_addrs_ptr = CONCAT(syscalls_light_ncas_,OS_VERSION);
+#else
+			sc_addrs_ptr = syscalls_ncas_3_0_1;
+#endif
+			break;
+		case 0x102ED960:  // 3.0.1 CAS
+			ut_os_version_index = 1;
+#if defined STAGE1
+		sc_addrs_ptr = CONCAT(syscalls_light_ncas_,OS_VERSION);
+#else
+			sc_addrs_ptr = syscalls_cas_3_0_1;
+#endif
+			break;
+		case 0x102ECCD0:  // 3.0.1 non-CAS CX
+			ut_os_version_index = 2;
+#if defined STAGE1
+		sc_addrs_ptr = CONCAT(syscalls_light_ncas_,OS_VERSION);
+#else
+			sc_addrs_ptr = syscalls_ncascx_3_0_1;
+#endif
+			break;
+		case 0x102ED420:  // 3.0.1 CAS CX
+			ut_os_version_index = 3;
+#if defined STAGE1
+		sc_addrs_ptr = CONCAT(syscalls_light_ncas_,OS_VERSION);
+#else
+			sc_addrs_ptr = syscalls_cascx_3_0_1;
+#endif
+			break;
+		case 0x102ED6D0:  // 3.0.2 non-CAS
+			ut_os_version_index = 4;
+#if defined STAGE1
+		sc_addrs_ptr = CONCAT(syscalls_light_ncas_,OS_VERSION);
+#else
+			sc_addrs_ptr = syscalls_ncas_3_0_2;
+#endif
+			break;
+		case 0x102EDFE4:  // 3.0.2 CAS
+			ut_os_version_index = 5;
+#if defined STAGE1
+		sc_addrs_ptr = CONCAT(syscalls_light_ncas_,OS_VERSION);
+#else
+			sc_addrs_ptr = syscalls_cas_3_0_2;
+#endif
+			break;
+		case 0x102ED170:  // 3.0.2 non-CAS CX
+			ut_os_version_index = 6;
+#if defined STAGE1
+		sc_addrs_ptr = CONCAT(syscalls_light_ncas_,OS_VERSION);
+#else
+			sc_addrs_ptr = syscalls_ncascx_3_0_2;
+#endif
+			break;
+		case 0x102ED8C0:  // 3.0.2 CAS CX
+			ut_os_version_index = 7;
+#if defined STAGE1
+		sc_addrs_ptr = CONCAT(syscalls_light_ncas_,OS_VERSION);
+#else
+			sc_addrs_ptr = syscalls_cascx_3_0_2;
+#endif
+			break;
+		case 0x102F0FA0:  // 3.1.0 non-CAS
+			ut_os_version_index = 8;
 #if defined STAGE1
 		sc_addrs_ptr = CONCAT(syscalls_light_ncas_,OS_VERSION);
 #else
@@ -61,19 +143,27 @@ void ut_read_os_version_index(void) {
 #endif
 			break;
 		case 0x102F16D0:  // 3.1.0 CAS
-			ut_os_version_index = 1;
+			ut_os_version_index = 9;
 #if defined STAGE1
 		sc_addrs_ptr = CONCAT(syscalls_light_cas_,OS_VERSION);
 #else
 			sc_addrs_ptr = syscalls_cas_3_1_0;
 #endif
 			break;
-		case 0x102ECCD0:  // 3.1.0 non-CAS CX
-			ut_os_version_index = 2;
+		case 0x102F0A10:  // 3.1.0 non-CAS CX
+			ut_os_version_index = 10;
 #if defined STAGE1
 		sc_addrs_ptr = CONCAT(syscalls_light_cas_,OS_VERSION);
 #else
 			sc_addrs_ptr = syscalls_ncascx_3_1_0;
+#endif
+			break;
+		case 0x102F11A0:  // 3.1.0 CAS CX
+			ut_os_version_index = 11;
+#if defined STAGE1
+		sc_addrs_ptr = CONCAT(syscalls_light_ncas_,OS_VERSION);
+#else
+			sc_addrs_ptr = syscalls_cascx_3_1_0;
 #endif
 			break;
 #ifndef STAGE1

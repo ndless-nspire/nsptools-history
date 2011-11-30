@@ -48,6 +48,38 @@ typedef struct {
 // OS-specific
 s_os_addrs os_addrs[] = {
 	{
+		"3.0.1-ncas",
+		{ 0x1004E768 /* mov lr, #0 */, 0x10377F2C /* strcpy */}
+	},
+	{
+		"3.0.1-cas",
+		{ 0x1004E69C /* mov lr, #0 */, 0x1037864C /* strcpy */}
+	},
+	{
+		"3.0.1-ncascx",
+		{ 0x1004DE5C /* mov lr, #0 */, 0x1037580C /* strcpy */}
+	},
+	{
+		"3.0.1-cascx",
+		{ 0x1004DDC0 /* mov lr, #0 */, 0x10375F5C /* strcpy */}
+	},
+	{
+		"3.0.2-ncas",
+		{ 0x1004E768 /* mov lr, #0 */, 0x103783BC /* strcpy */}
+	},
+	{
+		"3.0.2-cas",
+		{ 0x1004E6A0 /* mov lr, #0 */, 0x10378ADC /* strcpy */}
+	},
+	{
+		"3.0.2-ncascx",
+		{ 0X1004DE5C /* mov lr, #0 */, 0x10375CAC /* strcpy */}
+	},
+	{
+		"3.0.2-cascx",
+		{ 0x1004DDC0 /* mov lr, #0 */, 0x103763FC /* strcpy */}
+	},
+	{
 		"3.1.0-ncas",
 		{ 0x1004DE18 /* mov lr, #0 */, 0x1037BC8C /* strcpy */}
 	},
@@ -58,7 +90,11 @@ s_os_addrs os_addrs[] = {
 	{
 		"3.1.0-ncascx",
 		{ 0x1004DE5C /* mov lr, #0 */, 0x1037580C /* strcpy */}
-	}
+	},
+	{
+		"3.1.0-cascx",
+		{ 0x1004D478 /* mov lr, #0 */, 0x10379CDC /* strcpy */}
+	},
 };
 
 int main(int argc, const char* argv[]) {

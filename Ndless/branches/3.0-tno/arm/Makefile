@@ -13,29 +13,15 @@ vpath %.tco $(DISTDIR)
 vpath %.tcc $(DISTDIR)
 vpath %.tns $(DISTDIR)
 
-# OS-specific
-INSTALLER_TNO := ndless_installer-3.1.0.tno ndless_installer-3.1.0.tnc ndless_installer-3.1.0.tco
+.DEFAULT_GOAL := all
 
-all: static $(INSTALLER_TNO) ndless_resources.tns subdirs
+ostargets.mk: mkostargets.sh
+	./mkostargets.sh > ostargets.mk
+
+include ostargets.mk
+
+all: $(INSTALLER_FILES) static ndless_resources.tns subdirs
 res: ndless_resources.tns
-
-# OS-specific
-# Comma-separated
-OS_VERSIONS := 3.1.0
-# Since the installer is built specifically for an OS version, the version must be passed to the code.
-# Unfortunately Makefile doesn't allow target-specific variable values to extract the stem from pattern rules,
-# this list must be maintained manually.
-# OS-specific
-ndless_installer-3.1.0.elf: GCCFLAGS+=$(call GCCFLAGS_INSTALLER,3.1.0)
-ndless_installer-3.1.0.tno: ndless_installer-3.1.0.elf
-ndless_installer-3.1.0.tno: OS_NAME=3.1.0-ncas
-ndless_installer-3.1.0.tno: OS_VERSION=3.1.0
-ndless_installer-3.1.0.tnc: ndless_installer-3.1.0.elf
-ndless_installer-3.1.0.tnc: OS_NAME=3.1.0-cas
-ndless_installer-3.1.0.tnc: OS_VERSION=3.1.0
-ndless_installer-3.1.0.tco: ndless_installer-3.1.0.elf
-ndless_installer-3.1.0.tco: OS_NAME=3.1.0-ncascx
-ndless_installer-3.1.0.tco: OS_VERSION=3.1.0
 
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<
@@ -69,7 +55,7 @@ stage1.o: stage1.c
 # OS_VERSION has its '.' replaced by '_' by this function.
 # OS_VERSION_INT only contains digits for easier case testing with the C preprocessing.
 GCCFLAGS_INSTALLER =-D _NDLS_LIGHT -D STAGE1 -mthumb-interwork -D OS_VERSION=$(subst .,_,$(1)) -D OS_VERSION_INT=$(subst .,,$(1))
-GCCFLAGS_INSTALLER +=-D _NDLS_CX_WATCHDOG
+#GCCFLAGS_INSTALLER +=-D _NDLS_CX_WATCHDOG
 
 # Required for $$*. Caution, applies to all the following targets.
 .SECONDEXPANSION:
@@ -97,10 +83,10 @@ ndless_installer-%.tcc: tno_template.bin
 	MakeTNO ndless_installer-$(OS_VERSION).bin $(DISTDIR)/ndless_installer-$(OS_VERSION).tcc $(OS_NAME)
 	@rm -f ndless_installer-$(OS_VERSION).bin
 
-SYSCALLS_LIGHT_OBJS :=  $(foreach os_version, $(OS_VERSIONS), $(foreach model, ncas cas ncascx cascx, syscalls-light_$(model)-$(os_version).o))
+SYSCALLS_LIGHT_OBJS :=  $(foreach os_version, $(OS_VERSIONS), $(foreach model, $(MODELS), syscalls-light_$(model)-$(os_version).o))
 # Prevent automatic deletion of these files considered as intermediate because not explicitely named as a target 
 .PRECIOUS: $(SYSCALLS_LIGHT_OBJS)
-SYSCALLS_OBJS :=  $(foreach os_version, $(OS_VERSIONS), $(foreach model, ncas cas ncascx cascx, syscalls_$(model)-$(os_version).o))
+SYSCALLS_OBJS :=  $(foreach os_version, $(OS_VERSIONS), $(foreach model, $(MODELS), syscalls_$(model)-$(os_version).o))
 CORE_OBJS := install.o ploaderhook.o ints.o syscalls.o utils.o emu.o $(SYSCALLS_OBJS)
 RES_OBJS := $(CORE_OBJS)
 
@@ -126,7 +112,7 @@ subdirs:
 
 clean: cleanbin cleanapp cleansubdirs
 cleanapp:
-	rm -rf $(DISTDIR)/ndless_installer*.tn? $(DISTDIR)/ndless_resources.tns
+	rm -rf $(DISTDIR)/ndless_installer*.t?? $(DISTDIR)/ndless_resources.tns
 cleaninst:
 	rm -rf ndless_installer.elf $(INST_OBJS)
 cleanres:
