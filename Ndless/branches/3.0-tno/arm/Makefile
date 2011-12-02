@@ -60,7 +60,7 @@ GCCFLAGS_INSTALLER =-D _NDLS_LIGHT -D STAGE1 -mthumb-interwork -D OS_VERSION=$(s
 # Required for $$*. Caution, applies to all the following targets.
 .SECONDEXPANSION:
 # stage1.o is the entry point: must be first in the list, and linked with --light-startup
-ndless_installer-%.elf: stage1.o ints_light_thumb.o syscalls_light_thumb.o utils_light_thumb_os-$$*.o syscalls-light_ncas-%.o syscalls-light_cas-%.o
+ndless_installer-%.elf: stage1.o ints_light_thumb.o syscalls_light_thumb.o utils_light_thumb_os-$$*.o syscalls-light_ncas-%.o syscalls-light_cas-%.o syscalls-light_ncascx-%.o syscalls-light_cascx-%.o
 	$(LD) --light-startup-no-header $(LDFLAGS) $^ -o $@
 
 ndless_installer-%.tno: tno_template.bin
