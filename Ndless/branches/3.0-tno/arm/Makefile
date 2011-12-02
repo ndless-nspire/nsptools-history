@@ -64,21 +64,25 @@ ndless_installer-%.elf: stage1.o ints_light_thumb.o syscalls_light_thumb.o utils
 
 ndless_installer-%.tno: tno_template.bin
 	$(OBJCOPY) -O binary ndless_installer-$(OS_VERSION).elf ndless_installer-$(OS_VERSION).bin
+	mkdir -p $(DISTDIR)
 	MakeTNO ndless_installer-$(OS_VERSION).bin $(DISTDIR)/ndless_installer-$(OS_VERSION).tno $(OS_NAME)
 	@rm -f ndless_installer-$(OS_VERSION).bin
 
 ndless_installer-%.tnc: tno_template.bin
 	$(OBJCOPY) -O binary ndless_installer-$(OS_VERSION).elf ndless_installer-$(OS_VERSION).bin
+	mkdir -p $(DISTDIR)
 	MakeTNO ndless_installer-$(OS_VERSION).bin $(DISTDIR)/ndless_installer-$(OS_VERSION).tnc $(OS_NAME)
 	@rm -f ndless_installer-$(OS_VERSION).bin
 
 ndless_installer-%.tco: tno_template.bin
 	$(OBJCOPY) -O binary ndless_installer-$(OS_VERSION).elf ndless_installer-$(OS_VERSION).bin
+	mkdir -p $(DISTDIR)
 	MakeTNO ndless_installer-$(OS_VERSION).bin $(DISTDIR)/ndless_installer-$(OS_VERSION).tco $(OS_NAME)
 	@rm -f ndless_installer-$(OS_VERSION).bin
 
 ndless_installer-%.tcc: tno_template.bin
 	$(OBJCOPY) -O binary ndless_installer-$(OS_VERSION).elf ndless_installer-$(OS_VERSION).bin
+	mkdir -p $(DISTDIR)
 	MakeTNO ndless_installer-$(OS_VERSION).bin $(DISTDIR)/ndless_installer-$(OS_VERSION).tcc $(OS_NAME)
 	@rm -f ndless_installer-$(OS_VERSION).bin
 
