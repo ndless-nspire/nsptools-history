@@ -72,5 +72,8 @@ static inline void halt(void) {
 	__asm volatile("0: b 0b");
 }
 
+#define hwtype (nl_hwtype())
+#define is_cx (hwtype == 1)
+
 #endif /* GNU_AS */
 #endif /* _LIBNDLS_H_ */

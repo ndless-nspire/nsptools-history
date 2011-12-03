@@ -382,6 +382,8 @@ _SYSCALL2(int, nl_osvalue, const int * /* values */, unsigned /* size */)
 // Relocates a global variable initialized with symbols (for example an array of function pointers)
 #define nl_relocdata(ptr, size) nl_relocdatab(ptr, size, &__base)
 _SYSCALL3(void, nl_relocdatab, unsigned * /* dataptr */, unsigned /* size */, void * /* base */)
+// 0 on non-CX, 1 on CX
+_SYSCALL0(unsigned, nl_hwtype)
 
 /* stdlib replacements not directly available as syscalls */
 extern unsigned __crt0exit;

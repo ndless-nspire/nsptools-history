@@ -126,9 +126,10 @@
  * The extensions cannot be called in thumb state (the swi number is too high for the swi thumb instruction */
 #define e_nl_osvalue (__SYSCALLS_ISEXT | 0)
 #define e_nl_relocdatab (__SYSCALLS_ISEXT | 1)
+#define e_nl_hwtype (__SYSCALLS_ISEXT | 2)
 
 // Must be kept up-to-date with the value of the last syscalls extension without __SYSCALLS_ISEXT
-#define __SYSCALLS_LASTEXT 1
+#define __SYSCALLS_LASTEXT 2
 
 /* Ndless integration with emulators. Grouped to make the integration easier for the emulators (they require
  * only these constants).

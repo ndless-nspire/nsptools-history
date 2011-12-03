@@ -269,6 +269,8 @@ int main(int argc, char *argv[]) {
 	assertUIntEquals("bswap16", 0x0100, bswap16(0x0001));
 	assertUIntEquals("bswap32", 0x03020100, bswap32(0x00010203));
 	
+	assertTrue("is_cx", (is_cx && *(unsigned*)0x900A0000 == 0x101) || (!is_cx && *(unsigned*)0x900A0000 == 0x01000010));
+	
 	assertTrue("is_touchpad", (*keypad_type != 3  &&  *keypad_type != 4) || is_touchpad);
 	sleep(100);
 	
