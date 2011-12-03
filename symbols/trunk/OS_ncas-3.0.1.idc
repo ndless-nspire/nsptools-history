@@ -1037,6 +1037,7 @@
 	MakeName	(0X108ADB7C,	"a0y");
 	MakeName	(0X108ADB88,	"a0_14g");
 	MakeName	(0X108ADBA0,	"a0123456789ab_1");
+	MakeName	(0X108ADC04,	"primary_tag_list");
 	MakeName	(0X108B02E0,	"a_____");
 	MakeName	(0X108B1B04,	"a__9");
 	MakeName	(0X108B1B0C,	"a__10");

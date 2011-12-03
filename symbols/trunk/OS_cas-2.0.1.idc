@@ -1044,6 +1044,7 @@
 	MakeName	(0X106E6144,	"a0y");
 	MakeName	(0X106E6150,	"a0_14g");
 	MakeName	(0X106E6160,	"a_error_");
+	MakeName	(0X106E62E4,	"primary_tag_list");
 	MakeName	(0X106E8CBC,	"a_____");
 	MakeName	(0X106E9880,	"a__7");
 	MakeName	(0X106E9888,	"a__8");

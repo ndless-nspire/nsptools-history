@@ -1080,6 +1080,7 @@
 	MakeName	(0X106B3FF4,	"a0y");
 	MakeName	(0X106B4000,	"a0_14g");
 	MakeName	(0X106B4010,	"a_error_");
+	MakeName	(0X106B4064,	"primary_tag_list");
 	MakeName	(0X106B69C8,	"a_____");
 	MakeName	(0X106B758C,	"a__7");
 	MakeName	(0X106B7594,	"a__8");
