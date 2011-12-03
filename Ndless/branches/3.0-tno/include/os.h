@@ -375,7 +375,7 @@ _SYSCALL1(uint32_t, inflateEnd, z_streamp /* strm */)
 
 /* Ndless extensions. Not available in thumb state. */
 // Given a list of OS-specific value and its size, returns the value for the current OS.
-// The order must be:  3.1.0, 3.1.0 CAS
+// The order must be:  3.1.0, 3.1.0 CAS, 3.1.0 CX, 3.1.0 CAS CX
 // If the array isn't enough long for the current OS, returns 0.
 // You may cast 'values' from unsigned* to int*.
 _SYSCALL2(int, nl_osvalue, const int * /* values */, unsigned /* size */)

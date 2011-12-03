@@ -28,7 +28,7 @@
 
 // OS-specific
 // Call to the dialog box display telling that the format isn't recognized.
-static unsigned const ins_ploader_hook_addrs[] = {0x10009C70, 0x10009C40, 0x10009C08, 0x10009C08, 0x10009C70, 0x10009C70, 0x10009C08, 0x10009C08, 0x10009984, 0x1000995C, 0x0, 0x10009924};
+static unsigned const ins_ploader_hook_addrs[] = {0x10009984, 0x1000995C, 0x0, 0x10009924};
 
 int main(void) {
 	ut_debug_trace(INSTTR_INS_ENTER);

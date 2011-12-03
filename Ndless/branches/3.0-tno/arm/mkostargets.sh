@@ -11,7 +11,7 @@ function get_ext {
 }
 
 # OS-specific
-OS_VERSIONS="3.0.1 3.0.2 3.1.0"
+OS_VERSIONS="3.1.0"
 MODELS="ncas cas ncascx cascx"
 
 echo "OS_VERSIONS := $OS_VERSIONS"
