@@ -74,6 +74,8 @@ static inline void halt(void) {
 
 unsigned hwtype(void);
 #define is_cx (hwtype() == 1)
+#define is_classic (hwtype() != 1)
+#define IO(...) (((volatile unsigned*[]){(unsigned[]){ __VA_ARGS__ }})[hwtype()])
 
 #endif /* GNU_AS */
 #endif /* _LIBNDLS_H_ */
