@@ -8,7 +8,6 @@
 /***********************************
  * Hardware
  ***********************************/
-#define SCREEN_BASE_ADDRESS     ADDR_(0xA4000100)
 #define KEY_MAP                 ADDR_(0x900E0000)
 
 /***********************************
@@ -281,8 +280,8 @@ typedef struct {
 #define KEYTPAD_ARROW_(row, col, tpad_arrow) (t_key){row, col, row, col, tpad_arrow}
 #define isKeyPressed(key) ( \
 	(key).tpad_arrow != TPAD_ARROW_NONE && is_touchpad ? touchpad_arrow_pressed((key).tpad_arrow) \
-	                                    : (is_touchpad ? !((*(volatile short*)(KEY_MAP + (key).tpad_row)) & (key).tpad_col) \
-	                                                   : !((*(volatile short*)(KEY_MAP + (key).row)) & (key).col) ) )
+	                                    : !is_classic ^ ((is_touchpad ? !((*(volatile short*)(KEY_MAP + (key).tpad_row)) & (key).tpad_col) \
+	                                                   : !((*(volatile short*)(KEY_MAP + (key).row)) & (key).col) ) ) )
 
 /***********************************
  * Misc inline functions
