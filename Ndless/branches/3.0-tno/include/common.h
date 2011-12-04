@@ -8,6 +8,7 @@
 /***********************************
  * Hardware
  ***********************************/
+#define SCREEN_BASE_ADDRESS     ADDR_(*(volatile unsigned*)0xC0000010)
 #define KEY_MAP                 ADDR_(0x900E0000)
 
 /***********************************
