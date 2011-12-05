@@ -50,11 +50,12 @@ int fputs(const char *str, FILE *stream);
 void idle(void);
 int isalnum(int c);
 int iscntrl(int c);
+void lcd_incolors(void);
 void nputs(const char *str);
 void nprintf(const char *fmt, ...);
 BOOL on_key_pressed(void);
 void rewind(FILE * stream);
-void *screen_base_address(void);
+unsigned _scrsize(void);
 unsigned set_cpu_speed(unsigned speed);
 void show_msgbox(const char *title, const char *msg);
 void sleep(unsigned millisec);
@@ -77,6 +78,16 @@ unsigned hwtype(void);
 #define is_cx (hwtype() == 1)
 #define is_classic (hwtype() < 1)
 #define IO(...) (((volatile unsigned*[]){(unsigned[]){ __VA_ARGS__ }})[hwtype()])
+
+#define IO_LCD_CONTROL IO(0xC000001C, 0xC0000018)
+
+#define SCREEN_BASE_ADDRESS     ADDR_(*(volatile unsigned*)0xC0000010)
+#define SCREEN_BYTES_SIZE       ({_scrsize();})
+#define SCREEN_WIDTH            320
+#define SCREEN_HEIGHT           240
+#define BLACK                   0x0
+#define WHITE                   0xF
+
 
 #endif /* GNU_AS */
 #endif /* _LIBNDLS_H_ */

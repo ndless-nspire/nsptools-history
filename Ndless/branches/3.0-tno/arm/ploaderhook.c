@@ -71,10 +71,10 @@ HOOK_DEFINE(plh_hook) {
 	ut_disable_watchdog(); // seems to be sometimes renabled by the OS
 	clear_cache();
 	((void (*)(int argc, char *argv[]))(docptr + sizeof(PRGMSIG)))(1, (char*[]){docpath, NULL}); /* run the program */
-	memcpy(SCREEN_BASE_ADDRESS, savedscr, SCREEN_BYTES_SIZE);
 	if (!is_classic) {
 		*(volatile unsigned *)0xC0000018 = orig_lcd_control;
 	}
+	memcpy(SCREEN_BASE_ADDRESS, savedscr, SCREEN_BYTES_SIZE);
 	free(savedscr);
 	TCT_Local_Control_Interrupts(intmask);
 	if (!emu_debug_alloc_ptr)

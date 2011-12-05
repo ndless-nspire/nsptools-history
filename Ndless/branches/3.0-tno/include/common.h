@@ -5,26 +5,9 @@
 #ifndef _COMMON_H_
 #define _COMMON_H_
 
-/***********************************
- * Hardware
- ***********************************/
-#define SCREEN_BASE_ADDRESS     ADDR_(*(volatile unsigned*)0xC0000010)
 #define KEY_MAP                 ADDR_(0x900E0000)
 
-/***********************************
- * Addresses
- ***********************************/
 #define OS_BASE_ADDRESS         ADDR_(0x10000000)
-
-/***********************************
- * Others
- ***********************************/
-#define SCREEN_BYTES_SIZE       38400
-#define SCREEN_WIDTH            320
-#define SCREEN_HEIGHT           240
-
-#define BLACK                   0x0
-#define WHITE                   0xF
 
 /***********************************
  * Keys (key=(offset, 2^bit #)

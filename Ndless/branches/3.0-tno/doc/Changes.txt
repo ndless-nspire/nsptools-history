@@ -6,7 +6,7 @@ Ndless - Changelog
  libndls:
   - NEW: on_key_pressed (thanks t0xic_kitt3n), set_cpu_speed (thanks 
     t0xic_kitt3n and calc84maniac)
-  - NEW: is_cx, is_classic, hwtype(), IO
+  - NEW: is_cx, is_classic, hwtype, IO, IO_LCD_CONTROL
 
 * v2.0 - 2011/06/11
   - NEW: compatible with OS v2.0.1 and v2.1.0.
