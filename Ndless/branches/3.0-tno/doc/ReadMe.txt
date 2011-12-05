@@ -85,6 +85,14 @@ Troubleshooting
 Known issues
 ============
 
+- *No* popup must be displayed when ndless_installer-*.txx is sent (especially the 
+  confirmation of the reception of 'ndless_resources.tns'), else Ndless's popup 
+  will block (you can still dismiss it by turning off and on the calculator).
+- Ndless v1.x/v2.x programs which use the show_msgbox() function must be rebuilt 
+  to be compatible. Opening corrupted files will trigger a reboot instead of 
+  displaying an error message.
+- No OS can be sent as long as Ndless is installed
+
 A more complete list of known isues can be found in the tracker:
 http://www.unsads.com/projects/nsptools
 

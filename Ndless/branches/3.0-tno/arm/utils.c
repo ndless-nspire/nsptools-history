@@ -109,3 +109,10 @@ void ut_debug_trace(unsigned line) {
 	for (i = 0; i < (SCREEN_WIDTH/2) / 4; i++)
 		*ptr++ = line & 1 ? 0xFFFF0000 : 0x0000FFFF;
 }
+
+void ut_disable_watchdog(void) {
+	// Disable the watchdog on CX that may trigger a reset
+	*(volatile unsigned*)0x90060C00 = 0x1ACCE551; // enable write access to all other watchdog registers
+	*(volatile unsigned*)0x90060008 = 0; // disable reset, counter and interrupt
+	*(volatile unsigned*)0x90060C00 = 0; // disable write access to all other watchdog registers
+}

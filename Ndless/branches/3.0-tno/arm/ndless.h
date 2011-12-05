@@ -74,6 +74,7 @@ void ut_read_os_version_index(void);
 void __attribute__ ((noreturn)) ut_calc_reboot(void);
 void __attribute__ ((noreturn)) ut_panic(const char * msg);
 void ut_debug_trace(unsigned line);
+void ut_disable_watchdog(void);
 static inline struct next_descriptor *ut_get_next_descriptor(void) {
 	if (*(*(unsigned**)(OS_BASE_ADDRESS + INTS_SWI_HANDLER_ADDR) - 2) != NEXT_SIGNATURE)
 		return NULL;

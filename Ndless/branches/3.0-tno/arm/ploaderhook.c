@@ -68,6 +68,7 @@ HOOK_DEFINE(plh_hook) {
 		// LCD configured with 4 bit per pixel by default for non-CX compatiblity
 		*(volatile unsigned *)0xC0000018 = (orig_lcd_control & 0xFFFFFFF1) | 0b0100; // 4bpp
 	}
+	ut_disable_watchdog(); // seems to be sometimes renabled by the OS
 	clear_cache();
 	((void (*)(int argc, char *argv[]))(docptr + sizeof(PRGMSIG)))(1, (char*[]){docpath, NULL}); /* run the program */
 	memcpy(SCREEN_BASE_ADDRESS, savedscr, SCREEN_BYTES_SIZE);

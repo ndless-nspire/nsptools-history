@@ -38,10 +38,7 @@ int main(void) {
 	
 	ut_debug_trace(INSTTR_S1_ENTER);
 
-	// Disable the watchdog on CX that may trigger a reset
-	*(volatile unsigned*)0x90060C00 = 0x1ACCE551; // enable write access to all other watchdog registers
-	*(volatile unsigned*)0x90060008 = 0; // disable reset, counter and interrupt
-	*(volatile unsigned*)0x90060C00 = 0; // disable write access to all other watchdog registers
+	ut_disable_watchdog();
 
 	// Restore a few bytes at 0 destroyed by the TNO installation
 	for (i = 0, uptr = 0, osptr = OS_BASE_ADDRESS; i < 5; i++)
