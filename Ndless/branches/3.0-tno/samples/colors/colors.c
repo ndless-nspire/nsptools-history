@@ -2,7 +2,7 @@
 
 int main(void) {
 	if (is_classic)
-		return;
+		return 0;
 	lcd_incolors();
 	volatile unsigned char *scr_base = SCREEN_BASE_ADDRESS;
 	volatile unsigned char *ptr;
@@ -14,6 +14,6 @@ int main(void) {
 		*(volatile unsigned short*)ptr = 0b0000011111100000;
 	for (; ptr < scr_base + scr_size; ptr += 2)
 		*(volatile unsigned short*)ptr = 0b0000000000011111;
-	sleep(3000);
+	wait_key_pressed();
 	return 0;
 }
