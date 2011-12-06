@@ -22,6 +22,7 @@
 #include <os.h>
 
 void lcd_incolors(void) {
-	unsigned 	mode = *IO_LCD_CONTROL & ~0b1110;
-  *IO_LCD_CONTROL = mode | 0b1100; // R5G6B5
+	volatile unsigned *lcd_control = IO_LCD_CONTROL;
+	unsigned 	mode = *lcd_control & ~0b1110;
+  *lcd_control = mode | 0b1100; // R5G6B5
 }

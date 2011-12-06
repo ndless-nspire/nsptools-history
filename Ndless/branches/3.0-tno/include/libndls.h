@@ -77,8 +77,7 @@ static inline void halt(void) {
 unsigned hwtype(void);
 #define is_cx (hwtype() == 1)
 #define is_classic (hwtype() < 1)
-#define IO(...) (((volatile unsigned*[]){(unsigned[]){ __VA_ARGS__ }})[hwtype()])
-
+#define IO(a,b) (((volatile unsigned*[]){ (unsigned*)a, (unsigned*)b })[hwtype()])
 #define IO_LCD_CONTROL IO(0xC000001C, 0xC0000018)
 
 #define SCREEN_BASE_ADDRESS     ADDR_(*(volatile unsigned*)0xC0000010)
