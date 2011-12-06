@@ -21,8 +21,8 @@
 
 #include <os.h>
 
-void lcd_incolors(void) {
+void lcd_ingray(void) {
 	volatile unsigned *lcd_control = IO_LCD_CONTROL;
 	unsigned 	mode = *lcd_control & ~0b1110;
-  *lcd_control = mode | 0b1100; // R5G6B5
+  *lcd_control = mode | 0b0100;
 }

@@ -31,6 +31,8 @@ HOOK_DEFINE(plh_hook) {
 	char docpath[100];
 	int ret;
 	char *ptr;
+	unsigned i;
+	char saved_palette[512];
 	halfpath = (char*)(HOOK_SAVED_REGS(plh_hook)[5] /* r5 */ + 32);
 	ptr = strrchr(halfpath, '/');
 	// TODO use snprintf
@@ -62,16 +64,20 @@ HOOK_DEFINE(plh_hook) {
 	int intmask = TCT_Local_Control_Interrupts(-1); /* TODO workaround: disable the interrupts to avoid the clock on the screen */
 	void *savedscr = malloc(SCREEN_BYTES_SIZE);
 	memcpy(savedscr, SCREEN_BASE_ADDRESS, SCREEN_BYTES_SIZE);
-	unsigned orig_lcd_control;
-	if (!is_classic) {
+	unsigned orig_lcd_control = 0;
+	if (has_colors) {
 		orig_lcd_control =  *(volatile unsigned *)0xC0000018;
-		// LCD configured with 4 bit per pixel by default for non-CX compatiblity
-		*(volatile unsigned *)0xC0000018 = (orig_lcd_control & 0xFFFFFFF1) | 0b0100; // 4bpp
+		lcd_ingray(); // for non-CX compatiblity
+		volatile unsigned *palette = (volatile unsigned*)0xC0000200;
+		memcpy(saved_palette, (void*)palette, sizeof(saved_palette));
+		for (i = 0; i < 16/2; i++)
+			*palette++ = ((i * 2) << (1 + 16)) | ((i * 2) << (6 + 16)) | ((i * 2) << (11 + 16)) | ((i * 2 + 1) << 1) | ((i * 2 + 1) << 6) | ((i * 2 + 1) << 11); // set the grayscale palette
+		ut_disable_watchdog(); // seems to be sometimes renabled by the OS
 	}
-	ut_disable_watchdog(); // seems to be sometimes renabled by the OS
 	clear_cache();
 	((void (*)(int argc, char *argv[]))(docptr + sizeof(PRGMSIG)))(1, (char*[]){docpath, NULL}); /* run the program */
-	if (!is_classic) {
+	if (has_colors) {
+		memcpy((void*)0xC0000200, saved_palette, sizeof(saved_palette));
 		*(volatile unsigned *)0xC0000018 = orig_lcd_control;
 	}
 	memcpy(SCREEN_BASE_ADDRESS, savedscr, SCREEN_BYTES_SIZE);

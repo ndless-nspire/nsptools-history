@@ -13,7 +13,7 @@
  *
  * The Initial Developer of the Original Code is Olivier ARMAND
  * <olivier.calc@gmail.com>.
- * Portions created by the Initial Developer are Copyright (C) 2010-2011
+ * Portions created by the Initial Developer are Copyright (C) 2011
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): 
@@ -21,24 +21,6 @@
 
 #include <os.h>
 
-void *alloca(size_t size);
-
-void show_msgbox(const char *title, const char *msg) {
-	/* required since OS 2.1 for OS key scan */
-	int orig_mask = TCT_Local_Control_Interrupts(0);
-	char title16[(strlen(title) + 1) * 2];
-	char msg16[(strlen(msg) + 1) * 2];
-	char undef_buf[8];
-	memset(undef_buf, 0, sizeof(undef_buf));
-	ascii2utf16(title16, title, sizeof(title16));
-	ascii2utf16(msg16, msg, sizeof(msg16));
-	*(char**)undef_buf = "DLG";
-	BOOL incolor = lcd_isincolor();
-	if (has_colors && !incolor)
-		lcd_incolor();
-	show_dialog_box2_(0, title16, msg16, undef_buf);
-	if (has_colors && !incolor) {
-		lcd_ingray();
-	}
-	TCT_Local_Control_Interrupts(orig_mask);
+BOOL lcd_isincolor(void) {
+	return (*IO_LCD_CONTROL & 0b1110) == 0b1100; // R5G6B5
 }

@@ -1,9 +1,9 @@
 #include <os.h>
 
 int main(void) {
-	if (is_classic)
+	if (!has_colors)
 		return 0;
-	lcd_incolors();
+	lcd_incolor();
 	volatile unsigned char *scr_base = SCREEN_BASE_ADDRESS;
 	volatile unsigned char *ptr;
 	unsigned scr_size = SCREEN_BYTES_SIZE;

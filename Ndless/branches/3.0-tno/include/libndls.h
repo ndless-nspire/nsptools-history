@@ -50,7 +50,9 @@ int fputs(const char *str, FILE *stream);
 void idle(void);
 int isalnum(int c);
 int iscntrl(int c);
-void lcd_incolors(void);
+BOOL lcd_isincolor(void);
+void lcd_incolor(void);
+void lcd_ingray(void);
 void nputs(const char *str);
 void nprintf(const char *fmt, ...);
 BOOL on_key_pressed(void);
@@ -77,6 +79,7 @@ static inline void halt(void) {
 unsigned hwtype(void);
 #define is_cx (hwtype() == 1)
 #define is_classic (hwtype() < 1)
+#define has_colors (!is_classic)
 #define IO(a,b) (((volatile unsigned*[]){ (unsigned*)a, (unsigned*)b })[hwtype()])
 #define IO_LCD_CONTROL IO(0xC000001C, 0xC0000018)
 
