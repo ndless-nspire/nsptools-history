@@ -22,7 +22,7 @@
 #include <os.h>
 
 unsigned _scrsize(void) {
-	if ((*IO_LCD_CONTROL & 0b1110) == 0b1100) // R5G6B5
+	if (lcd_isincolor())
 		return SCREEN_WIDTH * SCREEN_HEIGHT * 2; // 16bpp
 	return SCREEN_WIDTH * SCREEN_HEIGHT / 2; // 4bpp
 }
