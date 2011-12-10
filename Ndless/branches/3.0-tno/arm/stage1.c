@@ -29,7 +29,7 @@
 /* The error handling is commented and only enabled for debugging purposes
  * because of the size constraints of the installer.
  */
-int main(void) {
+void stage1(void) {
 	struct stat res_stat;
 	unsigned *uptr;
 	unsigned *osptr;
@@ -64,5 +64,4 @@ int main(void) {
 	ut_debug_trace(INSTTR_S1_LOADINST);
 	clear_cache();
 	((void (*)(void))(char*)core + sizeof(PRGMSIG))(); // Run the core installation
-	return 0;
 }
