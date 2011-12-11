@@ -5,7 +5,6 @@ GCCFLAGS := -Os -nostdlib -Wall -W -Wno-strict-aliasing
 LD := nspire-ld
 LDFLAGS := -nostdlib
 OBJCOPY := "$(shell (which arm-elf-objcopy arm-none-eabi-objcopy arm-linux-gnueabi-objcopy | head -1) 2>/dev/null)"
-7Z := "$(shell (which 7z 7za | head -1) 2>/dev/null)"
 DISTDIR := ../calcbin
 vpath %.tno $(DISTDIR)
 vpath %.tnc $(DISTDIR)
@@ -49,6 +48,7 @@ utils_light_thumb_%.o: utils.c
 
 # Explicit dependencies strangely required for the target to avoid being rebuilt when not really needed
 stage1.o: stage1.c
+stage0.o: stage0.S
 
 # To be used as a target-specific value for each ndless_installer_*.elf.
 # Use with $(call GCCFLAGS_INSTALLER, <os_version>)
@@ -59,44 +59,47 @@ GCCFLAGS_INSTALLER =-D _NDLS_LIGHT -D STAGE1 -mthumb-interwork -mthumb -D OS_VER
 # Required for $$*. Caution, applies to all the following targets.
 .SECONDEXPANSION:
 # stage0.o is the entry point: must be first in the list, and linked with --light-startup
-ndless_installer-ncas-%.elf: stage0.o stage1.o ints_light_thumb.o syscalls_light_thumb.o utils_light_thumb_$$(MODEL)-$$*.o syscalls-light_ncas-%.o
+ndless_installer-%-ncas.elf: stage0.o stage1.o ints_light_thumb.o syscalls_light_thumb.o utils_light_thumb_ncas-$$*.o syscalls-light_ncas-%.o
 	$(LD) --light-startup-no-header $(LDFLAGS) $^ -o $@
-ndless_installer-cas-%.elf: stage0.o stage1.o ints_light_thumb.o syscalls_light_thumb.o utils_light_thumb_$$(MODEL)-$$*.o syscalls-light_cas-%.o
+ndless_installer-%-cas.elf: stage0.o stage1.o ints_light_thumb.o syscalls_light_thumb.o utils_light_thumb_cas-$$*.o syscalls-light_cas-%.o
 	$(LD) --light-startup-no-header $(LDFLAGS) $^ -o $@
-ndless_installer-ncascx-%.elf: stage0.o stage1.o ints_light_thumb.o syscalls_light_thumb.o utils_light_thumb_$$(MODEL)-$$*.o syscalls-light_ncascx-%.o
+ndless_installer-%-ncascx.elf: stage0.o stage1.o ints_light_thumb.o syscalls_light_thumb.o utils_light_thumb_ncascx-$$*.o syscalls-light_ncascx-%.o
 	$(LD) --light-startup-no-header $(LDFLAGS) $^ -o $@
-ndless_installer-cascx-%.elf: stage0.o stage1.o ints_light_thumb.o syscalls_light_thumb.o utils_light_thumb_$$(MODEL)-$$*.o syscalls-light_cascx-%.o
+ndless_installer-%-cascx.elf: stage0.o stage1.o ints_light_thumb.o syscalls_light_thumb.o utils_light_thumb_cascx-$$*.o syscalls-light_cascx-%.o
 	$(LD) --light-startup-no-header $(LDFLAGS) $^ -o $@
 
-ndless_installer-%.tno: tno_template.bin
-	$(OBJCOPY) -O binary ndless_installer-ncas-$(OS_VERSION).elf ndless_installer.bin
-	mkdir -p $(DISTDIR)
-	MakeTNO ndless_installer.bin $(DISTDIR)/ndless_installer-$(OS_VERSION).tno $(OS_NAME)
-	@rm -f ndless_installer.bin
+ndless_installer-%.bin: ndless_installer-%.elf
+	$(OBJCOPY) -O binary $< $@
 
-ndless_installer-%.tnc: tno_template.bin
-	$(OBJCOPY) -O binary ndless_installer-ncas-$(OS_VERSION).elf ndless_installer.bin
+ndless_installer-%.tno: ndless_installer-%-ncas.bin tno_template.bin
 	mkdir -p $(DISTDIR)
-	MakeTNO ndless_installer.bin $(DISTDIR)/ndless_installer-$(OS_VERSION).tnc $(OS_NAME)
-	@rm -f ndless_installer.bin
+	MakeTNO $< $(DISTDIR)/$@ $(OS_NAME) tno_template.bin  86
 
-ndless_installer-%.tco: tno_template.bin
-	$(OBJCOPY) -O binary ndless_installer-ncascx-$(OS_VERSION).elf ndless_installer.bin
+ndless_installer-%.tnc: ndless_installer-%-cas.bin tno_template.bin
 	mkdir -p $(DISTDIR)
-	MakeTNO ndless_installer.bin $(DISTDIR)/ndless_installer-$(OS_VERSION).tco $(OS_NAME)
-	@rm -f ndless_installer.bin
+	MakeTNO $< $(DISTDIR)/$@ $(OS_NAME) tno_template.bin 86
 
-ndless_installer-%.tcc: tno_template.bin
-	$(OBJCOPY) -O binary ndless_installer-cascx-$(OS_VERSION).elf ndless_installer.bin
+ndless_installer-%.tco: ndless_installer-%-ncascx.bin tno_template.bin
 	mkdir -p $(DISTDIR)
-	MakeTNO ndless_installer.bin $(DISTDIR)/ndless_installer-$(OS_VERSION).tcc $(OS_NAME)
-	@rm -f ndless_installer.bin
+	MakeTNO $< $(DISTDIR)/$@ $(OS_NAME)  tno_template.bin 86
+
+ndless_installer-%.tcc:ndless_installer-%-cascx.bin tno_template.bin
+	mkdir -p $(DISTDIR)
+	MakeTNO $< $(DISTDIR)/$@ $(OS_NAME) tno_template.bin  86
+
+ndless_installer-bin-%.o: ndless_installer-%.bin tno_template_installed.bin 
+	MakeTNO $< $(@:.o=.tmp.o) $* tno_template_installed.bin  0
+	$(OBJCOPY) -I binary -O elf32-littlearm -B arm $(@:.o=.tmp.o) $@
+#	@rm $(@:.o=.tmp.o)
+
+.PRECIOUS: ndless_installer-%.bin
 
 SYSCALLS_LIGHT_OBJS :=  $(foreach os_version, $(OS_VERSIONS), $(foreach model, $(MODELS), syscalls-light_$(model)-$(os_version).o))
 # Prevent automatic deletion of these files considered as intermediate because not explicitely named as a target 
 .PRECIOUS: $(SYSCALLS_LIGHT_OBJS)
 SYSCALLS_OBJS :=  $(foreach os_version, $(OS_VERSIONS), $(foreach model, $(MODELS), syscalls_$(model)-$(os_version).o))
-CORE_OBJS := install.o ploaderhook.o ints.o syscalls.o utils.o emu.o $(SYSCALLS_OBJS)
+INSTALLER_BIN_OBJS := $(foreach os_version, $(OS_VERSIONS), $(foreach model, $(MODELS), ndless_installer-bin-$(os_version)-$(model).o))
+CORE_OBJS := install.o ploaderhook.o ints.o syscalls.o utils.o emu.o $(SYSCALLS_OBJS) $(INSTALLER_BIN_OBJS)
 RES_OBJS := $(CORE_OBJS)
 
 # Build with the light switch (temporarily added to $GCCFLAGS)
@@ -128,7 +131,7 @@ cleanres:
 	rm -rf ndless_core.elf $(RES_OBJS)
 
 cleanbin:
-	rm -rf *.o *.elf *.tno *.tnc
+	rm -rf *.o *.elf *.tno *.tnc ndless_installer-*.bin
 	
 cleansubdirs:
 	@for i in $(SUBDIRS); do \

@@ -76,6 +76,11 @@ static inline void halt(void) {
 	__asm volatile("0: b 0b");
 }
 
+static inline void bkpt(void) {
+	__asm volatile("bkpt");
+}
+
+
 unsigned hwtype(void);
 #define is_cx (hwtype() == 1)
 #define is_classic (hwtype() < 1)

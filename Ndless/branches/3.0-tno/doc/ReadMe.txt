@@ -34,8 +34,8 @@ Send this file as an OS upgrade to the calculator. The calculator wuill display
 a popup about the success of the installation. The linking software will display 
 an error message. You may have to close and reopen it to use it again.
 
-That's it!  The installation is not permanent: you need to reinstall Ndless 
-after each reboot.
+That's it! The installation is reboot-proof, as long as you keep the file
+'ndless_ressources.tns' in the directory 'ndless'.
 
 How do I install it on nspire_emu/Ncubate?
 ==========================================

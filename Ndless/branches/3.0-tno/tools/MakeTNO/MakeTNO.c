@@ -26,6 +26,8 @@
 #include <string.h>
 #include <stdint.h>
 
+#define MAX(a,b) (((a)>(b))?(a):(b))
+
 void error(const char* msg) {
 	fprintf(stderr, "Error: %s.\n", msg);
 	exit(1);	
@@ -66,10 +68,11 @@ s_os_addrs os_addrs[] = {
 };
 
 int main(int argc, const char* argv[]) {
-	if (argc != 4) {
-		puts("Usage: MakeTNO <installer.bin> <out.tno> <os_name>");
+	if (argc != 6) {
+		puts("Usage: MakeTNO <installer.bin> <out.tno> <os_name> <template> <offset>"); // hex_offset: size of the header before zipped file name size
 		return 0;
 	}
+	long offset = strtol(argv[5], NULL, 10);
 	unsigned os_index;
 	for (os_index = 0; os_index < sizeof(os_addrs) / sizeof(s_os_addrs); os_index++) {
 		if (!strcmp(os_addrs[os_index].os_name, argv[3]))
@@ -80,16 +83,17 @@ int main(int argc, const char* argv[]) {
 	if (!finst) error("can't open input file");
 	FILE *ftno = fopen(argv[2], "wb");
 	if (!ftno) error("can't open output file");
-	FILE *ftplt = fopen("tno_template.bin", "rb");
+	FILE *ftplt = fopen(argv[4], "rb");
 	unsigned tno_size = file_size(ftplt);
-	char *outbuf = malloc(tno_size);
-	if (fread(outbuf, tno_size, 1, ftplt) != 1) error("can't read TNO template");
 	unsigned inst_size = file_size(finst);
-	*(uint16_t*)(outbuf + 86) = inst_size + 404; // ARM has the same endianness as x86
-	if (fread(outbuf + 494, inst_size, 1, finst) != 1) error("can't read input file");
-	*(uint32_t*)(outbuf + 450) = os_addrs[os_index].addrs[0];
-	*(uint32_t*)(outbuf + 490) = os_addrs[os_index].addrs[1];
-	if (fwrite(outbuf, tno_size, 1, ftno) != 1) {
+	size_t outbuf_size = MAX(tno_size, 408 + inst_size);
+	char *outbuf = malloc(outbuf_size);
+	if (fread(outbuf, tno_size, 1, ftplt) != 1) error("can't read TNO template");
+	*(uint16_t*)(outbuf + offset) = inst_size + 404; // 404=trailer size. ARM has the same endianness as x86
+	if (fread(outbuf + 408 + offset, inst_size, 1, finst) != 1) error("can't read input file");
+	*(uint32_t*)(outbuf + 364 + offset) = os_addrs[os_index].addrs[0];
+	*(uint32_t*)(outbuf + 404 + offset) = os_addrs[os_index].addrs[1];
+	if (fwrite(outbuf, outbuf_size, 1, ftno) != 1) {
 		fclose(finst);
 		unlink(argv[2]);
 		error("can't write to output file");
