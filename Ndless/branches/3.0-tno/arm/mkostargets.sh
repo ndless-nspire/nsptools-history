@@ -29,7 +29,9 @@ echo "INSTALLER_FILES := $installer_files"
 # Since the installer is built specifically for an OS version, the version must be passed to the code.
 # Unfortunately Makefile doesn't allow target-specific variable values to extract the stem from pattern rules,
 for os_version in $OS_VERSIONS; do
-	echo "ndless_installer-${os_version}.elf: GCCFLAGS+=\$(call GCCFLAGS_INSTALLER,${os_version})"
+	for model in $MODELS; do
+		echo "ndless_installer-$model-${os_version}.elf: GCCFLAGS+=\$(call GCCFLAGS_INSTALLER,${os_version})"
+	done
 done
 
 for os_version in $OS_VERSIONS; do
@@ -37,6 +39,7 @@ for os_version in $OS_VERSIONS; do
 		extension=`get_ext $model`
 		echo "ndless_installer-${os_version}.${extension}: OS_NAME=$os_version-$model"
 		echo "ndless_installer-${os_version}.${extension}: OS_VERSION=$os_version"
-		echo "ndless_installer-${os_version}.${extension}: ndless_installer-${os_version}.elf"
+		echo "ndless_installer-${os_version}.${extension}: MODEL=$model"
+		echo "ndless_installer-${os_version}.${extension}: ndless_installer-$model-${os_version}.elf"
 	done
 done

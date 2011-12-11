@@ -49,6 +49,9 @@ extern unsigned syscalls_light_cascx_3_1_0[];
  * Should be called only once.
  * May be used for OS-specific arrays of constants (marked with "// OS-specific"). */
 void ut_read_os_version_index(void) {
+	#if defined STAGE1
+			sc_addrs_ptr = CONCAT(CONCAT(CONCAT(syscalls_light_, MODEL), _), OS_VERSION);
+	#else
 	/* The heuristic is based on the address of INT_Initialize - Thanks Goplat.
 	 * The address is read from the RAM copy and not the real vector which is
 	 * destroyed at installation time */
@@ -56,41 +59,24 @@ void ut_read_os_version_index(void) {
 		// OS-specific
 		case 0x102F0FA0:  // 3.1.0 non-CAS
 			ut_os_version_index = 0;
-#if defined STAGE1
-		sc_addrs_ptr = CONCAT(syscalls_light_ncas_,OS_VERSION);
-#else
 			sc_addrs_ptr = syscalls_ncas_3_1_0;
-#endif
 			break;
 		case 0x102F16D0:  // 3.1.0 CAS
 			ut_os_version_index = 1;
-#if defined STAGE1
-		sc_addrs_ptr = CONCAT(syscalls_light_cas_,OS_VERSION);
-#else
 			sc_addrs_ptr = syscalls_cas_3_1_0;
-#endif
 			break;
 		case 0x102F0A10:  // 3.1.0 non-CAS CX
 			ut_os_version_index = 2;
-#if defined STAGE1
-		sc_addrs_ptr = CONCAT(syscalls_light_cascx_,OS_VERSION);
-#else
 			sc_addrs_ptr = syscalls_ncascx_3_1_0;
-#endif
 			break;
 		case 0x102F11A0:  // 3.1.0 CAS CX
 			ut_os_version_index = 3;
-#if defined STAGE1
-		sc_addrs_ptr = CONCAT(syscalls_light_cascx_,OS_VERSION);
-#else
 			sc_addrs_ptr = syscalls_cascx_3_1_0;
-#endif
 			break;
-#ifndef STAGE1
 		default:
 			ut_panic("v?");
-#endif
 	}
+	#endif
 }
 void __attribute__ ((noreturn)) ut_calc_reboot(void) {
 	*(unsigned*)0x900A0008 = 2; //CPU reset
