@@ -5,7 +5,6 @@ whose name's size is abnormally long in the zip local file header. This triggers
 a stack overflow by the fread at 0x100B0920, in function 0x100B0864 called at 
 0x100B1728.
 
-
 Since the stack is in a uncached page of memory, we need to clear the instruction 
 cache of the CPU before running our shellcode. We do this by writing cache-
 cleansing instructions at the uncached paged at 0, executing them and jumping to 
@@ -30,3 +29,8 @@ stage1 needs to reset the interrupt vectors overwritten by the cache-cleansing
 instructions. At the end of Ndless's installation, we can't return back to the 
 OS since the stack has been smashed. The current Nucleus task (API 100 in charge 
 of OS installation) is thus killed.
+
+The same exploit is installed in /phoenix/install/TI-Nspire.tn* to make Ndless 
+reboot-proof. Since the boot2 reads the OS image from this file, the exploited 
+PK-zipped file chosen is boot2.img, only read at OS startup to prepare for a 
+boot2 update.
