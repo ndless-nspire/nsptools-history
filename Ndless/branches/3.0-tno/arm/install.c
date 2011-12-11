@@ -48,9 +48,20 @@ int main(void) {
 	sc_setup();
 
 	HOOK_INSTALL(ins_ploader_hook_addrs[ut_os_version_index], plh_hook);
-	show_msgbox("Ndless", "Ndless installed successfully!");
+	
+	NU_TASK *current_task  = TCC_Current_Task_Pointer();
+	char *task_name = ((char*)current_task) + 16;
+	if (!strcmp(task_name, "API-100.")) {
+		// Installation over USB
+		show_msgbox("Ndless", "Ndless installed successfully!");
+	}
+	else if (!strcmp(task_name, "gui")) {
+		// Continue OS startup
+		// Simulate the prolog of the thread function for correct function return. Set r4 to a dummy variable, written to by a sub-function that follows.
+		__asm volatile("add lr, pc, #8; stmfd sp!, {r4-r6,lr}; sub sp, sp, #0x18; mov r4, sp; ldr pc, =0x10001510");
+	}
 	ut_debug_trace(INSTTR_INS_END);
-	TCC_Terminate_Task(TCC_Current_Task_Pointer());
+	TCC_Terminate_Task(current_task);
 	// Never reached
 	return 0;
 }
