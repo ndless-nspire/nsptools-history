@@ -16,7 +16,8 @@ What do I need to install it on a TI-Nspire?
 ============================================
 
 - A TI-Nspire CAS or non-CAS Clickpad, Touchpad or CX
-- OS v3.1.0 installed on it
+- An original OS v3.1.0 installed on it. It mustn't have been patched with the 
+ TNOC utility.
 - Any linking program such as TI-Nspire Student Software
 
 How do I install it?
