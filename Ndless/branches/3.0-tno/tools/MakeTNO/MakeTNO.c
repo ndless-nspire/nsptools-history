@@ -26,7 +26,7 @@
 #include <string.h>
 #include <stdint.h>
 
-#define MAX(a,b) (((a)>(b))?(a):(b))
+#define MAX(a,b) ({typeof(a) __a = (a); typeof(b) __b = (b); (__a > __b) ? __a : __b;})
 
 void error(const char* msg) {
 	fprintf(stderr, "Error: %s.\n", msg);
