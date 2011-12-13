@@ -9,8 +9,7 @@ Ndless combines an executable loader and utilities to open the TI-Nspire to
 third-party C and assembly development.
 
 As a TI-Nspire user, installing Ndless on your calculator will enhance the 
-Operating System with the functions required to run assembly programs until the 
-next reboot.
+Operating System with the functions required to run assembly programs.
 
 What do I need to install it on a TI-Nspire?
 ============================================
@@ -31,12 +30,34 @@ Then locate the file 'ndless_installer-<version>.tno|tnc|tco|tcc' in the
 calcbin/ directory of Ndless where <version> matches the OS version currently 
 installed on the calculator.
  
-Send this file as an OS upgrade to the calculator. The calculator wuill display 
-a popup about the success of the installation. The linking software will display 
-an error message. You may have to close and reopen it to use it again.
+Send this file as an OS upgrade to the calculator. The calculator will display a 
+popup about the success of the installation. The linking software will display 
+an error message on the computer side. You may have to close and reopen it to 
+use it again.
 
 That's it! The installation is reboot-proof, as long as you keep the file
 'ndless_ressources.tns' in the directory 'ndless'.
+
+How do I run an executable?
+===========================
+
+Executables have the extension .tns as standard documents.
+
+- Transfer the executable with a linking program to any folder of the TI-Nspire 
+- Run the executable from the Documents screen
+
+You may try the particles demo available in the calcbin/samples/ directory.
+
+Programs built for Ndless v2.x should work as is on classic TI-Nspire.
+Programs  must be rebuilt (and sometimes slightly adapted) to run on TI-Nspire 
+CX. If a program is not yet available for CX, ask his author.
+
+What else should I know?
+========================
+
+- You won't be able to receive an OS update after the installation until the 
+  next reboot.
+- 
 
 How do I install it on nspire_emu/Ncubate?
 ==========================================
@@ -49,18 +70,6 @@ How do I upgrade from v2.0?
 ================================
 
 Upgrade your OS version and install Ndless.
-
-How do I run an executable?
-===========================
-
-Executables have the extension .tns as standard documents.
-
-- Transfer the executable with a linking program to any folder of the TI-Nspire 
-- Run the executable from the Documents screen
-
-You may try the particles demo available in the calcbin/samples/ directory.
-
-Programs built for Ndless v2.x should work as is.
 
 How do I uninstall it?
 ======================
@@ -90,9 +99,9 @@ Known issues
   confirmation of the reception of 'ndless_resources.tns'), else Ndless's popup 
   will block (you can still dismiss it by turning off and on the calculator).
 - Ndless v1.x/v2.x programs which use the show_msgbox() function must be rebuilt 
-  to be compatible. Opening corrupted files will trigger a reboot instead of 
-  displaying an error message.
-- No OS can be sent as long as Ndless is installed
+  to be compatible.
+- Opening corrupted files will trigger a reboot instead of displaying an error 
+  message.
 
 A more complete list of known isues can be found in the tracker:
 http://www.unsads.com/projects/nsptools
