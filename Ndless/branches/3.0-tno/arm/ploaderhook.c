@@ -72,6 +72,7 @@ HOOK_DEFINE(plh_hook) {
 		memcpy(saved_palette, (void*)palette, sizeof(saved_palette));
 		for (i = 0; i < 16/2; i++)
 			*palette++ = ((i * 2) << (1 + 16)) | ((i * 2) << (6 + 16)) | ((i * 2) << (11 + 16)) | ((i * 2 + 1) << 1) | ((i * 2 + 1) << 6) | ((i * 2 + 1) << 11); // set the grayscale palette
+		clrscr(); // avoid disabling garbage
 		ut_disable_watchdog(); // seems to be sometimes renabled by the OS
 	}
 	clear_cache();

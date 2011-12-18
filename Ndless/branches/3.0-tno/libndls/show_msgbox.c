@@ -34,10 +34,20 @@ void show_msgbox(const char *title, const char *msg) {
 	ascii2utf16(msg16, msg, sizeof(msg16));
 	*(char**)undef_buf = "DLG";
 	BOOL incolor = lcd_isincolor();
-	if (has_colors && !incolor)
+	void *saved_screen = NULL;
+	if (has_colors && !incolor) {
 		lcd_incolor();
+		if ((saved_screen = malloc(SCREEN_BYTES_SIZE))) {
+			memcpy(saved_screen, SCREEN_BASE_ADDRESS, SCREEN_BYTES_SIZE);
+			clrscr(); // avoid displaying a grayscaled buffer in colors
+		}
+	}
 	show_dialog_box2_(0, title16, msg16, undef_buf);
 	if (has_colors && !incolor) {
+		if (saved_screen) {
+			memcpy(SCREEN_BASE_ADDRESS, saved_screen, SCREEN_BYTES_SIZE); // the OS may redraw the screen in colors, but it is grayscale. Avoid garbage.
+			free(saved_screen);
+		}
 		lcd_ingray();
 	}
 	TCT_Local_Control_Interrupts(orig_mask);
