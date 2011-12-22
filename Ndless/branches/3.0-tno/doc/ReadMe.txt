@@ -22,6 +22,9 @@ What do I need to install it on a TI-Nspire?
 How do I install it?
 ====================
 
+  Installing from a computer
+  --------------------------
+
 Create a directory called 'ndless' on the calculator. Send the file 
 'ndless_resources.tns' from the calcbin/ directory of Ndless to this new 
 directory.
@@ -37,6 +40,15 @@ use it again.
 
 That's it! The installation is reboot-proof, as long as you keep the file
 'ndless_ressources.tns' in the directory 'ndless'.
+
+  Installing from an other Ndless-ed device
+  -----------------------------------------
+
+Create a directory called 'ndless' on the calculator.
+Send the file 'ndless_resources.tns' from the 'ndless' directory of the Ndless-
+ed calulator to the other one.
+Then send the OS from the Ndless-ed calculator to the one. Ndless is directly 
+available on the next reboot.
 
 How do I run an executable?
 ===========================
