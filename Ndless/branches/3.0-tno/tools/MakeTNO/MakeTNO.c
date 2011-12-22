@@ -59,7 +59,7 @@ s_os_addrs os_addrs[] = {
 	},
 	{
 		"3.1.0-ncascx",
-		{ 0x1004DE5C /* mov lr, #0 */, 0x1037580C /* strcpy */}
+		{ 0x1004D514 /* mov lr, #0 */, 0x1037954C /* strcpy */}
 	},
 	{
 		"3.1.0-cascx",

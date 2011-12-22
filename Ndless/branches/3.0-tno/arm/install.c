@@ -69,10 +69,10 @@ static void ins_persitent(void) {
 
 // OS-specific
 // Call to the dialog box display telling that the format isn't recognized.
-static unsigned const ploader_hook_addrs[] = {0x10009984, 0x1000995C, 0x0, 0x10009924};
+static unsigned const ploader_hook_addrs[] = {0x10009984, 0x1000995C, 0x10009924, 0x10009924};
 
 // OS-specific
-static unsigned const init_task_return_addrs[] = {0x10001548, 0x10001548, 0x0, 0x10001510};
+static unsigned const init_task_return_addrs[] = {0x10001548, 0x10001548, 0x10001510, 0x10001510};
 
 int main(void) {
 	ut_debug_trace(INSTTR_INS_ENTER);
