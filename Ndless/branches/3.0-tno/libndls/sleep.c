@@ -24,12 +24,16 @@
 void sleep(unsigned millisec) {
 	if (is_classic) {
 		volatile unsigned *timer = (unsigned*)0x900D0000;
+		volatile unsigned *control = (unsigned*)0x900D0008;
 		volatile unsigned *divider = (unsigned*)0x900D0004;
 		unsigned orig_divider = *divider;
+		unsigned orig_control = *control;
+		*control = 0; // One Shot (for the *timer > 0 test)
 		*divider = 31;
 		*timer = millisec;
 		while (*timer > 0)
 	  	idle();
+	   *control = orig_control;
 		*divider = orig_divider;
 		*timer = 32;
 	} else {
@@ -40,12 +44,11 @@ void sleep(unsigned millisec) {
 		unsigned orig_control = *control;
 		unsigned orig_load = *load;
 		*control = 0; // disable timer
-		*control = 0b01100010; // disabled, periodic, int, no prescale, 32-bit, wrapping -> 32khz
-		*control = 0b11100010; // enable timer
+		*control = 0b01100011; // disabled, TimerMode N/A, int, no prescale, 32-bit, One Shot (for the *value > 0 test) -> 32khz
+		*control = 0b11100011; // enable timer
 		*load = 32 * millisec;
-		while (*value > 0) {
+		while (*value > 0)
 			idle();
-		}
 		*control = 0; // disable timer
 		*control = orig_control & 0b01111111; // timer still disabled
 		*load = orig_load;

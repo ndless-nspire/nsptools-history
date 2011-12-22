@@ -89,7 +89,7 @@ unsigned hwtype(void);
 #define IO_LCD_CONTROL IO(0xC000001C, 0xC0000018)
 
 #define SCREEN_BASE_ADDRESS     ADDR_(*(volatile unsigned*)0xC0000010)
-#define SCREEN_BYTES_SIZE       ({_scrsize();})
+#define SCREEN_BYTES_SIZE       ((int)({_scrsize();}))
 #define SCREEN_WIDTH            320
 #define SCREEN_HEIGHT           240
 #define BLACK                   0x0
