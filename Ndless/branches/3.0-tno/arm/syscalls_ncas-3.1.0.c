@@ -89,4 +89,5 @@ unsigned syscalls_ncas_3_1_0[] = {
 	, 0X1026C164
 	, 0X1026BB30
 	, 0X102EFBF4
+	, 0X1037A50C
 };
