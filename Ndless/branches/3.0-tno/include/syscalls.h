@@ -92,26 +92,23 @@
 #define e_ferror 74
 #define e_touchpad_read 75
 #define e_touchpad_write 76
-
 #define e_adler32 77
 #define e_crc32 78
 #define e_crc32_combine 79
-
 #define e_zlibVersion 80
 #define e_zlibCompileFlags 81
-
 #define e_deflateInit2_ 82
 #define e_deflate 83
 #define e_deflateEnd 84
 #define e_inflateInit2_ 85
 #define e_inflate 86
 #define e_inflateEnd 87
-
 #define e_TCC_Current_Task_Pointer 88
+#define e_ftell 89
 // END_OF_LIST (always keep this line after the last constant, used by mksyscalls.sh)
 
 // Must be kept up-to-date with the value of the last syscall
-#define __SYSCALLS_LAST 88
+#define __SYSCALLS_LAST 89
 
 // Flag: 3 higher bits of the 3-bytes comment field of the swi instruction
 #define __SYSCALLS_ISEXT 0x200000

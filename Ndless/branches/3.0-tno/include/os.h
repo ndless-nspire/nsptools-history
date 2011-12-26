@@ -280,6 +280,7 @@ _SYSCALL1(int, fflush, FILE *)
 _SYSCALL1(int, fclose, FILE *)
 _SYSCALL1(int, ferror, FILE *)
 _SYSCALL3(int, fseek, FILE *, long int, int)
+_SYSCALL1(long int, ftell, FILE *)
 _SYSCALL1(int, remove, const char *)
 
 _SYSCALL2(int, mkdir, const char *, int)
