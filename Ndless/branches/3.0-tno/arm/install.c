@@ -69,7 +69,7 @@ static void fseekos(FILE *stream, long int offset, int origin) {
 
 static const char zipped_file_header[] = "\x50\x4B\x03\x04\x0A\x00\x00\x00\x00\x00\xCA\x89\x0E\x3F\x07\xDF\x3A\xED\x1A\x6B\x6D\x00\x1A\x6B\x6D\x00";
 
-static void ins_persitent(void) {
+static void ins_persistent(void) {
 	FILE *f = fopen("/phoenix/install/TI-Nspire.tnc", "r+b");
 	if (!f) ut_panic("can't open OS file");
 
@@ -176,7 +176,7 @@ int main(void) {
 	char *task_name = ((char*)current_task) + 16;
 	if (!strcmp(task_name, "API-100.")) {
 		// Installation over USB
-		ins_persitent();
+		ins_persistent();
 		show_msgbox("Ndless", "Ndless installed successfully!");
 	}
 	else if (!strcmp(task_name, "gui")) {
