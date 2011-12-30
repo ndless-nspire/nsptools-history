@@ -105,10 +105,13 @@
 #define e_inflateEnd 87
 #define e_TCC_Current_Task_Pointer 88
 #define e_ftell 89
+#define e_NU_Open 90
+#define e_NU_Close 91
+#define e_NU_Truncate 92
 // END_OF_LIST (always keep this line after the last constant, used by mksyscalls.sh)
 
 // Must be kept up-to-date with the value of the last syscall
-#define __SYSCALLS_LAST 89
+#define __SYSCALLS_LAST 92
 
 // Flag: 3 higher bits of the 3-bytes comment field of the swi instruction
 #define __SYSCALLS_ISEXT 0x200000

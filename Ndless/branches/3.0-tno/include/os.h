@@ -301,6 +301,9 @@ _SYSCALL2(int, NU_Get_First, struct dstat *, const char * /* pattern */)
 _SYSCALL1(int, NU_Get_Next, struct dstat *)
 _SYSCALL1(void, NU_Done, struct dstat *)
 _SYSCALL1(int, NU_Set_Current_Dir, const char *)
+_SYSCALL3(PCFD, NU_Open, char * /* name */, unsigned /* flag */, unsigned /* mode */)
+_SYSCALL1(int, NU_Close, PCFD /* fd */)
+_SYSCALL2(BOOL, NU_Truncate, PCFD /* fd */, long /* offset */)
 
 /* 1: clickpad, 2: 84+, 3: touchpad prototype, 4: touchpad */
 _SYSCALL_OSVAR(unsigned char *, keypad_type)

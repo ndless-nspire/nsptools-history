@@ -232,8 +232,10 @@ int main(int argc, char *argv[]) {
 	assertUIntEquals("ungetc-1", 'a', ungetc(fgetc(file), file));
 	assertUIntEquals("ungetc-2", 'a', fgetc(file));
 	assertZero("fclose", fclose(file));
-	
+	assertZero("truncate", truncate(buf, 2));
 	assertZero("stat", stat(buf, &sstat));
+	assertIntEquals("stat-truncate", sstat.st_size, 2);
+	
 	assertZero("unlink", unlink(buf));
 	file = fopen(buf, "wb+");
 	assertNonZero("feof-1", feof(file));

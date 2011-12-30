@@ -66,6 +66,7 @@ size_t strspn(const char * str1, const char * str2);
 touchpad_info_t *touchpad_getinfo(void);
 int touchpad_scan(touchpad_report_t *report);
 BOOL touchpad_arrow_pressed(tpad_arrow_t arrow); /* internal, use isKeyPressed() */
+int truncate(const char *path, off_t length);
 void wait_key_pressed(void);
 void wait_no_key_pressed(void);
 
