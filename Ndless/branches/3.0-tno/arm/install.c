@@ -67,19 +67,45 @@ static void fseekos(FILE *stream, long int offset, int origin) {
 		ut_panic("can't fseek in OS file");
 }
 
+static int ftellos(FILE *stream) {
+	int r = ftell(stream);
+	if (r == -1)
+		ut_panic("can't ftell in OS file");
+	return r;
+}
+
+static void fcloseos(FILE *stream) {
+	if (fclose(stream))
+		ut_panic("can't fclose OS file");
+}
+
 static const char zipped_file_header[] = "\x50\x4B\x03\x04\x0A\x00\x00\x00\x00\x00\xCA\x89\x0E\x3F\x07\xDF\x3A\xED\x1A\x6B\x6D\x00\x1A\x6B\x6D\x00";
 
-static void ins_persistent(void) {
-	FILE *f = fopen("/phoenix/install/TI-Nspire.tnc", "r+b");
+static char ospath[] = "/phoenix/install/TI-Nspire.tnc";
+
+// The installation makes the OS miss a fclose().
+// It's ospath on OS startup, and is a problem for persistent():
+// persistent()'s truncate() will fail if the file is open twice
+static void cleanup_file_leak(void) {
+	PCFD fd = NU_Open(ospath, 0, 0); // any file will do to get a fd
+	if (!fd) ut_panic("can't NU_Open OS file");
+	NU_Close(fd - 1); // the FILE* is unknown, this is an heuristic
+	NU_Close(fd);
+}
+
+// Returns TRUE if it's an update
+static BOOL persistent(BOOL only_uninstall) {
+	FILE *f = fopen(ospath, "r+b");
 	if (!f) ut_panic("can't open OS file");
 
 	// Insert before boot2.cer, read at OS startup, or at the end of the zip file
 	// Search the position
 	int c;
+	unsigned uninst_size = 0;
 	do {
 		c = fgetc(f);
 		if (c == EOF)
-			ut_panic("can't skip OS file header");
+			ut_panic("can't skip the OS file header");
 	} while(c != 0x1A);
 	while (1) {
 		unsigned sig;
@@ -93,11 +119,15 @@ static void ins_persistent(void) {
 			freados(&filename_len, sizeof(filename_len), f);
 			freados(&extra_field_len, sizeof(extra_field_len), f);
 			char filename[20];
-			if (filename_len >= 20)
-				ut_panic("filename too long in OS file");
+			if (filename_len >= sizeof(filename)) // it may be us
+				filename_len = sizeof(filename) - 1;
 			if (!fgets(filename, filename_len, f))
 				ut_panic("can't fgets in OS file");
 			if (!strcmp(filename, "boot2.cer")) {
+				fseekos(f, -(filename_len + 30), SEEK_CUR);
+				break;
+			} else if (!strcmp(filename, "ndless")) {
+				uninst_size = compressed_size + sizeof(zipped_file_header) - 1;
 				fseekos(f, -(filename_len + 30), SEEK_CUR);
 				break;
 			} else {
@@ -111,15 +141,47 @@ static void ins_persistent(void) {
 		}
 	}
 
+	long destpos = ftellos(f);
+	
+	if (uninst_size) {
+		// Uninstall by reducing the file: shift the content from destpos with 'uninst_size'-long chunks
+		long curpos = destpos + uninst_size;
+		void *shift_buf = malloc(uninst_size);
+		if (!shift_buf) ut_panic("can't malloc shift_buf for uninstallation");
+		while (1) {
+			fseekos(f, curpos, SEEK_SET);
+			size_t can_read_size = fread(shift_buf, 1, uninst_size, f);
+			if (can_read_size) {
+				fseekos(f, curpos - uninst_size, SEEK_SET);
+				fwriteos(shift_buf, can_read_size, f);
+			}
+			if (can_read_size != uninst_size) break;
+			curpos += uninst_size;
+		}
+		free(shift_buf);
+		fseekos(f, 0, SEEK_END);
+		unsigned osfile_size = ftellos(f) - uninst_size;
+		fcloseos(f);
+		if (truncate(ospath, osfile_size))
+			ut_panic("can't truncate");
+	} else {
+		fcloseos(f);
+	}
+	
+	if (only_uninstall) {
+			return FALSE;
+	}
+	
 	nl_relocdata((unsigned*)os_patch_data_addrs, sizeof(os_patch_data_addrs)/sizeof(os_patch_data_addrs[0]));
 	nl_relocdata((unsigned*)os_patch_data_end_addrs, sizeof(os_patch_data_end_addrs)/sizeof(os_patch_data_end_addrs[0]));
 	unsigned patch_data_size = os_patch_data_end_addrs[ut_os_version_index] - os_patch_data_addrs[ut_os_version_index];
 	
-	// Extend the file: shift the content from the end with 'patch_data_size'-long chunks
+	// Extend the file: shift the content from the end with 'insert_size'-long chunks
 	unsigned insert_size = patch_data_size + sizeof(zipped_file_header) - 1;
-	long destpos = ftell(f);
+	f = fopen(ospath, "r+b");
+	if (!f) ut_panic("can't open OS file");
 	fseekos(f, -insert_size, SEEK_END);
-	long curpos = ftell(f);
+	long curpos = ftellos(f);
 	void *shift_buf = malloc(insert_size);
 	if (!shift_buf) ut_panic("can't malloc shift_buf");
 	while (curpos >= destpos) {
@@ -143,7 +205,8 @@ static void ins_persistent(void) {
 	fseekos(f, 4, SEEK_CUR); // skip the uncompressed size
 	// write the payload
 	fwriteos(os_patch_data_addrs[ut_os_version_index], patch_data_size, f);
-	fclose(f);
+	fcloseos(f);
+	return (uninst_size != 0);
 }
 
 // OS-specific
@@ -156,13 +219,13 @@ static unsigned const init_task_return_addrs[] = {0x10001548, 0x10001548, 0x1000
 int main(void) {
 	ut_debug_trace(INSTTR_INS_ENTER);
 	ut_read_os_version_index();
+	BOOL installed = FALSE;
+
 
 	struct next_descriptor *installed_next_descriptor = ut_get_next_descriptor();
 	if (installed_next_descriptor) {
-		if (*(unsigned*)installed_next_descriptor->ext_name == 0x534C444E) { // 'NDLS'
-			puts("uninstalling");
-			ut_calc_reboot();
-		}
+		if (*(unsigned*)installed_next_descriptor->ext_name == 0x534C444E) // 'NDLS'
+			installed = TRUE;
 		else
 			ut_panic("unknown N-ext");
 	}
@@ -170,22 +233,27 @@ int main(void) {
 	ints_setup_handlers();
 	sc_setup();
 
-	HOOK_INSTALL(ploader_hook_addrs[ut_os_version_index], plh_hook);
+	if (!installed)
+		HOOK_INSTALL(ploader_hook_addrs[ut_os_version_index], plh_hook);
 	
 	NU_TASK *current_task  = TCC_Current_Task_Pointer();
 	char *task_name = ((char*)current_task) + 16;
-	if (!strcmp(task_name, "API-100.")) {
-		// Installation over USB
-		ins_persistent();
-		show_msgbox("Ndless", "Ndless installed successfully!");
+	if (!strcmp(task_name, "API-100.")) { // Installation over USB
+		BOOL is_update = persistent(FALSE);
+		show_msgbox("Ndless", is_update ? "Ndless successfully updated!\nThe device is going to reboot." : "Ndless successfully installed!");
+		if (is_update) ut_calc_reboot();
+		TCC_Terminate_Task(current_task);
 	}
-	else if (!strcmp(task_name, "gui")) {
+	else { // either OS startup or ndless_resources.tns run
+		if (installed) { // ndless_resources.tns run: uninstall
+			persistent(TRUE);
+			ut_calc_reboot();
+		}
+		cleanup_file_leak();
 		// Continue OS startup
 		// Simulate the prolog of the thread function for correct function return. Set r4 to a dummy variable, written to by a sub-function that follows.
 		__asm volatile("add lr, pc, #8; stmfd sp!, {r4-r6,lr}; sub sp, sp, #0x18; mov r4, sp; mov pc, %0" : : "r" (init_task_return_addrs[ut_os_version_index]));
 	}
-	ut_debug_trace(INSTTR_INS_END);
-	TCC_Terminate_Task(current_task);
-	// Never reached
+	// never reached
 	return 0;
 }
