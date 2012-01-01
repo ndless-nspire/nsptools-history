@@ -19,8 +19,8 @@ What do I need to install it on a TI-Nspire?
  TNOC utility.
 - Any linking program such as TI-Nspire Student Software
 
-How do I install it?
-====================
+How do I install/upgrade it?
+===========================
 
   Installing from a computer
   --------------------------
@@ -41,14 +41,25 @@ use it again.
 That's it! The installation is reboot-proof, as long as you keep the file
 'ndless_ressources.tns' in the directory 'ndless'.
 
-  Installing from an other Ndless-ed device
-  -----------------------------------------
+  Upgrading from a computer
+  -------------------------
+
+Follow the installation procedure. The calculator will need to reboot.
+
+  Installing from another Ndless-ed device
+  ----------------------------------------
 
 Create a directory called 'ndless' on the calculator.
-Send the file 'ndless_resources.tns' from the 'ndless' directory of the Ndless-
-ed calulator to the other one.
+Send the file 'ndless_resources.tns' from the 'ndless' directory of the
+Ndless-ed calulator to the other one.
 Then send the OS from the Ndless-ed calculator to the one. Ndless is directly 
 available on the next reboot.
+
+  Upgrading from another Ndless-ed device
+  ---------------------------------------
+
+Transfer the new 'ndless_resources.tns' from the 'ndless' directory of the
+Ndless-ed calulator to the other one. Then reset the calculator.
 
 How do I run an executable?
 ===========================
@@ -61,15 +72,14 @@ Executables have the extension .tns as standard documents.
 You may try the particles demo available in the calcbin/samples/ directory.
 
 Programs built for Ndless v2.x should work as is on classic TI-Nspire.
-Programs  must be rebuilt (and sometimes slightly adapted) to run on TI-Nspire 
-CX. If a program is not yet available for CX, ask his author.
+Programs  must be rebuilt and slightly adapted to run on TI-Nspire CX. If a 
+program is not yet available for CX, ask his author.
 
 What else should I know?
 ========================
 
 - You won't be able to receive an OS update after the installation until the 
   next reboot.
-- 
 
 How do I install it on nspire_emu/Ncubate?
 ==========================================
