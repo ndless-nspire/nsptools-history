@@ -137,10 +137,8 @@ First make sure:
 - You have followed the steps in the troubleshooting section above
 - You don't find a solution on the web sites above
 
-Then count if you the number of dotted lines which appear at the bottom of the 
-screen.
-
-E-mail this with anything which might help the authors to fix the issue.
+E-mail anything which may help the author to fix the issue, or fill in a new 
+ticket on http://www.unsads.com/projects/nsptools
 
 Developing for the TI-Nspire
 ============================
