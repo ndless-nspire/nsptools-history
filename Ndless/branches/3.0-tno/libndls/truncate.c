@@ -25,7 +25,7 @@
    Caution, errno is not set. */
 int truncate(const char *path, off_t length) {
 	PCFD fd = NU_Open((char *)path, PO_RDWR, 0);
-	if (!fd) return -1;
+	if (fd < 0) return -1;
 	if (NU_Truncate(fd, length) != NU_SUCCESS) {
 		NU_Close(fd);
 		return -1;

@@ -88,7 +88,7 @@ static char ospath[] = "/phoenix/install/TI-Nspire.tnc";
 // persistent()'s truncate() will fail if the file is open twice
 static void cleanup_file_leak(void) {
 	PCFD fd = NU_Open(ospath, 0, 0); // any file will do to get a fd
-	if (!fd) ut_panic("can't NU_Open OS file");
+	if (fd < 0) ut_panic("can't NU_Open OS file");
 	NU_Close(fd - 1); // the FILE* is unknown, this is an heuristic
 	NU_Close(fd);
 }
