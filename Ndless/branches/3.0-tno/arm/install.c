@@ -95,13 +95,18 @@ static void cleanup_file_leak(void) {
 
 // Returns TRUE if it's an update
 static BOOL persistent(BOOL only_uninstall) {
+	nl_relocdata((unsigned*)os_patch_data_addrs, sizeof(os_patch_data_addrs)/sizeof(os_patch_data_addrs[0]));
+	nl_relocdata((unsigned*)os_patch_data_end_addrs, sizeof(os_patch_data_end_addrs)/sizeof(os_patch_data_end_addrs[0]));
+	unsigned patch_data_size = os_patch_data_end_addrs[ut_os_version_index] - os_patch_data_addrs[ut_os_version_index];
+	unsigned new_pkfile_size =  sizeof(zipped_file_header) - 1 + patch_data_size;
+
 	FILE *f = fopen(ospath, "r+b");
 	if (!f) ut_panic("can't open OS file");
 
 	// Insert before boot2.cer, read at OS startup, or at the end of the zip file
 	// Search the position
 	int c;
-	unsigned uninst_size = 0;
+	unsigned current_pkfile_size = 0;
 	do {
 		c = fgetc(f);
 		if (c == EOF)
@@ -127,7 +132,7 @@ static BOOL persistent(BOOL only_uninstall) {
 				fseekos(f, -(filename_len + 30), SEEK_CUR);
 				break;
 			} else if (!strcmp(filename, "ndless")) {
-				uninst_size = compressed_size + sizeof(zipped_file_header) - 1;
+				current_pkfile_size = compressed_size + sizeof(zipped_file_header) - 1;
 				fseekos(f, -(filename_len + 30), SEEK_CUR);
 				break;
 			} else {
@@ -142,13 +147,14 @@ static BOOL persistent(BOOL only_uninstall) {
 	}
 
 	long destpos = ftellos(f);
-	
-	if (uninst_size) {
+	#define CHUNK_SIZE (1024*100)
+	void *shift_buf = malloc(CHUNK_SIZE);
+	if (!shift_buf) ut_panic("can't malloc shift_buf for uninstallation");
+
+	if (only_uninstall || new_pkfile_size < current_pkfile_size) {
 		// Uninstall by reducing the file: shift the content from destpos chunk by chunk
+		unsigned uninst_size = only_uninstall ? current_pkfile_size : current_pkfile_size - new_pkfile_size;
 		long curpos = destpos + uninst_size;
-		#define CHUNK_SIZE (1024*100)
-		void *shift_buf = malloc(CHUNK_SIZE);
-		if (!shift_buf) ut_panic("can't malloc shift_buf for uninstallation");
 		while (1) {
 			fseekos(f, curpos, SEEK_SET);
 			size_t can_read_size = fread(shift_buf, 1, CHUNK_SIZE, f);
@@ -159,46 +165,42 @@ static BOOL persistent(BOOL only_uninstall) {
 			if (can_read_size != CHUNK_SIZE) break;
 			curpos += CHUNK_SIZE;
 		}
-		free(shift_buf);
 		fseekos(f, 0, SEEK_END);
 		unsigned osfile_size = ftellos(f) - uninst_size;
 		fcloseos(f);
 		if (truncate(ospath, osfile_size))
 			ut_panic("can't truncate");
-	} else {
-		fcloseos(f);
+		f = fopen(ospath, "r+b");
+		if (!f) ut_panic("can't reopen OS file");
 	}
 	
 	if (only_uninstall) {
-			return FALSE;
+		fclose(f);
+		free(shift_buf);
+		return FALSE;
 	}
 	
-	nl_relocdata((unsigned*)os_patch_data_addrs, sizeof(os_patch_data_addrs)/sizeof(os_patch_data_addrs[0]));
-	nl_relocdata((unsigned*)os_patch_data_end_addrs, sizeof(os_patch_data_end_addrs)/sizeof(os_patch_data_end_addrs[0]));
-	unsigned patch_data_size = os_patch_data_end_addrs[ut_os_version_index] - os_patch_data_addrs[ut_os_version_index];
-	
-	// Extend the file: shift the content from the end chunk by chunk
-	unsigned insert_size = patch_data_size + sizeof(zipped_file_header) - 1;
-	f = fopen(ospath, "r+b");
-	if (!f) ut_panic("can't open OS file");
-	fseekos(f, -CHUNK_SIZE, SEEK_END);
-	long curpos = ftellos(f);
-	void *shift_buf = malloc(CHUNK_SIZE);
-	if (!shift_buf) ut_panic("can't malloc shift_buf");
-	while (curpos >= destpos) {
-		fseekos(f, curpos, SEEK_SET);
-		freados(shift_buf, CHUNK_SIZE, f);
-		fseekos(f, curpos + insert_size, SEEK_SET);
-		fwriteos(shift_buf, CHUNK_SIZE, f);
-		curpos -= CHUNK_SIZE;
-	}
-	if (curpos + CHUNK_SIZE - destpos) {
-		fseekos(f, destpos, SEEK_SET);
-		freados(shift_buf, curpos + CHUNK_SIZE - destpos, f);
-		fseekos(f, destpos + insert_size, SEEK_SET);
-		fwriteos(shift_buf, curpos + CHUNK_SIZE - destpos, f);
+	if (new_pkfile_size > current_pkfile_size) {
+		// Extend the file: shift the content from the end chunk by chunk
+		unsigned insert_size =  new_pkfile_size - current_pkfile_size;
+		fseekos(f, -CHUNK_SIZE, SEEK_END);
+		long curpos = ftellos(f);
+		while (curpos >= destpos) {
+			fseekos(f, curpos, SEEK_SET);
+			freados(shift_buf, CHUNK_SIZE, f);
+			fseekos(f, curpos + insert_size, SEEK_SET);
+			fwriteos(shift_buf, CHUNK_SIZE, f);
+			curpos -= CHUNK_SIZE;
+		}
+		if (curpos + CHUNK_SIZE - destpos) {
+			fseekos(f, destpos, SEEK_SET);
+			freados(shift_buf, curpos + CHUNK_SIZE - destpos, f);
+			fseekos(f, destpos + insert_size, SEEK_SET);
+			fwriteos(shift_buf, curpos + CHUNK_SIZE - destpos, f);
+		}
 	}
 	free(shift_buf);
+	
 	// Write the header
 	fseekos(f, destpos, SEEK_SET);
 	fwriteos(zipped_file_header, sizeof(zipped_file_header) - 1, f);
@@ -208,7 +210,7 @@ static BOOL persistent(BOOL only_uninstall) {
 	// write the payload
 	fwriteos(os_patch_data_addrs[ut_os_version_index], patch_data_size, f);
 	fcloseos(f);
-	return (uninst_size != 0);
+	return (current_pkfile_size != 0);
 }
 
 // OS-specific
