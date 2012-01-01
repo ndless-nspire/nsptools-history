@@ -24,8 +24,6 @@
 void *alloca(size_t size);
 
 void show_msgbox(const char *title, const char *msg) {
-	/* required since OS 2.1 for OS key scan */
-	int orig_mask = TCT_Local_Control_Interrupts(0);
 	char title16[(strlen(title) + 1) * 2];
 	char msg16[(strlen(msg) + 1) * 2];
 	char undef_buf[8];
@@ -36,19 +34,25 @@ void show_msgbox(const char *title, const char *msg) {
 	BOOL incolor = lcd_isincolor();
 	void *saved_screen = NULL;
 	if (has_colors && !incolor) {
-		lcd_incolor();
-		if ((saved_screen = malloc(SCREEN_BYTES_SIZE))) {
-			memcpy(saved_screen, SCREEN_BASE_ADDRESS, SCREEN_BYTES_SIZE);
-			clrscr(); // avoid displaying a grayscaled buffer in colors
+		if ((saved_screen = malloc(SCREEN_WIDTH * SCREEN_HEIGHT * 2))) {
+			// The screen buffer size of the color mode is used, but before switching to it
+			memcpy(saved_screen, SCREEN_BASE_ADDRESS, SCREEN_WIDTH * SCREEN_HEIGHT * 2);
+			memset(SCREEN_BASE_ADDRESS, 0xFF, SCREEN_WIDTH * SCREEN_HEIGHT * 2); // clrscr. avoid displaying a grayscaled buffer in colors
 		}
+		lcd_incolor();
 	}
+	/* required since OS 2.1 for OS key scan */
+	int orig_mask = TCT_Local_Control_Interrupts(0);
 	show_dialog_box2_(0, title16, msg16, undef_buf);
+	TCT_Local_Control_Interrupts(orig_mask);
 	if (has_colors && !incolor) {
 		if (saved_screen) {
-			memcpy(SCREEN_BASE_ADDRESS, saved_screen, SCREEN_BYTES_SIZE); // the OS may redraw the screen in colors, but it is grayscale. Avoid garbage.
+			clrscr();
+			lcd_ingray();
+			memcpy(SCREEN_BASE_ADDRESS, saved_screen, SCREEN_WIDTH * SCREEN_HEIGHT * 2); // the OS may redraw the screen in colors, but it is grayscale. Avoid garbage.
 			free(saved_screen);
+		} else {
+			lcd_ingray();
 		}
-		lcd_ingray();
 	}
-	TCT_Local_Control_Interrupts(orig_mask);
 }
