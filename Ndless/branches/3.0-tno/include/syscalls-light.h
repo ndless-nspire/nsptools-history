@@ -14,9 +14,12 @@
 #define e_puts 3
 #define e_malloc 4
 #define e_stat 5
+#define e_strcmp 6
+#define e_TCC_Current_Task_Pointer 7
+#define e_TCC_Terminate_Task 8
 // END_OF_LIST (always keep this line after the last constant, used by mksyscalls.sh)
 
 // Must be kept up-to-date with the value of the last syscall
-#define SYSCALLS_NUM 5
+#define SYSCALLS_NUM 7
 
 #endif

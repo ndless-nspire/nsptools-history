@@ -26,6 +26,24 @@
 
 #include "ndless.h"
 
+// Return address in the Init task of the OS
+// OS-specific
+static unsigned const init_task_return_addrs[] = {0x10001548, 0x10001548, 0x10001510, 0x10001510};
+
+// In case of failure
+static __attribute__((noreturn)) void back_to_os(void) {
+	NU_TASK *current_task  = TCC_Current_Task_Pointer();
+	char *task_name = ((char*)current_task) + 16;
+	if (!strcmp(task_name, "API-100.")) { // Installation over USB
+		TCC_Terminate_Task(current_task);
+	}	else { // OS startup
+		// Simulate the prolog of the thread function for correct function return. Set r4 to a dummy variable, written to by a sub-function that follows.
+		// First switch to ARM mode
+		__asm volatile(".thumb; adr r0, 0f;	bx r0; .arm; 0: add lr, pc, #8; stmfd sp!, {r4-r6,lr}; sub sp, sp, #0x18; mov r4, sp; mov pc, %0" : : "r" (init_task_return_addrs[ut_os_version_index]));
+	}
+	__builtin_unreachable();
+}
+
 /* The error handling is commented and only enabled for debugging purposes
  * because of the size constraints of the installer.
  */
@@ -50,16 +68,10 @@ void stage1(void) {
 	const char *res_path = "/documents/ndless/ndless_resources.tns";
 	FILE *res_file = fopen(res_path, "rb");
 	ret = stat(res_path, &res_stat);
-	if (!res_file || ret) {
-		ut_panic("res not found");
-	}
+	if (!res_file || ret) back_to_os(); // ut_panic("res not found");
 	char *core = malloc(res_stat.st_size);
-	if (!core) {
-		; //ut_panic("can't malloc for installer");
-	}
-	if (fread(core, res_stat.st_size, 1, res_file) != 1) {
-		; //ut_panic("can't fread for installer");
-	}
+	if (!core) back_to_os(); // ut_panic("can't malloc for installer");
+	if (fread(core, res_stat.st_size, 1, res_file) != 1) // ut_panic("can't fread for installer");
 	fclose(res_file);
 	ut_debug_trace(INSTTR_S1_LOADINST);
 	clear_cache();

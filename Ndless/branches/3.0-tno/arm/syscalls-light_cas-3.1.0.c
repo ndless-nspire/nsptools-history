@@ -6,4 +6,7 @@ unsigned syscalls_light_cas_3_1_0[] = {
 	, 0X1037B0F4
 	, 0X10375028
 	, 0X10382788
+	, 0X1037C36C
+	, 0X102F0320
+	, 0X102F0DEC
 };
