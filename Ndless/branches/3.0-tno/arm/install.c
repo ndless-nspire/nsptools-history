@@ -144,19 +144,20 @@ static BOOL persistent(BOOL only_uninstall) {
 	long destpos = ftellos(f);
 	
 	if (uninst_size) {
-		// Uninstall by reducing the file: shift the content from destpos with 'uninst_size'-long chunks
+		// Uninstall by reducing the file: shift the content from destpos chunk by chunk
 		long curpos = destpos + uninst_size;
-		void *shift_buf = malloc(uninst_size);
+		#define CHUNK_SIZE (1024*100)
+		void *shift_buf = malloc(CHUNK_SIZE);
 		if (!shift_buf) ut_panic("can't malloc shift_buf for uninstallation");
 		while (1) {
 			fseekos(f, curpos, SEEK_SET);
-			size_t can_read_size = fread(shift_buf, 1, uninst_size, f);
+			size_t can_read_size = fread(shift_buf, 1, CHUNK_SIZE, f);
 			if (can_read_size) {
 				fseekos(f, curpos - uninst_size, SEEK_SET);
 				fwriteos(shift_buf, can_read_size, f);
 			}
-			if (can_read_size != uninst_size) break;
-			curpos += uninst_size;
+			if (can_read_size != CHUNK_SIZE) break;
+			curpos += CHUNK_SIZE;
 		}
 		free(shift_buf);
 		fseekos(f, 0, SEEK_END);
@@ -176,25 +177,26 @@ static BOOL persistent(BOOL only_uninstall) {
 	nl_relocdata((unsigned*)os_patch_data_end_addrs, sizeof(os_patch_data_end_addrs)/sizeof(os_patch_data_end_addrs[0]));
 	unsigned patch_data_size = os_patch_data_end_addrs[ut_os_version_index] - os_patch_data_addrs[ut_os_version_index];
 	
-	// Extend the file: shift the content from the end with 'insert_size'-long chunks
+	// Extend the file: shift the content from the end chunk by chunk
 	unsigned insert_size = patch_data_size + sizeof(zipped_file_header) - 1;
 	f = fopen(ospath, "r+b");
 	if (!f) ut_panic("can't open OS file");
-	fseekos(f, -insert_size, SEEK_END);
+	fseekos(f, -CHUNK_SIZE, SEEK_END);
 	long curpos = ftellos(f);
-	void *shift_buf = malloc(insert_size);
+	void *shift_buf = malloc(CHUNK_SIZE);
 	if (!shift_buf) ut_panic("can't malloc shift_buf");
 	while (curpos >= destpos) {
 		fseekos(f, curpos, SEEK_SET);
-		freados(shift_buf, insert_size, f);
-		fwriteos(shift_buf, insert_size, f);
-		curpos -= insert_size;
+		freados(shift_buf, CHUNK_SIZE, f);
+		fseekos(f, curpos + insert_size, SEEK_SET);
+		fwriteos(shift_buf, CHUNK_SIZE, f);
+		curpos -= CHUNK_SIZE;
 	}
-	if (curpos + insert_size - destpos) {
+	if (curpos + CHUNK_SIZE - destpos) {
 		fseekos(f, destpos, SEEK_SET);
-		freados(shift_buf, curpos + insert_size - destpos, f);
+		freados(shift_buf, curpos + CHUNK_SIZE - destpos, f);
 		fseekos(f, destpos + insert_size, SEEK_SET);
-		fwriteos(shift_buf, curpos + insert_size - destpos, f);
+		fwriteos(shift_buf, curpos + CHUNK_SIZE - destpos, f);
 	}
 	free(shift_buf);
 	// Write the header
@@ -240,7 +242,7 @@ int main(void) {
 	char *task_name = ((char*)current_task) + 16;
 	if (!strcmp(task_name, "API-100.")) { // Installation over USB
 		BOOL is_update = persistent(FALSE);
-		show_msgbox("Ndless", is_update ? "Ndless successfully updated!\nThe device is going to reboot." : "Ndless successfully installed!");
+		show_msgbox("Ndless", is_update ? "Ndless successfully updated!\nThe device now rebooting." : "Ndless successfully installed!");
 		if (is_update) ut_calc_reboot();
 		TCC_Terminate_Task(current_task);
 	}
