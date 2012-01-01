@@ -28,7 +28,6 @@ relocate_loop:
 cache_keypad_type:
 	mov  r2, r0          @ save it
 	osvar(keypad_type)
-	mov  r3, #0
 	ldrb r3, [r0]
 	mov  r0, r2          @ restore
 	cmp  r3, #3          @ prototype
