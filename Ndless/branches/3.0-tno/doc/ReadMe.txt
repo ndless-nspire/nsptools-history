@@ -51,7 +51,7 @@ Follow the installation procedure. The calculator will need to reboot.
 
 Create a directory called 'ndless' on the calculator.
 Send the file 'ndless_resources.tns' from the 'ndless' directory of the
-Ndless-ed calulator to the other one.
+Ndless-ed calculator to the other one.
 Then send the OS from the Ndless-ed calculator to the one. Ndless is directly 
 available on the next reboot.
 
@@ -64,7 +64,7 @@ Ndless-ed calulator to the other one. Then reset the calculator.
 How do I run an executable?
 ===========================
 
-Executables have the extension .tns as standard documents.
+Executables have the same ".tns" extension as standard documents.
 
 - Transfer the executable with a linking program to any folder of the TI-Nspire 
 - Run the executable from the Documents screen
@@ -72,7 +72,7 @@ Executables have the extension .tns as standard documents.
 You may try the particles demo available in the calcbin/samples/ directory.
 
 Programs built for Ndless v2.x should work as is on classic TI-Nspire.
-Programs  must be rebuilt and slightly adapted to run on TI-Nspire CX. If a 
+Programs must be rebuilt and slightly adapted to run on TI-Nspire CX. If a
 program is not yet available for CX, ask his author.
 
 What else should I know?
@@ -96,7 +96,7 @@ Upgrade your OS version and install Ndless.
 How do I uninstall it?
 ======================
 
-Then open 'ndless_resources.tns' from the Documents screen. A full reboot will be 
+Open 'ndless_resources.tns' from the Documents screen. A full reboot will be
 initiated.
 
 Troubleshooting
@@ -118,8 +118,8 @@ Known issues
 ============
 
 - *No* popup must be displayed when ndless_installer-*.txx is sent (especially the 
-  confirmation of the reception of 'ndless_resources.tns'), else Ndless's popup 
-  will block (you can still dismiss it by turning off and on the calculator).
+  confirmation of the reception of 'ndless_resources.tns'), otherwise Ndless's
+  popup will block (you can still dismiss it by turning off and on the calculator).
 - Ndless v1.x/v2.x programs which use the show_msgbox() function must be rebuilt 
   to be compatible.
 - Opening corrupted files will trigger a reboot instead of displaying an error 
@@ -140,7 +140,7 @@ Development version of the source code:
 Installation problem report
 ===========================
 
-First make sure:
+First make sure that:
 - You are using the right 'ndless_installer-<version>.tno|tnc|tco|tcc' file 
   compatible with the Operating System (OS) version currently installed on your 
   calculator
