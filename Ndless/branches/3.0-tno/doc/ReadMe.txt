@@ -15,8 +15,7 @@ What do I need to install it on a TI-Nspire?
 ============================================
 
 - A TI-Nspire CAS or non-CAS Clickpad, Touchpad or CX
-- An original OS v3.1.0 installed on it. It mustn't have been patched with the 
- TNOC utility.
+- OS v3.1.0 installed on it
 - Any linking program such as TI-Nspire Student Software
 
 How do I install/upgrade it?
@@ -112,7 +111,7 @@ Troubleshooting
   * Select '2' to uninstall the current OS. Reinstall it when asked to.
 - If running an executable from the documents screen displays the following 
   message: "Sorry. Could not open document 'xxx.tns'", Ndless has not been 
-  correctly installed. Run 'ndless_installer' again after a reboot.
+  correctly installed. Try to reinstall it.
 
 Known issues
 ============
