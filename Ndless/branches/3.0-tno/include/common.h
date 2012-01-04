@@ -414,7 +414,7 @@ typedef struct {
 	); \
 } while (0)
 
-/* May be used to access the values that had the registers when the hook was called: {r0-r12,lr} */
+/* Read-write: can be used to access the values that had the registers when the hook was called: {r0-r12,lr} */
 #define HOOK_SAVED_REGS(hookname) ((unsigned*) __##hookname##_saved_sp)
 
 #define HOOK_RESTORE_STATE() do { \
@@ -443,16 +443,17 @@ typedef struct {
 
 /* Hook return skipping instructions.
  * The 2 instructions overwritten by the hook are always skipped, the offset is based from the third instruction.
- * Any use must come with a call to HOOK_SKIP_VAR() outside of the hook function */
-#define HOOK_RESTORE_RETURN_SKIP(hookname, offset) do { \
+ * Any use must come with a call to HOOK_SKIP_VAR() outside of the hook function
+ * id is a unique id for the hook */
+#define HOOK_RESTORE_RETURN_SKIP(hookname, offset,id) do { \
 	__asm volatile( \
-		" adr r0, " STRINGIFY(__##hookname##_return_skip##__COUNTER__) "\n" \
+		" adr r0, " STRINGIFY(__##hookname##_return_skip##id) "\n" \
 		"	str %0, [r0] \n" \
 		:: "r"(__##hookname##_end_instrs[3] + offset) : "r0"); \
 	HOOK_RESTORE(hookname); \
 	__asm volatile( \
 		" ldr pc, [pc, #-4] \n" \
-	  STRINGIFY(__##hookname##_return_skip##__COUNTER__) ":" \
+	  STRINGIFY(__##hookname##_return_skip##id) ":" \
 		" .long 0"); \
 	} while (0)
 

@@ -41,29 +41,30 @@ HOOK_DEFINE(plh_hook) {
 	FILE *docfile = fopen(docpath, "rb");
 	if (!docfile || ret) {
 		puts("ploaderhook: can't open doc");
-		HOOK_RESTORE_RETURN(plh_hook);
+error_dialog:
+		HOOK_SAVED_REGS(plh_hook)[3] = HOOK_SAVED_REGS(plh_hook)[0]; // 'mov r3, r0' was overwritten by the hook
+		HOOK_RESTORE_RETURN_SKIP(plh_hook, -0x114, 0); // to the error dialog about the unsupported format (we've overwritten a branch with our hook)
 	}
 	void *docptr = emu_debug_alloc_ptr ? emu_debug_alloc_ptr : malloc(docstat.st_size);
 	if (!docptr) {
 		puts("ploaderhook: can't malloc");
-		HOOK_RESTORE_RETURN(plh_hook);
+		goto error_dialog;
 	}
 	if (!fread(docptr, docstat.st_size, 1, docfile)) {
 		puts("ploaderhook: can't read doc");
 		if (!emu_debug_alloc_ptr)
 			free(docptr);
-		HOOK_RESTORE_RETURN(plh_hook);
+		goto error_dialog;
 	}
 	fclose(docfile);
 	if (strcmp(PRGMSIG, docptr)) { /* not a program */
 		if (!emu_debug_alloc_ptr)
 			free(docptr);
-		HOOK_RESTORE_RETURN(plh_hook);
+		goto error_dialog;
 	}
 	int intmask = TCT_Local_Control_Interrupts(-1); /* TODO workaround: disable the interrupts to avoid the clock on the screen */
 	void *savedscr = malloc(SCREEN_BYTES_SIZE);
 	memcpy(savedscr, SCREEN_BASE_ADDRESS, SCREEN_BYTES_SIZE);
-	unsigned orig_lcd_control = 0;
 	if (has_colors) {
 		volatile unsigned *palette = (volatile unsigned*)0xC0000200;
 		for (i = 0; i < 16/2; i++)
@@ -80,5 +81,5 @@ HOOK_DEFINE(plh_hook) {
 	TCT_Local_Control_Interrupts(intmask);
 	if (!emu_debug_alloc_ptr)
 		free(docptr);
-	HOOK_RESTORE_RETURN_SKIP(plh_hook, -0xDC); // skip the error dialog about the unsupported format
+	HOOK_RESTORE_RETURN_SKIP(plh_hook, -0xDC, 1); // skip the error dialog about the unsupported format
 }
