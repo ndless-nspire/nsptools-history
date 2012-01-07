@@ -108,10 +108,12 @@
 #define e_NU_Open 90
 #define e_NU_Close 91
 #define e_NU_Truncate 92
+#define e__show_msgbox_2b 93
+#define e__show_msgbox_3b 94
 // END_OF_LIST (always keep this line after the last constant, used by mksyscalls.sh)
 
 // Must be kept up-to-date with the value of the last syscall
-#define __SYSCALLS_LAST 92
+#define __SYSCALLS_LAST 94
 
 // Flag: 3 higher bits of the 3-bytes comment field of the swi instruction
 #define __SYSCALLS_ISEXT 0x200000

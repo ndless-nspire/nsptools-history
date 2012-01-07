@@ -59,7 +59,7 @@ BOOL on_key_pressed(void);
 void rewind(FILE * stream);
 unsigned _scrsize(void);
 unsigned set_cpu_speed(unsigned speed);
-void show_msgbox(const char *title, const char *msg);
+unsigned _show_msgbox(const char *title, const char *msg, unsigned button_num, ...);
 void sleep(unsigned millisec);
 size_t strcspn(const char * str1, const char * str2);
 size_t strspn(const char * str1, const char * str2);
@@ -77,10 +77,9 @@ static inline void halt(void) {
 	__asm volatile("0: b 0b");
 }
 
-static inline void bkpt(void) {
-	__asm volatile("bkpt");
-}
-
+#define show_msgbox(title, msg) _show_msgbox(title, msg, 0)
+#define show_msgbox_2b(title, msg, button1, button2) _show_msgbox(title, msg, 2, button1, button2)
+#define show_msgbox_3b(title, msg, button1, button2, button3) _show_msgbox(title, msg, 3, button1, button2, button3)
 
 unsigned hwtype(void);
 #define is_cx (hwtype() == 1)

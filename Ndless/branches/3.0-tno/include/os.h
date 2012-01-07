@@ -115,6 +115,7 @@ extern int __base;
 }
 #else
 #ifndef __thumb__
+/* TODO: _SYSCALLVAR is also used for >= 5 parameters, but must strangely contain var args for the parameters to be passed */
 #define _SYSCALLVAR(rettype, attributes, funcname, param1, ...) static inline rettype attributes __attribute__((naked)) funcname(param1, __VA_ARGS__) { \
 	register unsigned __r0 __asm("r0"); \
 	__asm volatile( \
@@ -203,6 +204,9 @@ _SYSCALL1(int, read_unaligned_longword, void *)
 _SYSCALL1(int, read_unaligned_word, void *)
 _SYSCALL3(void, ascii2utf16, void *, const char *, int)
 _SYSCALL4(void, show_dialog_box2_, int /* undef */, const char * /* title */, const char * /* msg */, char * /* undef_buf[8] */)
+_SYSCALLVAR(int,, _show_msgbox_2b, __attribute__((unused)) int undef, __attribute__((unused)) const char * title, __attribute__((unused)) const char *msg, __attribute__((unused)) char *button1, __attribute__((unused)) int button1_code, __attribute__((unused)) char *button2, __attribute__((unused)) int button2_code, __attribute__((unused)) char undef_buf[8], ...)
+_SYSCALLVAR(int,, _show_msgbox_3b, __attribute__((unused)) int undef, __attribute__((unused)) const char * title, __attribute__((unused)) const char *msg, __attribute__((unused)) char *button1, __attribute__((unused)) int button1_code, __attribute__((unused)) char *button2, __attribute__((unused)) int button2_code, __attribute__((unused)) char *button3, __attribute__((unused)) int button3_code, __attribute__((unused)) char undef_buf[8], ...)
+
 
 _SYSCALL0(int *, errno_addr)
 #define errno (*errno_addr())

@@ -26,7 +26,6 @@
 #include <os.h>
 #include "ndless.h"
 
-
 // OS-specific
 extern char _binary_ndless_installer_bin_3_1_0_ncas_tmp_o_start[];
 extern char _binary_ndless_installer_bin_3_1_0_ncas_tmp_o_end[];
@@ -225,7 +224,6 @@ int main(void) {
 	ut_read_os_version_index();
 	BOOL installed = FALSE;
 
-
 	struct next_descriptor *installed_next_descriptor = ut_get_next_descriptor();
 	if (installed_next_descriptor) {
 		if (*(unsigned*)installed_next_descriptor->ext_name == 0x534C444E) // 'NDLS'
@@ -234,11 +232,11 @@ int main(void) {
 			ut_panic("unknown N-ext");
 	}
 
-	ints_setup_handlers();
-	sc_setup();
-
-	if (!installed)
+	if (!installed) {
+		ints_setup_handlers();
+		sc_setup();
 		HOOK_INSTALL(ploader_hook_addrs[ut_os_version_index], plh_hook);
+	}
 	
 	NU_TASK *current_task  = TCC_Current_Task_Pointer();
 	char *task_name = ((char*)current_task) + 16;
@@ -250,6 +248,15 @@ int main(void) {
 	}
 	else { // either OS startup or ndless_resources.tns run
 		if (installed) { // ndless_resources.tns run: uninstall
+			char arr[8] = {0,0,0,0,0,0,0,0};
+				*(char**)arr= "DLG";
+					char title16[(strlen("title") + 1) * 2];
+	char msg16[(strlen("msg") + 1) * 2];
+	ascii2utf16(title16, "title", sizeof(title16));
+	ascii2utf16(msg16, "msg", sizeof(msg16));
+	// code des boutons
+			if (show_msgbox_2b("Ndless", "Do you really want to uninstall Ndless?\nThe device will reboot.", "Yes", "No") == 2)
+				return 0;
 			persistent(TRUE);
 			ut_calc_reboot();
 		}

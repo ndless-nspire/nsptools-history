@@ -247,6 +247,9 @@ typedef struct{} FILE;
 		(((uint32_t)(__x) & (uint32_t)0xFF000000UL) >> 24) )); \
 })
 
+/* Required for C99 variable-length arrays */
+void *alloca(size_t size);
+
 /***********************************
  * Nucleus
  ***********************************/

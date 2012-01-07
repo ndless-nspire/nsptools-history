@@ -93,4 +93,6 @@ unsigned syscalls_cascx_3_1_0[] = {
 	, 0X10381DC4
 	, 0X10381D6C
 	, 0X10381B9C
+	, 0X1002057C
+	, 0X1002011C
 };
