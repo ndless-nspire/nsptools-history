@@ -58,6 +58,9 @@ int main(void) {
 	  }
 	  free(scrbuf);
 	}
+	
+	clrscr();
+	lcd_ingray();
 
   gravity_particles_construct(&gravity_particles, 0.00006672f, 100);
   particle_system = &(gravity_particles.particleSystem);
