@@ -219,7 +219,10 @@ static unsigned const ploader_hook_addrs[] = {0x10009984, 0x1000995C, 0x10009924
 // OS-specific
 static unsigned const init_task_return_addrs[] = {0x10001548, 0x10001548, 0x10001510, 0x10001510};
 
-int main(void) {
+// OS-specific
+static unsigned const api100_task_return_addrs[] = {0x100777A0, 0x10077708, 0x10076E9C, 0x10076e2c};
+
+int main(int __attribute__((unused)) argc, char* argv[]) {
 	ut_debug_trace(INSTTR_INS_ENTER);
 	ut_read_os_version_index();
 	BOOL installed = FALSE;
@@ -232,9 +235,12 @@ int main(void) {
 			ut_panic("unknown N-ext");
 	}
 
-	if (!installed) {
+	if (argv[0][0] != '/') { // not ndless_resources run
 		ints_setup_handlers();
 		sc_setup();
+	}
+
+	if (!installed) {
 		HOOK_INSTALL(ploader_hook_addrs[ut_os_version_index], plh_hook);
 	}
 	
@@ -244,17 +250,13 @@ int main(void) {
 		BOOL is_update = persistent(FALSE);
 		show_msgbox("Ndless", is_update ? "Ndless successfully updated!\nThe device now rebooting." : "Ndless successfully installed!");
 		if (is_update) ut_calc_reboot();
+		// simulate cleanup function prolog and return to it, required for OS reception not to be broken afterwards
+		// current_task + 0x64 contain a resource expected in r4
+		__asm volatile("ldr r4, [%1,#0x64]; adr lr, 0f; stmfd sp!, {r4-r8,r10,lr}; sub sp, sp, #0x1C; mov pc, %0; 0:" : : "r" (api100_task_return_addrs[ut_os_version_index]), "r" (current_task));
 		TCC_Terminate_Task(current_task);
 	}
 	else { // either OS startup or ndless_resources.tns run
 		if (installed) { // ndless_resources.tns run: uninstall
-			char arr[8] = {0,0,0,0,0,0,0,0};
-				*(char**)arr= "DLG";
-					char title16[(strlen("title") + 1) * 2];
-	char msg16[(strlen("msg") + 1) * 2];
-	ascii2utf16(title16, "title", sizeof(title16));
-	ascii2utf16(msg16, "msg", sizeof(msg16));
-	// code des boutons
 			if (show_msgbox_2b("Ndless", "Do you really want to uninstall Ndless?\nThe device will reboot.", "Yes", "No") == 2)
 				return 0;
 			persistent(TRUE);
