@@ -204,9 +204,8 @@ _SYSCALL1(int, read_unaligned_longword, void *)
 _SYSCALL1(int, read_unaligned_word, void *)
 _SYSCALL3(void, ascii2utf16, void *, const char *, int)
 _SYSCALL4(void, show_dialog_box2_, int /* undef */, const char * /* title */, const char * /* msg */, char * /* undef_buf[8] */)
-_SYSCALLVAR(int,, _show_msgbox_2b, __attribute__((unused)) int undef, __attribute__((unused)) const char * title, __attribute__((unused)) const char *msg, __attribute__((unused)) char *button1, __attribute__((unused)) int button1_code, __attribute__((unused)) char *button2, __attribute__((unused)) int button2_code, __attribute__((unused)) char undef_buf[8], ...)
-_SYSCALLVAR(int,, _show_msgbox_3b, __attribute__((unused)) int undef, __attribute__((unused)) const char * title, __attribute__((unused)) const char *msg, __attribute__((unused)) char *button1, __attribute__((unused)) int button1_code, __attribute__((unused)) char *button2, __attribute__((unused)) int button2_code, __attribute__((unused)) char *button3, __attribute__((unused)) int button3_code, __attribute__((unused)) char undef_buf[8], ...)
-
+_SYSCALL(int, _show_msgbox_2b, int undef, const char * title, const char *msg, char *button1, int button1_code, char *button2, int button2_code, char undef_buf[8]) _SYSCALL_ARGS(int, _show_msgbox_2b, undef, title, msg, button1, button1_code, button2, button2_code, undef_buf)
+_SYSCALL(int, _show_msgbox_3b, int undef, const char * title, const char *msg, char *button1, int button1_code, char *button2, int button2_code, char *button3, int button3_code, char undef_buf[8]) _SYSCALL_ARGS(int, _show_msgbox_3b, undef, title, msg, button1, button1_code, button2, button2_code, button3, button3_code, undef_buf)
 
 _SYSCALL0(int *, errno_addr)
 #define errno (*errno_addr())
