@@ -30,10 +30,8 @@ HOOK_DEFINE(plh_hook) {
 	char *halfpath; // [docfolder/]file.tns
 	char docpath[100];
 	int ret;
-	char *ptr;
 	unsigned i;
 	halfpath = (char*)(HOOK_SAVED_REGS(plh_hook)[5] /* r5 */ + 32);
-	ptr = strrchr(halfpath, '/');
 	// TODO use snprintf
 	sprintf(docpath, "/documents/%s", halfpath);
 	struct stat docstat;
