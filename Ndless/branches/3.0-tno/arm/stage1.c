@@ -30,11 +30,18 @@
 // OS-specific
 static unsigned const init_task_return_addrs[] = {0x10001548, 0x10001548, 0x10001510, 0x10001510};
 
+// OS-specific
+static unsigned const api100_task_return_addrs[] = {0x100777A0, 0x10077708, 0x10076E9C, 0x10076e2c};
+
 // In case of failure
 static __attribute__((noreturn)) void back_to_os(void) {
 	NU_TASK *current_task  = TCC_Current_Task_Pointer();
 	char *task_name = ((char*)current_task) + 16;
 	if (!strcmp(task_name, "API-100.")) { // Installation over USB
+		// simulate cleanup function prolog and return to it, required for OS reception not to be broken afterwards
+		// current_task + 0x64 contain a resource expected in r4
+		// First switch to ARM mode. Switch back to thumb at the end.
+		// BROKEN the installer becomes to big__asm volatile(".thumb; adr r0, 0f;	bx r0; .arm; 0: ldr r4, [%1,#0x64]; adr lr, 0f; stmfd sp!, {r4-r8,r10,lr}; sub sp, sp, #0x1C; mov pc, %0; 0: add r0, pc, #1;	bx r0" : : "r" (api100_task_return_addrs[ut_os_version_index]), "r" (current_task));
 		TCC_Terminate_Task(current_task);
 	}	else { // OS startup
 		// Simulate the prolog of the thread function for correct function return. Set r4 to a dummy variable, written to by a sub-function that follows.
@@ -74,7 +81,7 @@ void stage1(void) {
 	if (fread(core, res_stat.st_size, 1, res_file) != 1) // ut_panic("can't fread for installer");
 	fclose(res_file);
 	ut_debug_trace(INSTTR_S1_LOADINST);
-	clear_cache();
 	char *res_params = " "; // Dummy filename to tell the installer we are booting or installing, and not running ndless_resources
+	clear_cache();
 	((void (*)(int argc, void* argv))(char*)core + sizeof(PRGMSIG))(1, &res_params); // Run the core installation
 }
