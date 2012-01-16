@@ -1,16 +1,17 @@
 AS = nspire-as
 LD = nspire-ld
 OBJCOPY := "$(shell (which arm-elf-objcopy arm-none-eabi-objcopy arm-linux-gnueabi-objcopy | head -1) 2>/dev/null)"
-OBJS = hella.o
+EXE = hella.tns
+OBJS = $(patsubst %.S,%.o,$(wildcard *.S))
 DISTDIR = ../../calcbin/samples
 vpath %.tns $(DISTDIR)
 
-all: hella.tns
+all: $(EXE)
 
 %.o: %.S
 	$(AS) -c $<
 
-hella.tns: $(OBJS)
+$(EXE): $(OBJS)
 	$(LD) -nostdlib $^ -o $(@:.tns=.elf)
 	mkdir -p $(DISTDIR)
 	$(OBJCOPY) -O binary $(@:.tns=.elf) $(DISTDIR)/$@

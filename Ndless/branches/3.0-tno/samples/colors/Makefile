@@ -7,7 +7,7 @@ ifeq (${OBJCOPY},"")
 	OBJCOPY := arm-none-eabi-objcopy
 endif
 EXE = colors.tns
-OBJS = colors.o
+OBJS = $(patsubst %.c,%.o,$(wildcard *.c))
 DISTDIR = ../../calcbin/samples
 vpath %.tns $(DISTDIR)
 
