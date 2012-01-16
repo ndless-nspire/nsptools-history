@@ -104,7 +104,7 @@ extern int __base;
 #endif // ndef __thumb__
 /* all parameters must be marked with  __attribute__((unused)) */
 #ifdef _NDLS_LIGHT // can't use _SYSCALL_GETSAVEDLR_PTR which depends on the GOT: save lr to the stack, syscallvars with more than 4 parameters can't be used
-#define _SYSCALLVAR(rettype, attributes, funcname, param1, ...) static inline rettype attributes __attribute__((naked)) funcname(param1, __VA_ARGS__) { \
+#define _SYSCALLVAR(rettype, attributes, funcname, param1, ...) static __attribute__((unused)) rettype attributes __attribute__((naked)) funcname(param1, __VA_ARGS__) { \
 	register unsigned __r0 __asm("r0"); \
 	__asm volatile( \
 		" push {lr} \n" \
@@ -116,7 +116,7 @@ extern int __base;
 #else
 #ifndef __thumb__
 /* TODO: _SYSCALLVAR is also used for >= 5 parameters, but must strangely contain var args for the parameters to be passed */
-#define _SYSCALLVAR(rettype, attributes, funcname, param1, ...) static inline rettype attributes __attribute__((naked)) funcname(param1, __VA_ARGS__) { \
+#define _SYSCALLVAR(rettype, attributes, funcname, param1, ...) static __attribute__((unused)) rettype attributes __attribute__((naked)) funcname(param1, __VA_ARGS__) { \
 	register unsigned __r0 __asm("r0"); \
 	__asm volatile( \
 		" push {r4, r5} \n" \
@@ -130,7 +130,7 @@ extern int __base;
 	return (rettype)__r0; \
 }
 #else // slightly less optimized
-#define _SYSCALLVAR(rettype, attributes, funcname, param1, ...) static inline rettype attributes __attribute__((naked)) funcname(param1, __VA_ARGS__) { \
+#define _SYSCALLVAR(rettype, attributes, funcname, param1, ...) static __attribute__((unused)) rettype attributes __attribute__((naked)) funcname(param1, __VA_ARGS__) { \
 	register unsigned __r0 __asm("r0"); \
 	__asm volatile( \
 		" push {r4, r5} \n" \
@@ -152,7 +152,7 @@ extern int __base;
 static __attribute__ ((unused)) unsigned _syscallvar_savedlr;
 /* Force the use of the stack for the parameters */
 #ifndef __thumb__
-#define _SYSCALL_SWI(rettype, attributes, funcname, param1) static inline rettype attributes __attribute__((naked)) funcname##_swi() { \
+#define _SYSCALL_SWI(rettype, attributes, funcname, param1) static rettype attributes __attribute__((naked)) funcname##_swi() { \
 	register unsigned __r0 __asm("r0"); \
 	__asm volatile( \
 		" push {r4, r5} \n" \
@@ -166,7 +166,7 @@ static __attribute__ ((unused)) unsigned _syscallvar_savedlr;
 	return (rettype)__r0; \
 }
 #else // slightly less optimized
-#define _SYSCALL_SWI(rettype, attributes, funcname, param1) static inline rettype attributes __attribute__((naked)) funcname##_swi() { \
+#define _SYSCALL_SWI(rettype, attributes, funcname, param1) static rettype attributes __attribute__((naked)) funcname##_swi() { \
 	register unsigned __r0 __asm("r0"); \
 	__asm volatile( \
 		" push {r4, r5} \n" \
@@ -396,7 +396,7 @@ _SYSCALL0(unsigned, nl_hwtype)
 /* stdlib replacements not directly available as syscalls */
 extern unsigned __crt0exit;
 extern unsigned __crt0_savedsp;
-static inline void __attribute__((noreturn, naked)) exit(int __attribute__((unused)) status) {
+static void __attribute__((noreturn, naked)) exit(int __attribute__((unused)) status) {
 	__asm volatile(
 		" mov sp, %0 \n"
 		" mov pc, %1"
