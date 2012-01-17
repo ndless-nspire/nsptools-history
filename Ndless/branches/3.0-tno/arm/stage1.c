@@ -26,31 +26,6 @@
 
 #include "ndless.h"
 
-// Return address in the Init task of the OS
-// OS-specific
-static unsigned const init_task_return_addrs[] = {0x10001548, 0x10001548, 0x10001510, 0x10001510};
-
-// OS-specific
-static unsigned const api100_task_return_addrs[] = {0x100777A0, 0x10077708, 0x10076E9C, 0x10076e2c};
-
-// In case of failure
-static __attribute__((noreturn)) void back_to_os(void) {
-	NU_TASK *current_task  = TCC_Current_Task_Pointer();
-	char *task_name = ((char*)current_task) + 16;
-	if (!strcmp(task_name, "API-100.")) { // Installation over USB
-		// simulate cleanup function prolog and return to it, required for OS reception not to be broken afterwards
-		// current_task + 0x64 contain a resource expected in r4
-		// First switch to ARM mode. Switch back to thumb at the end.
-		// BROKEN the installer becomes to big__asm volatile(".thumb; adr r0, 0f;	bx r0; .arm; 0: ldr r4, [%1,#0x64]; adr lr, 0f; stmfd sp!, {r4-r8,r10,lr}; sub sp, sp, #0x1C; mov pc, %0; 0: add r0, pc, #1;	bx r0" : : "r" (api100_task_return_addrs[ut_os_version_index]), "r" (current_task));
-		TCC_Terminate_Task(current_task);
-	}	else { // OS startup
-		// Simulate the prolog of the thread function for correct function return. Set r4 to a dummy variable, written to by a sub-function that follows.
-		// First switch to ARM mode
-		__asm volatile(".thumb; adr r0, 0f;	bx r0; .arm; 0: add lr, pc, #8; stmfd sp!, {r4-r6,lr}; sub sp, sp, #0x18; mov r4, sp; mov pc, %0" : : "r" (init_task_return_addrs[ut_os_version_index]));
-	}
-	__builtin_unreachable();
-}
-
 /* The error handling is commented and only enabled for debugging purposes
  * because of the size constraints of the installer.
  */
@@ -59,7 +34,6 @@ void stage1(void) {
 	unsigned *uptr;
 	unsigned *osptr;
 	unsigned i;
-	int ret;
 	
 	ut_debug_trace(INSTTR_S1_ENTER);
 
@@ -74,11 +48,9 @@ void stage1(void) {
 	
 	const char *res_path = "/documents/ndless/ndless_resources.tns";
 	FILE *res_file = fopen(res_path, "rb");
-	ret = stat(res_path, &res_stat);
-	if (!res_file || ret) back_to_os(); // ut_panic("res not found");
+	stat(res_path, &res_stat);
 	char *core = malloc(res_stat.st_size);
-	if (!core) back_to_os(); // ut_panic("can't malloc for installer");
-	if (fread(core, res_stat.st_size, 1, res_file) != 1) // ut_panic("can't fread for installer");
+	fread(core, res_stat.st_size, 1, res_file);
 	fclose(res_file);
 	ut_debug_trace(INSTTR_S1_LOADINST);
 	char *res_params = " "; // Dummy filename to tell the installer we are booting or installing, and not running ndless_resources

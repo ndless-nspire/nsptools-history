@@ -51,6 +51,21 @@ extern unsigned syscalls_light_cascx_3_1_0[];
 void ut_read_os_version_index(void) {
 	#if defined STAGE1
 			sc_addrs_ptr = CONCAT(CONCAT(CONCAT(syscalls_light_, MODEL), _), OS_VERSION);
+	switch (*(unsigned*)(OS_BASE_ADDRESS + 0x20)) {
+		// OS-specific
+		case 0x102F0FA0:  // 3.1.0 non-CAS
+			ut_os_version_index = 0;
+			break;
+		case 0x102F16D0:  // 3.1.0 CAS
+			ut_os_version_index = 1;
+			break;
+		case 0x102F0A10:  // 3.1.0 non-CAS CX
+			ut_os_version_index = 2;
+			break;
+		case 0x102F11A0:  // 3.1.0 CAS CX
+			ut_os_version_index = 3;
+			break;
+	}
 	#else
 	/* The heuristic is based on the address of INT_Initialize - Thanks Goplat.
 	 * The address is read from the RAM copy and not the real vector which is
