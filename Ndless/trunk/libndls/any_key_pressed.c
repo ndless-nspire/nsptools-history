@@ -28,7 +28,7 @@ BOOL any_key_pressed(void) {
 	touchpad_scan(&report);
 	if (report.pressed) return TRUE;
 	for (addr = KEY_MAP + 0x10; addr < (volatile int *)(KEY_MAP + 0x20); addr += 1) {
-		if (*addr != -1)
+		if (is_classic ? *addr != -1  : *addr )
 			return TRUE;
 	}
 	return FALSE;

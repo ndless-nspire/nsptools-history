@@ -15,11 +15,10 @@
  *
  * The Initial Developer of the Original Code is Olivier ARMAND
  * <olivier.calc@gmail.com>.
- * Portions created by the Initial Developer are Copyright (C) 2010
+ * Portions created by the Initial Developer are Copyright (C) 2010-2011
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): 
- *                 Geoffrey ANNEHEIM <geoffrey.anneheim@gmail.com>
  ****************************************************************************/
 
 #include <os.h>
@@ -46,9 +45,13 @@ void sc_ext_relocdatab(unsigned *dataptr, unsigned size, void *base) {
 	}
 }
 
+unsigned sc_nl_hwtype(void) {
+	return (ut_os_version_index % 4) / 2;
+}
+
 /* Extension syscalls table */
 unsigned sc_ext_table[] = {
-	(unsigned)sc_nl_osvalue, (unsigned)sc_ext_relocdatab
+	(unsigned)sc_nl_osvalue, (unsigned)sc_ext_relocdatab, (unsigned)sc_nl_hwtype
 };
 
 void sc_setup(void) {

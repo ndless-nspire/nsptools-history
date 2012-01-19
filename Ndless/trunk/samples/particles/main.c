@@ -33,7 +33,7 @@ int main(void) {
     "Ndless - Particle System Demo",
     "------------------------\n"
     "       Particle System Demo\n" \
-    "   © 2010 by the Ndless Team\n"
+    "© 2010-2011 by the Ndless Team\n"
     "------------------------\n"
     "+  Add a particle\n"
     "-  Remove a particle\n"
@@ -45,17 +45,22 @@ int main(void) {
     "ESC - Exit"
   );
 
-	void *scrbuf = malloc(SCREEN_BYTES_SIZE);
-	memcpy(scrbuf, SCREEN_BASE_ADDRESS, SCREEN_BYTES_SIZE);
-  for (i = 0; i < 0x0F; ++i) {
-    fade(scrbuf, 1);
-    sleep(70);
-    if (isKeyPressed(KEY_NSPIRE_ESC)) {
-    	free(scrbuf);
-    	return 0;
-    }
-  }
-  free(scrbuf);
+	if (is_classic) { // programs are started with the screen cleared on non-classic
+		void *scrbuf = malloc(SCREEN_BYTES_SIZE);
+		memcpy(scrbuf, SCREEN_BASE_ADDRESS, SCREEN_BYTES_SIZE);
+	  for (i = 0; i < 0x0F; ++i) {
+	    fade(scrbuf, 1);
+	    sleep(70);
+	    if (isKeyPressed(KEY_NSPIRE_ESC)) {
+	    	free(scrbuf);
+	    	return 0;
+	    }
+	  }
+	  free(scrbuf);
+	}
+	
+	clrscr();
+	lcd_ingray();
 
   gravity_particles_construct(&gravity_particles, 0.00006672f, 100);
   particle_system = &(gravity_particles.particleSystem);

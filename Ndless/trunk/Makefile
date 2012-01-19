@@ -6,7 +6,6 @@ SDKDISTDIRS = bin lib
 SDKDIRS = $(SDKDISTDIRS) include system
 
 all: subdirs
-all_tools: subdirs_tools
 
 .PHONY: subdirs
 
@@ -15,7 +14,7 @@ subdirs:
 	echo "make all in $$i..."; \
   (cd $$i; make all) || exit 1; done
 
-subdirs_tools:
+all_tools:
 	@for i in $(SUBDIR_TOOLS); do \
 	echo "make all in $$i..."; \
   (cd $$i; make all) || exit 1; done

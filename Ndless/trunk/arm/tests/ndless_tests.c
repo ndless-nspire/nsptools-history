@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Olivier ARMAND
  * <olivier.calc@gmail.com>.
- * Portions created by the Initial Developer are Copyright (C) 2010
+ * Portions created by the Initial Developer are Copyright (C) 2010-2011
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): 
@@ -28,60 +28,62 @@
 unsigned errcount = 0;
 
 static void error(const char *tstname, const char *errmsg) {
-	printf("[%s] FAILED: %s\n", tstname, errmsg);
+	printf("[FAILED] [%s]: %s\n", tstname, errmsg);
 	errcount++;
 }
 
-#define assert(expr, format, ...) \
+#define assert(tstname, expr, format, ...) \
 	do { \
 		char sbuf[100]; \
 		if (!(expr)) { \
 			sprintf(sbuf, "%s(" format ")", __func__, __VA_ARGS__); \
 			error(tstname, sbuf); \
+		} else { \
+		printf("[passed] [%s]\n", tstname);	\
 		} \
 	} while(0)
 
 static void assertUIntEquals(const char *tstname, unsigned expected, unsigned actual) {
-	assert(expected == actual, "%x, %x", expected, actual);
+	assert(tstname, expected == actual, "%x, %x", expected, actual);
 }
 
 static void assertIntEquals(const char *tstname, int expected, int actual) {
-	assert(expected == actual, "%i, %i", expected, actual);
+	assert(tstname, expected == actual, "%i, %i", expected, actual);
 }
 
 __attribute__((unused)) static void assertUIntGreater(const char *tstname, unsigned expected, unsigned actual) {
-	assert(expected < actual, "%x, %x", expected, actual);
+	assert(tstname, expected < actual, "%x, %x", expected, actual);
 }
 
 static void assertUIntLower(const char *tstname, unsigned expected, unsigned actual) {
-	assert(expected > actual, "%x, %x", expected, actual);
+	assert(tstname, expected > actual, "%x, %x", expected, actual);
 }
 
 static void assertZero(const char *tstname, unsigned actual) {
-	assert(!actual, "%x", actual);
+	assert(tstname, !actual, "%x", actual);
 }
 
 static void assertNonZero(const char *tstname, unsigned actual) {
-	assert(actual, "%x", actual);
+	assert(tstname, actual, "%x", actual);
 }
 
 static void assertTrue(const char *tstname, BOOL actual) {
-	assert(actual, "%s", actual ? "TRUE" : "FALSE");
+	assert(tstname, actual, "%s", actual ? "TRUE" : "FALSE");
 }
 
 static void assertStrEquals(const char *tstname, const char *expected, const char *actual) {
-	assert(!strcmp(expected, actual), "\"%s\", \"%s\"", expected, actual);
+	assert(tstname, !strcmp(expected, actual), "\"%s\", \"%s\"", expected, actual);
 }
 
 static void assertNotNull(const char *tstname, void *actual) {
-	assert(actual, "%p", actual);
+	assert(tstname, actual, "%p", actual);
 }
 
 
 int global_int;
 int* nl_relocdata_data[] = {&global_int};
 
-static const unsigned custom_sprintf_addrs[] = {0x102A280C}; // only non-CAS 1.7
+static const unsigned custom_sprintf_addrs[] = {0x10376F28}; // only non-CAS 3.1
 #define custom_sprintf SYSCALL_CUSTOM(custom_sprintf_addrs, int __attribute__((__format__(__printf__,2,3))), char *s, const char *format, ...)
 
 /* the actual parameters should be: dummy, (char)1, char(0x20) */
@@ -113,7 +115,7 @@ int main(int argc, char *argv[]) {
 	assertStrEquals("_syscallsvar >4 params", "123", buf); // tests sprintf. uses _syscallvar_savedlr.
 	assertUIntEquals("_syscallsvar return", 3, ret);
 	
-	if (nl_osvalue((int*)custom_sprintf_addrs, 1)) { // we are on non-CAS 1.7: execute tests which only work on this version.
+	if (nl_osvalue((int*)custom_sprintf_addrs, 1)) { // we are on non-CAS 3.1: execute tests which only work on this version.
 		unsigned nl_osvalue_data[] = {1, 2, 3};
 		assertUIntEquals("nl_osvalue", 1, nl_osvalue((int*)nl_osvalue_data, 3)); // Also tests syscalls extensions
 		custom_sprintf(buf, "%s", "custom");
@@ -230,8 +232,10 @@ int main(int argc, char *argv[]) {
 	assertUIntEquals("ungetc-1", 'a', ungetc(fgetc(file), file));
 	assertUIntEquals("ungetc-2", 'a', fgetc(file));
 	assertZero("fclose", fclose(file));
-	
+	assertZero("truncate", truncate(buf, 2));
 	assertZero("stat", stat(buf, &sstat));
+	assertIntEquals("stat-truncate", sstat.st_size, 2);
+	
 	assertZero("unlink", unlink(buf));
 	file = fopen(buf, "wb+");
 	assertNonZero("feof-1", feof(file));
@@ -266,6 +270,8 @@ int main(int argc, char *argv[]) {
 	assertUIntEquals("abs,min,max", 4, max(min(abs(-3), 2), 4));
 	assertUIntEquals("bswap16", 0x0100, bswap16(0x0001));
 	assertUIntEquals("bswap32", 0x03020100, bswap32(0x00010203));
+	
+	assertTrue("is_cx", (is_cx && *(unsigned*)0x900A0000 == 0x101) || (!is_cx && *(unsigned*)0x900A0000 == 0x01000010));
 	
 	assertTrue("is_touchpad", (*keypad_type != 3  &&  *keypad_type != 4) || is_touchpad);
 	sleep(100);

@@ -60,30 +60,34 @@ asm(
 " .long " STRINGIFY(NEXT_SIGNATURE) "\n"
 "ints_next_descriptor_ptr: .long 0 \n"
 #endif
-"ints_swi_handler: .global ints_swi_handler  @ caution: 1) only supports calls from the svc and user mode (many syscalls will reboot with TCT_Check_Stack in other modes anyway) 2) destroys the caller's mode lr \n"
-" str   r0, [sp, #-4]!    @ push r0 \n"
+"ints_swi_handler: .global ints_swi_handler  @ caution: 1) only supports calls from the svc mode (i.e. the mode used by the OS) 2) destroys the caller's mode lr \n"
+" stmfd sp!, {r0-r2, r3}  @ r3 is dummy and will be overwritten with the syscall address. Caution, update the offset below if reg list changed. \n"
 " mrs	  r0, spsr \n"
+#ifndef STAGE1
+/* stage1 always in thumb */
 " tst   r0, #0b100000     @ caller in thumb state? \n"
 " beq   stateok           @ ARM state \n"
+#endif
 " add   lr, lr, #1        @ so that the final 'bx lr' of the syscall switches back to thumb state \n"
 " bic   r0, #0b100000     @ clear the caller's thumb bit. The syscall is run in 32-bit state \n"
-" msr   spsr, r0 \n"
 "stateok: \n"
-" ands  r0, #0b1111       @ keep the caller's mode \n"
-" ldr   r0, [sp], #4      @ pop r0 \n"
-" bne   restorespsr       @ non-user mode (=svc mode): the current lr is the caller's lr and doesn't need to bet set \n"
-" str   lr, [sp, #-4]!    @ push lr \n"
-" ldmfd sp, {lr}^         @ ^: move lr_svc (return address) to lr_user \n"
-" add   sp, sp, #4        @ 'sp!' with ^ in the previous instruction is considered to produce an unpredictable result by GAS \n"
-"restorespsr: \n"
-" subs pc, pc, #4         @  move spsr to cpsr (get back to the mode of the caller and restore the ints mask) \n"
-"	stmfd sp!, {r0-r2, r3}  @ r3 is dummy and will be overwritten with the syscall address. Caution, update the offset below if reg list changed. \n"
+" adr   r1, saved_spsr \n"
+" str   r0, [r1], #4 \n"
+" str   lr, [r1]          @ save to saved_lr \n"
+" msr   spsr, r0 \n"
+" subs  pc, pc, #4        @  move spsr to cpsr (restore the ints mask) \n"
 "@ extract the syscall number from the comment field of the swi instruction \n"
+#ifdef STAGE1
+/* stage1 always in thumb */
+" ldrh  r0, [lr, #-3]    @ thumb state (-2-1, because of the previous +1) \n"
+" bic   r0, r0, #0xFF00 \n"
+#else
 " tst   lr, #1            @ was the caller in thumb state? \n"
 "	ldreq r0, [lr, #-4]     @ ARM state \n"
 " biceq r0, r0, #0xFF000000 \n"
 " ldrneh r0, [lr, #-3]    @ thumb state (-2-1, because of the previous +1) \n"
 " bicne r0, r0, #0xFF00 \n"
+#endif
 #ifndef _NDLS_LIGHT // with extension/emu support
 " mov   r1, r0            @ syscall number \n"
 " and   r1, #0xE00000   @ keep the 3-bit flag \n"
@@ -98,12 +102,25 @@ asm(
 #ifndef _NDLS_LIGHT // with var support
 " cmp   r1, #" STRINGIFY(__SYSCALLS_ISVAR) "\n"
 " bne   jmp_to_syscall \n"
-" str   r0, [sp]          @ overwrite the saved r0: it's the return valeu \n"
-" mov   r0, lr            @ return from the swi instead of jumping to the syscall \n"
+" str   r0, [sp]          @ overwrite the saved r0: it's the return value \n"
+" adr   r0, back_to_caller @ go directly to back_to_caller instead of jumping to the syscall \n"
 #endif
 "jmp_to_syscall: \n"
 " str   r0, [sp, #12]     @ overwrite the dummy register previously saved \n"
-" ldmfd sp!, {r0-r2, pc}  @ restore the regs and jump to the syscall. lr is still the return address \n"
+" mov   lr, pc \n"
+" ldmfd sp!, {r0-r2, pc}  @ restore the regs and jump to the syscall \n"
+"back_to_caller: \n"
+" stmfd sp!, {r0-r1} \n"
+" mrs   r0, cpsr \n"
+" adr   r1, saved_lr \n"
+" ldr   lr, [r1], #-4 \n"
+" ldr   r1, [r1]          @ read from saved_spsr \n"
+" and   r1, #0xFFFFFF3F   @ remove the mask \n"
+" and   r0, #0xC0         @ keep the mask \n"
+" orr   r1, r0            @ keep the new mask \n"
+" msr   cpsr, r1          @ swi *must* restore cpsr. GCC may optimize with a cmp just after the swi for instance \n"
+" ldmfd sp!, {r0-r1} \n"
+" bx    lr                @ back to the caller \n"
 
 #ifndef _NDLS_LIGHT // with extension/emu support
 "is_ext_syscall: \n"
@@ -126,6 +143,8 @@ asm(
 
 "sc_addrs_ptr: .global sc_addrs_ptr @ defined here because accessed with pc-relative instruction \n"
 " .long 0 \n"
+"saved_spsr: .long 0 \n"
+"saved_lr: .long 0 \n"
 #ifndef _NDLS_LIGHT
 "get_ext_table_reloc: .long _GLOBAL_OFFSET_TABLE_-(get_ext_table+8) \n"
 " .long sc_ext_table(GOT) \n"
@@ -155,7 +174,7 @@ asm(
 " mrs   r2, cpsr \n"
 " bic   r2, #0b1111       @ to user mode, to be able to call syscalls \n"
 " msr   cpsr, r2 \n"
-" bl nprintf \n"
+" @ bl nprintf \n" // broken on CX, temporarily disabled
 " mov r0, #" STRINGIFY(INTS_EXCEPTION_SLEEP_CNT) "\n"
 "0: \n"
 " subs r0, #1 \n"

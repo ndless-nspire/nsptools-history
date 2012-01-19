@@ -36,7 +36,7 @@
 #define e_stat 18
 #define e_unlink 19
 #define e_rename 20
-#define e_power_off 21
+#define e_TCC_Terminate_Task 21
 #define e_puts 22
 #define e_NU_Get_First 23
 #define e_NU_Get_Next 24
@@ -45,7 +45,7 @@
 #define e_strcpy 27
 #define e_strncat 28
 #define e_strlen 29
-#define e_show_dialog_box2 30
+#define e_show_dialog_box2_ 30
 #define e_strrchr 31
 #define e__vsprintf 32
 #define e_fseek 33
@@ -92,24 +92,28 @@
 #define e_ferror 74
 #define e_touchpad_read 75
 #define e_touchpad_write 76
-
 #define e_adler32 77
 #define e_crc32 78
 #define e_crc32_combine 79
-
 #define e_zlibVersion 80
 #define e_zlibCompileFlags 81
-
 #define e_deflateInit2_ 82
 #define e_deflate 83
 #define e_deflateEnd 84
 #define e_inflateInit2_ 85
 #define e_inflate 86
 #define e_inflateEnd 87
+#define e_TCC_Current_Task_Pointer 88
+#define e_ftell 89
+#define e_NU_Open 90
+#define e_NU_Close 91
+#define e_NU_Truncate 92
+#define e__show_msgbox_2b 93
+#define e__show_msgbox_3b 94
 // END_OF_LIST (always keep this line after the last constant, used by mksyscalls.sh)
 
 // Must be kept up-to-date with the value of the last syscall
-#define __SYSCALLS_LAST 87
+#define __SYSCALLS_LAST 94
 
 // Flag: 3 higher bits of the 3-bytes comment field of the swi instruction
 #define __SYSCALLS_ISEXT 0x200000
@@ -124,9 +128,10 @@
  * The extensions cannot be called in thumb state (the swi number is too high for the swi thumb instruction */
 #define e_nl_osvalue (__SYSCALLS_ISEXT | 0)
 #define e_nl_relocdatab (__SYSCALLS_ISEXT | 1)
+#define e_nl_hwtype (__SYSCALLS_ISEXT | 2)
 
 // Must be kept up-to-date with the value of the last syscalls extension without __SYSCALLS_ISEXT
-#define __SYSCALLS_LASTEXT 1
+#define __SYSCALLS_LASTEXT 2
 
 /* Ndless integration with emulators. Grouped to make the integration easier for the emulators (they require
  * only these constants).

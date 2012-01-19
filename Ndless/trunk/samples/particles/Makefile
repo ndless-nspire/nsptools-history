@@ -6,11 +6,12 @@ OBJCOPY := "$(shell (which arm-elf-objcopy arm-none-eabi-objcopy arm-linux-gnuea
 ifeq (${OBJCOPY},"")
 	OBJCOPY := arm-none-eabi-objcopy
 endif
-OBJS = main.o utils.o vector.o particle.o particle_system.o gravity_particles.o
+EXE = particles.tns
+OBJS = $(patsubst %.c,%.o,$(wildcard *.c))
 DISTDIR = ../../calcbin/samples
 vpath %.tns $(DISTDIR)
 
-all: particles.tns
+all: $(EXE)
 
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<
@@ -18,7 +19,7 @@ all: particles.tns
 %.o: %.S
 	$(GCC) $(GCCFLAGS) -c $<
 
-particles.tns: $(OBJS)
+$(EXE): $(OBJS)
 	$(LD) $(LDFLAGS) $^ -o $(@:.tns=.elf)
 	@mkdir -p $(DISTDIR)
 	$(OBJCOPY) -O binary $(@:.tns=.elf) $(DISTDIR)/$@

@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Olivier ARMAND
  * <olivier.calc@gmail.com>.
- * Portions created by the Initial Developer are Copyright (C) 2010
+ * Portions created by the Initial Developer are Copyright (C) 2010-2011
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): 
@@ -25,29 +25,13 @@
 #include <os.h>
 #include "ndless.h"
 
-// Marker at the beginning of a program
-#define PRGMSIG "PRG"
-
 // When opening a document
 HOOK_DEFINE(plh_hook) {
 	char *halfpath; // [docfolder/]file.tns
-	char *ptr;
 	char docpath[100];
 	int ret;
-	if (ut_os_version_index < 2)
-		halfpath = (char*)(HOOK_SAVED_REGS(plh_hook)[11] /* r11 */ - 0x124); // on the stack
-	else
-		halfpath = (char*)(HOOK_SAVED_REGS(plh_hook)[11] /* r11 */ + 12); // on the stack of the caller
-	// the hook is called at installation time. Show the installation message.
-	ptr = strrchr(halfpath, '/');
-	if (ptr)
-		ptr++;
-	else
-		ptr = halfpath;
-	if (!strncmp("ndless_installer_os-", ptr, sizeof("ndless_installer_os-") - 1)) {
-		show_msgbox("Ndless", "Ndless installed successfully!");
-		goto silent; // skip the error dialog
-	}
+	unsigned i;
+	halfpath = (char*)(HOOK_SAVED_REGS(plh_hook)[5] /* r5 */ + 32);
 	// TODO use snprintf
 	sprintf(docpath, "/documents/%s", halfpath);
 	struct stat docstat;
@@ -55,40 +39,45 @@ HOOK_DEFINE(plh_hook) {
 	FILE *docfile = fopen(docpath, "rb");
 	if (!docfile || ret) {
 		puts("ploaderhook: can't open doc");
-		HOOK_RESTORE_RETURN(plh_hook);
+error_dialog:
+		HOOK_SAVED_REGS(plh_hook)[3] = HOOK_SAVED_REGS(plh_hook)[0]; // 'mov r3, r0' was overwritten by the hook
+		HOOK_RESTORE_RETURN_SKIP(plh_hook, -0x114, 0); // to the error dialog about the unsupported format (we've overwritten a branch with our hook)
 	}
 	void *docptr = emu_debug_alloc_ptr ? emu_debug_alloc_ptr : malloc(docstat.st_size);
 	if (!docptr) {
 		puts("ploaderhook: can't malloc");
-		HOOK_RESTORE_RETURN(plh_hook);
+		goto error_dialog;
 	}
 	if (!fread(docptr, docstat.st_size, 1, docfile)) {
 		puts("ploaderhook: can't read doc");
 		if (!emu_debug_alloc_ptr)
 			free(docptr);
-		HOOK_RESTORE_RETURN(plh_hook);
+		goto error_dialog;
 	}
 	fclose(docfile);
 	if (strcmp(PRGMSIG, docptr)) { /* not a program */
 		if (!emu_debug_alloc_ptr)
 			free(docptr);
-		HOOK_RESTORE_RETURN(plh_hook);
-	}
-	// Asynchronous uninstallation
-	if (ins_lowmem_hook_installed) {
-		HOOK_UNINSTALL(ins_lowmem_hook_addrs[ut_os_version_index], ins_lowmem_hook);
-		ins_lowmem_hook_installed = FALSE;
+		goto error_dialog;
 	}
 	int intmask = TCT_Local_Control_Interrupts(-1); /* TODO workaround: disable the interrupts to avoid the clock on the screen */
 	void *savedscr = malloc(SCREEN_BYTES_SIZE);
 	memcpy(savedscr, SCREEN_BASE_ADDRESS, SCREEN_BYTES_SIZE);
+	if (has_colors) {
+		volatile unsigned *palette = (volatile unsigned*)0xC0000200;
+		for (i = 0; i < 16/2; i++)
+			*palette++ = ((i * 2 + 1) << (1 + 16)) | ((i * 2 + 1) << (6 + 16)) | ((i * 2 + 1) << (11 + 16)) | ((i * 2) << 1) | ((i * 2) << 6) | ((i * 2) << 11); // set the grayscale palette
+		ut_disable_watchdog(); // seems to be sometimes renabled by the OS
+	}
 	clear_cache();
 	((void (*)(int argc, char *argv[]))(docptr + sizeof(PRGMSIG)))(1, (char*[]){docpath, NULL}); /* run the program */
+	if (has_colors) {
+		lcd_incolor(); // in case not restored by the program
+	}
 	memcpy(SCREEN_BASE_ADDRESS, savedscr, SCREEN_BYTES_SIZE);
 	free(savedscr);
 	TCT_Local_Control_Interrupts(intmask);
 	if (!emu_debug_alloc_ptr)
 		free(docptr);
-silent:
-	HOOK_RESTORE_RETURN_SKIP(plh_hook, 4); // skip the error dialog about the unrecognized format
+	HOOK_RESTORE_RETURN_SKIP(plh_hook, -0xDC, 1); // skip the error dialog about the unsupported format
 }

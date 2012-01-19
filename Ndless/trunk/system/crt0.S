@@ -3,8 +3,10 @@
 #include <os.h>
 
 __base: .global __base
+#ifndef NO_PRGM_HEADER
 	@ signature identifying a program
 	.asciz "PRG"
+#endif
 
 	stmfd sp!, {r4-r11,lr} @ and never destroy r0 and r1 which are C's argc and argv
 	@ GOT-based relocation, required for C global variables. The program must be built with the GCC option -fpic.
@@ -26,7 +28,6 @@ relocate_loop:
 cache_keypad_type:
 	mov  r2, r0          @ save it
 	osvar(keypad_type)
-	mov  r3, #0
 	ldrb r3, [r0]
 	mov  r0, r2          @ restore
 	cmp  r3, #3          @ prototype

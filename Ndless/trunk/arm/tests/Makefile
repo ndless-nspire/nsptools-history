@@ -27,5 +27,5 @@ doc:
 
 clean:
 	rm -f *.o *.elf
-	(cd $(DISTDIR) && rm -f $(EXE))
+	-(cd $(DISTDIR) && rm -f $(EXE))
 	rm -f $(DISTDIR)/ReadMe.txt

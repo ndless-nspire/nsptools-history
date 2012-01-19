@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Olivier ARMAND
  * <olivier.calc@gmail.com>.
- * Portions created by the Initial Developer are Copyright (C) 2010
+ * Portions created by the Initial Developer are Copyright (C) 2010-2011
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): 
@@ -25,19 +25,14 @@
 #ifndef _NDLESS_H_
 #define _NDLESS_H_
 
-/* Common to asm and C code. Only define integer constants. */
+// Marker at the beginning of a program
+#define PRGMSIG "PRG"
 
 /* Debug levels for ut_debug_trace() for installation failure diagnostic. Keep in execution order. */
-#define INSTTR_BS_STACKUNWIND 0
-#define INSTTR_BS_LOADS1 1
-#define INSTTR_S1_LOAD 2
-#define INSTTR_S1_LOADS2 3
-#define INSTTR_S2_HOOK 4
-#define INSTTR_BS_CLEANUP 5
-#define INSTTR_S2_TZHOOK 6
-#define INSTTR_S2_LOADINST 7
-#define INSTTR_INS_INSTALL 8
-#define INSTTR_S2_END 9
+#define INSTTR_S1_ENTER 0
+#define INSTTR_S1_LOADINST 1
+#define INSTTR_INS_ENTER 2
+#define INSTTR_INS_END 3
 
 // Delay for the exception handlers as a number of loops
 #define INTS_EXCEPTION_SLEEP_CNT 0xB30000
@@ -49,10 +44,6 @@
 /* emu.c */
 extern void *emu_debug_alloc_ptr;
 extern unsigned emu_sysc_table[];
-
-/* install.c */
-extern BOOL ins_lowmem_hook_installed;
-extern unsigned const ins_lowmem_hook_addrs[];
 
 /* ints.c */
 extern unsigned ints_scextnum;
@@ -80,22 +71,16 @@ struct next_descriptor {
 extern struct next_descriptor ut_next_descriptor;
 extern unsigned ut_os_version_index;
 void ut_read_os_version_index(void);
-extern unsigned const ut_currentdocdir_addr[];
 void __attribute__ ((noreturn)) ut_calc_reboot(void);
 void __attribute__ ((noreturn)) ut_panic(const char * msg);
-#if !defined(_NDLS_LIGHT) || defined(DEBUG)
-void ut_debug_trace(unsigned line);
-#else
-#define ut_debug_trace(dummy) do {} while(0)
-#endif
+//void ut_debug_trace(unsigned line);
+#define ut_debug_trace(line)
+void ut_disable_watchdog(void);
 static inline struct next_descriptor *ut_get_next_descriptor(void) {
 	if (*(*(unsigned**)(OS_BASE_ADDRESS + INTS_SWI_HANDLER_ADDR) - 2) != NEXT_SIGNATURE)
 		return NULL;
 	return (struct next_descriptor*)*(*(unsigned**)(OS_BASE_ADDRESS + INTS_SWI_HANDLER_ADDR) - 1);
 }
-
-/* stage1.c */
-void s1_load(void);
 
 /* syscalls.c */
 void sc_ext_relocdatab(unsigned *dataptr, unsigned size, void *base);

@@ -5,26 +5,9 @@
 #ifndef _COMMON_H_
 #define _COMMON_H_
 
-/***********************************
- * Hardware
- ***********************************/
-#define SCREEN_BASE_ADDRESS     ADDR_(0xA4000100)
 #define KEY_MAP                 ADDR_(0x900E0000)
 
-/***********************************
- * Addresses
- ***********************************/
 #define OS_BASE_ADDRESS         ADDR_(0x10000000)
-
-/***********************************
- * Others
- ***********************************/
-#define SCREEN_BYTES_SIZE       38400
-#define SCREEN_WIDTH            320
-#define SCREEN_HEIGHT           240
-
-#define BLACK                   0x0
-#define WHITE                   0xF
 
 /***********************************
  * Keys (key=(offset, 2^bit #)
@@ -99,7 +82,7 @@
 #define KEY_NSPIRE_VAR          KEYTPAD_(0x1A, 0x080, 0x1A, 0x002)
 #define KEY_NSPIRE_D            KEYTPAD_(0x1A, 0x100, 0x18, 0x004)
 #define KEY_NSPIRE_CAPS         KEYTPAD_(0x1A, 0x200, _KEY_DUMMY_ROW, _KEY_DUMMY_COL)
-#define KEY_NSPIRE_DEL          KEYTPAD_(_KEY_DUMMY_ROW, _KEY_DUMMY_COL, 0x1A, 0x200)
+#define KEY_NSPIRE_DEL          KEYTPAD_(0x1E, 0x100, 0x1A, 0x200)
 #define KEY_NSPIRE_LTHAN        KEYTPAD_(0x1A, 0x400, _KEY_DUMMY_ROW, _KEY_DUMMY_COL)
 #define KEY_NSPIRE_FLAG         KEY_(0x1C, 0x001)
 #define KEY_NSPIRE_CLICK        KEYTPAD_ARROW_(0x1C, 0x002, TPAD_ARROW_CLICK)
@@ -120,7 +103,6 @@
 #define KEY_NSPIRE_DOWNLEFT     KEYTPAD_ARROW_(0x1E, 0x020, TPAD_ARROW_DOWNLEFT)
 #define KEY_NSPIRE_LEFT         KEYTPAD_ARROW_(0x1E, 0x040, TPAD_ARROW_LEFT)
 #define KEY_NSPIRE_LEFTUP       KEYTPAD_ARROW_(0x1E, 0x080, TPAD_ARROW_LEFTUP)
-#define KEY_NSPIRE_CLEAR        KEYTPAD_(0x1E, 0x100, _KEY_DUMMY_ROW, _KEY_DUMMY_COL)
 #define KEY_NSPIRE_SHIFT        KEYTPAD_(_KEY_DUMMY_ROW, _KEY_DUMMY_COL, 0x1E, 0x100)
 #define KEY_NSPIRE_CTRL         KEY_(0x1E, 0x200)
 #define KEY_NSPIRE_DOC          KEYTPAD_(_KEY_DUMMY_ROW, _KEY_DUMMY_COL, 0x1C, 0x008)
@@ -264,130 +246,14 @@ typedef struct{} FILE;
 		(((uint32_t)(__x) & (uint32_t)0xFF000000UL) >> 24) )); \
 })
 
-/* Now we can libnls.h that depends on the definitions above */
-#include <libndls.h>
-
-/* And the following definitions may depend on libndls.h */
-
-typedef struct {
-  int row, col, tpad_row, tpad_col;
-  tpad_arrow_t tpad_arrow;
-} t_key;
-
-#define ADDR_(addr) (void*)addr
-/* Use when the row and column are the same for both models */
-#define KEY_(row, col) (t_key){row, col, row, col, TPAD_ARROW_NONE}
-#define KEYTPAD_(row, col, tpad_row, tpad_col) (t_key){row, col, tpad_row, tpad_col, TPAD_ARROW_NONE}
-#define KEYTPAD_ARROW_(row, col, tpad_arrow) (t_key){row, col, row, col, tpad_arrow}
-#define isKeyPressed(key) ( \
-	(key).tpad_arrow != TPAD_ARROW_NONE && is_touchpad ? touchpad_arrow_pressed((key).tpad_arrow) \
-	                                    : (is_touchpad ? !((*(volatile short*)(KEY_MAP + (key).tpad_row)) & (key).tpad_col) \
-	                                                   : !((*(volatile short*)(KEY_MAP + (key).row)) & (key).col) ) )
-
-/***********************************
- * Misc inline functions
- ***********************************/
-
-/* Hooked functions and hooks must be built in ARM and not Thumb */
-#define HOOK_INSTALL(address, hookname) do { \
-	void hookname(void); \
-	extern unsigned __##hookname##_end_instrs[4]; /* orig_instrs1; orig_instrs2; ldr pc, [pc, #-4]; .long return_addr */ \
-	__##hookname##_end_instrs[3] = (unsigned)(address) + 8; \
-	__##hookname##_end_instrs[0] = *(unsigned*)(address); \
-	*(unsigned*)(address) = 0xE51FF004; /* ldr pc, [pc, #-4] */ \
-	__##hookname##_end_instrs[1] = *(unsigned*)((address) + 4); \
-	*(unsigned*)((address) + 4) = (unsigned)hookname; \
-	__##hookname##_end_instrs[2] = 0xE51FF004; /* ldr pc, [pc, #-4] */ \
-	clear_cache(); \
-	} while (0)
-
-/* Caution, hooks aren't re-entrant.
- * A non-inlined body is required because naked function cannot use local variables.
- * A naked function is required because the return is handled by the hook, and to avoid any
- * register modification before they are saved */
-#define HOOK_DEFINE(hookname) \
-	unsigned __##hookname##_end_instrs[4]; \
-	extern unsigned __##hookname##_saved_sp; \
-	__asm(STRINGIFY(__##hookname##_saved_sp) ": .long 0"); /* accessed with pc-relative instruction */ \
-	void __##hookname##_body(void); \
-	void __attribute__((naked)) hookname(void) { \
-		__asm volatile(" stmfd sp!, {r0-r12,lr}"); /* used by HOOK_RESTORE_STATE() */ \
-		/* save sp */ \
-		__asm volatile( \
-			" str r0, [sp, #-4] @ push r0 but don't change sp \n " \
-			" adr r0," STRINGIFY(__##hookname##_saved_sp) "\n" \
-			" str sp, [r0] \n" \
-			" ldr r0, [sp, #-4] @ pop r0 but don't change sp \n" \
-		); \
-		 __##hookname##_body(); \
-	} \
-	void __##hookname##_body(void)
-
-/* Jump out of the body */
-#define HOOK_RESTORE_SP(hookname) do { \
-	__asm volatile( \
-		" str lr, [sp, #-4]! @ push lr \n" \
-		" adr lr," STRINGIFY(__##hookname##_saved_sp) "\n" \
-		" ldr lr, [lr] \n" \
-		" str lr, [sp, #-4]! \n" /* push lr=saved_sp. trick to restore both saved_sp and the original lr */ \
-		" ldmfd sp, {sp, lr} \n" /* lr has been used instead of r0 to avoid a GAS warning about reg order on this instr */ \
-	); \
-} while (0)
-
-/* May be used to access the values that had the registers when the hook was called: {r0-r12,lr} */
-#define HOOK_SAVED_REGS(hookname) ((unsigned*) __##hookname##_saved_sp)
-
-#define HOOK_RESTORE_STATE() do { \
-	__asm volatile(" ldmfd sp!, {r0-r12,lr}"); \
-} while (0)
-
-
-/* Call HOOK_RESTORE() alone to return manually with __asm(). */
-#define HOOK_RESTORE(hookname) { \
-	HOOK_RESTORE_SP(hookname); \
-	HOOK_RESTORE_STATE(); \
-} while (0)
-
-/* If register values needs to be changed before a hook return, call HOOK_RESTORE(),
- * set the registers then call HOOK_RETURN. Caution, only assembly without local
- * variables can between the 2 calls. */
-#define HOOK_RETURN(hookname) do { \
-	__asm volatile(" b " STRINGIFY(__##hookname##_end_instrs)); \
-} while (0)
-
-/* Standard hook return */
-#define HOOK_RESTORE_RETURN(hookname) do { \
-	HOOK_RESTORE(hookname); \
-	HOOK_RETURN(hookname); \
-} while (0)
-
-/* Hook return skipping instructions.
- * The 2 instructions overwritten by the hook are always skipped, the offset is based from the third instruction.
- * Any use must come with a call to HOOK_SKIP_VAR() outside of the hook function */
-#define HOOK_RESTORE_RETURN_SKIP(hookname, offset) do { \
-	__asm volatile( \
-		" adr r0, " STRINGIFY(__##hookname##_return_skip##__COUNTER__) "\n" \
-		"	str %0, [r0] \n" \
-		:: "r"(__##hookname##_end_instrs[3] + offset) : "r0"); \
-	HOOK_RESTORE(hookname); \
-	__asm volatile( \
-		" ldr pc, [pc, #-4] \n" \
-	  STRINGIFY(__##hookname##_return_skip##__COUNTER__) ":" \
-		" .long 0"); \
-	} while (0)
-
-#define HOOK_SKIP_VAR(hookname, offset) \
-	volatile unsigned __##hookname##_end_instrs_skip##offset[2]; /* ldr pc, [pc, #-4]; .long return_addr */ \
-
-#define HOOK_UNINSTALL(address, hookname) do { \
-	extern unsigned __##hookname##_end_instrs[4]; /* orig_instrs1; orig_instrs2; ... */ \
-	*(unsigned*)(address) = __##hookname##_end_instrs[0]; \
-	*(unsigned*)((address) + 4) = __##hookname##_end_instrs[1]; \
-} while (0)
+/* Required for C99 variable-length arrays */
+void *alloca(size_t size);
 
 /***********************************
  * Nucleus
  ***********************************/
+
+#define NU_SUCCESS 0
 
 #define ARDONLY 0x1     /* MS-DOS File attributes */ 
 #define AHIDDEN 0x2 
@@ -410,6 +276,20 @@ typedef struct dstat {
   unsigned int unknown8;
   unsigned short unknown9;
 } DSTAT;
+
+#define PS_IWRITE       0000400
+#define PS_IREAD        0000200
+#define PO_RDONLY       0x0000
+#define PO_WRONLY       0x0001
+#define PO_RDWR         0x0002
+#define PO_APPEND       0x0008
+#define PO_CREAT        0x0100
+#define PO_TRUNC        0x0200
+#define PO_EXCL         0x0400
+#define PO_NOSHAREANY   0x0004
+#define PO_NOSHAREWRITE 0x0800
+
+typedef int PCFD;
  
 /***********************************
  * POSIX
@@ -463,6 +343,131 @@ struct stat {
 	unsigned int st_mtime;
 	unsigned int st_ctime;
 };
+
+typedef int off_t;
+
+/* Now we can libnls.h that depends on the definitions above */
+#include <libndls.h>
+
+/* And the following definitions may depend on libndls.h */
+
+typedef struct {
+  int row, col, tpad_row, tpad_col;
+  tpad_arrow_t tpad_arrow;
+} t_key;
+
+#define ADDR_(addr) (void*)addr
+/* Use when the row and column are the same for both models */
+#define KEY_(row, col) (t_key){row, col, row, col, TPAD_ARROW_NONE}
+#define KEYTPAD_(row, col, tpad_row, tpad_col) (t_key){row, col, tpad_row, tpad_col, TPAD_ARROW_NONE}
+#define KEYTPAD_ARROW_(row, col, tpad_arrow) (t_key){row, col, row, col, tpad_arrow}
+#define isKeyPressed(key) ( \
+	(key).tpad_arrow != TPAD_ARROW_NONE && is_touchpad ? touchpad_arrow_pressed((key).tpad_arrow) \
+	                                    : !is_classic ^ ((is_touchpad ? !((*(volatile short*)(KEY_MAP + (key).tpad_row)) & (key).tpad_col) \
+	                                                   : !((*(volatile short*)(KEY_MAP + (key).row)) & (key).col) ) ) )
+
+/***********************************
+ * Misc inline functions
+ ***********************************/
+
+/* Hooked functions and hooks must be built in ARM and not Thumb */
+#define HOOK_INSTALL(address, hookname) do { \
+	void hookname(void); \
+	extern unsigned __##hookname##_end_instrs[4]; /* orig_instrs1; orig_instrs2; ldr pc, [pc, #-4]; .long return_addr */ \
+	__##hookname##_end_instrs[3] = (unsigned)(address) + 8; \
+	__##hookname##_end_instrs[0] = *(unsigned*)(address); \
+	*(unsigned*)(address) = 0xE51FF004; /* ldr pc, [pc, #-4] */ \
+	__##hookname##_end_instrs[1] = *(unsigned*)((address) + 4); \
+	*(unsigned*)((address) + 4) = (unsigned)hookname; \
+	__##hookname##_end_instrs[2] = 0xE51FF004; /* ldr pc, [pc, #-4] */ \
+	clear_cache(); \
+	} while (0)
+
+/* Caution, hooks aren't re-entrant.
+ * A non-inlined body is required because naked function cannot use local variables.
+ * A naked function is required because the return is handled by the hook, and to avoid any
+ * register modification before they are saved */
+#define HOOK_DEFINE(hookname) \
+	unsigned __##hookname##_end_instrs[4]; \
+	extern unsigned __##hookname##_saved_sp; \
+	__asm(STRINGIFY(__##hookname##_saved_sp) ": .long 0"); /* accessed with pc-relative instruction */ \
+	void __##hookname##_body(void); \
+	void __attribute__((naked)) hookname(void) { \
+		__asm volatile(" stmfd sp!, {r0-r12,lr}"); /* used by HOOK_RESTORE_STATE() */ \
+		/* save sp */ \
+		__asm volatile( \
+			" str r0, [sp, #-4] @ push r0 but don't change sp \n " \
+			" adr r0," STRINGIFY(__##hookname##_saved_sp) "\n" \
+			" str sp, [r0] \n" \
+			" ldr r0, [sp, #-4] @ pop r0 but don't change sp \n" \
+		); \
+		 __##hookname##_body(); \
+	} \
+	void __##hookname##_body(void)
+
+/* Jump out of the body */
+#define HOOK_RESTORE_SP(hookname) do { \
+	__asm volatile( \
+		" str lr, [sp, #-4]! @ push lr \n" \
+		" adr lr," STRINGIFY(__##hookname##_saved_sp) "\n" \
+		" ldr lr, [lr] \n" \
+		" str lr, [sp, #-4]! \n" /* push lr=saved_sp. trick to restore both saved_sp and the original lr */ \
+		" ldmfd sp, {sp, lr} \n" /* lr has been used instead of r0 to avoid a GAS warning about reg order on this instr */ \
+	); \
+} while (0)
+
+/* Read-write: can be used to access the values that had the registers when the hook was called: {r0-r12,lr} */
+#define HOOK_SAVED_REGS(hookname) ((unsigned*) __##hookname##_saved_sp)
+
+#define HOOK_RESTORE_STATE() do { \
+	__asm volatile(" ldmfd sp!, {r0-r12,lr}"); \
+} while (0)
+
+
+/* Call HOOK_RESTORE() alone to return manually with __asm(). */
+#define HOOK_RESTORE(hookname) { \
+	HOOK_RESTORE_SP(hookname); \
+	HOOK_RESTORE_STATE(); \
+} while (0)
+
+/* If register values needs to be changed before a hook return, call HOOK_RESTORE(),
+ * set the registers then call HOOK_RETURN. Caution, only assembly without local
+ * variables can between the 2 calls. */
+#define HOOK_RETURN(hookname) do { \
+	__asm volatile(" b " STRINGIFY(__##hookname##_end_instrs)); \
+} while (0)
+
+/* Standard hook return */
+#define HOOK_RESTORE_RETURN(hookname) do { \
+	HOOK_RESTORE(hookname); \
+	HOOK_RETURN(hookname); \
+} while (0)
+
+/* Hook return skipping instructions.
+ * The 2 instructions overwritten by the hook are always skipped, the offset is based from the third instruction.
+ * Any use must come with a call to HOOK_SKIP_VAR() outside of the hook function
+ * id is a unique id for the hook */
+#define HOOK_RESTORE_RETURN_SKIP(hookname, offset,id) do { \
+	__asm volatile( \
+		" adr r0, " STRINGIFY(__##hookname##_return_skip##id) "\n" \
+		"	str %0, [r0] \n" \
+		:: "r"(__##hookname##_end_instrs[3] + offset) : "r0"); \
+	HOOK_RESTORE(hookname); \
+	__asm volatile( \
+		" ldr pc, [pc, #-4] \n" \
+	  STRINGIFY(__##hookname##_return_skip##id) ":" \
+		" .long 0"); \
+	} while (0)
+
+#define HOOK_SKIP_VAR(hookname, offset) \
+	volatile unsigned __##hookname##_end_instrs_skip##offset[2]; /* ldr pc, [pc, #-4]; .long return_addr */ \
+
+#define HOOK_UNINSTALL(address, hookname) do { \
+	extern unsigned __##hookname##_end_instrs[4]; /* orig_instrs1; orig_instrs2; ... */ \
+	*(unsigned*)(address) = __##hookname##_end_instrs[0]; \
+	*(unsigned*)((address) + 4) = __##hookname##_end_instrs[1]; \
+} while (0)
+
 
 #endif /* GCC C */
 

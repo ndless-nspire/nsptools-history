@@ -104,7 +104,7 @@ extern int __base;
 #endif // ndef __thumb__
 /* all parameters must be marked with  __attribute__((unused)) */
 #ifdef _NDLS_LIGHT // can't use _SYSCALL_GETSAVEDLR_PTR which depends on the GOT: save lr to the stack, syscallvars with more than 4 parameters can't be used
-#define _SYSCALLVAR(rettype, attributes, funcname, param1, ...) static inline rettype attributes __attribute__((naked)) funcname(param1, __VA_ARGS__) { \
+#define _SYSCALLVAR(rettype, attributes, funcname, param1, ...) static __attribute__((unused)) rettype attributes __attribute__((naked)) funcname(param1, __VA_ARGS__) { \
 	register unsigned __r0 __asm("r0"); \
 	__asm volatile( \
 		" push {lr} \n" \
@@ -115,7 +115,8 @@ extern int __base;
 }
 #else
 #ifndef __thumb__
-#define _SYSCALLVAR(rettype, attributes, funcname, param1, ...) static inline rettype attributes __attribute__((naked)) funcname(param1, __VA_ARGS__) { \
+/* TODO: _SYSCALLVAR is also used for >= 5 parameters, but must strangely contain var args for the parameters to be passed */
+#define _SYSCALLVAR(rettype, attributes, funcname, param1, ...) static __attribute__((unused)) rettype attributes __attribute__((naked)) funcname(param1, __VA_ARGS__) { \
 	register unsigned __r0 __asm("r0"); \
 	__asm volatile( \
 		" push {r4, r5} \n" \
@@ -129,7 +130,7 @@ extern int __base;
 	return (rettype)__r0; \
 }
 #else // slightly less optimized
-#define _SYSCALLVAR(rettype, attributes, funcname, param1, ...) static inline rettype attributes __attribute__((naked)) funcname(param1, __VA_ARGS__) { \
+#define _SYSCALLVAR(rettype, attributes, funcname, param1, ...) static __attribute__((unused)) rettype attributes __attribute__((naked)) funcname(param1, __VA_ARGS__) { \
 	register unsigned __r0 __asm("r0"); \
 	__asm volatile( \
 		" push {r4, r5} \n" \
@@ -151,7 +152,7 @@ extern int __base;
 static __attribute__ ((unused)) unsigned _syscallvar_savedlr;
 /* Force the use of the stack for the parameters */
 #ifndef __thumb__
-#define _SYSCALL_SWI(rettype, attributes, funcname, param1) static inline rettype attributes __attribute__((naked)) funcname##_swi() { \
+#define _SYSCALL_SWI(rettype, attributes, funcname, param1) static rettype attributes __attribute__((naked)) funcname##_swi() { \
 	register unsigned __r0 __asm("r0"); \
 	__asm volatile( \
 		" push {r4, r5} \n" \
@@ -165,7 +166,7 @@ static __attribute__ ((unused)) unsigned _syscallvar_savedlr;
 	return (rettype)__r0; \
 }
 #else // slightly less optimized
-#define _SYSCALL_SWI(rettype, attributes, funcname, param1) static inline rettype attributes __attribute__((naked)) funcname##_swi() { \
+#define _SYSCALL_SWI(rettype, attributes, funcname, param1) static rettype attributes __attribute__((naked)) funcname##_swi() { \
 	register unsigned __r0 __asm("r0"); \
 	__asm volatile( \
 		" push {r4, r5} \n" \
@@ -186,7 +187,7 @@ static __attribute__ ((unused)) unsigned _syscallvar_savedlr;
 #define _SYSCALL_ARGS(rettype, funcname, param1, ...) {return funcname##_swi(param1, __VA_ARGS__);}
 /* Custom syscalls: these are syscalls currently not implemented by Ndless you want to define yourself.
  * The syntax is:
- * static const unsigned puts_addrs[] = {<1.7-address>, <1.7-CAS-address>, ...}; // see nl_osvalue for the order of the addresses
+ * static const unsigned puts_addrs[] = {<3.1.0-address>, <3.1.0-CAS-address>, ...}; // see nl_osvalue for the order of the addresses
  * #define puts SYSCALL_CUSTOM(puts_addrs, int, const char *) */
 #define SYSCALL_CUSTOM(addresses, rettype, ...) ((rettype(*)(__VA_ARGS__))nl_osvalue((int*)addresses, sizeof(addresses)/sizeof(addresses[0])))
 /* Access to OS variables */
@@ -202,7 +203,9 @@ static __attribute__ ((unused)) unsigned _syscallvar_savedlr;
 _SYSCALL1(int, read_unaligned_longword, void *)
 _SYSCALL1(int, read_unaligned_word, void *)
 _SYSCALL3(void, ascii2utf16, void *, const char *, int)
-_SYSCALL3(void, show_dialog_box2, int /* undef */, const char * /* title */, const char * /* msg */)
+_SYSCALL4(void, show_dialog_box2_, int /* undef */, const char * /* title */, const char * /* msg */, char * /* undef_buf[8] */)
+_SYSCALL(int, _show_msgbox_2b, int undef, const char * title, const char *msg, char *button1, int button1_code, char *button2, int button2_code, char undef_buf[8]) _SYSCALL_ARGS(int, _show_msgbox_2b, undef, title, msg, button1, button1_code, button2, button2_code, undef_buf)
+_SYSCALL(int, _show_msgbox_3b, int undef, const char * title, const char *msg, char *button1, int button1_code, char *button2, int button2_code, char *button3, int button3_code, char undef_buf[8]) _SYSCALL_ARGS(int, _show_msgbox_3b, undef, title, msg, button1, button1_code, button2, button2_code, button3, button3_code, undef_buf)
 
 _SYSCALL0(int *, errno_addr)
 #define errno (*errno_addr())
@@ -280,6 +283,7 @@ _SYSCALL1(int, fflush, FILE *)
 _SYSCALL1(int, fclose, FILE *)
 _SYSCALL1(int, ferror, FILE *)
 _SYSCALL3(int, fseek, FILE *, long int, int)
+_SYSCALL1(long int, ftell, FILE *)
 _SYSCALL1(int, remove, const char *)
 
 _SYSCALL2(int, mkdir, const char *, int)
@@ -289,13 +293,20 @@ _SYSCALL2(int, stat, const char *, struct stat *)
 _SYSCALL2(int, rename, const char *, const char *)
 _SYSCALL1(int, unlink, const char *)
 
+
+typedef void NU_TASK;
 _SYSCALL1(int, TCT_Local_Control_Interrupts, int)
+_SYSCALL0(NU_TASK *, TCC_Current_Task_Pointer)
+_SYSCALL1(int, TCC_Terminate_Task, NU_TASK *)
 
 _SYSCALL2(int, NU_Current_Dir, const char *, const char *)
 _SYSCALL2(int, NU_Get_First, struct dstat *, const char * /* pattern */)
 _SYSCALL1(int, NU_Get_Next, struct dstat *)
 _SYSCALL1(void, NU_Done, struct dstat *)
 _SYSCALL1(int, NU_Set_Current_Dir, const char *)
+_SYSCALL3(PCFD, NU_Open, char * /* name */, unsigned /* flag */, unsigned /* mode */)
+_SYSCALL1(int, NU_Close, PCFD /* fd */)
+_SYSCALL2(int, NU_Truncate, PCFD /* fd */, long /* offset */)
 
 /* 1: clickpad, 2: 84+, 3: touchpad prototype, 4: touchpad */
 _SYSCALL_OSVAR(unsigned char *, keypad_type)
@@ -371,18 +382,20 @@ _SYSCALL1(uint32_t, inflateEnd, z_streamp /* strm */)
 
 /* Ndless extensions. Not available in thumb state. */
 // Given a list of OS-specific value and its size, returns the value for the current OS.
-// The order must be: 1.7, 1.7 CAS, 2.0.1, 2.0.1 CAS, 2.1.0, 2.1.0 CAS
+// The order must be:  3.1.0, 3.1.0 CAS, 3.1.0 CX, 3.1.0 CAS CX
 // If the array isn't enough long for the current OS, returns 0.
 // You may cast 'values' from unsigned* to int*.
 _SYSCALL2(int, nl_osvalue, const int * /* values */, unsigned /* size */)
 // Relocates a global variable initialized with symbols (for example an array of function pointers)
 #define nl_relocdata(ptr, size) nl_relocdatab(ptr, size, &__base)
 _SYSCALL3(void, nl_relocdatab, unsigned * /* dataptr */, unsigned /* size */, void * /* base */)
+// 0 on non-CX, 1 on CX
+_SYSCALL0(unsigned, nl_hwtype)
 
 /* stdlib replacements not directly available as syscalls */
 extern unsigned __crt0exit;
 extern unsigned __crt0_savedsp;
-static inline void __attribute__((noreturn, naked)) exit(int __attribute__((unused)) status) {
+static void __attribute__((noreturn, naked)) exit(int __attribute__((unused)) status) {
 	__asm volatile(
 		" mov sp, %0 \n"
 		" mov pc, %1"

@@ -13,21 +13,16 @@
  *
  * The Initial Developer of the Original Code is Olivier ARMAND
  * <olivier.calc@gmail.com>.
- * Portions created by the Initial Developer are Copyright (C) 2010-2011
+ * Portions created by the Initial Developer are Copyright (C) 2011
  * the Initial Developer. All Rights Reserved.
  *
- * Contributor(s): Goplat
+ * Contributor(s): 
  ****************************************************************************/
 
 #include <os.h>
 
-void idle(void) {
-	volatile unsigned *intmask = IO(0xDC000008, 0xDC000010);
-	unsigned orig_mask = intmask[0];
-	intmask[1] = ~(1 << 19); // Disable all IRQs except timer
-  __asm volatile("mcr p15, 0, %0, c7, c0, 4" : : "r"(0) ); // Wait for an interrupt to occur
-	*IO(0x900A0020, 0x900D000C) = 1; // Acknowledge timer interrupt at source
-	if (is_classic) *(volatile unsigned*)0xDC000028; // Make interrupt controller stop asserting nIRQ if there aren't any active IRQs left
-	intmask[1] = 0xFFFFFFFF; // Disable all IRQs
-	intmask[0] = orig_mask; // renable IRQs
+void lcd_ingray(void) {
+	volatile unsigned *lcd_control = IO_LCD_CONTROL;
+	unsigned 	mode = *lcd_control & ~0b1110;
+  *lcd_control = mode | 0b010000000100; // 4bpp + pixels within each byte read as big-endian
 }

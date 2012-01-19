@@ -1,4 +1,4 @@
-SUBDIRS = hella hello particles
+SUBDIRS = colors hella hello particles
 DISTDIR = ../calcbin/samples
 
 all: distdir doc

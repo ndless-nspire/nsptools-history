@@ -50,18 +50,23 @@ int fputs(const char *str, FILE *stream);
 void idle(void);
 int isalnum(int c);
 int iscntrl(int c);
+BOOL lcd_isincolor(void);
+void lcd_incolor(void);
+void lcd_ingray(void);
 void nputs(const char *str);
 void nprintf(const char *fmt, ...);
 BOOL on_key_pressed(void);
 void rewind(FILE * stream);
+unsigned _scrsize(void);
 unsigned set_cpu_speed(unsigned speed);
-void show_msgbox(const char *title, const char *msg);
+unsigned _show_msgbox(const char *title, const char *msg, unsigned button_num, ...);
 void sleep(unsigned millisec);
 size_t strcspn(const char * str1, const char * str2);
 size_t strspn(const char * str1, const char * str2);
 touchpad_info_t *touchpad_getinfo(void);
 int touchpad_scan(touchpad_report_t *report);
 BOOL touchpad_arrow_pressed(tpad_arrow_t arrow); /* internal, use isKeyPressed() */
+int truncate(const char *path, off_t length);
 void wait_key_pressed(void);
 void wait_no_key_pressed(void);
 
@@ -71,6 +76,25 @@ extern BOOL is_touchpad;
 static inline void halt(void) {
 	__asm volatile("0: b 0b");
 }
+
+#define show_msgbox(title, msg) _show_msgbox(title, msg, 0)
+#define show_msgbox_2b(title, msg, button1, button2) _show_msgbox(title, msg, 2, button1, button2)
+#define show_msgbox_3b(title, msg, button1, button2, button3) _show_msgbox(title, msg, 3, button1, button2, button3)
+
+unsigned hwtype(void);
+#define is_cx (hwtype() == 1)
+#define is_classic (hwtype() < 1)
+#define has_colors (!is_classic)
+#define IO(a,b) (((volatile unsigned*[]){ (unsigned*)a, (unsigned*)b })[hwtype()])
+#define IO_LCD_CONTROL IO(0xC000001C, 0xC0000018)
+
+#define SCREEN_BASE_ADDRESS     ADDR_(*(volatile unsigned*)0xC0000010)
+#define SCREEN_BYTES_SIZE       ((int)({_scrsize();}))
+#define SCREEN_WIDTH            320
+#define SCREEN_HEIGHT           240
+#define BLACK                   0x0
+#define WHITE                   0xF
+
 
 #endif /* GNU_AS */
 #endif /* _LIBNDLS_H_ */
