@@ -38,7 +38,7 @@ distsrc: clean
 	mkdir -p dist/src
 	cp -r `ls | grep -v dist` dist/src
 	@# exclude some resources we don't want to distribute
-	find dist -name Makefile.config | xargs rm -rf
+	find dist -name Makefile.config -o -name upload_cookies.txt  | xargs rm -rf
 
 cleandist:
 	rm -rf dist
@@ -69,3 +69,13 @@ tests:
 	(cd arm/tests && make)
 rtests:
 	(cd arm/tests && make clean all)
+
+upload: dist
+	svnrev=`svn info --xml |grep revision | uniq | sed 's/\(revision="\)//' | sed 's/">//' | sed 's/[[:blank:]]*//g'`; \
+	mv dist "ndless-v3.1-beta-r$$svnrev"; \
+ 	rm -rf ndless.zip ; \
+	7z a ndless.zip "ndless-v3.1-beta-r$$svnrev"; \
+	curl --cookie upload_cookies.txt -F 'super_id=1' -F 'form_type=file' -F '__FORM_TOKEN=c30f9c971c7fca42db234011' -F "name=ndless-v3.1-beta-r$$svnrev.zip" -F 'submit=Submit' -F 'file_to_upload=@ndless.zip' -F 'sort=' -F 'architecture=' -F 'notes=' http://www.unsads.com/projects/nsptools/admin/general/downloader/files/release > /dev/null; \
+	rm -rf ndless.zip; \
+	rm -rf "ndless-v3.1-beta-r$$svnrev"
+	echo "Check http://www.unsads.com/projects/nsptools/downloader/download/release/1"
