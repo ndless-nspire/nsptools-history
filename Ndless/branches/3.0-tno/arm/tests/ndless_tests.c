@@ -21,6 +21,10 @@
  * Contributor(s): 
  ****************************************************************************/
 
+#ifndef _TINSPIRE
+#error _TINSPIRE not defined as it should be
+#endif
+
 #include <os.h>
 
 // TODO: use snprintf instead of sprintf
