@@ -8,6 +8,8 @@
 	MakeName	(0X1001A954,	"nn_ext_echo_callback");
 	MakeName	(0X1001AF54,	"TI_NN_SendKeyPress");
 	MakeName	(0X1001E378,	"translateKey");
+	MakeName	(0X100209F8,	"_show_msgbox_3b");
+	MakeName	(0X10020E58,	"_show_msgbox_2b");
 	MakeName	(0X10021324,	"show_dialog_box2_");
 	MakeName	(0X1002DED8,	"j_j_free_2");
 	MakeName	(0X10032288,	"compress_encrypt_tns");

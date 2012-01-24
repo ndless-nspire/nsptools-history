@@ -14,6 +14,12 @@
 	MakeName	(0X1001A9E8,	"nn_ext_echo_callback");
 	MakeName	(0X1001AFE8,	"TI_NN_SendKeyPress");
 	MakeName	(0X1001E40C,	"translateKey");
+	MakeName	(0X10020A8C,	"_show_msgbox_3b");
+	MakeName	(0X10020EEC,	"_show_msgbox_2b");
+	MakeRptCmt	(0X10020FB0,	"parm1");
+	MakeRptCmt	(0X10020FC0,	"parm3");
+	MakeRptCmt	(0X10020FC4,	"parm4");
+	MakeRptCmt	(0X10020FC8,	"parm2");
 	MakeName	(0X100213B8,	"show_dialog_box2_");
 	MakeName	(0X1002DF9C,	"j_j_free_2");
 	MakeName	(0X1003234C,	"compress_encrypt_tns");

@@ -10,6 +10,8 @@
 	MakeName	(0X1001A1A4,	"nn_ext_echo_callback");
 	MakeName	(0X1001A678,	"TI_NN_SendKeyPress");
 	MakeName	(0X1001DA9C,	"translateKey");
+	MakeName	(0X1002011C,	"_show_msgbox_3b");
+	MakeName	(0X1002057C,	"_show_msgbox_2b");
 	MakeName	(0X10020A48,	"show_dialog_box2_");
 	MakeName	(0X1002D5FC,	"j_j_free_2");
 	MakeName	(0X100319AC,	"compress_encrypt_tns");
@@ -67,6 +69,7 @@
 	MakeName	(0X100A91A4,	"get_battery_door_detection_mode");
 	MakeName	(0X100A9BEC,	"set_task_name");
 	MakeName	(0X100B0244,	"check_file_in_tns");
+	MakeRptCmt	(0X100B0248,	"FILE*");
 	MakeName	(0X100B8014,	"reboot");
 	MakeName	(0X100E9124,	"j_j_free_8");
 	MakeName	(0X100E994C,	"get_res_string");
