@@ -1,7 +1,7 @@
 Ndless - Changelog
 ==================
 
-* v3.1 beta-r521 2012/01/26
+* v3.1 beta-r522 2012/01/26
  Tools:
   - NEW: add missing syscalls stub for newlib
  Standard libraries:
