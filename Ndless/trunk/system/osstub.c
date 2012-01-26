@@ -1,12 +1,11 @@
 /* newlib stub that makes newlib happy. When a function is implemented by both newlib and the TI-Nspire OS,
  * the OS version should be used. That's why these functions ar empty. */
 
+#include <os.h>
+
 typedef struct{} _ssize_t;
 struct _reent{};
-struct stat{};
 typedef struct{} _off_t;
-typedef struct{} ptrdiff_t;
-typedef unsigned long size_t;
 
 _ssize_t _read_r(__attribute__((unused)) struct _reent *r, __attribute__((unused)) int file, __attribute__((unused)) void *ptr, __attribute__((unused)) size_t len) {
   return (_ssize_t){};
@@ -44,10 +43,14 @@ int _link_r(__attribute__((unused)) char *old, __attribute__((unused)) char *new
 	return -1;
 }
 
-int _times_r(__attribute__((unused)) struct tms *buf){
+int _times_r(__attribute__((unused)) void *buf){
 	return -1;
 }
 
 int _wait_r(__attribute__((unused)) int *status) {
 	return -1;
+}
+
+void _exit(void) {
+	exit(-1);
 }

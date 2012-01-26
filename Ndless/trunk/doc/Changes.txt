@@ -1,22 +1,16 @@
 Ndless - Changelog
 ==================
 
-* v3.1 beta-r525 2012/01/26
+* v3.1 beta - since 2012/01/19
+  - NEW: compatible with OS v3.1.0 and TI-Nspire CX. Reboot-proof.
  Tools:
   - NEW: add missing syscalls stub for newlib
  Standard libraries:
-  - NEW: abort
- libndls:
-  - NEW: _TINSPIRE
-
-* v3.1 beta-r515 2012/01/19
-  - NEW: compatible with OS v3.1.0 and TI-Nspire CX. Reboot-proof.
- Standard libraries:
-  - NEW: ftell, truncate
+  - NEW: ftell, truncate, abort
  libndls:
   - NEW: on_key_pressed (thanks t0xic_kitt3n), show_msgbox_2b, show_msgbox_3b 
     (thanks bsl), is_cx, is_classic, has_colors, hwtype, IO, IO_LCD_CONTROL, 
-    lcd_incolor, lcd_ingray, lcd_isincolor
+    lcd_incolor, lcd_ingray, lcd_isincolor, _TINSPIRE
   - CHG: Merge KEY_NSPIRE_DEL and KEY_NSPIRE_CLEAR to KEY_NSPIRE_DEL (thanks 
     Levak)
 
