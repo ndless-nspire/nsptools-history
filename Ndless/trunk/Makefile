@@ -71,6 +71,7 @@ rtests:
 	(cd arm/tests && make clean all)
 
 upload: dist
+	svn update
 	svnrev=`svn info --xml |grep revision | uniq | sed 's/\(revision="\)//' | sed 's/">//' | sed 's/[[:blank:]]*//g'`; \
 	mv dist "ndless-v3.1-beta-r$$svnrev"; \
  	rm -rf ndless.zip ; \
