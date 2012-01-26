@@ -403,5 +403,9 @@ static void __attribute__((noreturn, naked)) exit(int __attribute__((unused)) st
 	__builtin_unreachable();
 }
 
+static void __attribute__((noreturn)) abort(void) {
+	exit(-1);
+}
+
 #endif // GCC C
 #endif

@@ -20,3 +20,5 @@ SECTIONS
 	}
 }
 __got_size = SIZEOF(.got) / 4;
+__exidx_start = .;
+__exidx_end = .;

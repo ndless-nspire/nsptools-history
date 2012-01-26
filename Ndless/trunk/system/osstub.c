@@ -31,3 +31,23 @@ int _fstat_r(__attribute__((unused)) struct _reent *r, __attribute__((unused)) i
 void* _sbrk_r(__attribute__((unused)) struct _reent *_s_r, __attribute__((unused)) ptrdiff_t nbytes) {
   return (void*)0;
 }
+
+int _getpid_r(void) {
+	return 1;
+}
+
+int _kill_r(__attribute__((unused)) int pid, __attribute__((unused)) int sig){
+	return-1;
+}
+
+int _link_r(__attribute__((unused)) char *old, __attribute__((unused)) char *new) {
+	return -1;
+}
+
+int _times_r(__attribute__((unused)) struct tms *buf){
+	return -1;
+}
+
+int _wait_r(__attribute__((unused)) int *status) {
+	return -1;
+}
