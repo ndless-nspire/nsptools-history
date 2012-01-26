@@ -1,11 +1,13 @@
 Ndless - Changelog
 ==================
 
-* v3.1 beta-r524 2012/01/26
+* v3.1 beta-r525 2012/01/26
  Tools:
   - NEW: add missing syscalls stub for newlib
  Standard libraries:
   - NEW: abort
+ libndls:
+  - NEW: _TINSPIRE
 
 * v3.1 beta-r515 2012/01/19
   - NEW: compatible with OS v3.1.0 and TI-Nspire CX. Reboot-proof.
