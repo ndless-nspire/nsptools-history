@@ -99,7 +99,7 @@ SYSCALLS_LIGHT_OBJS :=  $(foreach os_version, $(OS_VERSIONS), $(foreach model, $
 .PRECIOUS: $(SYSCALLS_LIGHT_OBJS)
 SYSCALLS_OBJS :=  $(foreach os_version, $(OS_VERSIONS), $(foreach model, $(MODELS), syscalls_$(model)-$(os_version).o))
 INSTALLER_BIN_OBJS := $(foreach os_version, $(OS_VERSIONS), $(foreach model, $(MODELS), ndless_installer-bin-$(os_version)-$(model).o))
-CORE_OBJS := install.o ploaderhook.o ints.o syscalls.o utils.o emu.o $(SYSCALLS_OBJS) $(INSTALLER_BIN_OBJS)
+CORE_OBJS := install.o ploaderhook.o ints.o syscalls.o utils.o emu.o config.o $(SYSCALLS_OBJS) $(INSTALLER_BIN_OBJS)
 RES_OBJS := $(CORE_OBJS)
 
 # Build with the light switch (temporarily added to $GCCFLAGS)

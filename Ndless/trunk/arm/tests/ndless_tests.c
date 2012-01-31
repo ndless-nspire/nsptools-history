@@ -26,6 +26,7 @@
 #endif
 
 #include <os.h>
+#include "../ndless.h"
 
 // TODO: use snprintf instead of sprintf
 
@@ -83,6 +84,9 @@ static void assertNotNull(const char *tstname, void *actual) {
 	assert(tstname, actual, "%p", actual);
 }
 
+static void assertNull(const char *tstname, void *actual) {
+	assert(tstname, !actual, "%p", actual);
+}
 
 int global_int;
 int* nl_relocdata_data[] = {&global_int};
@@ -114,7 +118,7 @@ int main(int argc, char *argv[]) {
 	assertUIntEquals("TCT_Local_Control_Interrupts", 0xFFFFFFFF, TCT_Local_Control_Interrupts(0));
 	assertUIntEquals("argc", 1, argc);
 	assertStrEquals("argv", "ndless_tests.tns", strrchr(argv[0], '/') + 1);
-	
+		
 	ret = sprintf(buf, "%i%i%i", 1, 2, 3);
 	assertStrEquals("_syscallsvar >4 params", "123", buf); // tests sprintf. uses _syscallvar_savedlr.
 	assertUIntEquals("_syscallsvar return", 3, ret);
@@ -280,9 +284,24 @@ int main(int argc, char *argv[]) {
 	assertTrue("is_touchpad", (*keypad_type != 3  &&  *keypad_type != 4) || is_touchpad);
 	sleep(100);
 	
-	unsigned orig_cpu_speed = set_cpu_speed(CPU_SPEED_150MHZ); // not emulated by nspire_emu, cannot be checked
-	set_cpu_speed(orig_cpu_speed);
-		
+	/* Ndless internals */
+	char * cfg_path = "/tmp/ndless_tests.cfg";
+	FILE *cfg_file = fopen(cfg_path, "wb");
+	fputs("# comment\n", cfg_file);
+	fputs("   key  = value # comment\n", cfg_file);
+	fputs("\n", cfg_file);
+	fputs("   windows=win\r\n", cfg_file);
+	fputs("empty=\n", cfg_file);
+	fputs("dummy", cfg_file);
+	fclose(cfg_file);
+	cfg_open_file(cfg_path);
+	assertStrEquals("cfg_get_key", "value", cfg_get("key"));
+	assertStrEquals("cfg_get_win", "win", cfg_get("windows"));
+	assertStrEquals("cfg_get_empty", "", cfg_get("empty"));
+	assertNull("cfg_get_dummy", cfg_get("dummy"));
+	cfg_close();
+	remove(cfg_path);
+	
 	if (!errcount) {
 		fputc('S', stdout);
 		puts("uccessful!");

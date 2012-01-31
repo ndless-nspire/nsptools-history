@@ -41,6 +41,12 @@
 
 #include <os.h>
 
+/* config.c */
+void cfg_open(void);
+void cfg_open_file(const char *filepath);
+void cfg_close(void);
+char *cfg_get(const char *key);
+
 /* emu.c */
 extern void *emu_debug_alloc_ptr;
 extern unsigned emu_sysc_table[];
