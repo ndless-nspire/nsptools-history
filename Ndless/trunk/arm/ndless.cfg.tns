@@ -1,6 +1,8 @@
 ext.nes=nespire
-ext.gb=gbc4touch
+ext.gb=gbc4cx
+ext.gbc=gbc4cx
 ext.nvid=nPlayer
 ext.cvid=nPlayer
 ext.bmp=mviewer_cx
 ext.png=mviewer_cx
+ext.wad=ndoom
