@@ -221,10 +221,10 @@ _SYSCALL1(int, isxdigit, int)
 _SYSCALL1(int, tolower, int)
 _SYSCALL1(int, toupper, int)
 _SYSCALL1(int, atoi, const char *)
-_SYSCALL1(double, atof, char *)
-_SYSCALL2(double, strtod, const char *, char *)
+_SYSCALL1(double, atof, const char *)
+_SYSCALL2(double, strtod, const char *, char **)
 _SYSCALL3(long int, strtol, const char *, char **, int)
-#define strtoul(s,e,b) ((unsigned long int)strtol((s),(e),(b)))
+static inline unsigned long int strtoul(const char *s, char **e, int b) {return strtol(s, e, b);}
 
 _SYSCALL1(void *, malloc, size_t)
 _SYSCALL1(void, free, void *)

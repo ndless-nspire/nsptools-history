@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Olivier ARMAND
  * <olivier.calc@gmail.com>.
- * Portions created by the Initial Developer are Copyright (C) 2010-2011
+ * Portions created by the Initial Developer are Copyright (C) 2010-2012
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): 
@@ -23,8 +23,13 @@
  ****************************************************************************/
 
 #include <os.h>
+#include <stdlib.h>
 #include "ndless.h"
 
+
+static int scmp(const void *sp1, const void *sp2) {
+	return strcmp(*(char**)sp1, *(char**)sp2);
+}
 
 // Return the file path, or NULL if not found. folder will be destroyed.
 static char *find_file(char folder[FILENAME_MAX], const char *filename) {
@@ -32,30 +37,58 @@ static char *find_file(char folder[FILENAME_MAX], const char *filename) {
 	DIR *dp;
 	struct dirent *ep;     
 	struct stat statbuf;
-	if (!(dp = opendir(folder)))
+	#define MAX_FILES_IN_DIR 100
+	#define MEAN_FILE_NAME_SIZE 50
+	#define FILENAMES_BUF_SIZE (MEAN_FILE_NAME_SIZE * MAX_FILES_IN_DIR)
+	char *filenames;
+	char *filenames_ptrs[MAX_FILES_IN_DIR];
+	if (!(filenames = malloc(FILENAMES_BUF_SIZE)))
 		return NULL;
-	while ((ep = readdir(dp))) {
-		if (!strcmp(ep->d_name, ".") || !strcmp(ep->d_name, ".."))
+	if (!(dp = opendir(folder))) {
+		free(filenames);
+		return NULL;
+	}
+	unsigned i;
+	unsigned filenames_used_bytes = 0;
+	char *ptr;
+	for (i = 0, ptr = filenames; (ep = readdir(dp)) && i < MAX_FILES_IN_DIR && ptr < filenames + FILENAMES_BUF_SIZE; i++) {
+		if (!strcmp(ep->d_name, ".") || !strcmp(ep->d_name, "..")) {
+			i--;
 			continue;
+		}
+		size_t dname_len = strlen(ep->d_name);
+		if (FILENAMES_BUF_SIZE - filenames_used_bytes < dname_len + 1)
+			break;
+		strcpy(ptr, ep->d_name);
+		filenames_ptrs[i] = ptr;
+		ptr += dname_len + 1;
+	}
+	unsigned filenum = i;
+	qsort(filenames_ptrs, filenum, sizeof(char*), scmp);
+	
+	for (i = 0; i < filenum; i++) {
 		strcpy(subfolder, folder);
 		strcat(subfolder, "/");
-		strcat(subfolder, ep->d_name);
+		strcat(subfolder, filenames_ptrs[i]);
 		if (stat(subfolder, &statbuf) == -1)
 			continue;
-		if (!strcmp(filename, ep->d_name) && S_ISREG(statbuf.st_mode)) {
+		if (!strcmp(filename, filenames_ptrs[i]) && S_ISREG(statbuf.st_mode)) {
 			strcpy(folder, subfolder);
 			closedir(dp);
+			free(filenames);
 			return folder;
 		}
 		if (S_ISDIR(statbuf.st_mode)) {
 			char *found = find_file(subfolder, filename);
 			if (found) {
 				closedir(dp);
+				free(filenames);
 				return found;
 			}
 		}
 	}
 	closedir(dp);
+	free(filenames);
 	return NULL;
 }
 

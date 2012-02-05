@@ -223,9 +223,7 @@ typedef struct{} FILE;
 #define BUFSIZ 4096
 #define EOF (-1)
 
-#ifndef abs
-#define abs(x) ({typeof(x) __x = (x); __x >= 0 ? __x : -__x;})
-#endif
+static inline int abs(int x) {return x >= 0 ? x : -x;}
 #ifndef max
 #define max(a,b) ({typeof(a) __a = (a); typeof(b) __b = (b); (__a > __b) ? __a : __b;})
 #define min(a,b) ({typeof(a) __a = (a); typeof(b) __b = (b); (__a < __b) ? __a : __b;})

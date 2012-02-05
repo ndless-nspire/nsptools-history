@@ -113,7 +113,7 @@ utils_light.o: utils.c
 	$(GCC) $(GCCFLAGS) -c $< -o $@
 
 ndless_core.elf: $(CORE_OBJS)
-	$(LD) --light-startup $(LDFLAGS) $^ -o $@
+	$(LD) --light-startup $^ -o $@
 
 ndless_resources.tns: ndless_core.elf
 	$(OBJCOPY) -O binary $< $(DISTDIR)/$@
