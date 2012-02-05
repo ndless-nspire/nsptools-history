@@ -263,6 +263,7 @@ int main(int __attribute__((unused)) argc, char* argv[]) {
 			ut_calc_reboot();
 		}
 		cleanup_file_leak();
+		ld_startup();
 		// Continue OS startup
 		// Simulate the prolog of the thread function for correct function return. Set r4 to a dummy variable, written to by a sub-function that follows.
 		__asm volatile("add lr, pc, #8; stmfd sp!, {r4-r6,lr}; sub sp, sp, #0x18; mov r4, sp; mov pc, %0" : : "r" (init_task_return_addrs[ut_os_version_index]));

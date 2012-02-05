@@ -141,3 +141,14 @@ HOOK_DEFINE(plh_hook) {
 		HOOK_RESTORE_RETURN_SKIP(plh_hook, -0xDC, 1); // skip the error dialog about the unsupported format
 	}
 }
+
+static int startup_file_recur_cb(const char *path, __attribute__((unused)) void *context) {
+	ld_exec(path);
+	return 0;
+}
+
+// Try to run all the documents in the startup folder and its sub-folders
+void ld_startup(void) {
+	if (!isKeyPressed(KEY_NSPIRE_ESC))
+		ut_file_recur_each("/documents/ndless/startup", startup_file_recur_cb, NULL);
+}
