@@ -137,11 +137,15 @@
 	MakeName	(0X10273FC8,	"CSC_Priority_Place_On_List");
 	MakeName	(0X10274040,	"CSC_Remove_From_List");
 	MakeName	(0X10274268,	"ERC_System_Error");
+	MakeName	(0X10277CE8,	"TMS_Delete_Timer");
+	MakeName	(0X10277D5C,	"TMS_Create_Timer");
 	MakeName	(0X10278058,	"DMC_Cleanup");
 	MakeName	(0X10278430,	"DMC_Create_Memory_Pool");
 	MakeName	(0X1027857C,	"DMC_Allocate_Memory");
 	MakeName	(0X10278784,	"TCT_Current_Thread1");
 	MakeName	(0X1027878C,	"DMC_Deallocate_Memory_0");
+	MakeName	(0X10278EC8,	"TMC_Start_Timer");
+	MakeName	(0X102791C4,	"j_TMC_Start_Timer");
 	MakeName	(0X102970C0,	"isspace");
 	MakeName	(0X102F0320,	"TCC_Current_Task_Pointer");
 	MakeName	(0X102F04C0,	"TCC_Dispatch_LISR");
@@ -275,11 +279,14 @@
 	MakeName	(0X1037EEDC,	"strtoul?");
 	MakeName	(0X1037FCE4,	"chdir");
 	MakeName	(0X1037FE44,	"close");
+	MakeName	(0X1037FFC8,	"closedir");
 	MakeName	(0X10380C34,	"mkdir");
 	MakeName	(0X10380DB4,	"open");
+	MakeName	(0X103810F0,	"opendir");
 	MakeName	(0X10381C10,	"slash_to_backslash_in_path");
 	MakeName	(0X10381CEC,	"posix_file_init");
 	MakeName	(0X10381F88,	"read");
+	MakeName	(0X10382284,	"readdir");
 	MakeName	(0X103823A4,	"rename");
 	MakeName	(0X103825F0,	"rmdir");
 	MakeName	(0X10382788,	"stat");
@@ -311,6 +318,7 @@
 	MakeName	(0X10399C84,	"FfxDclAssertFired");
 	MakeName	(0X10399CF0,	"FfxDclLogOpen_1");
 	MakeName	(0X10399F7C,	"FfxDclLogClose");
+	MakeName	(0X103D23B0,	"TMI_Initialize");
 	MakeName	(0X103FEAB8,	"__rt_udiv_2");
 	MakeName	(0X103FEBAC,	"__rt_udiv");
 	MakeName	(0X103FEBD4,	"__rt_udiv_3");
@@ -1015,6 +1023,7 @@
 	MakeName	(0X10B0242C,	"a4Nstep5");
 	MakeName	(0X10B0475C,	"a__Dictionary_2");
 	MakeName	(0X10B0C000,	"bss_start");
+	MakeName	(0X10B82EC0,	"TMD_Created_Timers_List");
 	MakeName	(0X10BCA69C,	"stdin");
 	MakeName	(0X10BCA6E8,	"stdout");
 	MakeName	(0X10BCA734,	"stderr");

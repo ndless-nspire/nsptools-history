@@ -301,12 +301,15 @@
 	MakeName	(0X1037E7AC,	"strtoul?");
 	MakeName	(0X1037F5B4,	"chdir");
 	MakeName	(0X1037F714,	"close");
+	MakeName	(0X1037F898,	"closedir");
 	MakeName	(0X10380334,	"seek_sub");
 	MakeName	(0X10380504,	"mkdir");
 	MakeName	(0X10380684,	"open");
+	MakeName	(0X103809C0,	"opendir");
 	MakeName	(0X103814E0,	"slash_to_backslash_in_path");
 	MakeName	(0X103815BC,	"posix_file_init");
 	MakeName	(0X10381858,	"read");
+	MakeName	(0X10381B54,	"readdir");
 	MakeName	(0X10381C74,	"rename");
 	MakeName	(0X10381EC0,	"rmdir");
 	MakeName	(0X10382058,	"stat");

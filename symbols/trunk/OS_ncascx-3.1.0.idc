@@ -82,6 +82,7 @@
 	MakeName	(0X1015AA10,	"j_j_free_11");
 	MakeName	(0X10166440,	"j_j_free_12");
 	MakeName	(0X1019FEDC,	"j_show_dialog_box?");
+	MakeRptCmt	(0X101A036C,	"doesn't exist");
 	MakeName	(0X101A20C4,	"j_crypt_decrypt_tns_D_block");
 	MakeName	(0X101A2164,	"des_start_decrypt");
 	MakeName	(0X101A249C,	"crypt_decrypt_tns_D_block");
@@ -276,11 +277,14 @@
 	MakeName	(0X1037C06C,	"strtoul?");
 	MakeName	(0X1037CE74,	"chdir");
 	MakeName	(0X1037CFD4,	"close");
+	MakeName	(0X1037D158,	"closedir");
 	MakeName	(0X1037DDC4,	"mkdir");
 	MakeName	(0X1037DF44,	"open");
+	MakeName	(0X1037E280,	"opendir");
 	MakeName	(0X1037EDA0,	"slash_to_backslash_in_path");
 	MakeName	(0X1037EE7C,	"posix_file_init");
 	MakeName	(0X1037F118,	"read");
+	MakeName	(0X1037F414,	"readdir");
 	MakeName	(0X1037F534,	"rename");
 	MakeName	(0X1037F780,	"rmdir");
 	MakeName	(0X1037F918,	"stat");
@@ -568,6 +572,8 @@
 	MakeName	(0X10856D2C,	"a00000000002");
 	MakeName	(0X10856D38,	"a8463847412");
 	MakeName	(0X10856E54,	"a02d");
+	MakeName	(0X10857934,	"a__13");
+	MakeName	(0X10857938,	"a__14");
 	MakeName	(0X10857F14,	"a0123456789ab_3");
 	MakeName	(0X10857F28,	"a0123456789ab_4");
 	MakeName	(0X1085810C,	"a3u");

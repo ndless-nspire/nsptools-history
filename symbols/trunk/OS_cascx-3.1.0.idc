@@ -55,7 +55,7 @@
 	MakeName	(0X10076480,	"TI_NN_SendDisconnectPacket");
 	MakeName	(0X10076848,	"TI_NN_SrvConnDisconnect");
 	MakeName	(0X10076CE8,	"TI_NN_Activate_Callback");
-	MakeName	(0X10077040,	"nn_stop_screen_service_3");
+	MakeName	(0X10077040,	"nn_api100");
 	MakeName	(0X10077090,	"nn_disconnect");
 	MakeName	(0X100775EC,	"TI_NN_NodeEnumInit");
 	MakeName	(0X100777D0,	"TI_NN_CheckNewConnection");
@@ -141,6 +141,8 @@
 	MakeName	(0X10273B14,	"CSC_Remove_From_List");
 	MakeName	(0X10273D3C,	"ERC_System_Error");
 	MakeName	(0X10276E50,	"SMC_Delete_Semaphore");
+	MakeName	(0X102777BC,	"TMS_Delete_Timer");
+	MakeName	(0X10277830,	"TMS_Create_Timer");
 	MakeName	(0X10277B2C,	"DMC_Cleanup");
 	MakeName	(0X10277F04,	"DMC_Create_Memory_Pool");
 	MakeName	(0X10278050,	"DMC_Allocate_Memory");
@@ -150,7 +152,9 @@
 	MakeName	(0X102EFDF0,	"TCC_Current_Task_Pointer");
 	MakeName	(0X102EFF90,	"TCC_Dispatch_LISR");
 	MakeName	(0X102F02AC,	"TCC_Suspend_Task");
+	MakeName	(0X102F05B4,	"TCC_Resume_Task");
 	MakeName	(0X102F08BC,	"TCC_Terminate_Task");
+	MakeName	(0X102F0A20,	"TCC_Reset_Task");
 	MakeName	(0X102F0C28,	"TCC_Create_Task");
 	MakeName	(0X102F11A0,	"INT_Vectors");
 	MakeName	(0X102F125C,	"INT_Vectors_Loaded");
@@ -177,7 +181,7 @@
 	MakeName	(0X102F1E04,	"INT_HW_Memory_Initialize");
 	MakeName	(0X102F2068,	"TCT_Local_Control_Interrupts");
 	MakeName	(0X102F208C,	"TCT_Restore_Interrupts");
-	MakeName	(0X102F20B0,	"TCT_Build_HISR_Stack");
+	MakeName	(0X102F20B0,	"TCT_Build_Task_Stack");
 	MakeName	(0X102F21D8,	"TCT_Build_Signal_Frame");
 	MakeName	(0X102F2248,	"TCT_Check_Stack");
 	MakeName	(0X102F22A4,	"TCT_Schedule");
@@ -279,11 +283,14 @@
 	MakeName	(0X1037C7FC,	"strtoul?");
 	MakeName	(0X1037D604,	"chdir");
 	MakeName	(0X1037D764,	"close");
+	MakeName	(0X1037D8E8,	"closedir");
 	MakeName	(0X1037E554,	"mkdir");
 	MakeName	(0X1037E6D4,	"open");
+	MakeName	(0X1037EA10,	"opendir");
 	MakeName	(0X1037F530,	"slash_to_backslash_in_path");
 	MakeName	(0X1037F60C,	"posix_file_init");
 	MakeName	(0X1037F8A8,	"read");
+	MakeName	(0X1037FBA4,	"readdir");
 	MakeName	(0X1037FCC4,	"rename");
 	MakeName	(0X1037FF10,	"rmdir");
 	MakeName	(0X103800A8,	"stat");
