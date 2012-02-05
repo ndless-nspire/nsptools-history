@@ -25,24 +25,95 @@
 #include <os.h>
 #include "ndless.h"
 
+
+// Return the file path, or NULL if not found. folder will be destroyed.
+static char *find_file(char folder[FILENAME_MAX], const char *filename) {
+	char subfolder[FILENAME_MAX];
+	DIR *dp;
+	struct dirent *ep;     
+	struct stat statbuf;
+	if (!(dp = opendir(folder)))
+		return NULL;
+	while ((ep = readdir(dp))) {
+		if (!strcmp(ep->d_name, ".") || !strcmp(ep->d_name, ".."))
+			continue;
+		strcpy(subfolder, folder);
+		strcat(subfolder, "/");
+		strcat(subfolder, ep->d_name);
+		if (stat(subfolder, &statbuf) == -1)
+			continue;
+		if (!strcmp(filename, ep->d_name) && S_ISREG(statbuf.st_mode)) {
+			strcpy(folder, subfolder);
+			closedir(dp);
+			return folder;
+		}
+		if (S_ISDIR(statbuf.st_mode)) {
+			char *found = find_file(subfolder, filename);
+			if (found) {
+				closedir(dp);
+				return found;
+			}
+		}
+	}
+	closedir(dp);
+	return NULL;
+}
+
 // When opening a document
 HOOK_DEFINE(plh_hook) {
 	char *halfpath; // [docfolder/]file.tns
-	char docpath[100];
+	char docpath[FILENAME_MAX];
 	int ret;
 	unsigned i;
+	char arg1[FILENAME_MAX];
+	char argc = 1;
+	FILE *docfile = NULL;
 	halfpath = (char*)(HOOK_SAVED_REGS(plh_hook)[5] /* r5 */ + 32);
 	// TODO use snprintf
 	sprintf(docpath, "/documents/%s", halfpath);
+
+	// File association
+	char extbuf[FILENAME_MAX];
+	strcpy(extbuf, docpath);
+	char *ext = strrchr(extbuf, '.');
+	if (!ext || ext == extbuf) goto cantopen; // shouldn't happen, all files have a .tns extension
+	*ext = '\0'; // keep the extension before .tns
+	ext = strrchr(extbuf, '.');
+	unsigned pathlen = strlen(extbuf);
+	// without '.'
+	#define MAX_EXT_LEN 8
+	if (ext && extbuf + pathlen - ext <= (MAX_EXT_LEN+1) && extbuf + pathlen - ext > 1) { // looks like an extension
+		cfg_open();
+		char ext_key[4 + MAX_EXT_LEN + 1]; // ext.extension
+		strcpy(ext_key, "ext");
+		strcat(ext_key, ext);
+		char *prgm_name_noext = cfg_get(ext_key);
+		if (prgm_name_noext) {
+			char prgm_name[FILENAME_MAX + 4];
+			strcpy(prgm_name, prgm_name_noext);
+			strcat(prgm_name, ".tns");
+			char folder[FILENAME_MAX];
+			strcpy(folder, "/documents");
+			char *found_prgm = find_file(folder, prgm_name);
+			if (found_prgm) {
+				strncpy(arg1, docpath, sizeof(arg1) - 1);
+				strncpy(docpath, found_prgm, sizeof(docpath) - 1);
+				argc = 2;
+			}
+		}
+		cfg_close();
+	}
+
+	docfile = fopen(docpath, "rb");
 	struct stat docstat;
-	ret = stat(docpath, &docstat);
-	FILE *docfile = fopen(docpath, "rb");
-	if (!docfile || ret) {
+	if (!docfile || (ret = stat(docpath, &docstat))) {
+cantopen:
 		puts("ploaderhook: can't open doc");
 error_dialog:
 		HOOK_SAVED_REGS(plh_hook)[3] = HOOK_SAVED_REGS(plh_hook)[0]; // 'mov r3, r0' was overwritten by the hook
 		HOOK_RESTORE_RETURN_SKIP(plh_hook, -0x114, 0); // to the error dialog about the unsupported format (we've overwritten a branch with our hook)
 	}
+
 	void *docptr = emu_debug_alloc_ptr ? emu_debug_alloc_ptr : malloc(docstat.st_size);
 	if (!docptr) {
 		puts("ploaderhook: can't malloc");
@@ -70,7 +141,7 @@ error_dialog:
 		ut_disable_watchdog(); // seems to be sometimes renabled by the OS
 	}
 	clear_cache();
-	((void (*)(int argc, char *argv[]))(docptr + sizeof(PRGMSIG)))(1, (char*[]){docpath, NULL}); /* run the program */
+	((void (*)(int argc, char *argv[]))(docptr + sizeof(PRGMSIG)))(argc, argc == 1 ? ((char*[]){docpath, NULL}) : ((char*[]){docpath, arg1, NULL})); /* run the program */
 	if (has_colors) {
 		lcd_incolor(); // in case not restored by the program
 	}

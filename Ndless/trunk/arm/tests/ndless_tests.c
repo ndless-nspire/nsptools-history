@@ -116,8 +116,9 @@ int main(int argc, char *argv[]) {
 	DSTAT dstat;
 
 	assertUIntEquals("TCT_Local_Control_Interrupts", 0xFFFFFFFF, TCT_Local_Control_Interrupts(0));
-	assertUIntEquals("argc", 1, argc);
-	assertStrEquals("argv", "ndless_tests.tns", strrchr(argv[0], '/') + 1);
+	assertUIntEquals("argc", 2, argc);
+	assertStrEquals("argv0", "ndless_tests.test.tns", strrchr(argv[0], '/') + 1);
+	assertStrEquals("argv1", "ndless_tests.test.tns", strrchr(argv[1], '/') + 1); // file association (run with ourself)
 		
 	ret = sprintf(buf, "%i%i%i", 1, 2, 3);
 	assertStrEquals("_syscallsvar >4 params", "123", buf); // tests sprintf. uses _syscallvar_savedlr.
@@ -268,6 +269,14 @@ int main(int argc, char *argv[]) {
 	assertZero("NU_Get_Next-1", NU_Get_Next(&dstat));
 	assertStrEquals("NU_Get_Next-2", "tmp", dstat.filepath);
 	NU_Done(&dstat);
+	
+	DIR	*dp;
+	struct dirent	*ep;		 
+	assertNotNull("opendir", (dp = opendir("/")));
+	assertNotNull("readdir-1", (ep = readdir(dp)));
+	assertNotNull("readdir-2", (ep = readdir(dp)));
+	assertStrEquals("readdir.d_name",	"tmp", ep->d_name);
+	assertZero("closedir", closedir(dp));
 	
 	assertUIntLower("keypad_type", 5, *keypad_type);
 	assertNonZero("keypad_type", *keypad_type);

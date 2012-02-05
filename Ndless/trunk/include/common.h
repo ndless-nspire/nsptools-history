@@ -216,6 +216,9 @@ typedef struct{} FILE;
  #define SEEK_CUR 1
  #define SEEK_END 2
 #endif
+#ifndef FILENAME_MAX
+#define FILENAME_MAX 256
+#endif
 /* Unknown, arbitrary */
 #define BUFSIZ 4096
 #define EOF (-1)
@@ -390,9 +393,9 @@ typedef struct {
 #define HOOK_DEFINE(hookname) \
 	unsigned __##hookname##_end_instrs[4]; \
 	extern unsigned __##hookname##_saved_sp; \
-	__asm(STRINGIFY(__##hookname##_saved_sp) ": .long 0"); /* accessed with pc-relative instruction */ \
 	void __##hookname##_body(void); \
 	void __attribute__((naked)) hookname(void) { \
+		__asm volatile (" b 0f; " STRINGIFY(__##hookname##_saved_sp) ": .long 0; 0:"); /* accessed with pc-relative instruction. In hookname() else moved too far by GCC. */ \
 		__asm volatile(" stmfd sp!, {r0-r12,lr}"); /* used by HOOK_RESTORE_STATE() */ \
 		/* save sp */ \
 		__asm volatile( \

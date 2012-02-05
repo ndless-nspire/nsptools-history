@@ -292,7 +292,13 @@ _SYSCALL1(int, rmdir, const char *)
 _SYSCALL2(int, stat, const char *, struct stat *)
 _SYSCALL2(int, rename, const char *, const char *)
 _SYSCALL1(int, unlink, const char *)
-
+typedef void DIR;
+struct dirent {
+	char d_name[0];
+};
+_SYSCALL1(DIR *,opendir, const char * /* name */)
+_SYSCALL1(int, closedir, DIR * /* dir */)
+_SYSCALL1(struct dirent *, readdir, DIR * /* dir */)
 
 typedef void NU_TASK;
 _SYSCALL1(int, TCT_Local_Control_Interrupts, int)
@@ -315,7 +321,6 @@ _SYSCALL_OSVAR(unsigned char *, keypad_type)
 _SYSCALL3(int, touchpad_read, unsigned char /* start */, unsigned char /* end */, void * /* buf */)
 // For internal use by libndls. Returns 0 on failure, 1 on success.
 _SYSCALL3(int, touchpad_write, unsigned char /* start */, unsigned char /* end */, void * /* buf */)
-
 
 #define Z_NO_FLUSH      0
 #define Z_PARTIAL_FLUSH 1

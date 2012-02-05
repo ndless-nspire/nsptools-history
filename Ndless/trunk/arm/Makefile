@@ -33,6 +33,7 @@ res: ndless_resources.tns
 
 static:
 	@mkdir -p $(DISTDIR)
+	@cp ndless.cfg.tns $(DISTDIR)
 
 # Build with the light and stage1 switches (temporarily added to $GCCFLAGS), and in thumb mode
 # because of the size limit of the installer
@@ -124,7 +125,7 @@ subdirs:
 
 clean: cleanbin cleanapp cleansubdirs
 cleanapp:
-	rm -rf $(DISTDIR)/ndless_installer*.t?? $(DISTDIR)/ndless_resources.tns
+	rm -rf $(DISTDIR)/ndless_installer*.t?? $(DISTDIR)/ndless_resources.tns $(DISTDIR)/ndless.cfg.tns
 cleaninst:
 	rm -rf ndless_installer.elf $(INST_OBJS)
 cleanres:

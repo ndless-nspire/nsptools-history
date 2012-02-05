@@ -6,11 +6,11 @@ OBJCOPY := "$(shell (which arm-elf-objcopy arm-none-eabi-objcopy arm-linux-gnuea
 ifeq (${OBJCOPY},"")
 	OBJCOPY := arm-none-eabi-objcopy
 endif
-EXE = ndless_tests.tns ndless_keys.tns ndless_tpad.tns
+EXE = ndless_tests.test.tns ndless_keys.tns ndless_tpad.tns
 DISTDIR = ../../calcbin/tests
 vpath %.tns $(DISTDIR)
 
-all: distdir $(EXE) doc
+all: distdir $(EXE) static
 
 distdir:
 	@mkdir -p $(DISTDIR)
@@ -18,7 +18,7 @@ distdir:
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<
 
-ndless_tests.tns: ndless_tests.o ../config.o
+ndless_tests.test.tns: ndless_tests.o ../config.o
 	$(LD) $(LDFLAGS) $^ -o $(@:.tns=.elf)
 	$(OBJCOPY) -O binary $(@:.tns=.elf) $(DISTDIR)/$@
 	
@@ -26,10 +26,11 @@ ndless_tests.tns: ndless_tests.o ../config.o
 	$(LD) $(LDFLAGS) $^ -o $(@:.tns=.elf)
 	$(OBJCOPY) -O binary $(@:.tns=.elf) $(DISTDIR)/$@
 
-doc:
+static:
 	@cp ReadMe.txt $(DISTDIR)
+	@cp ndless.cfg.tns $(DISTDIR)
 
 clean:
 	rm -f *.o *.elf
 	-(cd $(DISTDIR) && rm -f $(EXE))
-	rm -f $(DISTDIR)/ReadMe.txt
+	rm -f $(DISTDIR)/ReadMe.txt $(DISTDIR)/ndless.cfg.tns
