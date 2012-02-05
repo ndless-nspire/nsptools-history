@@ -1,1 +1,5 @@
-ext.test=hello
+ext.nes=nespire
+ext.gb=gbc4touch
+ext.nvid=nPlayer
+ext.bmp=mviewer_cx
+ext.png=mviewer_cx
