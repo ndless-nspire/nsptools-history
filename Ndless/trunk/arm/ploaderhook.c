@@ -23,87 +23,36 @@
  ****************************************************************************/
 
 #include <os.h>
-#include <stdlib.h>
 #include "ndless.h"
 
 
-static int scmp(const void *sp1, const void *sp2) {
-	return strcmp(*(char**)sp1, *(char**)sp2);
+struct assoc_file_recur_cb_ctx {
+	char *prgm_name;
+	char *docpath;
+	char *arg1;
+	int *argc;
+};
+
+int assoc_file_recur_cb(const char *path, void *context) {
+	struct assoc_file_recur_cb_ctx *ctx = context;
+	if (!strcmp(ctx->prgm_name, strrchr(path, '/') + 1)) {
+		strncpy(ctx->arg1, ctx->docpath, FILENAME_MAX - 1);
+		strncpy(ctx->docpath, path, FILENAME_MAX - 1);
+		*ctx->argc = 2;
+		return 1;
+	}
+	return 0;
 }
 
-// Return the file path, or NULL if not found. folder will be destroyed.
-static char *find_file(char folder[FILENAME_MAX], const char *filename) {
-	char subfolder[FILENAME_MAX];
-	DIR *dp;
-	struct dirent *ep;     
-	struct stat statbuf;
-	#define MAX_FILES_IN_DIR 100
-	#define MEAN_FILE_NAME_SIZE 50
-	#define FILENAMES_BUF_SIZE (MEAN_FILE_NAME_SIZE * MAX_FILES_IN_DIR)
-	char *filenames;
-	char *filenames_ptrs[MAX_FILES_IN_DIR];
-	if (!(filenames = malloc(FILENAMES_BUF_SIZE)))
-		return NULL;
-	if (!(dp = opendir(folder))) {
-		free(filenames);
-		return NULL;
-	}
-	unsigned i;
-	unsigned filenames_used_bytes = 0;
-	char *ptr;
-	for (i = 0, ptr = filenames; (ep = readdir(dp)) && i < MAX_FILES_IN_DIR && ptr < filenames + FILENAMES_BUF_SIZE; i++) {
-		if (!strcmp(ep->d_name, ".") || !strcmp(ep->d_name, "..")) {
-			i--;
-			continue;
-		}
-		size_t dname_len = strlen(ep->d_name);
-		if (FILENAMES_BUF_SIZE - filenames_used_bytes < dname_len + 1)
-			break;
-		strcpy(ptr, ep->d_name);
-		filenames_ptrs[i] = ptr;
-		ptr += dname_len + 1;
-	}
-	unsigned filenum = i;
-	qsort(filenames_ptrs, filenum, sizeof(char*), scmp);
-	
-	for (i = 0; i < filenum; i++) {
-		strcpy(subfolder, folder);
-		strcat(subfolder, "/");
-		strcat(subfolder, filenames_ptrs[i]);
-		if (stat(subfolder, &statbuf) == -1)
-			continue;
-		if (!strcmp(filename, filenames_ptrs[i]) && S_ISREG(statbuf.st_mode)) {
-			strcpy(folder, subfolder);
-			closedir(dp);
-			free(filenames);
-			return folder;
-		}
-		if (S_ISDIR(statbuf.st_mode)) {
-			char *found = find_file(subfolder, filename);
-			if (found) {
-				closedir(dp);
-				free(filenames);
-				return found;
-			}
-		}
-	}
-	closedir(dp);
-	free(filenames);
-	return NULL;
-}
-
-// When opening a document
-HOOK_DEFINE(plh_hook) {
-	char *halfpath; // [docfolder/]file.tns
+// Try to run a document. Returns non zero if can't run it.
+int ld_exec(const char *path) {
 	char docpath[FILENAME_MAX];
 	int ret;
 	unsigned i;
 	char arg1[FILENAME_MAX];
-	char argc = 1;
+	int argc = 1;
 	FILE *docfile = NULL;
-	halfpath = (char*)(HOOK_SAVED_REGS(plh_hook)[5] /* r5 */ + 32);
-	// TODO use snprintf
-	sprintf(docpath, "/documents/%s", halfpath);
+	strcpy(docpath, path);
 
 	// File association
 	char extbuf[FILENAME_MAX];
@@ -125,14 +74,8 @@ HOOK_DEFINE(plh_hook) {
 			char prgm_name[FILENAME_MAX + 4];
 			strcpy(prgm_name, prgm_name_noext);
 			strcat(prgm_name, ".tns");
-			char folder[FILENAME_MAX];
-			strcpy(folder, "/documents");
-			char *found_prgm = find_file(folder, prgm_name);
-			if (found_prgm) {
-				strncpy(arg1, docpath, sizeof(arg1) - 1);
-				strncpy(docpath, found_prgm, sizeof(docpath) - 1);
-				argc = 2;
-			}
+			struct assoc_file_recur_cb_ctx context = {prgm_name, docpath, arg1, &argc};
+			ut_file_recur_each("/documents", assoc_file_recur_cb, &context);
 		}
 		cfg_close();
 	}
@@ -141,28 +84,26 @@ HOOK_DEFINE(plh_hook) {
 	struct stat docstat;
 	if (!docfile || (ret = stat(docpath, &docstat))) {
 cantopen:
-		puts("ploaderhook: can't open doc");
-error_dialog:
-		HOOK_SAVED_REGS(plh_hook)[3] = HOOK_SAVED_REGS(plh_hook)[0]; // 'mov r3, r0' was overwritten by the hook
-		HOOK_RESTORE_RETURN_SKIP(plh_hook, -0x114, 0); // to the error dialog about the unsupported format (we've overwritten a branch with our hook)
+		puts("ld_exec: can't open doc");
+		return 1;
 	}
 
 	void *docptr = emu_debug_alloc_ptr ? emu_debug_alloc_ptr : malloc(docstat.st_size);
 	if (!docptr) {
-		puts("ploaderhook: can't malloc");
-		goto error_dialog;
+		puts("ld_exec: can't malloc");
+		return 1;
 	}
 	if (!fread(docptr, docstat.st_size, 1, docfile)) {
-		puts("ploaderhook: can't read doc");
+		puts("ld_exec: can't read doc");
 		if (!emu_debug_alloc_ptr)
 			free(docptr);
-		goto error_dialog;
+		return 1;
 	}
 	fclose(docfile);
 	if (strcmp(PRGMSIG, docptr)) { /* not a program */
 		if (!emu_debug_alloc_ptr)
 			free(docptr);
-		goto error_dialog;
+		return 1;
 	}
 	int intmask = TCT_Local_Control_Interrupts(-1); /* TODO workaround: disable the interrupts to avoid the clock on the screen */
 	void *savedscr = malloc(SCREEN_BYTES_SIZE);
@@ -183,5 +124,20 @@ error_dialog:
 	TCT_Local_Control_Interrupts(intmask);
 	if (!emu_debug_alloc_ptr)
 		free(docptr);
-	HOOK_RESTORE_RETURN_SKIP(plh_hook, -0xDC, 1); // skip the error dialog about the unsupported format
+	return 0;
+}
+
+// When opening a document
+HOOK_DEFINE(plh_hook) {
+	char *halfpath; // [docfolder/]file.tns
+	char docpath[FILENAME_MAX];
+	halfpath = (char*)(HOOK_SAVED_REGS(plh_hook)[5] /* r5 */ + 32);
+	// TODO use snprintf
+	sprintf(docpath, "/documents/%s", halfpath);
+	if (ld_exec(docpath)) {
+		HOOK_SAVED_REGS(plh_hook)[3] = HOOK_SAVED_REGS(plh_hook)[0]; // 'mov r3, r0' was overwritten by the hook
+		HOOK_RESTORE_RETURN_SKIP(plh_hook, -0x114, 0); // to the error dialog about the unsupported format (we've overwritten a branch with our hook)
+	} else {
+		HOOK_RESTORE_RETURN_SKIP(plh_hook, -0xDC, 1); // skip the error dialog about the unsupported format
+	}
 }

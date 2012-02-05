@@ -82,6 +82,7 @@ void __attribute__ ((noreturn)) ut_panic(const char * msg);
 //void ut_debug_trace(unsigned line);
 #define ut_debug_trace(line)
 void ut_disable_watchdog(void);
+int ut_file_recur_each(const char *folder, int (*callback)(const char *path, void *context), void *context);
 static inline struct next_descriptor *ut_get_next_descriptor(void) {
 	if (*(*(unsigned**)(OS_BASE_ADDRESS + INTS_SWI_HANDLER_ADDR) - 2) != NEXT_SIGNATURE)
 		return NULL;

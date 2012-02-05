@@ -23,6 +23,7 @@
  ****************************************************************************/
 
 #include "ndless.h"
+#include <stdlib.h>
 
 #ifndef STAGE1
 struct next_descriptor ut_next_descriptor = {
@@ -119,3 +120,74 @@ void ut_disable_watchdog(void) {
 	*(volatile unsigned*)0x90060008 = 0; // disable reset, counter and interrupt
 	*(volatile unsigned*)0x90060C00 = 0; // disable write access to all other watchdog registers
 }
+
+#ifndef _NDLS_LIGHT
+static int scmp(const void *sp1, const void *sp2) {
+	return strcmp(*(char**)sp1, *(char**)sp2);
+}
+
+
+// Calls callback() for each file found in folder and its subfolders. context is passed to callback() and can be NULL.
+// callback() should return a non-zero value to abort the scan.
+// Returns non-zero if callback() asked to abort.
+int ut_file_recur_each(const char *folder, int (*callback)(const char *path, void *context), void *context) {
+	char subfolder_or_file[FILENAME_MAX];
+	DIR *dp;
+	struct dirent *ep;     
+	struct stat statbuf;
+	#define MAX_FILES_IN_DIR 100
+	#define MEAN_FILE_NAME_SIZE 50
+	#define FILENAMES_BUF_SIZE (MEAN_FILE_NAME_SIZE * MAX_FILES_IN_DIR)
+	char *filenames;
+	char *filenames_ptrs[MAX_FILES_IN_DIR];
+	if (!(filenames = malloc(FILENAMES_BUF_SIZE)))
+		return 0;
+	if (!(dp = opendir(folder))) {
+		free(filenames);
+		return 0;
+	}
+	// list the directory to sort its content
+	unsigned i;
+	unsigned filenames_used_bytes = 0;
+	char *ptr;
+	for (i = 0, ptr = filenames; (ep = readdir(dp)) && i < MAX_FILES_IN_DIR && ptr < filenames + FILENAMES_BUF_SIZE; i++) {
+		if (!strcmp(ep->d_name, ".") || !strcmp(ep->d_name, "..")) {
+			i--;
+			continue;
+		}
+		size_t dname_len = strlen(ep->d_name);
+		if (FILENAMES_BUF_SIZE - filenames_used_bytes < dname_len + 1)
+			break;
+		strcpy(ptr, ep->d_name);
+		filenames_ptrs[i] = ptr;
+		ptr += dname_len + 1;
+	}
+	unsigned filenum = i;
+	qsort(filenames_ptrs, filenum, sizeof(char*), scmp);
+	
+	for (i = 0; i < filenum; i++) {
+		strcpy(subfolder_or_file, folder);
+		strcat(subfolder_or_file, "/");
+		strcat(subfolder_or_file, filenames_ptrs[i]);
+		if (stat(subfolder_or_file, &statbuf) == -1)
+			continue;
+		if (S_ISREG(statbuf.st_mode)) {
+			if (callback(subfolder_or_file, context)) {
+				closedir(dp);
+				free(filenames);
+				return 1;
+			}
+		}
+		if (S_ISDIR(statbuf.st_mode)) {
+			if (ut_file_recur_each(subfolder_or_file, callback, context)) {
+				closedir(dp);
+				free(filenames);
+				return 1;
+			}
+		}
+	}
+	closedir(dp);
+	free(filenames);
+	return 0;
+}
+#endif // _NDLS_LIGHT
