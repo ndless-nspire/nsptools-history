@@ -9,8 +9,7 @@ Ndless - Changelog
   - NEW: add missing syscalls stub for newlib
  Standard libraries:
   - NEW: ftell, truncate, abort
-  - NEW: opendir, readdir, closedir. NU_Get_First, NU_Get_Next and NU_Close
-    are now deprecated.
+  - NEW: opendir, readdir, closedir
  libndls:
   - NEW: on_key_pressed (thanks t0xic_kitt3n), show_msgbox_2b, show_msgbox_3b 
     (thanks bsl), is_cx, is_classic, has_colors, hwtype, IO, IO_LCD_CONTROL, 

@@ -267,7 +267,7 @@ void *alloca(size_t size);
 typedef struct dstat {
 	char unknown1[13];
   char filepath[266];        /* Null terminated: A:\... */
-  unsigned char fattribute;  /* File attributes: see A* constants above */
+  unsigned char fattribute;  /* File attributes: see A* constants above. TODO BROKEN! */
   unsigned short unknown2;
   unsigned short unknown3;
   unsigned short unknown4;
