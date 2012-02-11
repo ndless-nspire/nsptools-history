@@ -24,21 +24,6 @@ relocate_loop:
 	strge r4, [r2], #4   @ store it back to the GOT
 	bge   relocate_loop
 
-#ifndef _NDLS_LIGHT
-cache_keypad_type:
-	mov  r2, r0          @ save it
-	osvar(keypad_type)
-	ldrb r3, [r0]
-	mov  r0, r2          @ restore
-	cmp  r3, #3          @ prototype
-	cmpne r3, #4         @ normal
-	bne runmain
-	adr r2, is_touchpad
-	mov r3, #1           @ TRUE
-	str r3, [r2]
-#endif
-
-runmain:
 	str  sp, __crt0_savedsp
 	bl   main
 __crt0exit: .global __crt0exit
@@ -48,8 +33,3 @@ got_offset:
 	.word _GLOBAL_OFFSET_TABLE_ - (get_got_offset+8)
 __crt0_savedsp: .global __crt0_savedsp
 	.long 0
-
-#ifndef _NDLS_LIGHT
-is_touchpad: .global is_touchpad
-	.long 0              @ default: FALSE
-#endif

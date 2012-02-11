@@ -70,8 +70,8 @@ int truncate(const char *path, off_t length);
 void wait_key_pressed(void);
 void wait_no_key_pressed(void);
 
-/* defined in crt0.S */
-extern BOOL is_touchpad;
+BOOL _is_touchpad(void);
+#define is_touchpad _is_touchpad()
 
 static inline void halt(void) {
 	__asm volatile("0: b 0b");
