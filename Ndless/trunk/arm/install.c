@@ -222,6 +222,9 @@ static unsigned const init_task_return_addrs[] = {0x10001548, 0x10001548, 0x1000
 // OS-specific
 static unsigned const api100_task_return_addrs[] = {0x100777A0, 0x10077708, 0x10076E9C, 0x10076e2c};
 
+// OS-specific
+static unsigned const end_of_init_addrs[] = {0X100104F0, 0x10010478, 0x100104BC, 0x1001046C};
+
 int main(int __attribute__((unused)) argc, char* argv[]) {
 	ut_debug_trace(INSTTR_INS_ENTER);
 	ut_read_os_version_index();
@@ -242,6 +245,7 @@ int main(int __attribute__((unused)) argc, char* argv[]) {
 
 	if (!installed) {
 		HOOK_INSTALL(ploader_hook_addrs[ut_os_version_index], plh_hook);
+		HOOK_INSTALL(end_of_init_addrs[ut_os_version_index], plh_startup_hook);
 	}
 	
 	NU_TASK *current_task  = TCC_Current_Task_Pointer();
@@ -263,7 +267,6 @@ int main(int __attribute__((unused)) argc, char* argv[]) {
 			ut_calc_reboot();
 		}
 		cleanup_file_leak();
-		ld_startup();
 		// Continue OS startup
 		// Simulate the prolog of the thread function for correct function return. Set r4 to a dummy variable, written to by a sub-function that follows.
 		__asm volatile("add lr, pc, #8; stmfd sp!, {r4-r6,lr}; sub sp, sp, #0x18; mov r4, sp; mov pc, %0" : : "r" (init_task_return_addrs[ut_os_version_index]));

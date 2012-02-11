@@ -148,7 +148,8 @@ static int startup_file_recur_cb(const char *path, __attribute__((unused)) void 
 }
 
 // Try to run all the documents in the startup folder and its sub-folders
-void ld_startup(void) {
+HOOK_DEFINE(plh_startup_hook) {
 	if (!isKeyPressed(KEY_NSPIRE_ESC))
 		ut_file_recur_each("/documents/ndless/startup", startup_file_recur_cb, NULL);
+	HOOK_RETURN(plh_startup_hook);
 }

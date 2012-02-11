@@ -371,7 +371,8 @@ typedef struct {
  * Misc inline functions
  ***********************************/
 
-/* Hooked functions and hooks must be built in ARM and not Thumb */
+/* Hooked functions and hooks must be built in ARM and not Thumb.
+ * 8 bytes are overwritten. They mustn't contain relative accesses such as jumps. */
 #define HOOK_INSTALL(address, hookname) do { \
 	void hookname(void); \
 	extern unsigned __##hookname##_end_instrs[4]; /* orig_instrs1; orig_instrs2; ldr pc, [pc, #-4]; .long return_addr */ \
@@ -385,6 +386,7 @@ typedef struct {
 	} while (0)
 
 /* Caution, hooks aren't re-entrant.
+* Must always exits with either HOOK_RESTORE_RETURN, HOOK_RETURN or HOOK_RESTORE_RETURN_SKIP.
  * A non-inlined body is required because naked function cannot use local variables.
  * A naked function is required because the return is handled by the hook, and to avoid any
  * register modification before they are saved */
