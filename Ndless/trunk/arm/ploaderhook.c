@@ -106,6 +106,7 @@ cantopen:
 		return 1;
 	}
 	int intmask = TCT_Local_Control_Interrupts(-1); /* TODO workaround: disable the interrupts to avoid the clock on the screen */
+	wait_no_key_pressed(); // let the user release the Enter key, to avoid being read by the program
 	void *savedscr = malloc(SCREEN_BYTES_SIZE);
 	memcpy(savedscr, SCREEN_BASE_ADDRESS, SCREEN_BYTES_SIZE);
 	if (has_colors) {
@@ -121,6 +122,7 @@ cantopen:
 	}
 	memcpy(SCREEN_BASE_ADDRESS, savedscr, SCREEN_BYTES_SIZE);
 	free(savedscr);
+	wait_no_key_pressed(); // let the user release the key used to exit the program, to avoid being read by the OS
 	TCT_Local_Control_Interrupts(intmask);
 	if (!emu_debug_alloc_ptr)
 		free(docptr);

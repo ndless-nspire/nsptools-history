@@ -25,7 +25,6 @@
 
 int main(void) {
 	TCT_Local_Control_Interrupts(0);
-	wait_no_key_pressed();
 	while (1) {
 		wait_key_pressed();
 		if (isKeyPressed(KEY_NSPIRE_RET)) puts("KEY_NSPIRE_RET");
