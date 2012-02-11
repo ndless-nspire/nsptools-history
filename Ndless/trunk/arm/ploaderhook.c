@@ -147,9 +147,14 @@ static int startup_file_recur_cb(const char *path, __attribute__((unused)) void 
 	return 0;
 }
 
+BOOL plh_isstartup = FALSE;
+
 // Try to run all the documents in the startup folder and its sub-folders
 HOOK_DEFINE(plh_startup_hook) {
-	if (!isKeyPressed(KEY_NSPIRE_ESC))
+	if (!isKeyPressed(KEY_NSPIRE_ESC)) {
+		plh_isstartup = TRUE;
 		ut_file_recur_each("/documents/ndless/startup", startup_file_recur_cb, NULL);
+		plh_isstartup = FALSE;
+	}
 	HOOK_RETURN(plh_startup_hook);
 }

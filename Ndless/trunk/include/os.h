@@ -396,6 +396,7 @@ _SYSCALL2(int, nl_osvalue, const int * /* values */, unsigned /* size */)
 _SYSCALL3(void, nl_relocdatab, unsigned * /* dataptr */, unsigned /* size */, void * /* base */)
 // 0 on non-CX, 1 on CX
 _SYSCALL0(unsigned, nl_hwtype)
+_SYSCALL0(BOOL, nl_isstartup)
 
 /* stdlib replacements not directly available as syscalls */
 extern unsigned __crt0exit;

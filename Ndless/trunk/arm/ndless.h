@@ -61,6 +61,9 @@ void ints_setup_handlers(void);
 #define INTS_PREFETCH_ABORT_HANDLER_ADDR 0x2C
 #define INTS_DATA_ABORT_HANDLER_ADDR 0x30
 
+/* ploaderhook.c */
+BOOL plh_isstartup;
+
 /* utils.c */
 // 'NEXT'
 #define NEXT_SIGNATURE 0x4E455854

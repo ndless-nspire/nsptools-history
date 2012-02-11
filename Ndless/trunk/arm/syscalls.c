@@ -49,9 +49,13 @@ unsigned sc_nl_hwtype(void) {
 	return (ut_os_version_index % 4) / 2;
 }
 
+BOOL sc_nl_isstartup(void) {
+	return plh_isstartup;
+}
+
 /* Extension syscalls table */
 unsigned sc_ext_table[] = {
-	(unsigned)sc_nl_osvalue, (unsigned)sc_ext_relocdatab, (unsigned)sc_nl_hwtype
+	(unsigned)sc_nl_osvalue, (unsigned)sc_ext_relocdatab, (unsigned)sc_nl_hwtype, (unsigned)sc_nl_isstartup
 };
 
 void sc_setup(void) {

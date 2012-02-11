@@ -289,8 +289,8 @@ int main(int argc, char *argv[]) {
 	assertUIntEquals("bswap32", 0x03020100, bswap32(0x00010203));
 	
 	assertTrue("is_cx", (is_cx && *(unsigned*)0x900A0000 == 0x101) || (!is_cx && *(unsigned*)0x900A0000 == 0x01000010));
-	
 	assertTrue("is_touchpad", (*keypad_type != 3  &&  *keypad_type != 4) || is_touchpad);
+	assertTrue("isstartup", nl_isstartup()); // will only pass if run as startup program
 	sleep(100);
 	
 	/* Ndless internals */
