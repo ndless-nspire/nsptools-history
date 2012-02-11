@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-W -Wall
-SCRIPTS=nspire-gcc nspire-ld  nspire-as
+SCRIPTS=nspire-gcc nspire-ld  nspire-as nspire-tools Makefile.tpl
 vpath ../../bin
 
 all: init scripts
