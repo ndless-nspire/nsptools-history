@@ -158,5 +158,5 @@ HOOK_DEFINE(plh_startup_hook) {
 		ut_file_recur_each("/documents/ndless/startup", startup_file_recur_cb, NULL);
 		plh_isstartup = FALSE;
 	}
-	HOOK_RETURN(plh_startup_hook);
+	HOOK_RESTORE_RETURN(plh_startup_hook);
 }
