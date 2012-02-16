@@ -96,6 +96,9 @@ static inline struct next_descriptor *ut_get_next_descriptor(void) {
 void sc_ext_relocdatab(unsigned *dataptr, unsigned size, void *base);
 void sc_setup(void);
 
+/* luaext.c */
+void lua_install_hooks(void);
+
 #endif /* GNU_AS */
 
 #endif /* _NDLESS_H_ */

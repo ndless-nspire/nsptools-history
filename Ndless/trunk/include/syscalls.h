@@ -113,10 +113,11 @@
 #define e_opendir 95
 #define e_readdir 96
 #define e_closedir 97
+#define e_luaL_register 98
 // END_OF_LIST (always keep this line after the last constant, used by mksyscalls.sh)
 
 // Must be kept up-to-date with the value of the last syscall
-#define __SYSCALLS_LAST 97
+#define __SYSCALLS_LAST 98
 
 // Flag: 3 higher bits of the 3-bytes comment field of the swi instruction
 #define __SYSCALLS_ISEXT 0x200000

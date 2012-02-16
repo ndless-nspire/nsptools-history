@@ -98,4 +98,5 @@ unsigned syscalls_cas_3_1_0[] = {
 	, 0X103810F0
 	, 0X10382284
 	, 0X1037FFC8
+	, 0X0
 };

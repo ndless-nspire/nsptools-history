@@ -246,6 +246,7 @@ int main(int __attribute__((unused)) argc, char* argv[]) {
 	if (!installed) {
 		HOOK_INSTALL(ploader_hook_addrs[ut_os_version_index], plh_hook);
 		HOOK_INSTALL(end_of_init_addrs[ut_os_version_index], plh_startup_hook);
+		lua_install_hooks();
 	}
 	
 	NU_TASK *current_task  = TCC_Current_Task_Pointer();

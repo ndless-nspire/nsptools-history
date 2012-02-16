@@ -5,7 +5,7 @@
 #ifndef _OS_H_
 #define _OS_H_
 
-#include "common.h"
+#include <common.h>
 #ifdef _NDLS_LIGHT
 // Use the light version of the syscalls table
 #include "syscalls-light.h"
@@ -384,6 +384,8 @@ _SYSCALL4(uint32_t, inflateInit2_, z_streamp /* strm */, uint32_t /* windowBits 
 _SYSCALL2(uint32_t, inflate, z_streamp /* strm */, uint32_t /* flush */)
 _SYSCALL1(uint32_t, inflateEnd, z_streamp /* strm */)
 
+#include <lauxlib.h>
+_SYSCALL3(void, luaL_register, lua_State *, const char *, const luaL_Reg *)
 
 /* Ndless extensions. Not available in thumb state. */
 // Given a list of OS-specific value and its size, returns the value for the current OS.
