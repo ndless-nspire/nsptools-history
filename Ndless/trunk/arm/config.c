@@ -120,7 +120,7 @@ close_quit:
 }
 
 void cfg_open(void) {
-	cfg_open_file("/documents/ndless/ndless.cfg.tns");
+	cfg_open_file(NDLESS_DIR "/ndless.cfg.tns");
 }
 
 // Returns the value associated to the key. NULL if not found.

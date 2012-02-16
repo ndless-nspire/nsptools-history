@@ -24,45 +24,64 @@
 #include "ndless.h"
 #include <lauxlib.h>
 
-// Demo
-static int myfunc(lua_State *L) {
-  puts("myfunc");
-  return 0;
+// array of modules's memory blocks.
+#define LUAEXT_MAX_MODULES 30
+static void *loaded[LUAEXT_MAX_MODULES];
+static unsigned loaded_next_index = 0;
+
+static int require(lua_State *L) {
+	char modulepath[FILENAME_MAX];
+	const char *name = luaL_checkstring(L, 1);
+	if (strlen(name) >= 30) goto require_err;
+	if (loaded_next_index >= LUAEXT_MAX_MODULES) {
+		luaL_error(L, "cannot load module " LUA_QS ": too many modules loaded", name);
+		return 1;
+	}
+  sprintf(modulepath, NDLESS_DIR "/luaext/%s.tns", name);
+  if (ld_exec(modulepath, loaded + loaded_next_index)) {
+require_err:
+  	luaL_error(L, "module " LUA_QS " not found", name);
+  }
+  loaded_next_index++;
+  return 1;
 }
 
-static const luaL_reg ndlesslib[] = {
-	{"myfunc", myfunc},
+static const luaL_reg baselib[] = {
+	{"require", require},
 	{NULL, NULL}
 };
 
 // At the end of luaL_openlibs
 // OS-specific
-static unsigned const interp_startup_addrs[] = {0x0, 0x0, 0x0, 0x1010052C};
+static unsigned const interp_startup_addrs[] = {0x101003CC, 0x101009F0, 0x100FFEE0, 0x1010052C};
 
 // At the beginning of lua_close
 // OS-specific
-static unsigned const interp_shutdown_addrs[] = {0x0, 0x0, 0x0, 0x106B2C38};
+static unsigned const interp_shutdown_addrs[] = {0x106D14B0, 0x106B59A4, 0x106B249C, 0x106B2C38};
 
 void lua_install_hooks(void) {
 	HOOK_INSTALL(interp_startup_addrs[ut_os_version_index], lua_interp_startup);
 	HOOK_INSTALL(interp_shutdown_addrs[ut_os_version_index], lua_interp_shutdown);
+	nl_relocdata((unsigned*)baselib, (sizeof(baselib) / sizeof(unsigned*)) - 2);
 }
 
 static lua_State *luastate = NULL;
 
+lua_State *luaext_getstate(void) {
+	return luastate;
+}
+
 HOOK_DEFINE(lua_interp_startup) {
-	puts("startup");
 	luastate = (lua_State*)HOOK_SAVED_REGS(lua_interp_startup)[4];
-	
-	// Demo
-	nl_relocdata((unsigned*)ndlesslib, (sizeof(ndlesslib) / sizeof(unsigned*)) - 2);
-	luaL_register(luastate, "ndless", ndlesslib);
-	
+	luaL_register(luastate, "_G", baselib);
 	HOOK_RESTORE_RETURN(lua_interp_startup);
 }
 
 HOOK_DEFINE(lua_interp_shutdown) {
-	puts("shutdown");
+	unsigned i;
+	for (i = 0; i < loaded_next_index; i++) {
+		ld_free(loaded[i]);
+	}
 	luastate = NULL;
 	HOOK_RESTORE_RETURN(lua_interp_shutdown);
 }

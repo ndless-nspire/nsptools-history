@@ -46,7 +46,7 @@ void stage1(void) {
 	ut_read_os_version_index();
 	ints_setup_handlers();
 	
-	const char *res_path = "/documents/ndless/ndless_resources.tns";
+	const char *res_path = NDLESS_DIR "/ndless_resources.tns";
 	FILE *res_file = fopen(res_path, "rb");
 	stat(res_path, &res_stat);
 	char *core = malloc(res_stat.st_size);

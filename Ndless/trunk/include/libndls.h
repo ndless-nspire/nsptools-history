@@ -77,6 +77,10 @@ static inline void halt(void) {
 	__asm volatile("0: b 0b");
 }
 
+static inline void bkpt(void) {
+	asm(".long 0xE1212374");
+}
+
 #define show_msgbox(title, msg) _show_msgbox(title, msg, 0)
 #define show_msgbox_2b(title, msg, button1, button2) _show_msgbox(title, msg, 2, button1, button2)
 #define show_msgbox_3b(title, msg, button1, button2, button3) _show_msgbox(title, msg, 3, button1, button2, button3)

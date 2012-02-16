@@ -45,7 +45,8 @@ int assoc_file_recur_cb(const char *path, void *context) {
 }
 
 // Try to run a document. Returns non zero if can't run it.
-int ld_exec(const char *path) {
+// If resident_ptr isn't NULL, the program's memory block isn't freed and is stored in resident_ptr. It may be freed later with ld_free().
+int ld_exec(const char *path, void **resident_ptr) {
 	char docpath[FILENAME_MAX];
 	int ret;
 	unsigned i;
@@ -124,9 +125,18 @@ cantopen:
 	free(savedscr);
 	wait_no_key_pressed(); // let the user release the key used to exit the program, to avoid being read by the OS
 	TCT_Local_Control_Interrupts(intmask);
+	if (resident_ptr) {
+		*resident_ptr = docptr;
+		return 0;
+	}
 	if (!emu_debug_alloc_ptr)
 		free(docptr);
 	return 0;
+}
+
+// To free the program's memory block when run with ld_exec(non null resident_ptr)
+void ld_free(void *resident_ptr) {
+	free(resident_ptr);
 }
 
 // When opening a document
@@ -136,7 +146,7 @@ HOOK_DEFINE(plh_hook) {
 	halfpath = (char*)(HOOK_SAVED_REGS(plh_hook)[5] /* r5 */ + 32);
 	// TODO use snprintf
 	sprintf(docpath, "/documents/%s", halfpath);
-	if (ld_exec(docpath)) {
+	if (ld_exec(docpath, NULL)) {
 		HOOK_SAVED_REGS(plh_hook)[3] = HOOK_SAVED_REGS(plh_hook)[0]; // 'mov r3, r0' was overwritten by the hook
 		HOOK_RESTORE_RETURN_SKIP(plh_hook, -0x114, 0); // to the error dialog about the unsupported format (we've overwritten a branch with our hook)
 	} else {
@@ -145,7 +155,7 @@ HOOK_DEFINE(plh_hook) {
 }
 
 static int startup_file_recur_cb(const char *path, __attribute__((unused)) void *context) {
-	ld_exec(path);
+	ld_exec(path, NULL);
 	return 0;
 }
 
@@ -155,7 +165,7 @@ BOOL plh_isstartup = FALSE;
 HOOK_DEFINE(plh_startup_hook) {
 	if (!isKeyPressed(KEY_NSPIRE_ESC)) {
 		plh_isstartup = TRUE;
-		ut_file_recur_each("/documents/ndless/startup", startup_file_recur_cb, NULL);
+		ut_file_recur_each(NDLESS_DIR "/startup", startup_file_recur_cb, NULL);
 		plh_isstartup = FALSE;
 	}
 	HOOK_RESTORE_RETURN(plh_startup_hook);

@@ -5,6 +5,7 @@ Ndless - Changelog
   - NEW: compatible with OS v3.1.0 and TI-Nspire CX. Reboot-proof.
   - NEW: support file association
   - NEW: support startup programs. Add nl_isstartup().
+  - NEW: support native Lua extensions
  Tools:
   - NEW: add missing syscalls stub for newlib
   - NEW: nspire-tools command

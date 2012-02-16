@@ -55,7 +55,7 @@ BOOL sc_nl_isstartup(void) {
 
 /* Extension syscalls table */
 unsigned sc_ext_table[] = {
-	(unsigned)sc_nl_osvalue, (unsigned)sc_ext_relocdatab, (unsigned)sc_nl_hwtype, (unsigned)sc_nl_isstartup
+	(unsigned)sc_nl_osvalue, (unsigned)sc_ext_relocdatab, (unsigned)sc_nl_hwtype, (unsigned)sc_nl_isstartup, (unsigned)luaext_getstate
 };
 
 void sc_setup(void) {

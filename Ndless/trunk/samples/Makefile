@@ -1,4 +1,4 @@
-SUBDIRS = colors hella hello particles
+SUBDIRS = colors hella hello particles luaext
 DISTDIR = ../calcbin/samples
 
 all: distdir doc

@@ -114,10 +114,12 @@
 #define e_readdir 96
 #define e_closedir 97
 #define e_luaL_register 98
+#define e_luaL_checklstring 99
+#define e_luaL_error 100
 // END_OF_LIST (always keep this line after the last constant, used by mksyscalls.sh)
 
 // Must be kept up-to-date with the value of the last syscall
-#define __SYSCALLS_LAST 98
+#define __SYSCALLS_LAST 100
 
 // Flag: 3 higher bits of the 3-bytes comment field of the swi instruction
 #define __SYSCALLS_ISEXT 0x200000
@@ -134,9 +136,10 @@
 #define e_nl_relocdatab (__SYSCALLS_ISEXT | 1)
 #define e_nl_hwtype (__SYSCALLS_ISEXT | 2)
 #define e_nl_isstartup (__SYSCALLS_ISEXT | 3)
+#define e_nl_lua_getstate (__SYSCALLS_ISEXT | 4)
 
 // Must be kept up-to-date with the value of the last syscalls extension without __SYSCALLS_ISEXT
-#define __SYSCALLS_LASTEXT 3
+#define __SYSCALLS_LASTEXT 4
 
 /* Ndless integration with emulators. Grouped to make the integration easier for the emulators (they require
  * only these constants).

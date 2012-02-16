@@ -27,6 +27,8 @@
 
 // Marker at the beginning of a program
 #define PRGMSIG "PRG"
+// Directory where it is installed
+#define NDLESS_DIR "/documents/ndless"
 
 /* Debug levels for ut_debug_trace() for installation failure diagnostic. Keep in execution order. */
 #define INSTTR_S1_ENTER 0
@@ -63,6 +65,8 @@ void ints_setup_handlers(void);
 
 /* ploaderhook.c */
 BOOL plh_isstartup;
+int ld_exec(const char *path, void **resident_ptr);
+void ld_free(void *resident_ptr);
 
 /* utils.c */
 // 'NEXT'
@@ -98,6 +102,7 @@ void sc_setup(void);
 
 /* luaext.c */
 void lua_install_hooks(void);
+lua_State *luaext_getstate(void);
 
 #endif /* GNU_AS */
 

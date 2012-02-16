@@ -386,6 +386,8 @@ _SYSCALL1(uint32_t, inflateEnd, z_streamp /* strm */)
 
 #include <lauxlib.h>
 _SYSCALL3(void, luaL_register, lua_State *, const char *, const luaL_Reg *)
+_SYSCALL3(const char *, luaL_checklstring, lua_State *, int, size_t *)
+_SYSCALLVAR(int,, luaL_error, __attribute__((unused)) lua_State *L, __attribute__((unused)) const char *fmt, ...)
 
 /* Ndless extensions. Not available in thumb state. */
 // Given a list of OS-specific value and its size, returns the value for the current OS.
@@ -399,6 +401,7 @@ _SYSCALL3(void, nl_relocdatab, unsigned * /* dataptr */, unsigned /* size */, vo
 // 0 on non-CX, 1 on CX
 _SYSCALL0(unsigned, nl_hwtype)
 _SYSCALL0(BOOL, nl_isstartup)
+_SYSCALL0(lua_State *, nl_lua_getstate)
 
 /* stdlib replacements not directly available as syscalls */
 extern unsigned __crt0exit;
