@@ -29,20 +29,28 @@
 static void *loaded[LUAEXT_MAX_MODULES];
 static unsigned loaded_next_index = 0;
 
+
+static int require_file_recur_cb(const char *path, void *context) {
+	if (strcmp(strrchr(path, '/') + 1, (char*)context) || ld_exec(path, loaded + loaded_next_index))
+		return 0;
+ 	loaded_next_index++; // found and loaded
+	return 1;
+}
+
 static int require(lua_State *L) {
 	char modulepath[FILENAME_MAX];
 	const char *name = luaL_checkstring(L, 1);
-	if (strlen(name) >= 30) goto require_err;
+	if (strlen(name) >= 30) goto require_not_found;
 	if (loaded_next_index >= LUAEXT_MAX_MODULES) {
 		luaL_error(L, "cannot load module " LUA_QS ": too many modules loaded", name);
 		return 1;
 	}
-  sprintf(modulepath, NDLESS_DIR "/luaext/%s.tns", name);
-  if (ld_exec(modulepath, loaded + loaded_next_index)) {
-require_err:
-  	luaL_error(L, "module " LUA_QS " not found", name);
-  }
-  loaded_next_index++;
+  sprintf(modulepath, "%s.luax.tns", name);
+	if (!ut_file_recur_each("/documents", require_file_recur_cb, modulepath)) {
+require_not_found:
+		luaL_error(L, "module " LUA_QS " not found", name);
+		return 1;
+	}
   return 1;
 }
 
