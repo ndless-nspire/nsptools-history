@@ -400,6 +400,8 @@
 	MakeName	(0X106C66F0,	"Lua_unprotected_error");
 	MakeName	(0X106C6D78,	"luaL_addchar");
 	MakeName	(0X106C7294,	"luaL_error");
+	MakeName	(0X106C7494,	"luaL_register");
+	MakeName	(0X106C7764,	"luaL_checklstring");
 	MakeName	(0X106C7EA4,	"luaopen_base");
 	MakeName	(0X106C99A0,	"luaG_runerror");
 	MakeName	(0X106CA4B0,	"luaD_seterrorobj");
@@ -413,6 +415,7 @@
 	MakeName	(0X106CBE78,	"luaF_close");
 	MakeName	(0X106CE0B4,	"luaM_realloc_");
 	MakeName	(0X106D1394,	"preinit_state");
+	MakeName	(0X106D14AC,	"lua_close");
 	MakeName	(0X106D1520,	"lua_newstate");
 	MakeName	(0X106D1644,	"stack_init");
 	MakeName	(0X106D1724,	"f_luaopen");
