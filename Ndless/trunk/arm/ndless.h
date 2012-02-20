@@ -65,6 +65,7 @@ void ints_setup_handlers(void);
 
 /* ploaderhook.c */
 BOOL plh_isstartup;
+void ld_set_resident(void);
 int ld_exec(const char *path, void **resident_ptr);
 void ld_free(void *resident_ptr);
 

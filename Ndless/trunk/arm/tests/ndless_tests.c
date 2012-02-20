@@ -135,6 +135,8 @@ int main(int argc, char *argv[]) {
 	nl_relocdata((unsigned*)nl_relocdata_data, 1);
 	assertUIntEquals("nl_relocdata", 1, (unsigned)*nl_relocdata_data[0]);
 	
+	nl_set_resident(); // caution, ;will leak. This at least checks that it doesn't crash.
+	
 	/* syscalls */
 	buf[0] = 1; buf[1] = 2; buf[2] = 3; buf[3] = 4; buf[4] = 5;
 	assertUIntEquals("read_unaligned_longword", 0x05040302, read_unaligned_longword(buf + 1));

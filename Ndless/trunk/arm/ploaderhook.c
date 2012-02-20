@@ -44,6 +44,13 @@ int assoc_file_recur_cb(const char *path, void *context) {
 	return 0;
 }
 
+static BOOL is_current_prgm_resident;
+
+// Can be called through a builtin function by the running program
+void ld_set_resident(void) {
+	is_current_prgm_resident = TRUE;
+}
+
 // Try to run a document. Returns non zero if can't run it.
 // If resident_ptr isn't NULL, the program's memory block isn't freed and is stored in resident_ptr. It may be freed later with ld_free().
 int ld_exec(const char *path, void **resident_ptr) {
@@ -116,6 +123,7 @@ cantopen:
 			*palette++ = ((i * 2 + 1) << (1 + 16)) | ((i * 2 + 1) << (6 + 16)) | ((i * 2 + 1) << (11 + 16)) | ((i * 2) << 1) | ((i * 2) << 6) | ((i * 2) << 11); // set the grayscale palette
 		ut_disable_watchdog(); // seems to be sometimes renabled by the OS
 	}
+	is_current_prgm_resident = FALSE;
 	clear_cache();
 	((void (*)(int argc, char *argv[]))(docptr + sizeof(PRGMSIG)))(argc, argc == 1 ? ((char*[]){docpath, NULL}) : ((char*[]){docpath, arg1, NULL})); /* run the program */
 	if (has_colors) {
@@ -129,6 +137,8 @@ cantopen:
 		*resident_ptr = docptr;
 		return 0;
 	}
+	if (is_current_prgm_resident) // required by the program itself
+		return 0;
 	if (!emu_debug_alloc_ptr)
 		free(docptr);
 	return 0;

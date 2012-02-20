@@ -402,6 +402,7 @@ _SYSCALL3(void, nl_relocdatab, unsigned * /* dataptr */, unsigned /* size */, vo
 _SYSCALL0(unsigned, nl_hwtype)
 _SYSCALL0(BOOL, nl_isstartup)
 _SYSCALL0(lua_State *, nl_lua_getstate)
+_SYSCALL0(void, nl_set_resident)
 
 /* stdlib replacements not directly available as syscalls */
 extern unsigned __crt0exit;
