@@ -345,8 +345,6 @@ struct stat {
 	unsigned int st_ctime;
 };
 
-typedef int off_t;
-
 /* Now we can libnls.h that depends on the definitions above */
 #include <libndls.h>
 

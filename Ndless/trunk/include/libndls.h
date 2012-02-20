@@ -13,6 +13,7 @@ halt\@: b halt\@
 #else /* GNU_AS */
 
 #include <stdint.h>
+#include <sys/types.h>
 
 typedef struct {
 	uint16_t width;

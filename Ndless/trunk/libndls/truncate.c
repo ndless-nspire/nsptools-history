@@ -19,6 +19,7 @@
  * Contributor(s): 
  ****************************************************************************/
 
+#include <sys/types.h>
 #include <os.h>
 
 /* Implement unistd's truncate() from Nucleus priimtives, not included in the OS.
