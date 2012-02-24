@@ -18,7 +18,7 @@ distdir:
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<
 
-ndless_tests.test.tns: ndless_tests.o ../config.o
+ndless_tests.test.tns: ndless_tests.o assert.o ../config.o
 	$(LD) $(LDFLAGS) $^ -o $(@:.tns=.elf)
 	$(OBJCOPY) -O binary $(@:.tns=.elf) $(DISTDIR)/$@
 	

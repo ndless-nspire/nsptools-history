@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Olivier ARMAND
  * <olivier.calc@gmail.com>.
- * Portions created by the Initial Developer are Copyright (C) 2010-2011
+ * Portions created by the Initial Developer are Copyright (C) 2010-2012
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): 
@@ -26,67 +26,10 @@
 #endif
 
 #include <os.h>
+#include "ndless_tests.h"
 #include "../ndless.h"
 
 // TODO: use snprintf instead of sprintf
-
-unsigned errcount = 0;
-
-static void error(const char *tstname, const char *errmsg) {
-	printf("[FAILED] [%s]: %s\n", tstname, errmsg);
-	errcount++;
-}
-
-#define assert(tstname, expr, format, ...) \
-	do { \
-		char sbuf[100]; \
-		if (!(expr)) { \
-			sprintf(sbuf, "%s(" format ")", __func__, __VA_ARGS__); \
-			error(tstname, sbuf); \
-		} else { \
-		printf("[passed] [%s]\n", tstname);	\
-		} \
-	} while(0)
-
-static void assertUIntEquals(const char *tstname, unsigned expected, unsigned actual) {
-	assert(tstname, expected == actual, "%x, %x", expected, actual);
-}
-
-static void assertIntEquals(const char *tstname, int expected, int actual) {
-	assert(tstname, expected == actual, "%i, %i", expected, actual);
-}
-
-__attribute__((unused)) static void assertUIntGreater(const char *tstname, unsigned expected, unsigned actual) {
-	assert(tstname, expected < actual, "%x, %x", expected, actual);
-}
-
-static void assertUIntLower(const char *tstname, unsigned expected, unsigned actual) {
-	assert(tstname, expected > actual, "%x, %x", expected, actual);
-}
-
-static void assertZero(const char *tstname, unsigned actual) {
-	assert(tstname, !actual, "%x", actual);
-}
-
-static void assertNonZero(const char *tstname, unsigned actual) {
-	assert(tstname, actual, "%x", actual);
-}
-
-static void assertTrue(const char *tstname, BOOL actual) {
-	assert(tstname, actual, "%s", actual ? "TRUE" : "FALSE");
-}
-
-static void assertStrEquals(const char *tstname, const char *expected, const char *actual) {
-	assert(tstname, !strcmp(expected, actual), "\"%s\", \"%s\"", expected, actual);
-}
-
-static void assertNotNull(const char *tstname, void *actual) {
-	assert(tstname, actual, "%p", actual);
-}
-
-static void assertNull(const char *tstname, void *actual) {
-	assert(tstname, !actual, "%p", actual);
-}
 
 int global_int;
 int* nl_relocdata_data[] = {&global_int};
