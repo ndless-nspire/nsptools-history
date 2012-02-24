@@ -30,6 +30,15 @@ ARM
   at the root of the project to the PATH environment variable, and remove any bin/
   directory of a previous version of Ndless.
 
+Luna
+====
+
+Support for Lua extensions require Luna, the community command-line converter of 
+Lua scripts.
+
+- Get Luna: http://www.ticalc.org/archives/files/fileinfo/441/44113.html
+- Add Luna's directory to the PATH environment variable
+
 Building
 ========
 

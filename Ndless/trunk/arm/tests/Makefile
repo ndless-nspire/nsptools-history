@@ -6,7 +6,7 @@ OBJCOPY := "$(shell (which arm-elf-objcopy arm-none-eabi-objcopy arm-linux-gnuea
 ifeq (${OBJCOPY},"")
 	OBJCOPY := arm-none-eabi-objcopy
 endif
-EXE = ndless_tests.test.tns ndless_keys.tns ndless_tpad.tns
+EXE = ndless_tests.test.tns ndless_keys.tns ndless_tpad.tns ndless_tests.luax.tns ndless_luatests.tns
 DISTDIR = ../../calcbin/tests
 vpath %.tns $(DISTDIR)
 
@@ -18,11 +18,14 @@ distdir:
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<
 
-ndless_tests.test.tns: ndless_tests.o assert.o ../config.o
+%.tns: %.lua
+	luna $< $(DISTDIR)/$@
+
+%.tns: %.o
 	$(LD) $(LDFLAGS) $^ -o $(@:.tns=.elf)
 	$(OBJCOPY) -O binary $(@:.tns=.elf) $(DISTDIR)/$@
-	
-%.tns: %.o
+
+ndless_tests.test.tns: ndless_tests.o assert.o ../config.o
 	$(LD) $(LDFLAGS) $^ -o $(@:.tns=.elf)
 	$(OBJCOPY) -O binary $(@:.tns=.elf) $(DISTDIR)/$@
 

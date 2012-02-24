@@ -1,2 +1,3 @@
-	require "luaextdemo"
-	luaextdemo.hello("world")
+require "luaextdemo"
+
+luaextdemo.hello("world")
