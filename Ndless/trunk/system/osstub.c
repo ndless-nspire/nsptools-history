@@ -2,25 +2,24 @@
  * the OS version should be used. That's why these functions ar empty. */
 
 #include <os.h>
+#include <sys/types.h>
 
-typedef struct{} _ssize_t;
 struct _reent{};
-typedef struct{} _off_t;
 
-_ssize_t _read_r(__attribute__((unused)) struct _reent *r, __attribute__((unused)) int file, __attribute__((unused)) void *ptr, __attribute__((unused)) size_t len) {
-  return (_ssize_t){};
+long _read_r(__attribute__((unused)) struct _reent *r, __attribute__((unused)) int file, __attribute__((unused)) void *ptr, __attribute__((unused)) size_t len) {
+  return 0;
 }
 
-_ssize_t _write_r(__attribute__((unused)) struct _reent *r, __attribute__((unused)) int file, __attribute__((unused)) const void *ptr, __attribute__((unused)) size_t len) {
-  return (_ssize_t){};
+long _write_r(__attribute__((unused)) struct _reent *r, __attribute__((unused)) int file, __attribute__((unused)) const void *ptr, __attribute__((unused)) size_t len) {
+  return 0;
 }
 
 int _close_r(__attribute__((unused)) struct _reent *r, __attribute__((unused)) int file) {
   return 0;
 }
 
-_off_t _lseek_r(__attribute__((unused)) struct _reent *r, __attribute__((unused)) int file, __attribute__((unused)) _off_t ptr, __attribute__((unused)) int dir) {
-  return (_off_t){};
+off_t _lseek_r(__attribute__((unused)) struct _reent *r, __attribute__((unused)) int file, __attribute__((unused)) off_t ptr, __attribute__((unused)) int dir) {
+  return 0;
 }
 
 int _fstat_r(__attribute__((unused)) struct _reent *r, __attribute__((unused)) int file, __attribute__((unused)) struct stat *st) {
