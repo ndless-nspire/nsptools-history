@@ -24,8 +24,42 @@
 #include <os.h>
 #include "ndless_tests.h"
 
+static int dummy_func(__attribute__((unused)) lua_State *L) {
+	return 0;
+}
+
 static int run(lua_State *L) {
-	puts("hello");
+	int i;
+	
+	assertUIntEquals("lua_gettop", 1, lua_gettop(L));
+	assertTrue("lua_checkstack", lua_checkstack(L, 1));
+	assertRuns("lua_concat1", lua_concat(L, 1));
+	assertStrEquals("lua_concat2", "run", lua_tostring(L, -1));
+	// r = string.>rep("a", 3)
+	assertRuns("lua_getfield", lua_getfield(L, LUA_GLOBALSINDEX, "string"));
+	assertFalse("lua_getfield.string", lua_isnil(L, -1));
+	assertRuns("lua_getfield.rep1", lua_getfield(L, -1, "rep"));
+	assertFalse("lua_getfield.rep", lua_isnil(L, -1));
+	assertRuns("lua_pushstring", lua_pushstring(L, "a"));
+	assertRuns("lua_pushinteger", lua_pushinteger(L, 3));
+	assertRuns("lua_call", lua_call(L, 2, 1));
+	assertRuns("lua_setfield", lua_setfield(L, LUA_GLOBALSINDEX, "r"));
+	assertRuns("lua_getfield", lua_getfield(L, LUA_GLOBALSINDEX, "r"));
+	assertTrue("lua_isstring", lua_isstring(L, -1));
+	assertStrEquals("lua_tostring", "aaa", lua_tostring(L, -1));
+	assertStrEquals("lua_tolstring", "aaa", lua_tolstring(L, -1, NULL));
+	assertZero("lua_cpcall", lua_cpcall(L, dummy_func, NULL));
+	assertRuns("lua_createtable", lua_createtable(L, 0, 0));
+	assertTrue("lua_istable", lua_istable(L, -1));
+	lua_pushinteger(L, 1); // v
+	lua_pushinteger(L, 2); // k
+	assertRuns("lua_settable", lua_settable(L, -3));
+	assertUIntEquals("lua_objlen", 1, lua_objlen(L, -1));
+	i = lua_gettop(L);
+	assertRuns("lua_pop", lua_pop(L, 1));
+	assertIntEquals("lua_pop2", i - 1, lua_gettop(L));
+	
+	//TODO lua_pcall
 	return 0;
 }
 

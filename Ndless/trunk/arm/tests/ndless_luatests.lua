@@ -23,4 +23,4 @@
 
 require "ndless_tests"
 
-tests.run()
+tests.run("run")

@@ -29,6 +29,10 @@ ndless_tests.test.tns: ndless_tests.o assert.o ../config.o
 	$(LD) $(LDFLAGS) $^ -o $(@:.tns=.elf)
 	$(OBJCOPY) -O binary $(@:.tns=.elf) $(DISTDIR)/$@
 
+ndless_tests.luax.tns: ndless_tests.luax.o assert.o
+	$(LD) $(LDFLAGS) $^ -o $(@:.tns=.elf)
+	$(OBJCOPY) -O binary $(@:.tns=.elf) $(DISTDIR)/$@
+
 static:
 	@cp ReadMe.txt $(DISTDIR)
 	@cp ndless.cfg.tns $(DISTDIR)

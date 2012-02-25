@@ -51,6 +51,11 @@ void assertUIntLower(const char *tstname, unsigned expected, unsigned actual);
 void assertZero(const char *tstname, unsigned actual);
 void assertNonZero(const char *tstname, unsigned actual);
 void assertTrue(const char *tstname, BOOL actual);
+void assertFalse(const char *tstname, BOOL actual);
 void assertStrEquals(const char *tstname, const char *expected, const char *actual);
 void assertNotNull(const char *tstname, void *actual);
 void assertNull(const char *tstname, void *actual);
+
+#define assertRuns(tstname, dummy) \
+	printf("[passed] [%s]\n", tstname);
+
