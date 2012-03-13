@@ -17,7 +17,7 @@ all: $(EXE)
 	$(GCC) $(GCCFLAGS) -c $<
 
 $(EXE): $(OBJS)
-	$(LD) $(LDFLAGS) $^ -o $(@:.tns=.elf)
+	$(LD) $^ -o $(@:.tns=.elf) $(LDFLAGS)
 	mkdir -p $(DISTDIR)
 	$(OBJCOPY) -O binary $(@:.tns=.elf) $(DISTDIR)/$@
 
