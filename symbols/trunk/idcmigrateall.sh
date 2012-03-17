@@ -4,10 +4,13 @@
 FROM_OS_VERSION=cascx-3.1.0
 TO_OS_VERSIONS="ncas-3.1.0 cas-3.1.0 ncascx-3.1.0"
 
+mkdir -p backup
+
+echo "Backing up OS_${FROM_OS_VERSION}.idb" to backup/..."
+cp OS_${FROM_OS_VERSION}.idb" backup
+
 echo "Dumping source IDB OS_${FROM_OS_VERSION}.idb"
 ./idb2idc.sh OS_${FROM_OS_VERSION}.idb
-
-mkdir -p backup
 
 for ver in $TO_OS_VERSIONS; do
 	idcmigrate/idcmigrate phoenix-${FROM_OS_VERSION}.raw OS_${FROM_OS_VERSION}.idc phoenix-${ver}.raw idcma_temp.idc | grep -v Looking | grep -v Done
