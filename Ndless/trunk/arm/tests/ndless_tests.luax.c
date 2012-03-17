@@ -32,19 +32,19 @@ static int run(lua_State *L) {
 	int i;
 	
 	assertUIntEquals("lua_gettop", 1, lua_gettop(L));
-	assertTrue("lua_checkstack", lua_checkstack(L, 1));
+	assertTrue("lua_checkstack", lua_checkstack(L, 10));
 	assertRuns("lua_concat1", lua_concat(L, 1));
 	assertStrEquals("lua_concat2", "run", lua_tostring(L, -1));
 	// r = string.>rep("a", 3)
-	assertRuns("lua_getfield", lua_getfield(L, LUA_GLOBALSINDEX, "string"));
+	assertRuns("lua_getfield", lua_getglobal(L, "string"));
 	assertFalse("lua_getfield.string", lua_isnil(L, -1));
 	assertRuns("lua_getfield.rep1", lua_getfield(L, -1, "rep"));
 	assertFalse("lua_getfield.rep", lua_isnil(L, -1));
 	assertRuns("lua_pushstring", lua_pushstring(L, "a"));
 	assertRuns("lua_pushinteger", lua_pushinteger(L, 3));
 	assertRuns("lua_call", lua_call(L, 2, 1));
-	assertRuns("lua_setfield", lua_setfield(L, LUA_GLOBALSINDEX, "r"));
-	assertRuns("lua_getfield", lua_getfield(L, LUA_GLOBALSINDEX, "r"));
+	assertRuns("lua_setfield", lua_setglobal(L, "r"));
+	assertRuns("lua_getfield", lua_getglobal(L, "r"));
 	assertTrue("lua_isstring", lua_isstring(L, -1));
 	assertStrEquals("lua_tostring", "aaa", lua_tostring(L, -1));
 	assertStrEquals("lua_tolstring", "aaa", lua_tolstring(L, -1, NULL));
@@ -55,11 +55,19 @@ static int run(lua_State *L) {
 	lua_pushinteger(L, 2); // k
 	assertRuns("lua_settable", lua_settable(L, -3));
 	assertUIntEquals("lua_objlen", 1, lua_objlen(L, -1));
+	assertRuns("lua_pushinteger", lua_pushstring(L, "3"));
+	assertRuns("lua_pushinteger", lua_pushstring(L, "3"));
+	assertTrue("lua_equal", lua_equal(L, -1, -2));
+	bkpt();
+	assertUIntEquals("lua_tonumber", 3, lua_tonumber(L, -1));
+	assertUIntEquals("lua_tointeger", 3, lua_tointeger(L, -1));
+	assertNonZero("lua_gc", lua_gc(L, LUA_GCCOUNT, 0));
 	i = lua_gettop(L);
 	assertRuns("lua_pop", lua_pop(L, 1));
 	assertIntEquals("lua_pop2", i - 1, lua_gettop(L));
 	
 	//TODO lua_pcall
+	// won't do: lua_dump, lua_error
 	return 0;
 }
 

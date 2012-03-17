@@ -24,8 +24,6 @@
 #ifndef _NDLESS_TESTS_H_
 #define _NDLESS_TESTS_H_
 
-#include "ndless_tests.h"
-
 #define assert(tstname, expr, format, ...) \
 	do { \
 		char sbuf[100]; \
@@ -57,5 +55,6 @@ void assertNotNull(const char *tstname, void *actual);
 void assertNull(const char *tstname, void *actual);
 
 #define assertRuns(tstname, dummy) \
+	(void)dummy; \
 	printf("[passed] [%s]\n", tstname);
 
