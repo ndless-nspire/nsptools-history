@@ -5,6 +5,10 @@
 #ifndef _OS_H_
 #define _OS_H_
 
+// So that subsequent standard #include don't conflict
+#define _STDIO_H_
+#define _STRING_H_
+
 #include <common.h>
 #ifdef _NDLS_LIGHT
 // Use the light version of the syscalls table
