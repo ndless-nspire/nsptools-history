@@ -436,8 +436,10 @@
 	MakeName	(0X106A6DE8,	"lua_rawseti");
 	MakeName	(0X106A6F38,	"lua_setfield");
 	MakeName	(0X106A7034,	"lua_rawgeti");
+	MakeName	(0X106A70A8,	"lua_getfield");
 	MakeName	(0X106A7170,	"lua_pushfstring");
 	MakeName	(0X106A71C0,	"aux_getn");
+	MakeName	(0X106A7238,	"lua_tolstring");
 	MakeName	(0X106A72C4,	"index2adr");
 	MakeName	(0X106A7304,	"lua_tonumber");
 	MakeName	(0X106A7344,	"lua_isnumber");
@@ -454,6 +456,7 @@
 	MakeName	(0X106A8588,	"luaL_checkany");
 	MakeName	(0X106A8678,	"luaL_optinteger");
 	MakeName	(0X106A8750,	"luaL_checklstring");
+	MakeName	(0X106A8934,	"luaB_print");
 	MakeName	(0X106A8D28,	"auxopen");
 	MakeName	(0X106A8E90,	"luaopen_base");
 	MakeName	(0X106A92A0,	"luaB_tonumber");
@@ -976,6 +979,7 @@
 	MakeName	(0X108887DC,	"a_12f");
 	MakeName	(0X10888FC9,	"a1__00126233445");
 	MakeName	(0X108B7A54,	"a_loaded");
+	MakeName	(0X108B7B30,	"base_funcs");
 	MakeName	(0X108B7CEC,	"a_version");
 	MakeName	(0X108B7D0C,	"a__mode");
 	MakeName	(0X108B7D3C,	"a__tostring");
