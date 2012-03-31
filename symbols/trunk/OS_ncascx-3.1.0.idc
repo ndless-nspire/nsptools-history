@@ -110,6 +110,8 @@
 	MakeName	(0X10223EC0,	"j_memset");
 	MakeName	(0X10226944,	"ascii2utf16");
 	MakeName	(0X1022D06C,	"j_j_free_14");
+	MakeName	(0X1022F82C,	"refresh_homescr");
+	MakeName	(0X1023046C,	"refresh_docbrowser");
 	MakeName	(0X1024AAEC,	"Expat_XML_Parse");
 	MakeName	(0X10262808,	"unknown_TI_ZIPArchive_UnallocateBuffers");
 	MakeName	(0X1026284C,	"unknown_TI_ZIPArchive_Close");

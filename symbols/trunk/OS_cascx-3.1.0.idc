@@ -117,6 +117,8 @@
 	MakeName	(0X10224650,	"j_memset");
 	MakeName	(0X102270D4,	"ascii2utf16");
 	MakeName	(0X1022D7FC,	"j_j_free_14");
+	MakeName	(0X1022FFBC,	"refresh_homescr");
+	MakeName	(0X10230BFC,	"refresh_docbrowser");
 	MakeName	(0X1024B27C,	"Expat_XML_Parse");
 	MakeName	(0X10262F98,	"unknown_TI_ZIPArchive_UnallocateBuffers");
 	MakeName	(0X10262FDC,	"unknown_TI_ZIPArchive_Close");
@@ -216,6 +218,7 @@
 	MakeName	(0X10352CB0,	"device_get_softc");
 	MakeName	(0X10352D98,	"_usb_mk_device_name");
 	MakeName	(0X10352E94,	"alloc_driver");
+	MakeName	(0X10352F88,	"unregister_drivers");
 	MakeRptCmt	(0X10352F90,	"chained list of drivers");
 	MakeName	(0X10352FD4,	"register_drivers");
 	MakeRptCmt	(0X10352FDC,	"table of drivers");
@@ -373,6 +376,8 @@
 	MakeRptCmt	(0X103EE56C,	"SUSPEND");
 	MakeName	(0X103EE5A0,	"uhub_detach");
 	MakeName	(0X103EE6B8,	"uhub_attach");
+	MakeRptCmt	(0X103EE708,	"%s");
+	MakeRptCmt	(0X103EE714,	"%s\\n");
 	MakeName	(0X103EEC3C,	"uhub_match");
 	MakeName	(0X103EEEE4,	"usb_bus_attach");
 	MakeName	(0X103EF0D0,	"usbd_find_idesc");
@@ -430,7 +435,9 @@
 	MakeRptCmt	(0X103F76E8,	"Texas Instruments ID");
 	MakeRptCmt	(0X103F76F8,	"TI-Nspire ?");
 	MakeName	(0X103F7B6C,	"alloc_jhid_general");
-	MakeName	(0X103F825C,	"unknown_match");
+	MakeName	(0X103F7F14,	"jhid_attach");
+	MakeName	(0X103F825C,	"jhid_match");
+	MakeRptCmt	(0X103F8280,	"HID");
 	MakeName	(0X103FA010,	"dma_alloc");
 	MakeName	(0X103FC3D8,	"__rt_udiv_2");
 	MakeName	(0X103FC4CC,	"__rt_udiv");
@@ -457,7 +464,6 @@
 	MakeName	(0X104927B8,	"j_j_free_20");
 	MakeName	(0X104DD994,	"show_dialog_box?");
 	MakeName	(0X106A3CE0,	"j_SMC_Delete_Semaphore_4");
-	MakeName	(0X106A6550,	"index2adr");
 	MakeName	(0X106A667C,	"lua_xmove");
 	MakeName	(0X106A6738,	"lua_setlevel");
 	MakeName	(0X106A6744,	"lua_atpanic");
@@ -471,7 +477,6 @@
 	MakeName	(0X106A6930,	"lua_iscfunction");
 	MakeName	(0X106A695C,	"lua_isstring");
 	MakeName	(0X106A6978,	"lua_isuserdata");
-	MakeName	(0X106A6998,	"lua_toboolean");
 	MakeName	(0X106A69CC,	"lua_tocfunction");
 	MakeName	(0X106A6A00,	"lua_touserdata");
 	MakeName	(0X106A6A30,	"lua_tothread");
@@ -645,6 +650,7 @@
 	MakeName	(0X106B2F44,	"luaE_newthread");
 	MakeName	(0X106B3034,	"luaS_resize");
 	MakeName	(0X106B322C,	"l_setbit");
+	MakeName	(0X106B4008,	"lua_toboolean");
 	MakeName	(0X106B4FCC,	"scanformat");
 	MakeName	(0X106B674C,	"sethvalue");
 	MakeName	(0X106B67D0,	"luaopen_table");
@@ -1293,14 +1299,15 @@
 	MakeName	(0X10A8C978,	"a201107220831");
 	MakeName	(0X10A9E9F8,	"keypad_type");
 	MakeRptCmt	(0X10AB55A0,	"jbtio");
+	MakeRptCmt	(0X10AB55BC,	"table of functions that loads the drivers");
 	MakeName	(0X10AB55BC,	"bsd_root_drivers");
-	MakeRptCmt	(0X10AB55D4,	"bsd_root_drivers+0x18: chained list of drivers");
 	MakeRptCmt	(0X10AB55E0,	"bsd_root_drivers+0x24: table of drivers to register");
 	MakeName	(0X10AB5604,	"tdi_4x_otg_methods");
 	MakeName	(0X10AB6814,	"a___1");
 	MakeName	(0X10AB695C,	"a___2");
 	MakeName	(0X10AB6AE0,	"a112204112915");
 	MakeName	(0X10ABDDF8,	"uhubroot_methods");
+	MakeName	(0X10ABDF0C,	"jhid_methods");
 	MakeName	(0X10ABEFC0,	"a6m9m12m18m24m3");
 	MakeName	(0X10ABF000,	"a7d7d7d7d7d7d7d");
 	MakeName	(0X10ABF02C,	"a1mL2mL2mS5mL5m");
