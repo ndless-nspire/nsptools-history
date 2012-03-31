@@ -213,11 +213,13 @@
 #define e_lua_next 195
 #define e_lua_concat 196
 #define e_lua_getstack 197
+#define e_refresh_homescr 198
+#define e_refresh_docbrowser 199
 
 // END_OF_LIST (always keep this line after the last constant, used by mksyscalls.sh)
 
 // Must be kept up-to-date with the value of the last syscall
-#define __SYSCALLS_LAST 197
+#define __SYSCALLS_LAST 199
 
 // Flag: 3 higher bits of the 3-bytes comment field of the swi instruction
 #define __SYSCALLS_ISEXT 0x200000

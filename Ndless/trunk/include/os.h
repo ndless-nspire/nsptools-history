@@ -327,6 +327,9 @@ _SYSCALL3(int, touchpad_read, unsigned char /* start */, unsigned char /* end */
 // For internal use by libndls. Returns 0 on failure, 1 on success.
 _SYSCALL3(int, touchpad_write, unsigned char /* start */, unsigned char /* end */, void * /* buf */)
 
+_SYSCALL0(void, refresh_homescr)
+_SYSCALL1(void, refresh_docbrowser, int)
+
 #define Z_NO_FLUSH      0
 #define Z_PARTIAL_FLUSH 1
 #define Z_SYNC_FLUSH    2

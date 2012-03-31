@@ -57,6 +57,7 @@ void lcd_ingray(void);
 void nputs(const char *str);
 void nprintf(const char *fmt, ...);
 BOOL on_key_pressed(void);
+void refresh_osscr(void);
 void rewind(FILE * stream);
 unsigned _scrsize(void);
 unsigned set_cpu_speed(unsigned speed);
