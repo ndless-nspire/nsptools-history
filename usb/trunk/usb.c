@@ -159,14 +159,14 @@ int register_my_driver(void) {
 int main(void) {
 	//TCT_Local_Control_Interrupts(0); if enabled and wait_key_pressed(), the hook won't work!
 	nl_relocdata((unsigned*)methods, sizeof(methods)/sizeof(methods[0]) - 1);
-	//*(unsigned*)0x10A7CC6C = (unsigned)register_my_driver;
+
+	dbg_init();
+	dbg_break();
+	printf("hello\n");
+	dbg_cleanup();
 	
-	register_my_driver();
+	//register_my_driver();
 	
-	//***(unsigned***)(0x10A7CC2C+0x18) = (unsigned)match;
-	clear_cache();
-	//wait_key_pressed();
-	// todo unreg
-	nl_set_resident();
+	//nl_set_resident();
 	return 0;
 }
