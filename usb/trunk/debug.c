@@ -29,42 +29,51 @@ static struct breakpoint breakpoints[MAX_BKPTS];
 
 // local frame not available for naked functions. non-static so that it's not inlined.
 void dbg_prefetch_abort_handler_body(unsigned *exception_addr) {
-	//int bkpt_num = ((*exception_addr & 0xFFF00) >> 4) | (*exception_addr & 0xF);
-	asm(".long 0xE12FFF7E"); // immed = FFFF
-	puts("hello");
-	halt();
-nio_printf(&dbg_csl, "hello"); // broken because of SWI ?
-	
-	int bkpt_num = 255;
+	int bkpt_num = ((*exception_addr & 0xFFF00) >> 4) | (*exception_addr & 0xF);
 	if (bkpt_num > MAX_BKPTS) {
 		bkpt_num = -1;
-		nio_printf(&dbg_csl, "Explicit breakpoint hit at address %08x", exception_addr);
+		nio_printf(&dbg_csl, "Explicit breakpoint hit at address %08x\n", exception_addr);
 	} else
-		nio_printf(&dbg_csl, "Breakpoint #%u hit at address %08x", bkpt_num, exception_addr);
-
+		nio_printf(&dbg_csl, "Breakpoint #%u hit at address %08x\n", bkpt_num, exception_addr);
 
 	char input[100];
 	while (1) {
+		nio_printf(&dbg_csl, "> ");
 		while (!nio_GetStr(&dbg_csl, input)) ;
 		if (!strcmp("c", input)) {
-			nio_printf(&dbg_csl, "Continuing...");
+			nio_printf(&dbg_csl, "Continuing...\n");
 			if (bkpt_num >= 0) {
 				*exception_addr = breakpoints[bkpt_num].orig_instr;
 				clear_cache(); // TODO set lr/pc
 			}
 			break;
+		} else {
+			nio_printf(&dbg_csl, "Unknown command\n");
 		}
 	}
 }
 
 // triggered by bkpt instructions
 static void __attribute__((naked)) prefetch_abort_handler(void) {
-	__asm volatile(" stmfd sp!, {r0-r12, lr}; sub lr, lr, #4");
+	// Save lr, and switch back to caller's mode (Ndless's swi handler doesn't support abort mode)
 	unsigned *exception_addr;
-	__asm volatile(" mov %0, lr" : "=r" (exception_addr));
+	__asm volatile(" b 0f \n"
+		"prefetch_abort_handler_exception_addr: .long 0 \n"
+		"0: stmfd sp!, {r0, r1} \n" /* dummy r1, will be overwritten */
+		" adr r0, prefetch_abort_handler_exception_addr \n"
+		" sub lr, lr, #4 \n"
+		" str lr, [r0] \n"
+		" adr r0, 1f \n "
+		" str r0, [sp, #4] \n" /* overwrite dummy r1 */
+		" ldmfd sp!, {r0, pc}^ \n" /* switch back to caller's mode */
+		"1: stmfd sp!, {r0-r12, lr} \n" /* dummy lr. Must fetch the one of abort mode */
+		" adr r0, prefetch_abort_handler_exception_addr \n" 
+		" ldr %0, [r0] \n" 
+		" str %0, [sp, #13*4] \n" /* overwrite the dummy lr */
+		: "=r" (exception_addr));
 	if ((*exception_addr & 0xFFF000F0) == 0xE1200070) // bkpt instr?
 		dbg_prefetch_abort_handler_body(exception_addr);
-	__asm volatile(" ldmfd sp!, {r0-r12, pc}^");
+	__asm volatile(" ldmfd sp!, {r0-r12, pc}");
 }
 
 #define PREFETCH_ADDR ((void(**)(void))0x2C)
