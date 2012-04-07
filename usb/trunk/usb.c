@@ -44,6 +44,8 @@ static const unsigned usbd_interface2device_handle_addrs[] = {0x103F3388, 0, 0, 
 static const unsigned usbd_open_pipe_intr_addrs[] = {0x103F4548, 0, 0, 0}; // non-CAS 3.1, CAS 3.1, non-CAS CX 3.1, CAS CX 3.1 addresses
 #define usbd_open_pipe_intr SYSCALL_CUSTOM(usbd_open_pipe_intr_addrs, usbd_status, usbd_interface_handle iface, u_int8_t address, u_int8_t flags, usbd_pipe_handle *pipe, usbd_private_handle priv, void *buffer, u_int32_t len, usbd_callback cb, int ival)
 
+// + cf debug.c
+
 /* usbhid.h */ 
 
 #define UR_SET_PROTOCOL		0x0b
