@@ -20,7 +20,7 @@ static unsigned spsr;
 static void (*orig_prefetch_abort_addr)(void);
 #define MAX_BKPTS 16
 // BCONT is used only used to restore the previous breakpoint removed to continue
-enum e_bkpt_type {BSTD = 0, BTMP, BCONT};
+enum e_bkpt_type {BSTD = 0, BTMP, BCONT, BEXPL};
 struct breakpoint {
 	BOOL used;
 	enum e_bkpt_type type;
@@ -323,23 +323,24 @@ static unsigned next_pc(unsigned addr) {
 unsigned dbg_prefetch_abort_handler_body(unsigned *exception_addr) {
 	int bkpt_num = ((*exception_addr & 0xFFF00) >> 4) | (*exception_addr & 0xF);
 	if (bkpt_num > MAX_BKPTS) {
-		bkpt_num = -1;
-		nio_printf(&dbg_csl, "Explicit breakpoint hit at %08x\n", exception_addr);
-		disasm((u32)exception_addr);
-	} else {
-		*exception_addr = breakpoints[bkpt_num].orig_instr;
-		clear_cache();
-		// Did we hit the "next" breakpoint?
-		if (exception_addr == debug_next) {
-			debug_next = NULL;
-			disasm_insn((u32)exception_addr);
-		} else {
-			nio_printf(&dbg_csl, "Breakpoint #%u hit at %08x\n", bkpt_num, exception_addr);
-			disasm((u32)exception_addr);
-		}
-		if (breakpoints[bkpt_num].type == BTMP)
-			breakpoints[bkpt_num].used = FALSE;
+		_dbg_set_breakpoint(next_pc((unsigned)exception_addr), BEXPL); // explicit breakpoint
+		return (unsigned)(exception_addr + 1); // skip it
 	}
+	*exception_addr = breakpoints[bkpt_num].orig_instr;
+	clear_cache();
+	// Did we hit the "next" breakpoint?
+	if (exception_addr == debug_next) {
+		debug_next = NULL;
+		disasm_insn((u32)exception_addr);
+	} else {
+		if (breakpoints[bkpt_num].type == BEXPL)
+			nio_printf(&dbg_csl, "Explicit breakpoint hit at %08x\n", exception_addr);
+		else
+			nio_printf(&dbg_csl, "Breakpoint #%u hit at %08x\n", bkpt_num, exception_addr);
+		disasm((u32)exception_addr);
+	}
+	if (breakpoints[bkpt_num].type == BTMP || breakpoints[bkpt_num].type == BEXPL)
+		breakpoints[bkpt_num].used = FALSE;
 
 	char line[100];
 	while (1) {
@@ -350,11 +351,7 @@ unsigned dbg_prefetch_abort_handler_body(unsigned *exception_addr) {
 		cmd = strtok(line, " ");
 		if (!strcmp("c", cmd)) {
 			nio_printf(&dbg_csl, "Continuing...\n");
-cont:
-			if (bkpt_num >= 0)
-				return (unsigned)exception_addr; // orig instr
-			else
-				return (unsigned)(exception_addr + 1); // next insttr
+			return (unsigned)exception_addr;
 		} else if (!strcmp("d", cmd)) {
 			dump(parse_expr(strtok(NULL, " ")));
 		} else if (!strcmp(cmd, "r")) {
@@ -369,11 +366,11 @@ cont:
 		} else if (!strcmp(cmd, "s")) {
 			debug_next = (unsigned*)next_pc((unsigned)exception_addr);
 			_dbg_set_breakpoint((unsigned)debug_next, BTMP);
-			goto cont;
+			return (unsigned)exception_addr;
 		} else if (!strcmp(cmd, "n")) {
 			debug_next = exception_addr + 1;
 			_dbg_set_breakpoint((unsigned)debug_next, BTMP);
-			goto cont;
+			return (unsigned)exception_addr;
 		} else if (!strcmp(cmd, "k") || !strcmp(cmd, "kt")) {
 			char *addr_str = strtok(NULL, " \n");
 			if (addr_str) {
