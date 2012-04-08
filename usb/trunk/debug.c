@@ -15,7 +15,7 @@ unsigned *debug_next = NULL;
 enum e_spsr {SPSR_N = (1<<4), SPSR_Z=(1<<3), SPSR_C=(1<<2), SPSR_V=(1<<1), SPSR_Q=(1<<0)};	
 #define SPSR_BIT(bit) ((spsr >> 27) & bit)
 static unsigned spsr;
-
+static unsigned last_bkpt_num = 0; // for BCONT
 
 static void (*orig_prefetch_abort_addr)(void);
 #define MAX_BKPTS 16
@@ -328,6 +328,12 @@ unsigned dbg_prefetch_abort_handler_body(unsigned *exception_addr) {
 	}
 	*exception_addr = breakpoints[bkpt_num].orig_instr;
 	clear_cache();
+	if (breakpoints[bkpt_num].type == BCONT) {
+		// Restore the last breakpoint hit
+		*(unsigned*)(breakpoints[last_bkpt_num].addr) = 0xE1200070 | last_bkpt_num; // 'bkpt #i'
+		breakpoints[bkpt_num].used = FALSE;
+		return (unsigned)exception_addr;
+	}
 	// Did we hit the "next" breakpoint?
 	if (exception_addr == debug_next) {
 		debug_next = NULL;
@@ -351,6 +357,11 @@ unsigned dbg_prefetch_abort_handler_body(unsigned *exception_addr) {
 		cmd = strtok(line, " ");
 		if (!strcmp("c", cmd)) {
 			nio_printf(&dbg_csl, "Continuing...\n");
+			if (breakpoints[bkpt_num].used) {
+				// so that we'll be able to restore the breakpoint once the current instr executed
+				last_bkpt_num = bkpt_num;
+				_dbg_set_breakpoint(next_pc((unsigned)exception_addr), BCONT);
+			}
 			return (unsigned)exception_addr;
 		} else if (!strcmp("d", cmd)) {
 			dump(parse_expr(strtok(NULL, " ")));
