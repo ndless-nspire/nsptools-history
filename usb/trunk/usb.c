@@ -164,6 +164,9 @@ int main(void) {
 
 	dbg_init();
 	dbg_break();
+	int i = 0;
+	for (i = 0; i < 10; i++)
+		puts("aaa");
 	printf("hello\n");
 	dbg_cleanup();
 	

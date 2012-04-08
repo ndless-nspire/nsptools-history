@@ -374,6 +374,14 @@ cont:
 			debug_next = exception_addr + 1;
 			_dbg_set_breakpoint((unsigned)debug_next, BTMP);
 			goto cont;
+		} else if (!strcmp(cmd, "k") || !strcmp(cmd, "kt")) {
+			char *addr_str = strtok(NULL, " \n");
+			if (addr_str) {
+				u32 addr = parse_expr(addr_str);
+				_dbg_set_breakpoint(addr, cmd[1] == 't' ? BTMP : BSTD);
+			} else {
+				nio_printf(&dbg_csl, "Missing address\n");
+			}
 		} else {
 			nio_printf(&dbg_csl, "Unknown command\n");
 		}
