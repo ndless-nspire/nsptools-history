@@ -32,7 +32,7 @@ static struct breakpoint breakpoints[MAX_BKPTS];
 void _dbg_set_breakpoint(unsigned addr, enum e_bkpt_type btype) {
 	unsigned i = 0;
 	for (i = 0; i < MAX_BKPTS; i++) {
-		if (!breakpoints[i].used) break;
+		if (!(breakpoints[i].used)) break;
 	}
 	if (i >= MAX_BKPTS) return;
 	breakpoints[i].used = TRUE;
@@ -222,6 +222,7 @@ static int get_shifted_reg(int insn) {
 static unsigned next_pc(unsigned addr) {
 	unsigned insn = *(unsigned*)addr;
 	int exec;
+	regs[15] += 4;
 	switch (insn >> 29) {
 		case 0:  /* EQ/NE */ exec = SPSR_BIT(SPSR_Z); break;
 		case 1:  /* CS/CC */ exec  =SPSR_BIT(SPSR_C); break;
@@ -234,12 +235,12 @@ static unsigned next_pc(unsigned addr) {
 			if (insn & (1 << 28)) {
 				 if ((insn & 0xFE000000) == 0xFA000000) {
 					/* BLX: Branch, link, and exchange T bit */
-					return addr + 4 + ((s32)insn << 8 >> 6) + (insn >> 23 & 2);
+					return regs[15] + 4 + ((s32)insn << 8 >> 6) + (insn >> 23 & 2);
 				}
 			}
 	}
 	if (!(exec ^ (insn >> 28 & 1)))
-		return addr;
+		return regs[15];
 	
 	if ((insn & 0xD900000) == 0x1000000) {
 		/* Miscellaneous */
@@ -306,15 +307,15 @@ static unsigned next_pc(unsigned addr) {
 				offset = 0;
 			}
 			if (insn & (1 << 20)) {
-				if (insn & (1 << 22)) get_reg_pc_bx(*(unsigned char*)(read_addr));
-				else                  get_reg_pc_bx(*(unsigned *)(read_addr));
+				if (insn & (1 << 22)) return get_reg_pc_bx(*(unsigned char*)(read_addr));
+				else                  return get_reg_pc_bx(*(unsigned *)(read_addr));
 			}
 		}
 	} else if ((insn & 0xE000000) == 0xA000000) {
 		/* B, BL: Branch, branch-and-link */
-		return addr + 4 + ((s32)insn << 8 >> 6);
+		return regs[15] + 4 + ((s32)insn << 8 >> 6);
 	}
-	return addr + 4;
+	return regs[15];
 }
 
 // Local frame not available for naked functions. non-static so that it's not inlined.
@@ -367,6 +368,10 @@ cont:
 			disasm_cmd();
 		} else if (!strcmp(cmd, "s")) {
 			debug_next = (unsigned*)next_pc((unsigned)exception_addr);
+			_dbg_set_breakpoint((unsigned)debug_next, BTMP);
+			goto cont;
+		} else if (!strcmp(cmd, "n")) {
+			debug_next = exception_addr + 1;
 			_dbg_set_breakpoint((unsigned)debug_next, BTMP);
 			goto cont;
 		} else {
