@@ -54,6 +54,24 @@ static unsigned parse_expr(char *str) {
 
 static nio_console dbg_csl;
 
+static u32 disasm_insn(u32 pc) {
+	return disasm_arm_insn(pc, &dbg_csl);
+}
+
+static void disasm(u32 (*dis_func)(u32 pc)) {
+	char *arg = strtok(NULL, " \n");
+	u32 addr = arg ? parse_expr(arg) : regs[15];
+	int i;
+	for (i = 0; i < 8; i++) {
+		u32 len = dis_func(addr);
+		if (!len) {
+			printf("Address %08X is not in RAM.\n", addr);
+			break;
+		}
+		addr += len;
+	}
+}
+
 // adapted from nspire_emu
 static void dump(unsigned addr) {
 	u32 start = addr;
@@ -103,9 +121,9 @@ void *dbg_prefetch_abort_handler_body(unsigned *exception_addr) {
 	int bkpt_num = ((*exception_addr & 0xFFF00) >> 4) | (*exception_addr & 0xF);
 	if (bkpt_num > MAX_BKPTS) {
 		bkpt_num = -1;
-		nio_printf(&dbg_csl, "Explicit breakpoint hit at address %08x\n", exception_addr);
+		nio_printf(&dbg_csl, "Explicit breakpoint hit at %08x\n", exception_addr);
 	} else
-		nio_printf(&dbg_csl, "Breakpoint #%u hit at address %08x\n", bkpt_num, exception_addr);
+		nio_printf(&dbg_csl, "Breakpoint #%u hit at %08x\n", bkpt_num, exception_addr);
 
 	char line[100];
 	while (1) {
@@ -131,7 +149,9 @@ void *dbg_prefetch_abort_handler_body(unsigned *exception_addr) {
 				int newline = !((i + 1) % 3);
 				nio_printf(&dbg_csl, "%3s=%08x%c", reg_name[i], regs[i], newline ? '\n' : ' ');
 			}
-			nio_printf('\n');
+			nio_printf(&dbg_csl, "\n");
+		} else if (!strcmp(cmd, "u")) {
+			disasm(disasm_insn);
 		} else {
 			nio_printf(&dbg_csl, "Unknown command\n");
 		}
@@ -144,13 +164,16 @@ static void __attribute__((naked)) prefetch_abort_handler(void) {
 	unsigned *exception_addr;
 	__asm volatile(" b 0f \n"
 		"prefetch_abort_handler_exception_addr: .long 0 \n"
-		"0: stmfd sp!, {r0, r1} \n" /* dummy r1, will be overwritten */
+		"saved_spsr: .long 0 \n"
+		"0: stmfd sp!, {r0-r1, r2} \n" /* dummy r2, will be overwritten */
 		" adr r0, prefetch_abort_handler_exception_addr \n"
 		" sub lr, lr, #4 \n"
-		" str lr, [r0] \n"
+		" str lr, [r0], #4 \n"
+		" mrs	r1, spsr \n"
+		" str r1, [r0] \n"
 		" adr r0, 1f \n "
-		" str r0, [sp, #4] \n" /* overwrite dummy r1 */
-		" ldmfd sp!, {r0, pc}^ \n" /* switch back to caller's mode */
+		" str r0, [sp, #4*2] \n" /* overwrite dummy r2 */
+		" ldmfd sp!, {r0-r1, pc}^ \n" /* switch back to caller's mode */
 		"1: stmfd sp!, {sp, lr, pc} \n" /* high part of the reg list. pc will be overwritten by the exception addr */
 		" stmfd sp!, {r0-r12} \n" /* low part of the reg list (sp cannot be stored as last reg with stmfd) */
 		" mov %1, sp \n" /* reg list */
@@ -161,9 +184,12 @@ static void __attribute__((naked)) prefetch_abort_handler(void) {
 	if ((*exception_addr & 0xFFF000F0) != 0xE1200070) // bkpt instr?
 		reboot(); // no
 	__asm volatile(" str %0, [sp, #15*4] \n" /* overwrite pc */
+		" adr r0, saved_spsr \n" 
+		" ldr r0, [r0] \n"
+		" msr cpsr, r0 \n"
 		" ldmfd sp!, {r0-r12} \n"
 		" add sp, sp, #4 \n" /* don't restore sp from the reg list */
-		" ldmfd sp!, {lr, pc} \n"
+		" ldmfd sp!, {lr, pc}^ \n"
 		: : "r" (dbg_prefetch_abort_handler_body(exception_addr)));
 }
 

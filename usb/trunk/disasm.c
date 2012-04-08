@@ -199,14 +199,14 @@ static char *do_reglist(char *out, int regs) {
 	return out;
 }
 
-u32 disasm_arm_insn(u32 pc) {
+u32 disasm_arm_insn(u32 pc, nio_console *csl) {
 	char buf[80];
 	u32 *pc_ptr = virt_mem_ptr(pc, 4);
 	if (!pc_ptr)
 		return 0;
 
 	u32 insn = *pc_ptr;
-	char *out = buf + sprintf(buf, "%08x: %08x\t", pc, insn);
+	char *out = buf + sprintf(buf, "%08x: ", pc);
 
 	int i;
 
@@ -420,11 +420,12 @@ u32 disasm_arm_insn(u32 pc) {
 		}
 	}
 	*out = '\0';
-	puts(buf);
+	nio_printf(csl, buf);
+	nio_printf(csl, "\n");
 	return 4;
 }
 
-u32 disasm_thumb_insn(u32 pc) {
+u32 disasm_thumb_insn(u32 pc, nio_console *csl) {
 	char buf[80];
 	u16 *pc_ptr = virt_mem_ptr(pc, 2);
 	if (!pc_ptr)
@@ -531,13 +532,15 @@ u32 disasm_thumb_insn(u32 pc) {
 			if (!(insn & 0x1000)) target &= ~3;
 			sprintf(out - 5, "%04x\t%s\t%08x", insn,
 				(insn & 0x1000) ? "bl" : "blx", target);
-			puts(buf);
+			nio_printf(csl, buf);
+			nio_printf(csl, "\n");
 			return 4;
 		}
 		sprintf(out, "(add\tlr,pc,%08x)", target);
 	} else {
 		sprintf(out, "(bl\tlr + %03x)", (insn & 0x7FF) << 1);
 	}
-	puts(buf);
+	nio_printf(csl, buf);
+	nio_printf(csl, "\n");
 	return 2;
 }

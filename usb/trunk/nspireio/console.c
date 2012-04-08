@@ -274,8 +274,8 @@ void nio_PrintChar(nio_console* c, char ch)
 	{
 		if(ch == '\t')
 		{
-			// tabs are 3 character long
-			c->cursor_x = ((c->cursor_x / 3) + 1) * 3;
+			// tabs are 8 character long
+			c->cursor_x += (9-1) - c->cursor_x % 8;
 			ch = ' ';
 		}
 		// Check if the cursor is valid

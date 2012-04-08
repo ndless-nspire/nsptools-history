@@ -21,4 +21,5 @@ typedef signed int         s32;
 static inline void *virt_mem_ptr(u32 addr, u32 __attribute__((unused)) size) {
 	return (void*)addr;
 }	
+u32 disasm_arm_insn(u32 pc, nio_console *csl);
 #endif
