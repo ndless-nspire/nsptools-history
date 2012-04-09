@@ -241,7 +241,7 @@ static unsigned next_pc(unsigned addr) {
 	regs[15] += 4;
 	switch (insn >> 29) {
 		case 0:  /* EQ/NE */ exec = SPSR_BIT(SPSR_Z); break;
-		case 1:  /* CS/CC */ exec  =SPSR_BIT(SPSR_C); break;
+		case 1:  /* CS/CC */ exec = SPSR_BIT(SPSR_C); break;
 		case 2:  /* MI/PL */ exec = SPSR_BIT(SPSR_N); break;
 		case 3:  /* VS/VC */ exec = SPSR_BIT(SPSR_V); break;
 		case 4:  /* HI/LS */ exec = !SPSR_BIT(SPSR_Z) && SPSR_BIT(SPSR_C); break;
@@ -460,7 +460,7 @@ static void __attribute__((naked)) prefetch_abort_handler(void) {
 		" msr cpsr, %1 \n"
 		" ldmfd sp!, {r0-r12} \n"
 		" add sp, sp, #4 \n" /* don't restore sp from the reg list */
-		" ldmfd sp!, {lr, pc}^ \n"
+		" ldmfd sp!, {lr, pc} \n"
 		: : "r" (dbg_prefetch_abort_handler_body(exception_addr)), "r" (spsr));
 }
 
