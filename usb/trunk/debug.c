@@ -10,6 +10,7 @@ static void __attribute__ ((noreturn)) reboot(void) {
 	__builtin_unreachable();
 }
 
+BOOL cleaning_up = FALSE;
 static unsigned *regs;
 unsigned *debug_next = NULL;
 enum e_spsr {SPSR_N = (1<<4), SPSR_Z=(1<<3), SPSR_C=(1<<2), SPSR_V=(1<<1), SPSR_Q=(1<<0)};	
@@ -32,6 +33,10 @@ static struct breakpoint breakpoints[MAX_BKPTS];
 void _dbg_set_breakpoint(unsigned addr, enum e_bkpt_type btype) {
 	unsigned i = 0;
 	for (i = 0; i < MAX_BKPTS; i++) {
+		if (breakpoints[i].used && breakpoints[i].addr == addr)
+			return; // already exist
+	}
+	for (i = 0; i < MAX_BKPTS; i++) {
 		if (!(breakpoints[i].used)) break;
 	}
 	if (i >= MAX_BKPTS) return;
@@ -46,6 +51,16 @@ void _dbg_set_breakpoint(unsigned addr, enum e_bkpt_type btype) {
 
 void dbg_set_breakpoint(unsigned addr) {
 	_dbg_set_breakpoint(addr, BSTD);
+}
+
+void remove_all_breakpoints(void) {
+	unsigned i;
+	for (i = 0; i < MAX_BKPTS; i++) {
+		if (breakpoints[i].used)
+			*(unsigned*)breakpoints[i].addr = breakpoints[i].orig_instr;
+		breakpoints[i].used = FALSE;
+	}
+	clear_cache();
 }
 
 // from nspire_emu
@@ -348,6 +363,8 @@ unsigned dbg_prefetch_abort_handler_body(unsigned *exception_addr) {
 	}
 	if (breakpoints[bkpt_num].type == BTMP || breakpoints[bkpt_num].type == BEXPL)
 		breakpoints[bkpt_num].used = FALSE;
+		
+	if (cleaning_up) return (unsigned)exception_addr;
 
 	char line[100];
 	while (1) {
@@ -404,6 +421,9 @@ unsigned dbg_prefetch_abort_handler_body(unsigned *exception_addr) {
 						nio_printf(&dbg_csl, "%u: %08x%s\n", i, breakpoints[i].addr, breakpoints[i].type == BTMP ? " (t)" : "");
 				}
 			}
+		} else if (!strcmp(cmd, "q")) {
+			remove_all_breakpoints();
+			return (unsigned)exception_addr;
 		} else {
 			nio_printf(&dbg_csl, "Unknown command\n");
 		}
@@ -447,6 +467,7 @@ static void __attribute__((naked)) prefetch_abort_handler(void) {
 #define PREFETCH_ADDR ((void(**)(void))0x2C)
 
 void dbg_init(void) {
+	cleaning_up = FALSE;
 		// 53 columns, 15 rows. 0/110px offset for x/y. Background color 15 (white), foreground color 0 (black)
 	nio_InitConsole(&dbg_csl, 53, 15, 0, 0, 15, 0);
 	nio_DrawConsole(&dbg_csl);
@@ -457,6 +478,8 @@ void dbg_init(void) {
 }
 
 void dbg_cleanup(void) {
+	cleaning_up = TRUE;
 	*PREFETCH_ADDR = orig_prefetch_abort_addr;
+	remove_all_breakpoints();
 	nio_CleanUp(&dbg_csl);
 }
