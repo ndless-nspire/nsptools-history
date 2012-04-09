@@ -35,6 +35,7 @@ void _dbg_set_breakpoint(unsigned addr, enum e_bkpt_type btype) {
 		if (!(breakpoints[i].used)) break;
 	}
 	if (i >= MAX_BKPTS) return;
+	addr = (addr / 4) * 4;
 	breakpoints[i].used = TRUE;
 	breakpoints[i].type = btype;
 	breakpoints[i].addr = addr;
@@ -382,13 +383,26 @@ unsigned dbg_prefetch_abort_handler_body(unsigned *exception_addr) {
 			debug_next = exception_addr + 1;
 			_dbg_set_breakpoint((unsigned)debug_next, BTMP);
 			return (unsigned)exception_addr;
-		} else if (!strcmp(cmd, "k") || !strcmp(cmd, "kt")) {
-			char *addr_str = strtok(NULL, " \n");
+		} else if (!strcmp(cmd, "k") || !strcmp(cmd, "kt") || !strcmp(cmd, "k-")) {
+			char *addr_str = strtok(NULL, " ");
 			if (addr_str) {
 				u32 addr = parse_expr(addr_str);
-				_dbg_set_breakpoint(addr, cmd[1] == 't' ? BTMP : BSTD);
+				if (cmd[1] == '-') {
+					if (addr < MAX_BKPTS && breakpoints[addr].used) {
+						*(unsigned*)(breakpoints[addr].addr) = breakpoints[addr].orig_instr;
+						clear_cache();
+						breakpoints[addr].used = FALSE;
+					} else
+						nio_printf(&dbg_csl, "Invalid breakpoint number\n");
+				} else {
+					_dbg_set_breakpoint(addr, cmd[1] == 't' ? BTMP : BSTD);
+				}
 			} else {
-				nio_printf(&dbg_csl, "Missing address\n");
+				unsigned i = 0;
+				for (i = 0; i < MAX_BKPTS; i++) {
+					if (breakpoints[i].used)
+						nio_printf(&dbg_csl, "%u: %08x%s\n", i, breakpoints[i].addr, breakpoints[i].type == BTMP ? " (t)" : "");
+				}
 			}
 		} else {
 			nio_printf(&dbg_csl, "Unknown command\n");
