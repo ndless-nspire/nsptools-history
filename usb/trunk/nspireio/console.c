@@ -313,8 +313,8 @@ void nio_PrintStr(nio_console* c, char* str)
 
 void nio_printf(nio_console* c, char *format, ...)
 {
-	char buf[256];
-	memset(buf,'\0',256);
+	char buf[1000];
+	memset(buf,'\0',sizeof(buf));
 	__builtin_va_list arglist;
 	__builtin_va_start(arglist,format);
 	vsprintf(buf,format,*(char **)&arglist);
