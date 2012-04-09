@@ -28,21 +28,17 @@ LDFLAGS=-L ".../path/to/ocd" -locd
 
 Include the header file: #include <ocd.h>
 At the beginning of the program to debug, call ocd_init().
-At the beginning of the program to debug, call ocd_cleanup().
-You can programmatically interact with the debugger with the other functions of 
-the OCD API - see ocd.h.
-
+At the end of the program to debug, call ocd_cleanup().
+Set a breakpoint with ocd_break(), or at a given address with 
+ocd_set_breakpoint() (see ocd.h).
+The debugger console will show up when a breakpoint is hit.
 The supported debugger commands can be displayed with the command 'h' or '?'.
-
-Known issues and limitations
-============================
-
-TODO
 
 Many thanks to
 ==============
 
 Goplat for nspire_emu - some parts of the original code have been reused.
+compu for the nice nspireio library.
 
 Author
 ======

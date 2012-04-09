@@ -30,6 +30,18 @@ struct breakpoint {
 	unsigned orig_instr;
 };
 static struct breakpoint breakpoints[MAX_BKPTS];
+static void *prgm_saved_scr;
+static void *console_scr;
+
+static void to_prgm_scr(void) {
+	memcpy(console_scr, SCREEN_BASE_ADDRESS, SCREEN_BYTES_SIZE);
+	memcpy(SCREEN_BASE_ADDRESS, prgm_saved_scr, SCREEN_BYTES_SIZE);
+}
+
+static void to_console_scr(void) {
+	memcpy(prgm_saved_scr, SCREEN_BASE_ADDRESS, SCREEN_BYTES_SIZE);
+	memcpy(SCREEN_BASE_ADDRESS, console_scr, SCREEN_BYTES_SIZE);	
+}
 
 void _ocd_set_breakpoint(unsigned addr, enum e_bkpt_type btype) {
 	unsigned i = 0;
@@ -351,6 +363,7 @@ unsigned ocd_prefetch_abort_handler_body(unsigned *exception_addr) {
 		breakpoints[bkpt_num].used = FALSE;
 		return (unsigned)exception_addr;
 	}
+	to_console_scr();
 	// Did we hit the "next" breakpoint?
 	if (exception_addr == debug_next) {
 		debug_next = NULL;
@@ -365,7 +378,10 @@ unsigned ocd_prefetch_abort_handler_body(unsigned *exception_addr) {
 	if (breakpoints[bkpt_num].type == BTMP || breakpoints[bkpt_num].type == BEXPL)
 		breakpoints[bkpt_num].used = FALSE;
 		
-	if (cleaning_up) return (unsigned)exception_addr;
+	if (cleaning_up) {
+		to_prgm_scr();
+		return (unsigned)exception_addr;
+	}
 
 	char line[100];
 	while (1) {
@@ -378,6 +394,7 @@ unsigned ocd_prefetch_abort_handler_body(unsigned *exception_addr) {
 			nio_printf(&ocd_csl, 
 				"c - continue\n"
 				"d <address> - dump memory\n"
+				"e - show program screen\n"
 				"k[t] <address> - add [temporary] breakpoint\n"
 				"k - show breakpoints\n"
 				"k <num> - remove breakpoint\n"
@@ -395,6 +412,7 @@ unsigned ocd_prefetch_abort_handler_body(unsigned *exception_addr) {
 				last_bkpt_num = bkpt_num;
 				_ocd_set_breakpoint(next_pc((unsigned)exception_addr), BCONT);
 			}
+			to_prgm_scr();
 			return (unsigned)exception_addr;
 		} else if (!strcmp("d", cmd)) {
 			dump(parse_expr(strtok(NULL, " ")));
@@ -410,10 +428,12 @@ unsigned ocd_prefetch_abort_handler_body(unsigned *exception_addr) {
 		} else if (!strcmp(cmd, "s")) {
 			debug_next = (unsigned*)next_pc((unsigned)exception_addr);
 			_ocd_set_breakpoint((unsigned)debug_next, BTMP);
+			to_prgm_scr();
 			return (unsigned)exception_addr;
 		} else if (!strcmp(cmd, "n")) {
 			debug_next = exception_addr + 1;
 			_ocd_set_breakpoint((unsigned)debug_next, BTMP);
+			to_prgm_scr();
 			return (unsigned)exception_addr;
 		} else if (!strcmp(cmd, "k") || !strcmp(cmd, "kt") || !strcmp(cmd, "k-")) {
 			char *addr_str = strtok(NULL, " ");
@@ -438,6 +458,7 @@ unsigned ocd_prefetch_abort_handler_body(unsigned *exception_addr) {
 			}
 		} else if (!strcmp(cmd, "q")) {
 			remove_all_breakpoints();
+			to_prgm_scr();
 			return (unsigned)exception_addr;
 		} else if (!strcmp(cmd, "rs")) {
 			int reg = atoi(strtok(NULL, " "));
@@ -447,6 +468,10 @@ unsigned ocd_prefetch_abort_handler_body(unsigned *exception_addr) {
 			u32 addr = parse_expr(strtok(NULL, " "));
 			u32 value = parse_expr(strtok(NULL, " "));
 			*(unsigned*)addr = value;
+		} else if (!strcmp(cmd, "e")) {
+			to_prgm_scr();
+			wait_key_pressed();
+			to_console_scr();
 		} else {
 			nio_printf(&ocd_csl, "Unknown command\n");
 		}
@@ -491,9 +516,18 @@ static void __attribute__((naked)) prefetch_abort_handler(void) {
 
 void ocd_init(void) {
 	cleaning_up = FALSE;
-		// 53 columns, 15 rows. 0/110px offset for x/y. Background color 15 (white), foreground color 0 (black)
-	nio_InitConsole(&ocd_csl, 53, 15, 0, 0, 15, 0);
+	if (!(prgm_saved_scr = malloc(SCREEN_BYTES_SIZE)))
+		return;
+	if (!(console_scr = malloc(SCREEN_BYTES_SIZE))) {
+		free(prgm_saved_scr);
+		return;
+	}
+	memcpy(prgm_saved_scr, SCREEN_BASE_ADDRESS, SCREEN_BYTES_SIZE);
+	clrscr();
+	// 53 columns, 30 rows. 0/0 offset for x/y. Background color 15 (white), foreground color 0 (black)
+	nio_InitConsole(&ocd_csl, 53, 30, 0, 0, 15, 0);
 	nio_DrawConsole(&ocd_csl);
+	to_prgm_scr();
 	orig_prefetch_abort_addr = *PREFETCH_ADDR;
 	*PREFETCH_ADDR = prefetch_abort_handler;
 	memset(breakpoints, 0, sizeof(breakpoints));
@@ -505,4 +539,6 @@ void ocd_cleanup(void) {
 	*PREFETCH_ADDR = orig_prefetch_abort_addr;
 	remove_all_breakpoints();
 	nio_CleanUp(&ocd_csl);
+	free(prgm_saved_scr);
+	free(console_scr);
 }
