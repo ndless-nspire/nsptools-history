@@ -373,7 +373,21 @@ unsigned dbg_prefetch_abort_handler_body(unsigned *exception_addr) {
 		if (!nio_GetStr(&dbg_csl, line))
 			continue;
 		cmd = strtok(line, " ");
-		if (!strcmp("c", cmd)) {
+		if (!strcmp(cmd, "?") || !strcmp(cmd, "h")) {
+			nio_printf(&dbg_csl, 
+				"c - continue\n"
+				"d <address> - dump memory\n"
+				"k[t] <address> - add [temporary] breakpoint\n"
+				"k - show breakpoints\n"
+				"k <num> - remove breakpoint\n"
+				"n - continue until next instruction\n"
+				"pw <address> <value> - port write\n"
+				"q - remove breakpoints and continue\n"
+				"r - show registers\n"
+				"rs <regnum> <value> - change register value\n"
+				"s - step instruction\n"
+				"u <address> - disassemble memory\n");
+		} else if (!strcmp("c", cmd)) {
 			nio_printf(&dbg_csl, "Continuing...\n");
 			if (breakpoints[bkpt_num].used) {
 				// so that we'll be able to restore the breakpoint once the current instr executed
@@ -424,6 +438,14 @@ unsigned dbg_prefetch_abort_handler_body(unsigned *exception_addr) {
 		} else if (!strcmp(cmd, "q")) {
 			remove_all_breakpoints();
 			return (unsigned)exception_addr;
+		} else if (!strcmp(cmd, "rs")) {
+			int reg = atoi(strtok(NULL, " "));
+			if (reg >= 0 && reg <= 15)
+				regs[reg] = parse_expr(strtok(NULL, " "));
+		} else if (!strcmp(cmd, "pw")) {
+			u32 addr = parse_expr(strtok(NULL, " "));
+			u32 value = parse_expr(strtok(NULL, " "));
+			*(unsigned*)addr = value;
 		} else {
 			nio_printf(&dbg_csl, "Unknown command\n");
 		}
