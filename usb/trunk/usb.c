@@ -6,10 +6,10 @@ static const unsigned device_get_ivars_addrs[] = {0x10354C20, 0, 0, 0}; // non-C
 static const unsigned device_get_softc_addrs[] = {0x10354C60, 0, 0, 0}; // non-CAS 3.1, CAS 3.1, non-CAS CX 3.1, CAS CX 3.1 addresses
 #define device_get_softc SYSCALL_CUSTOM(device_get_softc_addrs, void *, device_t dev)
 
-#include "debug.h"
+#include <ocd.h>
 #include "usbdi.h"
 #include "usb.h"
-#include "nspireio2.h"
+#include <nspireio2.h>
 
 static const unsigned register_driver_addrs[] = {0x10354E44, 0, 0, 0}; // non-CAS 3.1, CAS 3.1, non-CAS CX 3.1, CAS CX 3.1 addresses
 #define register_driver SYSCALL_CUSTOM(register_driver_addrs, int, int a, int (*methods[])(device_t), const char *driver_name, int b, unsigned softc_size)
@@ -117,7 +117,7 @@ static void ukbd_intr(usbd_xfer_handle xfer, usbd_private_handle addr, usbd_stat
 static int attach(device_t self) {
 	struct ukbd_softc *sc = device_get_softc(self);
 	struct usb_attach_arg *uaa = device_get_ivars(self);
-	//dbg_dump(&csl, uaa);
+	//ocd_dump(&csl, uaa);
 	usbd_status err;
 	if (sc == NULL)
 		return (ENXIO);
@@ -162,13 +162,13 @@ int main(void) {
 	//TCT_Local_Control_Interrupts(0); if enabled and wait_key_pressed(), the hook won't work!
 	nl_relocdata((unsigned*)methods, sizeof(methods)/sizeof(methods[0]) - 1);
 
-	dbg_init();
-	dbg_break();
+	ocd_init();
+	ocd_break();
 	int i = 0;
 	for (i = 0; i < 10; i++)
 		puts("aaa");
 	printf("hello\n");
-	dbg_cleanup();
+	ocd_cleanup();
 	
 	//register_my_driver();
 	
