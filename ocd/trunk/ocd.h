@@ -1,24 +1,14 @@
-#ifndef _DEBUG_H
+#ifndef _OCD_H
 
-#include <nspireio2.h>
-
+/* Must be called at the beginning of the program to debug */
 void ocd_init(void);
+/* Must be called at the end of the program to debug */
 void ocd_cleanup(void);
-void ocd_set_breakpoint(unsigned addr);
+/* Hard-coded breakpoint: sows the debugger console when executed */
 static inline void ocd_break(void) {
 	asm(".long 0xE12FFF7F"); // immed = FFFF
 }
+/* Programmatically sets a breakpoint at the give address */
+void ocd_set_breakpoint(unsigned addr);
 
-// private
-extern const char reg_name[16][4];
-typedef unsigned char      u8;
-typedef unsigned short     u16;
-typedef unsigned int       u32;
-typedef signed char        s8;
-typedef signed short       s16;
-typedef signed int         s32;
-static inline void *virt_mem_ptr(u32 addr, u32 __attribute__((unused)) size) {
-	return (void*)addr;
-}	
-u32 disasm_arm_insn(u32 pc, nio_console *csl);
 #endif

@@ -1,6 +1,7 @@
 #include <os.h>
 #include <nspireio2.h>
 #include "ocd.h"
+#include "ocd_internal.h"
 
 static const unsigned strtok_addrs[] = {0x1037C050, 0, 0, 0}; // non-CAS 3.1, CAS 3.1, non-CAS CX 3.1, CAS CX 3.1 addresses
 #define strtok SYSCALL_CUSTOM(strtok_addrs, char *, char *str, const char *delimiters)

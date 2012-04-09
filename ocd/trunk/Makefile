@@ -14,6 +14,11 @@ vpath %.tns $(DISTDIR)
 
 all: $(LIB)
 
+dist: clean all
+	rm -rf dist
+	mkdir -p dist
+	cp $(DISTDIR)/$(LIB) ocd.h ReadMe.txt dist
+
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<
 
@@ -22,5 +27,6 @@ $(LIB): $(OBJS)
 	$(AR) rcs $(DISTDIR)/$(LIB) $^
 
 clean:
+	rm -rf dist
 	rm -f *.o *.elf
-	rm -f $(DISTDIR)/$(EXE)
+	rm -f $(DISTDIR)/$(LIB)

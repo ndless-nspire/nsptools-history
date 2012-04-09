@@ -1,6 +1,6 @@
 /* Adapted from Goplat's nspire_emu */
 
-#include "ocd.h"
+#include "ocd_internal.h"
 
 static char *strcpy2(char *dest, const char *src) {
 	while ((*dest = *src)) { dest++; src++; }
