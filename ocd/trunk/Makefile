@@ -14,10 +14,13 @@ vpath %.tns $(DISTDIR)
 
 all: $(LIB)
 
-dist: clean all
-	rm -rf dist
-	mkdir -p dist
+dist: src all
 	cp $(DISTDIR)/$(LIB) ocd.h ReadMe.txt dist
+
+src: clean
+	rm -rf dist
+	mkdir -p dist/src
+	cp *.c *.h Makefile dist/src
 
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<
@@ -28,5 +31,5 @@ $(LIB): $(OBJS)
 
 clean:
 	rm -rf dist
-	rm -f *.o *.elf
+	rm -f *.o *.elf *.a
 	rm -f $(DISTDIR)/$(LIB)
