@@ -1,25 +1,25 @@
 GCC = nspire-gcc
+AR := "$(shell (which arm-elf-ar arm-none-eabi-ar arm-linux-gnueabi-ar | head -1) 2>/dev/null)"
 LD = nspire-ld
-GCCFLAGS = -Os -nostdlib -Wall -W -marm
-LDFLAGS = -nostdlib
+GCCFLAGS = -Os -nostdlib -Wall -W -marm -I nspireio
+LDFLAGS = -nostdlib -L nspireio -lnspireio2
 OBJCOPY := "$(shell which arm-elf-objcopy 2>/dev/null)"
 ifeq (${OBJCOPY},"")
 	OBJCOPY := arm-none-eabi-objcopy
 endif
-EXE = ocd.tns
 OBJS = $(patsubst %.c,%.o,$(wildcard *.c))
+LIB = libocd.a
 DISTDIR = .
 vpath %.tns $(DISTDIR)
 
-all: $(EXE)
+all: $(LIB)
 
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<
 
-$(EXE): $(OBJS)
-	$(LD) $^ -o $(@:.tns=.elf) $(LDFLAGS)
+$(LIB): $(OBJS)
 	mkdir -p $(DISTDIR)
-	$(OBJCOPY) -O binary $(@:.tns=.elf) $(DISTDIR)/$@
+	$(AR) rcs $(DISTDIR)/$(LIB) $^
 
 clean:
 	rm -f *.o *.elf

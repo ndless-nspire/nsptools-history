@@ -1,6 +1,6 @@
 #include <os.h>
-#include "nspireio2.h"
-#include "debug.h"
+#include <nspireio2.h>
+#include "ocd.h"
 
 static const unsigned strtok_addrs[] = {0x1037C050, 0, 0, 0}; // non-CAS 3.1, CAS 3.1, non-CAS CX 3.1, CAS CX 3.1 addresses
 #define strtok SYSCALL_CUSTOM(strtok_addrs, char *, char *str, const char *delimiters)
@@ -30,7 +30,7 @@ struct breakpoint {
 };
 static struct breakpoint breakpoints[MAX_BKPTS];
 
-void _dbg_set_breakpoint(unsigned addr, enum e_bkpt_type btype) {
+void _ocd_set_breakpoint(unsigned addr, enum e_bkpt_type btype) {
 	unsigned i = 0;
 	for (i = 0; i < MAX_BKPTS; i++) {
 		if (breakpoints[i].used && breakpoints[i].addr == addr)
@@ -49,8 +49,8 @@ void _dbg_set_breakpoint(unsigned addr, enum e_bkpt_type btype) {
 	clear_cache();
 }
 
-void dbg_set_breakpoint(unsigned addr) {
-	_dbg_set_breakpoint(addr, BSTD);
+void ocd_set_breakpoint(unsigned addr) {
+	_ocd_set_breakpoint(addr, BSTD);
 }
 
 void remove_all_breakpoints(void) {
@@ -103,10 +103,10 @@ static unsigned parse_expr(char *str) {
 	return sum;
 }
 
-static nio_console dbg_csl;
+static nio_console ocd_csl;
 
 static u32 disasm_insn(u32 pc) {
-	return disasm_arm_insn(pc, &dbg_csl);
+	return disasm_arm_insn(pc, &ocd_csl);
 }
 
 static void disasm(u32 addr) {
@@ -135,25 +135,25 @@ static void dump(unsigned addr) {
 	u32 row, col;
 	for (row = start & ~0x7; row <= end; row += 0x8) {
 		u8 *ptr = virt_mem_ptr(row, 16);
-		nio_printf(&dbg_csl, "%08X  ", row);
+		nio_printf(&ocd_csl, "%08X  ", row);
 		for (col = 0; col < 0x8; col++) {
 			addr = row + col;
 			if (addr < start || addr > end)
-				nio_printf(&dbg_csl, "   ");
+				nio_printf(&ocd_csl, "   ");
 			else
-				nio_printf(&dbg_csl, "%02X ", ptr[col]);
+				nio_printf(&ocd_csl, "%02X ", ptr[col]);
 		}
-		nio_printf(&dbg_csl, " ");
+		nio_printf(&ocd_csl, " ");
 		for (col = 0; col < 0x8; col++) {
 			addr = row + col;
 			if (addr < start || addr > end)
-				nio_printf(&dbg_csl, " ");
+				nio_printf(&ocd_csl, " ");
 			else if (ptr[col] < 0x20)
-				nio_printf(&dbg_csl, ".");
+				nio_printf(&ocd_csl, ".");
 			else
-				nio_printf(&dbg_csl, "%c", ptr[col]);
+				nio_printf(&ocd_csl, "%c", ptr[col]);
 		}
-		nio_printf(&dbg_csl, "\n");
+		nio_printf(&ocd_csl, "\n");
 	}
 }
 
@@ -336,10 +336,10 @@ static unsigned next_pc(unsigned addr) {
 
 // Local frame not available for naked functions. non-static so that it's not inlined.
 // Returns the return address to jump to.
-unsigned dbg_prefetch_abort_handler_body(unsigned *exception_addr) {
+unsigned ocd_prefetch_abort_handler_body(unsigned *exception_addr) {
 	int bkpt_num = ((*exception_addr & 0xFFF00) >> 4) | (*exception_addr & 0xF);
 	if (bkpt_num > MAX_BKPTS) {
-		_dbg_set_breakpoint(next_pc((unsigned)exception_addr), BEXPL); // explicit breakpoint
+		_ocd_set_breakpoint(next_pc((unsigned)exception_addr), BEXPL); // explicit breakpoint
 		return (unsigned)(exception_addr + 1); // skip it
 	}
 	*exception_addr = breakpoints[bkpt_num].orig_instr;
@@ -356,9 +356,9 @@ unsigned dbg_prefetch_abort_handler_body(unsigned *exception_addr) {
 		disasm_insn((u32)exception_addr);
 	} else {
 		if (breakpoints[bkpt_num].type == BEXPL)
-			nio_printf(&dbg_csl, "Explicit breakpoint hit at %08x\n", exception_addr);
+			nio_printf(&ocd_csl, "Explicit breakpoint hit at %08x\n", exception_addr);
 		else
-			nio_printf(&dbg_csl, "Breakpoint #%u hit at %08x\n", bkpt_num, exception_addr);
+			nio_printf(&ocd_csl, "Breakpoint #%u hit at %08x\n", bkpt_num, exception_addr);
 		disasm((u32)exception_addr);
 	}
 	if (breakpoints[bkpt_num].type == BTMP || breakpoints[bkpt_num].type == BEXPL)
@@ -369,12 +369,12 @@ unsigned dbg_prefetch_abort_handler_body(unsigned *exception_addr) {
 	char line[100];
 	while (1) {
 		char *cmd;
-		nio_printf(&dbg_csl, "> ");
-		if (!nio_GetStr(&dbg_csl, line))
+		nio_printf(&ocd_csl, "> ");
+		if (!nio_GetStr(&ocd_csl, line))
 			continue;
 		cmd = strtok(line, " ");
 		if (!strcmp(cmd, "?") || !strcmp(cmd, "h")) {
-			nio_printf(&dbg_csl, 
+			nio_printf(&ocd_csl, 
 				"c - continue\n"
 				"d <address> - dump memory\n"
 				"k[t] <address> - add [temporary] breakpoint\n"
@@ -388,11 +388,11 @@ unsigned dbg_prefetch_abort_handler_body(unsigned *exception_addr) {
 				"s - step instruction\n"
 				"u <address> - disassemble memory\n");
 		} else if (!strcmp("c", cmd)) {
-			nio_printf(&dbg_csl, "Continuing...\n");
+			nio_printf(&ocd_csl, "Continuing...\n");
 			if (breakpoints[bkpt_num].used) {
 				// so that we'll be able to restore the breakpoint once the current instr executed
 				last_bkpt_num = bkpt_num;
-				_dbg_set_breakpoint(next_pc((unsigned)exception_addr), BCONT);
+				_ocd_set_breakpoint(next_pc((unsigned)exception_addr), BCONT);
 			}
 			return (unsigned)exception_addr;
 		} else if (!strcmp("d", cmd)) {
@@ -401,18 +401,18 @@ unsigned dbg_prefetch_abort_handler_body(unsigned *exception_addr) {
 			int i;
 			for (i = 0; i < 16; i++) {
 				int newline = !((i + 1) % 3);
-				nio_printf(&dbg_csl, "%3s=%08x%c", reg_name[i], regs[i], newline ? '\n' : ' ');
+				nio_printf(&ocd_csl, "%3s=%08x%c", reg_name[i], regs[i], newline ? '\n' : ' ');
 			}
-			nio_printf(&dbg_csl, "\n");
+			nio_printf(&ocd_csl, "\n");
 		} else if (!strcmp(cmd, "u")) {
 			disasm_cmd();
 		} else if (!strcmp(cmd, "s")) {
 			debug_next = (unsigned*)next_pc((unsigned)exception_addr);
-			_dbg_set_breakpoint((unsigned)debug_next, BTMP);
+			_ocd_set_breakpoint((unsigned)debug_next, BTMP);
 			return (unsigned)exception_addr;
 		} else if (!strcmp(cmd, "n")) {
 			debug_next = exception_addr + 1;
-			_dbg_set_breakpoint((unsigned)debug_next, BTMP);
+			_ocd_set_breakpoint((unsigned)debug_next, BTMP);
 			return (unsigned)exception_addr;
 		} else if (!strcmp(cmd, "k") || !strcmp(cmd, "kt") || !strcmp(cmd, "k-")) {
 			char *addr_str = strtok(NULL, " ");
@@ -424,15 +424,15 @@ unsigned dbg_prefetch_abort_handler_body(unsigned *exception_addr) {
 						clear_cache();
 						breakpoints[addr].used = FALSE;
 					} else
-						nio_printf(&dbg_csl, "Invalid breakpoint number\n");
+						nio_printf(&ocd_csl, "Invalid breakpoint number\n");
 				} else {
-					_dbg_set_breakpoint(addr, cmd[1] == 't' ? BTMP : BSTD);
+					_ocd_set_breakpoint(addr, cmd[1] == 't' ? BTMP : BSTD);
 				}
 			} else {
 				unsigned i = 0;
 				for (i = 0; i < MAX_BKPTS; i++) {
 					if (breakpoints[i].used)
-						nio_printf(&dbg_csl, "%u: %08x%s\n", i, breakpoints[i].addr, breakpoints[i].type == BTMP ? " (t)" : "");
+						nio_printf(&ocd_csl, "%u: %08x%s\n", i, breakpoints[i].addr, breakpoints[i].type == BTMP ? " (t)" : "");
 				}
 			}
 		} else if (!strcmp(cmd, "q")) {
@@ -447,7 +447,7 @@ unsigned dbg_prefetch_abort_handler_body(unsigned *exception_addr) {
 			u32 value = parse_expr(strtok(NULL, " "));
 			*(unsigned*)addr = value;
 		} else {
-			nio_printf(&dbg_csl, "Unknown command\n");
+			nio_printf(&ocd_csl, "Unknown command\n");
 		}
 	}
 }
@@ -483,25 +483,25 @@ static void __attribute__((naked)) prefetch_abort_handler(void) {
 		" ldmfd sp!, {r0-r12} \n"
 		" add sp, sp, #4 \n" /* don't restore sp from the reg list */
 		" ldmfd sp!, {lr, pc} \n"
-		: : "r" (dbg_prefetch_abort_handler_body(exception_addr)), "r" (spsr));
+		: : "r" (ocd_prefetch_abort_handler_body(exception_addr)), "r" (spsr));
 }
 
 #define PREFETCH_ADDR ((void(**)(void))0x2C)
 
-void dbg_init(void) {
+void ocd_init(void) {
 	cleaning_up = FALSE;
 		// 53 columns, 15 rows. 0/110px offset for x/y. Background color 15 (white), foreground color 0 (black)
-	nio_InitConsole(&dbg_csl, 53, 15, 0, 0, 15, 0);
-	nio_DrawConsole(&dbg_csl);
+	nio_InitConsole(&ocd_csl, 53, 15, 0, 0, 15, 0);
+	nio_DrawConsole(&ocd_csl);
 	orig_prefetch_abort_addr = *PREFETCH_ADDR;
 	*PREFETCH_ADDR = prefetch_abort_handler;
 	memset(breakpoints, 0, sizeof(breakpoints));
 	debug_next = NULL;
 }
 
-void dbg_cleanup(void) {
+void ocd_cleanup(void) {
 	cleaning_up = TRUE;
 	*PREFETCH_ADDR = orig_prefetch_abort_addr;
 	remove_all_breakpoints();
-	nio_CleanUp(&dbg_csl);
+	nio_CleanUp(&ocd_csl);
 }
