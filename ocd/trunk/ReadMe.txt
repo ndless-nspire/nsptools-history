@@ -34,6 +34,12 @@ ocd_set_breakpoint() (see ocd.h).
 The debugger console will show up when a breakpoint is hit.
 The supported debugger commands can be displayed with the command 'h' or '?'.
 
+Known issues and limitations
+============================
+
+* Some syscall stubs such as printf are reentrant but are used by ocd.
+ Don't try to step into such stubs.
+
 Many thanks to
 ==============
 
