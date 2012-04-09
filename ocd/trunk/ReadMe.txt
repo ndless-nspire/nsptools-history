@@ -34,6 +34,10 @@ ocd_set_breakpoint() (see ocd.h).
 The debugger console will show up when a breakpoint is hit.
 The supported debugger commands can be displayed with the command 'h' or '?'.
 
+OCD relies on the nspireio library which only supports grayscale mode on the TI-
+Nspire CX. Make sure your program enables grayscale with "clrscr(); 
+lcd_ingray();".
+
 Known issues and limitations
 ============================
 
