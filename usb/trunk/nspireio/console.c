@@ -372,6 +372,8 @@ int nio_GetStr(nio_console* c, char* str)
 		}
 		else if(tmp == '\0')
 		{
+			str[0] = '\0';
+			nio_PrintChar(c,'\n');
 			return 0;
 		}
 		else
