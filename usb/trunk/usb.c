@@ -163,15 +163,10 @@ int main(void) {
 	nl_relocdata((unsigned*)methods, sizeof(methods)/sizeof(methods[0]) - 1);
 
 	ocd_init();
+	ocd_set_breakpoint(0x103F71EC);
 	ocd_break();
-	int i = 0;
-	for (i = 0; i < 10; i++)
-		puts("aaa");
-	printf("hello\n");
-	ocd_cleanup();
+	register_my_driver();
 	
-	//register_my_driver();
-	
-	//nl_set_resident();
+	nl_set_resident();
 	return 0;
 }

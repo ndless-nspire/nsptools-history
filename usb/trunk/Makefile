@@ -1,7 +1,7 @@
 GCC = nspire-gcc
 LD = nspire-ld
-GCCFLAGS = -Os -Wall -W -marm -I nspireio -I "C:\Users\Olivier\Documents\Developpement\TI\Nspire\nsptools\ocd\trunk"
-LDFLAGS = -L nspireio -lnspireio2 -L "C:\Users\Olivier\Documents\Developpement\TI\Nspire\nsptools\ocd\trunk" -locd
+GCCFLAGS = -Os -Wall -W -marm
+LDFLAGS =-lnspireio2 -locd
 OBJCOPY := "$(shell which arm-elf-objcopy 2>/dev/null)"
 ifeq (${OBJCOPY},"")
 	OBJCOPY := arm-none-eabi-objcopy
