@@ -200,4 +200,5 @@ unsigned syscalls_ncascx_3_1_0[] = {
 	, 0X0
 	, 0X1022F82C
 	, 0X1023046C
+	, 0X10379910
 };

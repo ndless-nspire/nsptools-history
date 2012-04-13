@@ -10,8 +10,7 @@ Ndless - Changelog
   - NEW: add missing syscalls stub for newlib
   - NEW: nspire-tools command
  Standard libraries:
-  - NEW: ftell, truncate, abort
-  - NEW: opendir, readdir, closedir
+  - NEW: ftell, truncate, abort, opendir, readdir, closedir, strtok
  libndls:
   - NEW: on_key_pressed (thanks t0xic_kitt3n), show_msgbox_2b, show_msgbox_3b 
     (thanks bsl), is_cx, is_classic, has_colors, hwtype, IO, IO_LCD_CONTROL, 

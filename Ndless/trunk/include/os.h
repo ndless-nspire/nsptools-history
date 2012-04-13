@@ -252,6 +252,7 @@ _SYSCALL2(char *, strpbrk, const char *, const char *)
 _SYSCALL1(char *, strerror, int)
 _SYSCALL2(char *, strcat, char *, const char *)
 _SYSCALL2(char *, strstr, const char *, const char *)
+_SYSCALL2(char *, strtok, char *, const char *)
 
 typedef __builtin_va_list va_list;
 #define va_start(ap,p)  __builtin_va_start(ap, p)
