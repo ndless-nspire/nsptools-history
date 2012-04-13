@@ -9,6 +9,7 @@ Ndless - Changelog
  Tools:
   - NEW: add missing syscalls stub for newlib
   - NEW: nspire-tools command
+  - NEW: add ${USERPROFILE}/.ndless directory
  Standard libraries:
   - NEW: ftell, truncate, abort, opendir, readdir, closedir, strtok
  libndls:
