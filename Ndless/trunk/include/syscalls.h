@@ -221,11 +221,13 @@
 #define e__show_1NumericInput 203
 #define e__show_2NumericInput 204
 #define e__show_msgUserInput 205
+#define e_rand 206
+#define e_srand 207
 
 // END_OF_LIST (always keep this line after the last constant, used by mksyscalls.sh)
 
 // Must be kept up-to-date with the value of the last syscall
-#define __SYSCALLS_LAST 205
+#define __SYSCALLS_LAST 207
 
 // Flag: 3 higher bits of the 3-bytes comment field of the swi instruction
 #define __SYSCALLS_ISEXT 0x200000

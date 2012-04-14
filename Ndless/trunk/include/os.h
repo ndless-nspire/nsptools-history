@@ -222,6 +222,9 @@ _SYSCALL(int /* 1=OK, 0=CANCEL */, _show_msgUserInput, int undef, char *** struc
 _SYSCALL0(int *, errno_addr)
 #define errno (*errno_addr())
 
+_SYSCALL1(void, srand, unsigned int)
+_SYSCALL0(int, rand)
+
 _SYSCALL1(int, isalpha, int)
 _SYSCALL1(int, isascii, int)
 _SYSCALL1(int, isdigit, int)

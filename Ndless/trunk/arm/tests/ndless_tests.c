@@ -159,6 +159,12 @@ int main(int argc, char *argv[]) {
 	sprintf(buf, "%s", "abc");
 	assertStrEquals("sprintf", "abc", buf);
 	
+	srand(5050);
+	assertUIntEquals("rand-1", 0x6A5, rand());
+	assertUIntEquals("rand-2", 0x6B5D, rand());
+	srand(1818);
+	assertUIntEquals("rand-2", 0x264, rand());
+	
 	strncpy(buf, argv[0], sizeof(buf));
 	*(strrchr(buf, '/') + 1) = '\0'; // keep the folder
 	strncat(buf, "__testfile.tns", sizeof(buf)); // buf = temp file path

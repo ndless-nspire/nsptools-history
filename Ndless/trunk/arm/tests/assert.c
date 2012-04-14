@@ -21,10 +21,6 @@
  * Contributor(s): 
  ****************************************************************************/
 
-#ifndef _TINSPIRE
-#error _TINSPIRE not defined as it should be
-#endif
-
 #include <os.h>
 #include "ndless_tests.h"
 

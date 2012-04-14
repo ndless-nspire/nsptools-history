@@ -12,7 +12,8 @@ Ndless - Changelog
   - NEW: add ${USERPROFILE}/.ndless directory
  Standard libraries:
   - NEW: ftell, truncate, abort, opendir, readdir, closedir, strtok
-  - utf16_strlen, utf162ascii (thanks Levak)
+    utf16_strlen, utf162ascii (thanks Levak)
+    rand, srand (thanks bsl)
  libndls:
   - NEW: on_key_pressed (thanks t0xic_kitt3n), show_msgbox_2b, show_msgbox_3b 
     (thanks bsl), is_cx, is_classic, has_colors, hwtype, IO, IO_LCD_CONTROL, 
