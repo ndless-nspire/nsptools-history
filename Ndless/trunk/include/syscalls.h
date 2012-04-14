@@ -216,6 +216,12 @@
 #define e_refresh_homescr 198
 #define e_refresh_docbrowser 199
 #define e_strtok 200
+#define e_utf162ascii 201
+#define e_utf16_strlen 202
+#define e__show_1NumericInput 203 // see show_1NumericInput.c in libndls
+#define e__show_2NumericInput 204 // same
+#define e__show_msgUserInput 205 // same
+
 
 // END_OF_LIST (always keep this line after the last constant, used by mksyscalls.sh)
 

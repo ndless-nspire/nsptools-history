@@ -207,9 +207,17 @@ static __attribute__ ((unused)) unsigned _syscallvar_savedlr;
 _SYSCALL1(int, read_unaligned_longword, void *)
 _SYSCALL1(int, read_unaligned_word, void *)
 _SYSCALL3(void, ascii2utf16, void *, const char *, int)
+_SYSCALL3(void, utf162ascii, char *, void *, int)
+_SYSCALL1(unsigned, utf16_strlen, char *)
 _SYSCALL4(void, show_dialog_box2_, int /* undef */, const char * /* title */, const char * /* msg */, char * /* undef_buf[8] */)
 _SYSCALL(int, _show_msgbox_2b, int undef, const char * title, const char *msg, char *button1, int button1_code, char *button2, int button2_code, char undef_buf[8]) _SYSCALL_ARGS(int, _show_msgbox_2b, undef, title, msg, button1, button1_code, button2, button2_code, undef_buf)
 _SYSCALL(int, _show_msgbox_3b, int undef, const char * title, const char *msg, char *button1, int button1_code, char *button2, int button2_code, char *button3, int button3_code, char undef_buf[8]) _SYSCALL_ARGS(int, _show_msgbox_3b, undef, title, msg, button1, button1_code, button2, button2_code, button3, button3_code, undef_buf)
+
+_SYSCALL(int /* 5103=OK, 5104=CANCEL */, _show_1NumericInput, int undef, const char *title, const char *subtitle, const char *input_title, int *value_ref, unsigned undef2, int min_value, int max_value) _SYSCALL_ARGS(int, _show_1NumericInput, undef, title, subtitle, input_title, value_ref, undef2, min_value, max_value)
+
+_SYSCALL(int /* 5103=OK, 5104=CANCEL */, _show_2NumericInput, int undef, const char *title, const char *subtitle, const char *input1_title, int *value1_ref, unsigned undef2, int min_value1, int max_value1, const char *input2_title, int *value2_ref, unsigned undef3, int min_value2, int max_value2) _SYSCALL_ARGS(int, _show_2NumericInput, undef, title, subtitle, input1_title, value1_ref, undef2, min_value1, max_value1, input2_title, value2_ref, undef3, min_value2, max_value2)
+
+_SYSCALL(int /* 1=OK, 0=CANCEL */, _show_msgUserInput, int undef, char *** struct_ref /* msg str ref & default value str ref array */, const char * title, const char * input_title) _SYSCALL_ARGS(int, _show_msgUserInput, undef, struct_ref, title, input_title) // depreciated, use show_msgUserInput from libndls
 
 _SYSCALL0(int *, errno_addr)
 #define errno (*errno_addr())
