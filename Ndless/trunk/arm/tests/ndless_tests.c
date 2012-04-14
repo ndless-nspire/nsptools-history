@@ -86,6 +86,9 @@ int main(int argc, char *argv[]) {
 	assertUIntEquals("read_unaligned_word", 0x0302, read_unaligned_word(buf + 1));
 	ascii2utf16(buf, "abc", sizeof(buf));
 	assertUIntEquals("ascii2utf16", 'a', buf[0]);
+	assertUIntEquals("utf16_strlen", 3, utf16_strlen(buf));
+	utf162ascii(buf2, buf, sizeof(buf2));
+	assertStrEquals("utf162ascii", "abc", buf2);
 	
 	assertUIntEquals("isalpha", TRUE, isalpha('a'));
 	assertUIntEquals("isascii", TRUE, isascii('+'));

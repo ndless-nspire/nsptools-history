@@ -218,15 +218,14 @@
 #define e_strtok 200
 #define e_utf162ascii 201
 #define e_utf16_strlen 202
-#define e__show_1NumericInput 203 // see show_1NumericInput.c in libndls
-#define e__show_2NumericInput 204 // same
-#define e__show_msgUserInput 205 // same
-
+#define e__show_1NumericInput 203
+#define e__show_2NumericInput 204
+#define e__show_msgUserInput 205
 
 // END_OF_LIST (always keep this line after the last constant, used by mksyscalls.sh)
 
 // Must be kept up-to-date with the value of the last syscall
-#define __SYSCALLS_LAST 200
+#define __SYSCALLS_LAST 205
 
 // Flag: 3 higher bits of the 3-bytes comment field of the swi instruction
 #define __SYSCALLS_ISEXT 0x200000
