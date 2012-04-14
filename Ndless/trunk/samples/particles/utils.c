@@ -37,15 +37,6 @@ inline int getPixel(int x, int y) {
   return ((x & 1) ? (*p & 0x0F) : (*p >> 4));
 }
 
-int rand() {
-  static int m_w = 56789;
-  static int m_z = 38765;
-
-  m_z = 36969 * (m_z & 65535) + (m_z >> 16);
-  m_w = 18000 * (m_w & 65535) + (m_w >> 16);
-  return (m_z << 16) + m_w;
-}
-
 float sqrtf(float num) {
   float mod = 1;
   float c = 0;
