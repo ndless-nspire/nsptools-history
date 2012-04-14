@@ -246,9 +246,10 @@
 #define e_nl_isstartup (__SYSCALLS_ISEXT | 3)
 #define e_nl_lua_getstate (__SYSCALLS_ISEXT | 4)
 #define e_nl_set_resident (__SYSCALLS_ISEXT | 5)
+#define e_nl_ndless_rev (__SYSCALLS_ISEXT | 6)
 
 // Must be kept up-to-date with the value of the last syscalls extension without __SYSCALLS_ISEXT
-#define __SYSCALLS_LASTEXT 5
+#define __SYSCALLS_LASTEXT 6
 
 /* Ndless integration with emulators. Grouped to make the integration easier for the emulators (they require
  * only these constants).

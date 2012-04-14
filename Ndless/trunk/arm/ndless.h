@@ -25,6 +25,8 @@
 #ifndef _NDLESS_H_
 #define _NDLESS_H_
 
+#include "ndless_version.h"
+
 // Marker at the beginning of a program
 #define PRGMSIG "PRG"
 // Directory where it is installed

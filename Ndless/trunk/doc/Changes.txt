@@ -19,6 +19,7 @@ Ndless - Changelog
     (thanks bsl), is_cx, is_classic, has_colors, hwtype, IO, IO_LCD_CONTROL, 
     lcd_incolor, lcd_ingray, lcd_isincolor, _TINSPIRE, nl_set_resident,
     refresh_osscr (thanks Levak)
+    assert_ndless_rev
     show_msg_user_input, show_1numeric_input, show_2numeric_input (thanks
     Levak)
   - CHG: Merge KEY_NSPIRE_DEL and KEY_NSPIRE_CLEAR to KEY_NSPIRE_DEL (thanks 

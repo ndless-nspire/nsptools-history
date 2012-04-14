@@ -70,7 +70,7 @@ tests:
 rtests:
 	(cd arm/tests && make clean all)
 
-upload: dist
+upload: update_version_info dist
 	svn update
 	svnrev=`svn info --xml |grep revision | uniq | sed 's/\(revision="\)//' | sed 's/">//' | sed 's/[[:blank:]]*//g'`; \
 	mv dist "ndless-v3.1-beta-r$$svnrev"; \
@@ -80,3 +80,9 @@ upload: dist
 	rm -rf ndless.zip; \
 	rm -rf "ndless-v3.1-beta-r$$svnrev"
 	echo "Check http://www.unsads.com/projects/nsptools/downloader/download/release/1"
+
+update_version_info:
+	@svn update
+	@svnrev=`svn info --xml |grep revision | uniq | sed 's/\(revision="\)//' | sed 's/">//' | sed 's/[[:blank:]]*//g'`; \
+	echo "#define NDLESS_REVISION $$((svnrev+1))" > arm/ndless_version.h
+	svn commit -m "ndless_version.h: update revision" arm/ndless_version.h

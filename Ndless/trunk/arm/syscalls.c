@@ -53,10 +53,14 @@ BOOL sc_nl_isstartup(void) {
 	return plh_isstartup;
 }
 
+unsigned sc_nl_ndless_rev(void) {
+	return NDLESS_REVISION;
+}
+
 /* Extension syscalls table */
 unsigned sc_ext_table[] = {
 	(unsigned)sc_nl_osvalue, (unsigned)sc_ext_relocdatab, (unsigned)sc_nl_hwtype, (unsigned)sc_nl_isstartup,
-	(unsigned)luaext_getstate, (unsigned)ld_set_resident
+	(unsigned)luaext_getstate, (unsigned)ld_set_resident, (unsigned)sc_nl_ndless_rev
 };
 
 void sc_setup(void) {

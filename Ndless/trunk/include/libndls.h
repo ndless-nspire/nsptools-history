@@ -42,6 +42,7 @@ typedef enum tpad_arrow {TPAD_ARROW_NONE, TPAD_ARROW_UP, TPAD_ARROW_UPRIGHT, TPA
 /* os.h's dependencies depend on the definitions above... */
 #include <os.h>
 
+void assert_ndless_rev(unsigned required_rev);
 BOOL any_key_pressed(void);
 void clear_cache(void);
 void clrscr(void);
