@@ -36,7 +36,7 @@
    int value1 = 7;
    int value2 = 42;
    int result = show_2numeric_input(title, subtitle, msg1, &value1, 1, 42, msg2, &value2, -42, 9001);
-   printf("%d(%s) : %d; %d\n", result, (result == 5103)?"OK":"CANCELLED", value1, value2); 
+   printf("%d(%s) : %d; %d\n", result, (result == 1)?"OK":"CANCELLED", value1, value2); 
 
   Contributor : Levak
 */

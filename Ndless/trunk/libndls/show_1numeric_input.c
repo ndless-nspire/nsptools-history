@@ -34,7 +34,7 @@
    const char * msg = "Element";
    int value = 7;
    int result = show_1numeric_input(title, subtitle, msg, &value, 1, 42);
-   printf("%d(%s) : %d\n", result, (result == 5103)?"OK":"CANCELLED", value); 
+   printf("%d(%s) : %d\n", result, (result == 1)?"OK":"CANCELLED", value); 
 */
 
 #include <os.h>
