@@ -1,1 +1,1 @@
-#define NDLESS_REVISION vnrev
+#define NDLESS_REVISION 612
