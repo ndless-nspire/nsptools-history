@@ -239,7 +239,7 @@ _SYSCALL1(int, atoi, const char *)
 _SYSCALL1(double, atof, const char *)
 _SYSCALL2(double, strtod, const char *, char **)
 _SYSCALL3(long int, strtol, const char *, char **, int)
-static inline unsigned long int strtoul(const char *s, char **e, int b) {return strtol(s, e, b);}
+_SYSCALL3(unsigned long int, strtoul, const char *, char **, int)
 
 _SYSCALL1(void *, malloc, size_t)
 _SYSCALL1(void, free, void *)

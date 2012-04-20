@@ -152,7 +152,7 @@ int main(int argc, char *argv[]) {
 	file = fopen("unexist.ent", "r");
   assertStrEquals("strerror,errno", "No Such File Or Directory", strerror(errno));
 	assertIntEquals("strtol", -1, strtol("-1", NULL, 10));
-	assertIntEquals("strtoul", 1, strtoul("1", NULL, 10));
+	assertUIntEquals("strtoul", 0xA0000000, strtoul("0xA0000000", NULL, 16));
 	assertStrEquals("strstr", "def", strstr("abcdef", "def"));
 	
 	test_va(0, (char)1, (char)0x20);
