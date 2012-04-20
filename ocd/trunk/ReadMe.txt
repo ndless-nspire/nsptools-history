@@ -16,7 +16,7 @@ of the debugger commands of Goplat's nspire_emu emulator.
 How do I use it?
 ================
 
-OCD requires Ndless v3.1 r621 or higher installed on the calculator.
+OCD requires Ndless v3.1 r622 or higher installed on the calculator.
 
  1) Link the program to debug with libocd
  ----------------------------------------
@@ -61,4 +61,13 @@ Author
 Changelog
 =========
 
-xxxx - v0.1: initial version
+v0.2 - 2012-04-20
+  - NEW: command 'clr'
+  - NEW: command 'pr' (thanks bsl)
+  - NEW: commands 'pr' and 'pw' check if the address is mapped (thanks bsl)
+  - FIX: command parsing broken on CAS and CX (strtok). Requires Ndless v3.1 
+         r622.
+  - FIX: broken address parsing (strotoul). Requires Ndless v3.1 r622.
+
+v0.1 - 2012-04-09
+  - Initial version
