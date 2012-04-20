@@ -16,6 +16,8 @@ of the debugger commands of Goplat's nspire_emu emulator.
 How do I use it?
 ================
 
+OCD requires Ndless v3.1 r621 or higher installed on the calculator.
+
  1) Link the program to debug with libocd
  ----------------------------------------
  

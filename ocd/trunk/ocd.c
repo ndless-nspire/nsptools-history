@@ -3,9 +3,6 @@
 #include "ocd.h"
 #include "ocd_internal.h"
 
-static const unsigned strtok_addrs[] = {0x1037C050, 0, 0, 0}; // non-CAS 3.1, CAS 3.1, non-CAS CX 3.1, CAS CX 3.1 addresses
-#define strtok SYSCALL_CUSTOM(strtok_addrs, char *, char *str, const char *delimiters)
-
 static void __attribute__ ((noreturn)) reboot(void) {
 	*(unsigned*)0x900A0008 = 2; //CPU reset
 	__builtin_unreachable();
@@ -74,6 +71,18 @@ void remove_all_breakpoints(void) {
 		breakpoints[i].used = FALSE;
 	}
 	clear_cache();
+}
+
+static unsigned long memstat(unsigned addr) {
+	unsigned long value;
+	__asm volatile(
+		"mrc     p15, 0, %0, c2, c0, 0   @ get the translation table base register\n"
+	: "=r" (value) :: "memory");
+	addr >>= 20; // calculate the table offset
+	addr <<= 2;
+	addr = addr + value;  // section address
+	value = *(unsigned*)addr ; // get section mapping
+	return (value & 0xfff) > 0xC00;  // mapped or not?
 }
 
 // from nspire_emu
@@ -393,12 +402,14 @@ unsigned ocd_prefetch_abort_handler_body(unsigned *exception_addr) {
 		if (!strcmp(cmd, "?") || !strcmp(cmd, "h")) {
 			nio_printf(&ocd_csl, 
 				"c - continue\n"
+				"cl - clear screen\n"
 				"d <address> - dump memory\n"
 				"e - show program screen\n"
 				"k[t] <address> - add [temporary] breakpoint\n"
 				"k - show breakpoints\n"
 				"k <num> - remove breakpoint\n"
 				"n - continue until next instruction\n"
+				"pr <address> - port read\n"
 				"pw <address> <value> - port write\n"
 				"q - remove breakpoints and continue\n"
 				"r - show registers\n"
@@ -467,11 +478,26 @@ unsigned ocd_prefetch_abort_handler_body(unsigned *exception_addr) {
 		} else if (!strcmp(cmd, "pw")) {
 			u32 addr = parse_expr(strtok(NULL, " "));
 			u32 value = parse_expr(strtok(NULL, " "));
-			*(unsigned*)addr = value;
+			if (memstat(addr) > 0) {
+				*(unsigned*)addr = value;
+			} else {
+				nio_printf(&ocd_csl, "Invalid address\n");
+			}
+		} else if (!strcmp(cmd, "pr")) {
+			u32 addr = parse_expr(strtok(NULL, " "));
+			if (memstat(addr) > 0) {
+				u32 value = *(unsigned*)addr ;
+				nio_printf(&ocd_csl, "%08X\n", value);
+			} else {
+				nio_printf(&ocd_csl, "Invalid address\n");
+			}
 		} else if (!strcmp(cmd, "e")) {
 			to_prgm_scr();
 			wait_key_pressed();
 			to_console_scr();
+		} else if (!strcmp(cmd, "cl")) {
+				nio_Clear(&ocd_csl);
+				nio_DrawConsole(&ocd_csl); 
 		} else {
 			nio_printf(&ocd_csl, "Unknown command\n");
 		}
