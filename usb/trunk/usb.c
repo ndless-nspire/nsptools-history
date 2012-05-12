@@ -66,7 +66,7 @@ nio_console csl;
 static void init_console(void) {
 	// 53 columns, 15 rows. 0/110px offset for x/y. Background color 15 (white), foreground color 0 (black)
 	nio_InitConsole(&csl,53,15,0,110,15,0);
-	nio_DrawConsole(&csl);
+	//nio_DrawConsole(&csl);
 }
 
 /** TODO
@@ -82,17 +82,14 @@ static int match(device_t self) {
   	nio_printf(&csl, "nomatch\n");
   	return (UMATCH_NONE);
   }
-  nio_printf(&csl, "match\n");
 	return UMATCH_DEVCLASS_DEVSUBCLASS;
 }
 
 usbd_status usbd_set_protocol(usbd_interface_handle iface, int report) {
 	usb_interface_descriptor_t *id = usbd_get_interface_descriptor(iface);
-	nio_printf(&csl, "usbd_get_interface_descriptor: %p\n", id);
 	usbd_device_handle dev;
 	usb_device_request_t req;
 	usbd_interface2device_handle(iface, &dev);
-	nio_printf(&csl, "usbd_interface2device_handle: %p\n", dev);
 	req.bmRequestType = UT_WRITE_CLASS_INTERFACE;
 	req.bRequest = UR_SET_PROTOCOL;
 	USETW(req.wValue, report);
@@ -129,6 +126,13 @@ struct s_boot_kbd_report {
 	} mod;
 	char reserved;
 	char keycode[6];
+};
+
+struct s_boot_ums_report {
+	char button;        
+	signed char xdispl;
+	signed char ydispl;
+	char bytes3to7[5] ; //optional bytes
 };
 
 // From https://github.com/felis/lightweight-usb-host/blob/e790c8c7e29f04fd938939f4dd5f88b52125b8af/cli.c
@@ -185,7 +189,6 @@ char HIDtoa(struct s_boot_kbd_report *buf, unsigned index) {
 }
 
 static void ukbd_intr(usbd_xfer_handle xfer, usbd_private_handle addr, usbd_status status) {
-	nio_printf(&csl, "i");
 	struct ukbd_softc *sc = addr;
 	struct s_boot_kbd_report *ibuf = (struct s_boot_kbd_report *)sc->sc_ibuf.buf;
 	unsigned i;
@@ -193,6 +196,23 @@ static void ukbd_intr(usbd_xfer_handle xfer, usbd_private_handle addr, usbd_stat
 		if (ibuf->keycode[i])
 			nio_printf(&csl, "%c", HIDtoa(ibuf, i));
 	}
+}
+
+static int ums_xcoord = 0;
+static int ums_ycoord = 0;
+
+static void ums_intr(usbd_xfer_handle xfer, usbd_private_handle addr, usbd_status status) {
+	struct ukbd_softc *sc = addr;
+	struct s_boot_ums_report *ibuf = (struct s_boot_ums_report *)sc->sc_ibuf.buf;
+	ums_xcoord += (int)(ibuf->xdispl / 2);
+	ums_ycoord += (int)(ibuf->ydispl / 2);
+	if (ums_xcoord < 0) ums_xcoord = 0;
+	if (ums_ycoord < 0) ums_ycoord = 0;
+	if (ums_xcoord >= SCREEN_WIDTH) ums_xcoord = SCREEN_WIDTH - 1;
+	if (ums_ycoord >= SCREEN_HEIGHT) ums_ycoord = SCREEN_HEIGHT - 1;
+	setPixel(ums_xcoord, ums_ycoord, BLACK);
+	if(ibuf->button)
+		putChar(ums_xcoord, ums_ycoord, 'i', BLACK, WHITE);
 }
 
 static int attach(device_t self) {
@@ -203,29 +223,22 @@ static int attach(device_t self) {
 	if (sc == NULL)
 		return (ENXIO);
 	sc->sc_iface = uaa->iface; // or usbd_device2interface_handle
-	nio_printf(&csl, "sc->sc_iface=%p\n", sc->sc_iface); 
 	sc->sc_dev = self;
-	nio_printf(&csl, "usbd_interface2endpoint_descriptor\n");
 	usb_endpoint_descriptor_t *ed = usbd_interface2endpoint_descriptor(sc->sc_iface, 0);
-	nio_printf(&csl, "ed=%p\n", ed);
 	sc->sc_ep_addr = ed->bEndpointAddress;
 	//sc->sc_isize = 8;
 	sc->sc_isize = 16;
 	sc->sc_ibuf.buf = bsd_malloc(sc->sc_isize, TRUE);
-	nio_printf(&csl, "ibuf=%p\n", sc->sc_ibuf.buf);
 	if (!sc->sc_ibuf.buf)
 		return (ENXIO);
-	nio_printf(&csl, "usbd_set_protocol\n");
 	usbd_set_protocol(sc->sc_iface, 0);
-	nio_printf(&csl, "usbd_open_pipe_intr(%i)\n", sc->sc_ep_addr);
 	//ocd_set_breakpoint(0X103F7224);
 	sc->sc_ibuf.dummy1 = 0;
 	sc->sc_ibuf.dummy2 = 0;
 	err = usbd_open_pipe_intr(sc->sc_iface, sc->sc_ep_addr,
 	                          USBD_SHORT_XFER_OK, &sc->sc_intrpipe, sc,
-	                          &sc->sc_ibuf, sc->sc_isize, ukbd_intr,
+	                          &sc->sc_ibuf, sc->sc_isize, ums_intr, //ukbd_intr,
 	                          0xC);//USBD_DEFAULT_INTERVAL);
-	nio_printf(&csl, "err=%i\n", err);
 	if (err)
 		return (ENXIO);
 	return 0;
