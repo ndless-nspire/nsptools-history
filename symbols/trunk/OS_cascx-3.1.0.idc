@@ -401,6 +401,7 @@
 	MakeName	(0X103791B0,	"strtod");
 	MakeName	(0X1037938C,	"strtol_sub");
 	MakeName	(0X103794B8,	"strtol");
+	MakeName	(0X1037961C,	"strtoul");
 	MakeName	(0X10379684,	"memchr");
 	MakeName	(0X10379700,	"memcmp");
 	MakeName	(0X10379798,	"memcpy");

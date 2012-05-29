@@ -393,6 +393,7 @@
 	MakeName	(0X1037B160,	"strtod");
 	MakeName	(0X1037B33C,	"strtol_sub");
 	MakeName	(0X1037B468,	"strtol");
+	MakeName	(0X1037B5CC,	"strtoul");
 	MakeName	(0X1037B634,	"memchr");
 	MakeName	(0X1037B6B0,	"memcmp");
 	MakeName	(0X1037B748,	"memcpy");
@@ -467,7 +468,12 @@
 	MakeName	(0X103995C0,	"FfxDclLogOpen_1");
 	MakeName	(0X1039984C,	"FfxDclLogClose");
 	MakeName	(0X103EE818,	"alloc_ehci_local");
-	MakeName	(0X103EEA10,	"ehci_unknownvendor_attach");
+	MakeName	(0X103EE850,	"ehci_pci_shutdown");
+	MakeName	(0X103EE8F8,	"ehci_pci_resume");
+	MakeName	(0X103EE90C,	"ehci_pci_suspend");
+	MakeName	(0X103EE920,	"ehci_pci_detach");
+	MakeName	(0X103EE9EC,	"ehci_pci_probe");
+	MakeName	(0X103EEA10,	"ehci_pci_attach");
 	MakeName	(0X103EEC04,	"alloc_ucompdev");
 	MakeName	(0X103EEF90,	"unknown_match2");
 	MakeName	(0X103EF420,	"alloc_uhub");
@@ -503,6 +509,7 @@
 	MakeName	(0X103F3634,	"usbd_get_quirks2");
 	MakeName	(0X103F3734,	"usbd_endpoint_count");
 	MakeName	(0X103F37C0,	"usbd_start_next");
+	MakeName	(0X103F3818,	"usb_transfer_complete");
 	MakeName	(0X103F39D0,	"usbd_free_xfer");
 	MakeName	(0X103F3A8C,	"usbd_close_pipe");
 	MakeName	(0X103F3B08,	"usbd_alloc_xfer");
@@ -523,6 +530,9 @@
 	MakeName	(0X103F4834,	"usbd_set_port_feature");
 	MakeName	(0X103F5660,	"ehci_roothub_exec");
 	MakeName	(0X103F65E0,	"ehci_check_intr");
+	MakeRptCmt	(0X103F7218,	"xfer");
+	MakeRptCmt	(0X103F728C,	"status");
+	MakeRptCmt	(0X103F75F8,	"usbd_xfer_handle xfer");
 	MakeName	(0X103F8004,	"ehci_rem_qh");
 	MakeName	(0X103F80D0,	"ehci_abort_xfer");
 	MakeName	(0X103F827C,	"j_ehci_abort_xfer");

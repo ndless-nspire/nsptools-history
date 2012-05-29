@@ -374,6 +374,7 @@
 	MakeName	(0X1037B890,	"strtod");
 	MakeName	(0X1037BA6C,	"strtol_sub");
 	MakeName	(0X1037BB98,	"strtol");
+	MakeName	(0X1037BCFC,	"strtoul");
 	MakeName	(0X1037BD64,	"memchr");
 	MakeName	(0X1037BDE0,	"memcmp");
 	MakeName	(0X1037BE78,	"memcpy");
@@ -680,6 +681,7 @@
 	MakeName	(0X106ADDEC,	"luaG_errormsg");
 	MakeName	(0X106ADE94,	"luaG_runerror");
 	MakeName	(0X106ADEDC,	"luaG_ordererror");
+	MakeName	(0X106AE960,	"lua_yield");
 	MakeName	(0X106AE9A4,	"luaD_seterrorobj");
 	MakeName	(0X106AEAD0,	"restore_stack_limit");
 	MakeName	(0X106AEB04,	"resetstack");
@@ -709,6 +711,7 @@
 	MakeName	(0X107DC8D0,	"nn_login");
 	MakeName	(0X107E20A8,	"j_unknown_TI_AllocateBlock_");
 	MakeName	(0X107E237C,	"j_j_free_21");
+	MakeName	(0X107E3FF8,	"_show_msgUserInput");
 	MakeName	(0X10807D78,	"j_strncpy");
 	MakeName	(0X1082499C,	"j_j_free_22");
 	MakeName	(0X108282B0,	"j_j_j_free_22");
