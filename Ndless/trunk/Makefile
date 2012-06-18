@@ -77,7 +77,7 @@ upload: update_version_info dist
  	rm -rf ndless.zip ; \
 	7z a ndless.zip "ndless-v3.1-beta-r$$svnrev"; \
 	curl --cookie upload_cookies.txt -F 'super_id=1' -F 'form_type=file' -F '__FORM_TOKEN=c30f9c971c7fca42db234011' -F "name=ndless-v3.1-beta-r$$svnrev.zip" -F 'submit=Submit' -F 'file_to_upload=@ndless.zip' -F 'sort=' -F 'architecture=' -F 'notes=' http://www.unsads.com/projects/nsptools/admin/general/downloader/files/release > /dev/null; \
-	rm -rf ndless.zip; \
+	#rm -rf ndless.zip; \
 	rm -rf "ndless-v3.1-beta-r$$svnrev"
 	echo "Check http://www.unsads.com/projects/nsptools/downloader/download/release/1"
 
