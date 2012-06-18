@@ -127,8 +127,11 @@ static int scmp(const void *sp1, const void *sp2) {
 }
 
 
-// Calls callback() for each file found in folder and its subfolders. context is passed to callback() and can be NULL.
-// callback() should return a non-zero value to abort the scan.
+// Calls callback() for each file and folder found in folder and its subfolders. context is passed to callback() and can be NULL.
+// callback() must return:
+//  * 0 to continue the scan
+//  * 1 to abort the scan
+//  * 2 to continue the scan but not recurse through the current directory
 // Returns non-zero if callback() asked to abort.
 int ut_file_recur_each(const char *folder, int (*callback)(const char *path, void *context), void *context) {
 	char subfolder_or_file[FILENAME_MAX];
@@ -167,18 +170,18 @@ int ut_file_recur_each(const char *folder, int (*callback)(const char *path, voi
 	
 	for (i = 0; i < filenum; i++) {
 		strcpy(subfolder_or_file, folder);
-		strcat(subfolder_or_file, "/");
+		if (subfolder_or_file[strlen(subfolder_or_file) - 1] != '/')
+			strcat(subfolder_or_file, "/");
 		strcat(subfolder_or_file, filenames_ptrs[i]);
 		if (stat(subfolder_or_file, &statbuf) == -1)
 			continue;
-		if (S_ISREG(statbuf.st_mode)) {
-			if (callback(subfolder_or_file, context)) {
-				closedir(dp);
-				free(filenames);
-				return 1;
-			}
+		int next_action = callback(subfolder_or_file, context);
+		if (next_action == 1) {
+			closedir(dp);
+			free(filenames);
+			return 1;
 		}
-		if (S_ISDIR(statbuf.st_mode)) {
+		if (S_ISDIR(statbuf.st_mode) && next_action != 2) {
 			if (ut_file_recur_each(subfolder_or_file, callback, context)) {
 				closedir(dp);
 				free(filenames);

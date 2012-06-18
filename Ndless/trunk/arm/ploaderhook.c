@@ -41,6 +41,9 @@ int assoc_file_recur_cb(const char *path, void *context) {
 		*ctx->argc = 2;
 		return 1;
 	}
+	if (!strcmp(path, "/phoenix")) { // we are scanning the whole filesystem for compatiblity with Hide Manager, except this heavy subtree
+		return 2; // skip it
+	}
 	return 0;
 }
 
@@ -83,7 +86,7 @@ int ld_exec(const char *path, void **resident_ptr) {
 			strcpy(prgm_name, prgm_name_noext);
 			strcat(prgm_name, ".tns");
 			struct assoc_file_recur_cb_ctx context = {prgm_name, docpath, arg1, &argc};
-			ut_file_recur_each("/documents", assoc_file_recur_cb, &context);
+			ut_file_recur_each("/", assoc_file_recur_cb, &context);
 		}
 		cfg_close();
 	}
