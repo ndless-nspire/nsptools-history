@@ -1,0 +1,10 @@
+
+This build of yagarto use the following versions:
+
+binutils: 2.21
+gcc:      4.6.2
+newlib:   1.19.0
+gdb:      7.3.1
+
+
+(19.11.2011, mifi)
