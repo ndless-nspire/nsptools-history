@@ -8,6 +8,86 @@
 #include <zlib.h>
 #include "minizip-1.1/zip.h"
 
+#ifndef min
+ #define min(a,b) (((a) < (b)) ? (a) : (b))
+#endif
+
+/* Reads an UTF-8 character from in to *c. Doesn't read at or after end. Returns a pointer to the next character. */
+char *utf82unicode(char *in, char *end, unsigned long *c) {
+	if (in == end) {
+		*c = 0;
+		return in;
+	}
+	if (!(*in & 0b10000000)) {
+		*c = *in;
+		return in + 1;
+	}
+	if ((*in & 0b11100000) == 0b11000000) {
+		*c = (*in & 0b00011111) << 6;
+		if (end > in + 1)
+			*c |= *(in + 1) & 0b00111111;
+		return min(end, in + 2);
+	}
+	if ((*in & 0b111100000) == 0b11100000) {
+		*c = (*in & 0b00011111) << 12;
+		if (end > in + 1)
+			*c |= (*(in + 1) & 0b00111111) << 6;
+		if (end > in + 2)
+			*c |= *(in + 2) & 0b00111111;
+		return min(end, in + 3);
+	}
+	if ((*in & 0b111110000) == 0b11110000) {
+		*c = (*in & 0b00011111) << 18;
+		if (end > in + 1)
+			*c |= (*(in + 1) & 0b00111111) << 12;
+		if (end > in + 2)
+			*c |= (*(in + 2) & 0b00111111) << 6;
+		if (end > in + 3)
+			*c |= *(in + 3) & 0b00111111;
+		return min(end, in + 4);
+	}
+	*c = 0;
+	return in + 1;
+}
+
+/* sub-routine of xml_compress() to escape the unicode characters as required by the XML compression. Returns the new in_buf or NULL */
+void *escape_unicode(char *in_buf, size_t header_size, size_t footer_size, size_t in_size, size_t *obuf_size) {
+	char *p, *op;
+	char *out_buf = malloc(header_size + in_size * 4 /* worst case */ + footer_size);
+	if (!out_buf) {
+		puts("escape_unicode: can't malloc");
+		return NULL;
+	}
+	memcpy(out_buf, in_buf, header_size);
+	for (p = in_buf + header_size, op = out_buf + header_size; p < in_buf + header_size + in_size;) {
+		unsigned long uc;
+		p = utf82unicode(p, in_buf + header_size + in_size, &uc);
+		if (uc < 0x80) {
+			*op++ = (char)uc;
+		} else if (uc < 0x800) {
+			*op++ = (char)(uc >> 8);
+			*op++ = (char)(uc);
+		} else if (uc < 0x10000) {
+			*op++ = 0b10000001;
+			*op++ = (char)(uc >> 8);
+			*op++ = (char)(uc);
+		} else {
+			*op++ = 0b00001000;
+			*op++ = (char)(uc >> 16);
+			*op++ = (char)(uc >> 8);
+			*op++ = (char)(uc);
+		}
+	}
+	*obuf_size = op - out_buf + footer_size;
+	char *out_buf2 = realloc(out_buf, *obuf_size);
+	if (!out_buf2) {
+		free(out_buf);
+		puts("escape_unicode: can't realloc");
+		return NULL;
+	}
+	return out_buf2;
+}
+
 /* sub-routine of xml_compress() to escape the Lua script string. Returns the new in_buf or NULL */
 void *escape_special_xml_chars(char *in_buf, size_t header_size, size_t in_size, size_t *obuf_size) {
 	char *p;
@@ -175,6 +255,9 @@ void *xml_compress(char *inf_name, size_t *obuf_size, int infile_is_xml) {
 	}
 	size_t in_size = *obuf_size - header_size - footer_size;
 	fclose(inf);
+
+	in_buf = escape_unicode(in_buf, header_size, footer_size, in_size, obuf_size);
+	if (!in_buf) return NULL;
 
 	if (infile_is_xml) {
 		return reformat_xml_doc(in_buf, header_size, in_size, obuf_size);

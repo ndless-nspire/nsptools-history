@@ -15,6 +15,8 @@ Lua program convertion:    luna [INFILE.lua]  [OUTFILE.tns]
 Problem conversion:        luna [Problem.xml] [OUTFILE.tns]
 
 If the input is '-', reads the file from the standard input.
+Make sure to encode your Lua or Problem file in UTF-8 if it contains special 
+characters.
 
 Contact
 =======
@@ -48,6 +50,9 @@ On Windows:
 
 History
 =======
+
+<not yet released>:
+ * FIX: support all UTF-8 characters
 
 2011-11-10: v0.2b
  * FIX: buffer overflow
