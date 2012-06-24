@@ -51,9 +51,10 @@ On Windows:
 History
 =======
 
-<not yet released>:
+2012-06-24: v0.3
  * FIX: support all UTF-8 characters
-
+ * NEW: Lua program produced now default to OS v3.2's Lua API level 2 (see
+        http://wiki.inspired-lua.org/Changes_in_OS_3.2 ).
 2011-11-10: v0.2b
  * FIX: buffer overflow
 
