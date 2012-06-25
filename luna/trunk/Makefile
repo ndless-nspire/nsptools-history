@@ -1,11 +1,14 @@
 CC:=gcc
-CFLAGS:=-W -Wall
-LDFLAGS:= -lssl -lz
+CFLAGS:=-W -Wall -m32
+LDFLAGS:= -lssl -lz -m32
 VPATH := minizip-1.1
 
 OS ?= `uname -s`
 ifeq ($(OS),Windows_NT)
   EXEEXT = .exe
+else
+	CFLAGS := $(CFLAGS) -DUSE_FILE32API
+	LDFLAGS:= $(LDFLAGS) -lcrypto
 endif
 
 all: luna$(EXEEXT)

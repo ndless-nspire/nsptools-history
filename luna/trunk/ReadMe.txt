@@ -48,8 +48,18 @@ On Windows:
   http://kemovitra.blogspot.com/2009/06/mingw-compiling-zlib.html
 * 'make dist' Luna
 
+On Mac or Linux:
+ * Install libssl-dev
+ * Install zlib
+ * Install GCC v4.5 or higher
+ * 'make dist' Luna
+
 History
 =======
+
+<not yet released>
+ * FIX: build options for Mac/Linux
+
 
 2012-06-24: v0.3
  * FIX: support all UTF-8 characters
