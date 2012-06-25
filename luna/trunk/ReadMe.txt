@@ -59,6 +59,8 @@ History
 
 <not yet released>
  * FIX: build options for Mac/Linux
+ * FIX: skip UTF-8 BOM if any
+ * FIX: compatibility with some unicode characters such as chinese ones
 
 
 2012-06-24: v0.3

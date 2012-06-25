@@ -28,7 +28,7 @@ char *utf82unicode(char *in, char *end, unsigned long *c) {
 			*c |= *(in + 1) & 0b00111111;
 		return min(end, in + 2);
 	}
-	if ((*in & 0b111100000) == 0b11100000) {
+	if ((*in & 0b11110000) == 0b11100000) {
 		*c = (*in & 0b00011111) << 12;
 		if (end > in + 1)
 			*c |= (*(in + 1) & 0b00111111) << 6;
@@ -59,7 +59,11 @@ void *escape_unicode(char *in_buf, size_t header_size, size_t footer_size, size_
 		return NULL;
 	}
 	memcpy(out_buf, in_buf, header_size);
-	for (p = in_buf + header_size, op = out_buf + header_size; p < in_buf + header_size + in_size;) {
+
+	p = in_buf + header_size;
+	if (!memcmp(in_buf + header_size, "\xEF\xBB\xBF", 3)) // skip the UTF-8 BOM if any
+		p += 3;
+	for (op = out_buf + header_size; p < in_buf + header_size + in_size;) {
 		unsigned long uc;
 		p = utf82unicode(p, in_buf + header_size + in_size, &uc);
 		if (uc < 0x80) {
@@ -68,7 +72,7 @@ void *escape_unicode(char *in_buf, size_t header_size, size_t footer_size, size_
 			*op++ = (char)(uc >> 8);
 			*op++ = (char)(uc);
 		} else if (uc < 0x10000) {
-			*op++ = 0b10000001;
+			*op++ = 0b10000000;
 			*op++ = (char)(uc >> 8);
 			*op++ = (char)(uc);
 		} else {
