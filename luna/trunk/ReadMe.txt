@@ -57,7 +57,7 @@ On Mac or Linux:
 History
 =======
 
-<not yet released>
+2012-06-26: v0.3a
  * FIX: build options for Mac/Linux
  * FIX: skip UTF-8 BOM if any
  * FIX: compatibility with some unicode characters such as chinese ones
