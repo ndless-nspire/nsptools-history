@@ -27,5 +27,8 @@ Oliver Armand aka ExtendeD - olivier.calc@gmail.com
 History
 =======
 
+2012-06-26: v0.1a
+ * Compatible with OS 3.2 API
+
 2011-07-13: v0.1
  * First release
