@@ -150,7 +150,7 @@ int main(int argc, char *argv[]) {
 	assertUIntEquals("strcspn", 3, strcspn("123abc", "abc"));
 	assertUIntEquals("strspn", 3, strspn("abcdef", "abc"));
 	file = fopen("unexist.ent", "r");
-  assertStrEquals("strerror,errno", "No Such File Or Directory", strerror(errno));
+	assertStrEquals("strerror,errno", "No Such File Or Directory", strerror(errno));
 	assertIntEquals("strtol", -1, strtol("-1", NULL, 10));
 	assertUIntEquals("strtoul", 0xA0000000, strtoul("0xA0000000", NULL, 16));
 	assertStrEquals("strstr", "def", strstr("abcdef", "def"));
@@ -189,6 +189,8 @@ int main(int argc, char *argv[]) {
 	assertNonZero("fputs", fputs("abc\ndef", file));
 	rewind(file);
 	assertStrEquals("fgets", "abc\n", fgets(buf2, 10, file));
+	assertNull("fgets-eof-1", fgets(buf2, 10, file));
+	assertStrEquals("fgets-eof-2", "def", buf2);
 	rewind(file);
 	fputc('a', file);
 	rewind(file);

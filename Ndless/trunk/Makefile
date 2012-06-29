@@ -36,9 +36,8 @@ dist: cleandist distsrc distbin
 
 distsrc: clean
 	mkdir -p dist/src
-	cp -r `ls | grep -v dist` dist/src
-	@# exclude some resources we don't want to distribute
-	find dist -name Makefile.config -o -name upload_cookies.txt  | xargs rm -rf
+	cp -r `ls | grep -v dist | grep -v Ndless-SDK ` dist/src
+	find dist -name Makefile.config -o -name upload_cookies.txt | xargs rm -rf
 
 cleandist:
 	rm -rf dist

@@ -22,12 +22,15 @@
 #include <os.h>
 
 /* The OS implementation seems to depend on task scheduling and does not return */
-char *fgets(char *str, int num, FILE *str2eam) {
+char *fgets(char *str, int num, FILE *stream) {
+	if (str == NULL || num <= 0 || stream == NULL)
+		return NULL;
 	char *str2 = str;
 	while (num--) {
-		char c = fgetc(str2eam);
+		int c = fgetc(stream);
 		if (c == EOF) {
-			*str2 = '\0';
+			if (str2 != str)
+				*str2 = '\0';
 			return NULL;
 		}
 		*str2++ = c;
