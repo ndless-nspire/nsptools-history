@@ -63,7 +63,7 @@ if [ $nostartup = false ]; then
 	fi
 	args=("$DIRNAME/../system/$startupobj" "${args[@]}")
 fi
-home="${USERPROFILE:-HOME}"
+home="${USERPROFILE:-$HOME}"
 mkdir -p "$home/.ndless/lib"
 # -nostartfiles: avoids newlib startup which would be added before ours
 "$GCC" -nostartfiles  -T "$DIRNAME/../system/ldscript" -e _nspire_start -L "$DIRNAME/../lib" -L "$USERPROFILE/.ndless/lib" -static "$DIRNAME/../system/crt0sym.o" "${args[@]}" -lndls
