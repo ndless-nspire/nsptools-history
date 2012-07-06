@@ -1,16 +1,16 @@
 CC=gcc
 CFLAGS=-W -Wall
 SCRIPTS=nspire-gcc nspire-ld nspire-as nspire-tools Makefile.tpl
-vpath ../../bin
+vpath ../../Ndless-SDK/ndless/bin
 
 all: init scripts
 
 init:
-	@mkdir -p ../../bin
+	@mkdir -p ../../Ndless-SDK/ndless/bin
 
 scripts:
-	cp $(SCRIPTS) ../../bin
-	chmod +x ../../bin/nspire-*
+	cp $(SCRIPTS) ../../Ndless-SDK/ndless/bin
+	chmod +x ../../Ndless-SDK/ndless/bin/nspire-*
 
 clean:
-	cd ../../bin && rm -f $(SCRIPTS) || :
+	cd ../../Ndless-SDK/ndless/bin && rm -f $(SCRIPTS) || :

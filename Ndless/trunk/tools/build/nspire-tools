@@ -3,6 +3,7 @@
 function usage() {
 	echo "Usage: nspire-tools <command> <args>"
 	echo -e "   new <program>:   Generate a standard Makefile for <program>.tns"
+	echo -e "   main:            Create an empty main.c"
 }
 
 
@@ -45,9 +46,20 @@ case "$1" in
 				exit 0
 			fi
 		fi
-		sed -e "s/@@EXENAME@@/$2/" "$DIRNAME/Makefile.tpl" > Makefile
-		echo "Makefile created. You can now build with 'make'."
-		;; 
+		prgmname=`echo "$2" | tr -d ' '`
+		sed -e "s/@@EXENAME@@/$prgmname/" "$DIRNAME/Makefile.tpl" > Makefile
+		echo "Makefile created. You can now build with the 'make' command or Ndless Editor's Tools>Build command."
+		;;
+	main)
+		if [ -f main.c ]; then
+			echo -n "Makefile already exists. Overwrite? (y/n) "
+			read yn
+			if [ "$yn" != "y" ]; then
+				exit 0
+			fi
+		fi
+		cp "$DIRNAME/main.c.tpl" main.c
+		;;
 	*)
 		usage
 		exit 1
