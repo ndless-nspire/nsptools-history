@@ -11,24 +11,10 @@ to build Ndless.
 You *don't* need to follow this procedure to set up a C/ARM development environment to
 build TI-Nspire programs. This setup is described in ReadMe.txt.
 
-C
-=
-
-- MSYS with MinGW: http://www.mingw.org/wiki/msys
-- Optionally install dash for MSYS: http://sourceforge.net/projects/mingw/files/MSYS/dash
-  It may be used for compatibility check when maintaining the shell scripts.
-- Make sure you are using GCC v4.5.x for ARM
+Misc
+====
 
 * Copy Ndless/Makefile.config.tpl to Ndless/Makefile.config and configure the latter
-
-ARM
-===
-
-- Set up the toolchain as described in ReadMe.txt. Ndless is built with itself, and
-  you may not be able to use a previous version of Ndless to build it.
-  You thus need to build the toolchain (cd tools && make) and add the bin/ directory
-  at the root of the project to the PATH environment variable, and remove any bin/
-  directory of a previous version of Ndless.
 
 Luna
 ====
@@ -42,9 +28,10 @@ Lua scripts.
 Building
 ========
 
-From Ndless root directory:
+* Open the NdlessEditor in Ndless-SDK/, choose Tools > Ndless SDK Console, 'cd' 
+to Ndless's root and use one of the following commands:
 
-* make: builds the artifacts
+* make: builds all the artifacts
 * make arm: builds the ARM artifacts
 * make dist: builds the artificats and create a release directory (dist)
 * make distbin: incremental dist during development

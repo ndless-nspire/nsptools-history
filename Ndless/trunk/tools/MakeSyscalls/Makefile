@@ -9,9 +9,9 @@ idb2idc:
 	(cd $(IDC_FILES_DIR) && ./idb2idc.sh)
 
 syscalls:
-	./mksyscalls.sh $(IDC_FILES_DIR) ../../include/syscalls.h $(OS_VERSIONS)
+	./mksyscalls.sh $(IDC_FILES_DIR) ../../Ndless-SDK/ndless/include/syscalls.h $(OS_VERSIONS)
 
 syscalls_light:
-	./mksyscalls.sh $(IDC_FILES_DIR) ../../include/syscalls-light.h $(OS_VERSIONS)
+	./mksyscalls.sh $(IDC_FILES_DIR) ../../Ndless-SDK/ndless/include/syscalls-light.h $(OS_VERSIONS)
 
 clean:
