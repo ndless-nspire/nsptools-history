@@ -1,7 +1,7 @@
 #!/bin/sh
 # Generate verbose Makefile targets for the different OS versions and models
 
-function get_ext {
+get_ext() {
 		case $1 in
 		ncas)   echo tno;;
 		cas)    echo tnc;;
