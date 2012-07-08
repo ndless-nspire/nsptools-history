@@ -1,18 +1,23 @@
-AS = nspire-as
+GCC = nspire-gcc
 LD = nspire-ld
+GCCFLAGS = -Os -Wall -W -marm
+LDFLAGS =
 OBJCOPY := "$(shell (which arm-elf-objcopy arm-none-eabi-objcopy arm-linux-gnueabi-objcopy | head -1) 2>/dev/null)"
-EXE = helloworld_asm.tns
-OBJS = $(patsubst %.S,%.o,$(wildcard *.S))
+ifeq (${OBJCOPY},"")
+	OBJCOPY := arm-none-eabi-objcopy
+endif
+EXE = ConsoleDemo.tns
+OBJS = ConsoleDemo.o
 DISTDIR = .
 vpath %.tns $(DISTDIR)
 
 all: $(EXE)
 
-%.o: %.S
-	$(AS) -c $<
+%.o: %.c
+	$(GCC) $(GCCFLAGS) -c $<
 
 $(EXE): $(OBJS)
-	$(LD) -nostdlib $^ -o $(@:.tns=.elf)
+	$(LD) $(LDFLAGS) $^ -o $(@:.tns=.elf) -lnspireio2
 	mkdir -p $(DISTDIR)
 	$(OBJCOPY) -O binary $(@:.tns=.elf) $(DISTDIR)/$@
 

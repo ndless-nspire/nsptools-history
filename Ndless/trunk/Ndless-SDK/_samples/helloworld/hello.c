@@ -1,9 +1,15 @@
 #include <os.h>
+#include <nspireio2.h>
 
 int main(void) {
-	// required because stdout needs the interrupts currently disabled by Ndless
-	unsigned intmask = TCT_Local_Control_Interrupts(0);
-	puts("hello world!");
-	TCT_Local_Control_Interrupts(intmask);
+	nio_console csl;
+	lcd_ingray();
+	memset(SCREEN_BASE_ADDRESS, 0, SCREEN_BYTES_SIZE);
+	// 53 columns, 29 rows. 0px offset for x/y. Background color 0 (black), foreground color 15 (white)
+	nio_InitConsole(&csl, 53, 29, 0, 0, 0, 15);
+	nio_DrawConsole(&csl);
+	nio_printf(&csl, "hello world!");
+	wait_key_pressed();
+	nio_CleanUp(&csl);
 	return 0;
 }
