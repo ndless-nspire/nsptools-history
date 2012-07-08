@@ -1,7 +1,5 @@
 - colors: color screen demo. Only for TI-Nspire CX.
 - particles.tns: screen/keyboard demo.
-- hello.tns: C Hello World. Run it in nspire_emu or with an RS232 adapter.
-- hella.tns: ARM Hello World.
+- helloworld.tns: Hello World in C.
+- helloworld_asm.tns: Hello World in ARM assembly.
 - luaextdemo.luax.tns and runluaextdemo.lua: Lua native extension demo
-
-Source code is available in src/samples.

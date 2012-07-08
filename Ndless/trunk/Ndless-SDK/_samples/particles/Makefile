@@ -8,7 +8,7 @@ ifeq (${OBJCOPY},"")
 endif
 EXE = particles.tns
 OBJS = $(patsubst %.c,%.o,$(wildcard *.c))
-DISTDIR = ../../calcbin/samples
+DISTDIR = .
 vpath %.tns $(DISTDIR)
 
 all: $(EXE)

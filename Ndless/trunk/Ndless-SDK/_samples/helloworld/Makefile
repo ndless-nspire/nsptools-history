@@ -1,14 +1,14 @@
 GCC = nspire-gcc
 LD = nspire-ld
-GCCFLAGS = -Os -Wall -W -marm
-LDFLAGS =
+GCCFLAGS = -Os -nostdlib -Wall -W -marm
+LDFLAGS = -nostdlib
 OBJCOPY := "$(shell which arm-elf-objcopy 2>/dev/null)"
 ifeq (${OBJCOPY},"")
 	OBJCOPY := arm-none-eabi-objcopy
 endif
-EXE = colors.tns
+EXE = helloworld.tns
 OBJS = $(patsubst %.c,%.o,$(wildcard *.c))
-DISTDIR = ../../calcbin/samples
+DISTDIR = .
 vpath %.tns $(DISTDIR)
 
 all: $(EXE)

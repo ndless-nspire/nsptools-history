@@ -1,9 +1,7 @@
-SUBDIRS = tools libndls arm samples
+SUBDIRS = tools libndls arm Ndless-SDK/_samples
 SUBDIR_TOOLS = tools
 SUBDIRSCLEAN = $(SUBDIRS)
 DISTDIRS = calcbin
-SDKDISTDIRS = bin lib
-SDKDIRS = $(SDKDISTDIRS) include system
 
 all: subdirs
 
@@ -19,14 +17,18 @@ all_tools:
 	echo "make all in $$i..."; \
   (cd $$i; make all) || exit 1; done
 
-# Incremental binary dist for development
-distbin: all
+distdir:
 	mkdir -p dist
+
+distsamples: distdir samples
+	mkdir -p dist/samples
+	cp Ndless-SDK/_samples/particles/particles.tns dist/samples
+
+# Incremental binary dist for development
+distbin: distdir all distsamples
 	@# system's artefacts shouldn't be distributed
-	(cd system && make clean)
+	(cd Ndless-SDK/ndless/system && make clean)
 	cp -r $(DISTDIRS) dist
-	mkdir -p dist/sdk
-	cp -r $(SDKDIRS) dist/sdk
 	cp "Mozilla-Public-License-v1.1.html" doc/ReadMe.txt doc/Changes.txt doc/ndless-particle-demo.gif dist
 	find dist -name .svn -o -name "*~" | xargs rm -rf
 
@@ -36,7 +38,7 @@ dist: cleandist distsrc distbin
 
 distsrc: clean
 	mkdir -p dist/src
-	cp -r `ls | grep -v dist | grep -v Ndless-SDK ` dist/src
+	cp -r `ls | grep -v dist | grep -v Ndless-SDK` dist/src
 	find dist -name Makefile.config -o -name upload_cookies.txt | xargs rm -rf
 
 cleandist:
@@ -59,9 +61,9 @@ rlibndls:
 
 .PHONY: samples
 samples:
-	(cd samples && make)
+	(cd Ndless-SDK/_samples && make)
 rsamples:
-	(cd samples && make clean all)
+	(cd Ndless-SDK/_samples && make clean all)
 
 .PHONY: tests
 tests:

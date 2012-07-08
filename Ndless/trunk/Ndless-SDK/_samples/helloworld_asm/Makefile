@@ -1,9 +1,9 @@
 AS = nspire-as
 LD = nspire-ld
 OBJCOPY := "$(shell (which arm-elf-objcopy arm-none-eabi-objcopy arm-linux-gnueabi-objcopy | head -1) 2>/dev/null)"
-EXE = hella.tns
+EXE = helloworld_asm.tns
 OBJS = $(patsubst %.S,%.o,$(wildcard *.S))
-DISTDIR = ../../calcbin/samples
+DISTDIR = .
 vpath %.tns $(DISTDIR)
 
 all: $(EXE)
@@ -18,4 +18,4 @@ $(EXE): $(OBJS)
 
 clean:
 	rm -f *.o *.elf
-	rm -f $(DISTDIR)/hella.tns
+	rm -f $(DISTDIR)/$(EXE)

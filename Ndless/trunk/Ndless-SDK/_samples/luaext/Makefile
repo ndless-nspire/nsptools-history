@@ -9,7 +9,7 @@ endif
 EXE = luaextdemo.luax.tns
 LUATNS = runluaextdemo.tns
 OBJS = $(patsubst %.c,%.o,$(wildcard *.c))
-DISTDIR = ../../calcbin/samples
+DISTDIR = .
 vpath %.tns $(DISTDIR)
 
 all: $(EXE) $(LUATNS)
