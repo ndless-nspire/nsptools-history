@@ -6,8 +6,9 @@ end
 fn()
 
 function makeall()
-		-- ^&: Windows escape
-	local out = spawner.popen(props['ndls.sh'] .. " '" .. props['ndls.path'] .. " ^&^& cd \\'" .. props['FileDir'] .. "\\' ^&^& make'")
+	-- ^&: Windows escape
+	print(props['ndls.sh'] .. " '" .. props['ndls.path'] .. " ^&^& cd \"" .. props['FileDir'] .. "\" ^&^& make'")
+	local out = spawner.popen(props['ndls.sh'] .. " '" .. props['ndls.path'] .. " ^&^& cd \"" .. props['FileDir'] .. "\" ^&^& make'")
 	for line in out:lines() do
 		print(line)
 	end

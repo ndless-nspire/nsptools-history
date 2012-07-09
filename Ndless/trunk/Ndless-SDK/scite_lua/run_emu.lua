@@ -12,7 +12,7 @@ fn()
 -- return nil if not found
 function getres(resmask, errmsg)
 	local respath_prefix = props['SciteDefaultHome'] .. "/emu_resources"
-	local out = spawner.popen(props['ndls.sh'] .. " 'ls \\'" .. respath_prefix .. "/\\'" .. resmask .. "'")
+	local out = spawner.popen(props['ndls.sh'] .. " 'ls \"" .. respath_prefix .. "/\"" .. resmask .. "'")
 	for line in out:lines() do
 		out = line
 		break
