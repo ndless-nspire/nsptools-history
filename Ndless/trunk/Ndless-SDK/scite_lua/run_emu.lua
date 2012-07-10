@@ -9,7 +9,7 @@ end
 fn()
 
 -- resmask can contain any bash wildcard
--- return nil if not found
+-- returns the path of the resource or nil if not found
 function getres(resmask, errmsg)
 	local respath_prefix = props['SciteDefaultHome'] .. "/emu_resources"
 	local out = spawner.popen(props['ndls.sh'] .. " 'ls \"" .. respath_prefix .. "/\"" .. resmask .. "'")
@@ -29,22 +29,26 @@ function getres(resmask, errmsg)
 	end
 end
 
-if scite_FileExists(props['SciteDefaultHome'] .. "/emu_resources/nand.img") then
-	
-	
-else
-	local txx = getres("*.tco")
-	if not txx then txx = getres("*.tcc", "OS not found.") end
-	if txx then
-		local boot1 = getres("boot1.img.tns", "Boot1 not found.")
-		if boot1 then
+local txx = getres("*.tco")
+if not txx then txx = getres("*.tcc", "OS not found.") end
+if txx then
+	local casswitch = string.find(txx, ".tcc$") and "C" or ""
+	local boot1 = getres("boot1.img.tns", "Boot1 not found.")
+	if boot1 then
+
+		local nand_path = getres("*.img")
+		if nand_path then
+			local ns_spawner = spawner.new(props['SciteDefaultHome'] .. "\\nspire_emu\\nspire_emu.bat \"/1=" .. boot1 .. "\" \"/F=" .. nand_path .. "\" /MX" .. casswitch)
+			ns_spawner:run()
+		
+		else
 			local boot2 = getres("boot2.img.tns", "Boot2 not found.")
 			if boot2 then
-				local casswitch = string.find(txx, ".tcc$") and "C" or ""
 				local ns_spawner = spawner.new(props['SciteDefaultHome'] .. "\\nspire_emu\\nspire_emu.bat \"/1=" .. boot1 .. "\" \"/PO=" .. txx .. "\" \"/PB=" .. boot2 .. "\" /MX" .. casswitch)
 				ns_spawner:run()
 			end
+		 
 		end
+
 	end
- 
 end
