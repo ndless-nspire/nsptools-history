@@ -1,6 +1,3 @@
--- TODO if already running, to launch it
--- auto save flash ?
-
 local fn = package.loadlib(props['SciteDefaultHome'] .. "/spawner-ex/spawner-ex.dll", "luaopen_spawner")
 if not fn then
 	print("Can't load spawner-ex")
