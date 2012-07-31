@@ -29,8 +29,10 @@ char *fgets(char *str, int num, FILE *stream) {
 	while (num--) {
 		int c = fgetc(stream);
 		if (c == EOF) {
-			if (str2 != str)
+			if (str2 != str) {
 				*str2 = '\0';
+				return str;
+			}
 			return NULL;
 		}
 		*str2++ = c;
