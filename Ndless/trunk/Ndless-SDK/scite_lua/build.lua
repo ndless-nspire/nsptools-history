@@ -11,14 +11,16 @@ function makeall()
 	for line in out:lines() do
 		print(line)
 	end
+	print("Built.")
 end
 
 local file = io.open(props['FileDir'] .. "/Makefile", "r")
 if not file then
-		scite.StripShow("!'Target program name:'[]((OK))(&Cancel)")
+	print("Please choose a name for the program.")
+	scite.StripShow("!'Target program name:'[]((OK))(&Cancel)")
 else
-		io.close(file)
-		makeall()
+	io.close(file)
+	makeall()
 end
 
 function OnStrip(control, change)

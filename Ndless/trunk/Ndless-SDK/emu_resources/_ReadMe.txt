@@ -16,8 +16,17 @@ the OS image install itself to a NAND image.
 5) Set up the NAND image from the NdlessEditor with Tools > 'Run the TI-
    Nspire emulator'. Let the OS reboot, then press 'I' when asked. The OS will 
    install and boot up.
+   
+6) Install Ndless:
+   Create a new folder called 'ndless' in 'My Documents'.
+   Set the target folder with 'Link > Set Target Folder...' to 'ndless'.
+   Transfer ndless_resources.tns with 'Link > Connect' then
+   'Link > Send Document...'.
+   Transfer 'ndless_installer-3.1.0.tco|.tcc' with 'Link > Connect' then
+   'Link > Send OS...'.
+   A popup should confirm the installation.
 
-6) Save the NAND (flash) image with the File > 'Save Flash As...' option of 
+7) Save the NAND (flash) image with the File > 'Save Flash As...' option of 
    nspire_emu to a file named 'nand.img' in this directory.
    The image will be loaded the next time you launch the emulator from the 
-   NdlessEditor.
+   NdlessEditor (Tools > TI-Nspire emulator).
