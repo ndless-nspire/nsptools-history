@@ -16,6 +16,15 @@ end
 if string.find(tns, "No such file")	then
 	print("You must first build the program with Tools > Build.")
 else
+	-- Launch the emu if not running
+	local out = spawner.popen(props['SciteDefaultHome'] .. "\\autoit\\autoit3.exe \"" .. props['SciteDefaultHome'] .. "\\autoit\\scripts\\is_emu_running.au3\"")
+	for line in out:lines() do
+		if line == "NO" then
+			dofile(props['SciteDefaultHome'] .. "/scite_lua/run_emu.lua")
+		end
+		break
+	end
+	-- Run the program
 	local au_spawner = spawner.new(props['SciteDefaultHome'] .. "\\autoit\\autoit3.exe \"" .. props['SciteDefaultHome'] .. "\\autoit\\scripts\\tx_run_prgm_in_emu.au3\" \"" .. tns .. "\"")
 	au_spawner:run()
 end
