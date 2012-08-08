@@ -33,6 +33,7 @@
    char * value;
    unsigned len = show_msg_user_input(title, msg, defaultvalue, &value);
    printf("%s (%d)\n", value, len);
+   free(value);
 */
 
 #include <os.h>
@@ -54,7 +55,10 @@ int show_msg_user_input(const char * title, const char * msg, char * defaultvalu
 	string_free(s_msg);
 
 	if(no_error && len_out > 0) {
-		*value_ref = string_to_ascii(request_value);
+		char * t = string_to_ascii(request_value);
+		*value_ref = malloc(sizeof(char)*(len_out+1));
+		strncpy(*value_ref, t, len_out);
+		(*value_ref)[len_out] = 0;
 		string_free(request_value);
 		return len_out;
 	}
