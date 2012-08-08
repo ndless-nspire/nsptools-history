@@ -13,13 +13,33 @@
 If $CmdLine[0] <> 1 Then
 	Exit 1
  EndIf
-If WinWait("nspire_emu", "", 1) == 0 Then
+WinWaitAndActivate("nspire_emu")
+Opt("SendKeyDownDelay", 70) ; else nspire_emu may not react
+GoHome()
+Send("{2}"); My Documents
+WinMenuSelectItem("nspire_emu", "", "&Link", "&Connect")
+;Send("!l!c") ; Link > Connect
+Sleep(200)
+WinMenuSelectItem("nspire_emu", "", "&Link", "Set Target &Folder...")
+;Send("!l!f") ; Link > Set Target Folder...
+WinWaitAndActivate("Set target folder")
+ControlSetText("Set target folder", "", 2, "ndless")
+Send("{ENTER}")
+WinWaitClose("Set target folder")
+WinMenuSelectItem("nspire_emu", "", "&Link", "&Send Document...")
+WinWaitAndActivate("[CLASS:#32770; INSTANCE:1]") ; Open File
+ControlSetText("[LAST]", "", 1148, $CmdLine[1]) ; File path
+Send("{ENTER}")
+WinWaitClose("[CLASS:#32770; INSTANCE:1]")
+
+; ControlClick("nspire_emu", "", "[CLASS:nspire_keys; INSTANCE:1]", "left", 1, 164, 128) ; -- 'Menu' key
+
+Func WinWaitAndActivate($title)
+   If WinWait($title, "", 1) == 0 Then
    Exit 1
 EndIf
-
-WinActivate("nspire_emu")
-Opt("SendKeyDownDelay", 100) ; else nspire_emu may not react
-GoHome()
+WinActivate($title)
+EndFunc
 
 ; Goes to the home screen, takes a screenshot, extracts a sample and checks that it matches the emu_home.png sample to make sure we are on the home screen.
 Func GoHome()
@@ -76,22 +96,4 @@ Func CompareBitmaps($bm1, $bm2)
     
     Return ($call[0]=0)
     
-EndFunc  ;==>CompareBitmaps
-
-
-;local $winpos = WinGetPos("nspire_emu")
-;local $trect = _WinAPI_GetClientRect(_WinAPI_FindWindow("nspire_emu", "nspire_emu"))
-;local $client_x = DllStructGetData($tRect, "Left") 
-;local $client_y = DllStructGetData($tRect, "Right") 
-;local $csize = WinGetClientSize("nspire_emu")
-;local $scrpos = ControlGetPos("nspire_emu", "", "[CLASS:nspire_gfx; INSTANCE:1]")
-;MsgBox(4096, "", $scrpos[1])
-;local $hBMP = _ScreenCapture_Capture("C:\temp\test.bmp", $client_x, $client_y, DllStructGetData($tRect, "Top"), DllStructGetData($tRect, "Bottom")  )
-;local $hImage = _GDIPlus_BitmapCreateFromHBITMAP($hBMP)
-
-;_ClipBoard_Open(0)
-;local $sshot = _ClipBoard_GetData($CF_DIB)
-;MsgBox(4096, "", _GDIPlus_BitmapCreateHBITMAPFromBitmap($sshot))
-
-;MsgBox(4096, "", _ClipBoard_EnumFormats(2))
-
+EndFunc

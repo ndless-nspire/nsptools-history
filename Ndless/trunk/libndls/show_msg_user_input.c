@@ -33,35 +33,33 @@
    char * value;
    unsigned len = show_msg_user_input(title, msg, defaultvalue, &value);
    printf("%s (%d)\n", value, len);
-   free(value);
 */
 
 #include <os.h>
 
 int show_msg_user_input(const char * title, const char * msg, char * defaultvalue, char ** value_ref) {
 
-  unsigned len_input = strlen(defaultvalue);
-  char request_value[(len_input + 1) * 2];
-  char title16[(strlen(title) + 1) * 2];
-  char msg16[(strlen(msg) + 1) * 2];
-  ascii2utf16(title16, title, sizeof(title16));
-  ascii2utf16(msg16, msg, sizeof(msg16));
-  ascii2utf16(request_value, defaultvalue, sizeof(request_value));
-  char **p_msg = (char **) &msg16;
-  char **p_value = (char **) &request_value;
-  char **request_struct[] = {(char**)&p_msg, (char**)&p_value};  
+	unsigned len_input = strlen(defaultvalue);
+	String request_value = string_new();
+	String s_title = string_new();	
+	String s_msg = string_new();	
+	string_set_ascii(request_value, defaultvalue);	
+	string_set_ascii(s_title, title);	
+	string_set_ascii(s_msg, msg);	
+	String request_struct[] = {s_msg, request_value};	
 
-  int no_error = _show_msgUserInput(0, request_struct, title16, msg16);
- 
-  unsigned len_out = (no_error) ? utf16_strlen(*request_struct[1]) : 0;
-  if(no_error && len_out > 0) {
-    char * newvalue;
-    newvalue = malloc(sizeof(char) * (len_out + 1));
-    *value_ref = newvalue;
-    if (!newvalue) return -1;
-    utf162ascii(newvalue, *request_struct[1], len_out);
+	int no_error = _show_msgUserInput(0, request_struct, s_title->str, s_msg->str);
+	unsigned len_out = (no_error) ? request_value->len : 0;	
+	string_free(s_title);	
+	string_free(s_msg);
+
+	if(no_error && len_out > 0) {
+		*value_ref = string_to_ascii(request_value);
+		string_free(request_value);
 		return len_out;
-  }
-  else
-    return -1;
+	}
+	else {
+		string_free(request_value);
+		return -1;
+	}
 }	

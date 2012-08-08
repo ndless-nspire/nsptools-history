@@ -204,6 +204,36 @@ static __attribute__ ((unused)) unsigned _syscallvar_savedlr;
 }
 
 /* OS syscalls */
+
+
+/* String API */
+
+typedef struct {
+  char * str;
+  int len;
+  int chunck_size;
+  int unknown_field;
+} * String;
+
+_SYSCALL0(String, string_new)
+_SYSCALL1(void, string_free, String)
+_SYSCALL1(char *, string_to_ascii, String)
+_SYSCALL1(void, string_lower, String)
+_SYSCALL2(char, string_charAt, String, int /* pos */)
+_SYSCALL2(int, string_concat_utf16, String, const char *)
+_SYSCALL2(int, string_set_ascii, String, const char *)
+_SYSCALL2(int, string_set_utf16, String, const char *)
+_SYSCALL3(int, string_indexOf_utf16, String, int /* start */, const char *)
+_SYSCALL3(int, string_last_indexOf_utf16, String, int /* start */, const char *)
+_SYSCALL2(int, string_compareTo_utf16, String, const char *)
+_SYSCALL4(char *, string_substring, String /* dest */, String /* source */, int /* begin index */, int /* end index (excluded)*/)
+_SYSCALL2(void, string_erase, String, int /* ending index */)
+_SYSCALL2(void, string_truncate, String, int /* starting index */)
+_SYSCALL3(char *, string_substring_utf16, String, const char *, int *)
+_SYSCALL4(int, string_insert_replace_utf16, String, const char *, int /* start */, int /* end */)
+_SYSCALL3(int, string_insert_utf16, String, const char *, int /* pos */)
+_SYSCALLVAR(int, __attribute__((__format__(__printf__,2,3))), string_sprintf_utf16, __attribute__((unused))  String arg0, __attribute__((unused)) const char * arg1,  ...)
+
 _SYSCALL1(int, read_unaligned_longword, void *)
 _SYSCALL1(int, read_unaligned_word, void *)
 _SYSCALL3(void, ascii2utf16, void *, const char *, int)
@@ -217,8 +247,8 @@ _SYSCALL(int /* 5103=OK, 5104=CANCEL */, _show_1NumericInput, int undef, const c
 
 _SYSCALL(int /* 5103=OK, 5104=CANCEL */, _show_2NumericInput, int undef, const char *title, const char *subtitle, const char *input1_title, int *value1_ref, unsigned undef2, int min_value1, int max_value1, const char *input2_title, int *value2_ref, unsigned undef3, int min_value2, int max_value2) _SYSCALL_ARGS(int, _show_2NumericInput, undef, title, subtitle, input1_title, value1_ref, undef2, min_value1, max_value1, input2_title, value2_ref, undef3, min_value2, max_value2)
 
-_SYSCALL(int /* 1=OK, 0=CANCEL */, _show_msgUserInput, int undef, char *** struct_ref /* msg str ref & default value str ref array */, const char * title, const char * input_title) _SYSCALL_ARGS(int, _show_msgUserInput, undef, struct_ref, title, input_title) // depreciated, use show_msgUserInput from libndls
-
+_SYSCALL(int /* 1=OK, 0=CANCEL */, _show_msgUserInput, int undef, String * struct_ref /* msg str ref & default value str ref array */, const char * title, const char * input_title) _SYSCALL_ARGS(int, _show_msgUserInput, undef, struct_ref, title, input_title) // depreciated, use show_msgUserInput from libndls
+ 
 _SYSCALL0(int *, errno_addr)
 #define errno (*errno_addr())
 

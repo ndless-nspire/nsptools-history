@@ -224,11 +224,29 @@
 #define e_rand 206
 #define e_srand 207
 #define e_strtoul 208
+#define e_string_new 209
+#define e_string_free 210
+#define e_string_to_ascii 211
+#define e_string_lower 212
+#define e_string_charAt 213
+#define e_string_concat_utf16 214
+#define e_string_set_ascii 215
+#define e_string_set_utf16 216
+#define e_string_indexOf_utf16 217
+#define e_string_last_indexOf_utf16 218
+#define e_string_compareTo_utf16 219
+#define e_string_substring 220
+#define e_string_erase 221
+#define e_string_truncate 222
+#define e_string_substring_utf16 223
+#define e_string_insert_replace_utf16 224
+#define e_string_insert_utf16 225
+#define e_string_sprintf_utf16 226
 
 // END_OF_LIST (always keep this line after the last constant, used by mksyscalls.sh)
 
 // Must be kept up-to-date with the value of the last syscall
-#define __SYSCALLS_LAST 208
+#define __SYSCALLS_LAST 226
 
 // Flag: 3 higher bits of the 3-bytes comment field of the swi instruction
 #define __SYSCALLS_ISEXT 0x200000

@@ -13,8 +13,7 @@ int main(void) {
    if ((len = show_msg_user_input(title, msg1, defaultvalue, &value)) == -1) return 0;
    printf("%s (%d)\n", value, len);
    show_msgbox(title, value); // y u no work
-   free(value);
-
+   
    int value1 = 42;
    int value2 = 1337;
    char popup1_result[256];
