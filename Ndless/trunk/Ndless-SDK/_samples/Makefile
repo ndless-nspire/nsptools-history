@@ -1,4 +1,4 @@
-SUBDIRS = colors helloworld particles luaext
+SUBDIRS = colors helloworld helloworld-sdl particles luaext
 
 all:
 	@for i in $(SUBDIRS); do \
