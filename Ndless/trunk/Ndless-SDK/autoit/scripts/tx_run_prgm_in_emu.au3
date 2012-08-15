@@ -23,7 +23,7 @@ Sleep(200)
 WinMenuSelectItem("nspire_emu", "", "&Link", "Set Target &Folder...")
 ;Send("!l!f") ; Link > Set Target Folder...
 WinWait("Set target folder", "", 0)
-ControlSetText("[LAST]", "", 2, "ndless")
+ControlSetText("[LAST]", "", 3, "ndless")
 Send("{ENTER}")
 WinWaitClose("Set target folder")
 WinMenuSelectItem("nspire_emu", "", "&Link", "&Send Document...")
