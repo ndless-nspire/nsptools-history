@@ -7,7 +7,8 @@ if not fn then
 end
 fn()
 
-local out = spawner.popen(props['ndls.sh'] .. " 'ls \"" .. props['FileDir'] .. "/\"*.tns'")
+print(props['ndls.sh'] .. " 'cd \"" .. props['FileDir'] .. "\" ^&^& ls *.tns'")
+local out = spawner.popen(props['ndls.sh'] .. " 'cd \"" .. props['FileDir'] .. "\" ^&^& ls *.tns'")
 local tns
 for line in out:lines() do
 	tns = line
@@ -25,6 +26,6 @@ else
 		break
 	end
 	-- Run the program
-	local au_spawner = spawner.new(props['SciteDefaultHome'] .. "\\autoit\\autoit3.exe \"" .. props['SciteDefaultHome'] .. "\\autoit\\scripts\\tx_run_prgm_in_emu.au3\" \"" .. tns .. "\"")
+	local au_spawner = spawner.new(props['SciteDefaultHome'] .. "\\autoit\\autoit3.exe \"" .. props['SciteDefaultHome'] .. "\\autoit\\scripts\\tx_run_prgm_in_emu.au3\" \"" .. props['FileDir'] .. "\\" .. tns .. "\"")
 	au_spawner:run()
 end

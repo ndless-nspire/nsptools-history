@@ -22,12 +22,12 @@ WinMenuSelectItem("nspire_emu", "", "&Link", "&Connect")
 Sleep(200)
 WinMenuSelectItem("nspire_emu", "", "&Link", "Set Target &Folder...")
 ;Send("!l!f") ; Link > Set Target Folder...
-WinWaitAndActivate("Set target folder")
-ControlSetText("Set target folder", "", 2, "ndless")
+WinWait("Set target folder", "", 0)
+ControlSetText("[LAST]", "", 2, "ndless")
 Send("{ENTER}")
 WinWaitClose("Set target folder")
 WinMenuSelectItem("nspire_emu", "", "&Link", "&Send Document...")
-WinWaitAndActivate("[CLASS:#32770; INSTANCE:1]") ; Open File
+WinWait("[CLASS:#32770; INSTANCE:1]", "", 0)
 ControlSetText("[LAST]", "", 1148, $CmdLine[1]) ; File path
 Send("{ENTER}")
 WinWaitClose("[CLASS:#32770; INSTANCE:1]")
@@ -35,7 +35,7 @@ WinWaitClose("[CLASS:#32770; INSTANCE:1]")
 ; ControlClick("nspire_emu", "", "[CLASS:nspire_keys; INSTANCE:1]", "left", 1, 164, 128) ; -- 'Menu' key
 
 Func WinWaitAndActivate($title)
-   If WinWait($title, "", 1) == 0 Then
+   If WinWait($title, "", 0) == 0 Then
    Exit 1
 EndIf
 WinActivate($title)
@@ -49,6 +49,7 @@ Func GoHome()
 
    If Not _ClipBoard_Open(0) Then Exit _WinAPI_ShowError("_ClipBoard_Open failed")
    local $hMemory = _ClipBoard_GetDataEx($CF_BITMAP)
+   _ClipBoard_Close()
    If $hMemory = 0 Then Exit _WinAPI_ShowError("_ClipBoard_GetDataEx failed")
 
    _GDIPlus_Startup()
