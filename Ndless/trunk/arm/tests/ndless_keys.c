@@ -92,7 +92,6 @@ int main(void) {
 		if (isKeyPressed(KEY_NSPIRE_E)) puts("KEY_NSPIRE_E");
 		if (isKeyPressed(KEY_NSPIRE_VAR)) puts("KEY_NSPIRE_VAR");
 		if (isKeyPressed(KEY_NSPIRE_D)) puts("KEY_NSPIRE_D");
-		if (isKeyPressed(KEY_NSPIRE_CAPS)) puts("KEY_NSPIRE_CAPS");
 		if (isKeyPressed(KEY_NSPIRE_DEL)) puts("KEY_NSPIRE_DEL");
 		if (isKeyPressed(KEY_NSPIRE_LTHAN)) puts("KEY_NSPIRE_LTHAN");
 		if (isKeyPressed(KEY_NSPIRE_FLAG)) puts("KEY_NSPIRE_FLAG");
