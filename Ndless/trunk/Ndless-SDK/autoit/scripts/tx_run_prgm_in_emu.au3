@@ -18,10 +18,8 @@ Opt("SendKeyDownDelay", 70) ; else nspire_emu may not react
 GoHome()
 Send("{2}"); My Documents
 WinMenuSelectItem("nspire_emu", "", "&Link", "&Connect")
-;Send("!l!c") ; Link > Connect
 Sleep(200)
 WinMenuSelectItem("nspire_emu", "", "&Link", "Set Target &Folder...")
-;Send("!l!f") ; Link > Set Target Folder...
 WinWait("Set target folder", "", 0)
 ControlSetText("[LAST]", "", 3, "ndless")
 Send("{ENTER}")
@@ -30,9 +28,6 @@ WinMenuSelectItem("nspire_emu", "", "&Link", "&Send Document...")
 WinWait("[CLASS:#32770; INSTANCE:1]", "", 0)
 ControlSetText("[LAST]", "", 1148, $CmdLine[1]) ; File path
 Send("{ENTER}")
-WinWaitClose("[CLASS:#32770; INSTANCE:1]")
-
-; ControlClick("nspire_emu", "", "[CLASS:nspire_keys; INSTANCE:1]", "left", 1, 164, 128) ; -- 'Menu' key
 
 Func WinWaitAndActivate($title)
    If WinWait($title, "", 0) == 0 Then
@@ -68,7 +63,6 @@ EndFunc
 
 ; Returns true if the same
 Func CompareBitmaps($bm1, $bm2)
-    
     $Bm1W = _GDIPlus_ImageGetWidth($bm1)
     $Bm1H = _GDIPlus_ImageGetHeight($bm1)
     $BitmapData1 = _GDIPlus_BitmapLockBits($bm1, 0, 0, $Bm1W, $Bm1H, $GDIP_ILMREAD, $GDIP_PXF32RGB)
@@ -96,5 +90,4 @@ Func CompareBitmaps($bm1, $bm2)
     _GDIPlus_BitmapUnlockBits($bm2, $BitmapData2)
     
     Return ($call[0]=0)
-    
 EndFunc

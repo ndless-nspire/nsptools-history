@@ -44,7 +44,7 @@ distsrc: clean
 distsdk: dist
 	mkdir -p distsdk
 	cp -r Ndless-SDK/* distsdk
-	find distsdk -name .svn | xargs rm -rf
+	find distsdk -name .svn -o -name "*~" -o -name "*.img.tns" -o -name "*.img" -o -name "*.tcc" | xargs rm -rf
 
 cleandist:
 	rm -rf dist
