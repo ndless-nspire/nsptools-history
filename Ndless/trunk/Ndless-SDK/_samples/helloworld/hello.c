@@ -4,7 +4,7 @@
 int main(void) {
 	nio_console csl;
 	lcd_ingray();
-	memset(SCREEN_BASE_ADDRESS, 0, SCREEN_BYTES_SIZE);
+	clrscr();
 	// 53 columns, 29 rows. 0px offset for x/y. Background color 0 (black), foreground color 15 (white)
 	nio_InitConsole(&csl, 53, 29, 0, 0, 0, 15);
 	nio_DrawConsole(&csl);
