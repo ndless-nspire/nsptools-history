@@ -7,7 +7,6 @@ if not fn then
 end
 fn()
 
-print(props['ndls.sh'] .. " 'cd \"" .. props['FileDir'] .. "\" ^&^& ls *.tns'")
 local out = spawner.popen(props['ndls.sh'] .. " 'cd \"" .. props['FileDir'] .. "\" ^&^& ls *.tns'")
 local tns
 for line in out:lines() do
