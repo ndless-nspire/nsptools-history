@@ -18,7 +18,7 @@ all_tools:
   (cd $$i; make all) || exit 1; done
 
 distdir:
-	mkdir -p dist
+	mkdir -p dist	
 
 distsamples: distdir samples
 	mkdir -p dist/samples
@@ -41,10 +41,18 @@ distsrc: clean
 	cp -r `ls | grep -v dist | grep -v Ndless-SDK` dist/src
 	find dist -name Makefile.config -o -name upload_cookies.txt | xargs rm -rf
 
+distsdk: dist
+	mkdir -p distsdk
+	cp -r Ndless-SDK/* distsdk
+	find distsdk -name .svn | xargs rm -rf
+
 cleandist:
 	rm -rf dist
 
-clean: cleandist
+cleandistsdk:
+	rm -rf distsdk
+
+clean: cleandist cleandistsdk
 	@for i in $(SUBDIRSCLEAN); do \
 	echo "Clearing in $$i..."; \
 	(cd $$i; make clean) || exit 1; done
@@ -71,16 +79,22 @@ tests:
 rtests:
 	(cd arm/tests && make clean all)
 
-upload: update_version_info dist
+upload: update_version_info dist distsdk
 	svn update
 	svnrev=`svn info --xml |grep revision | uniq | sed 's/\(revision="\)//' | sed 's/">//' | sed 's/[[:blank:]]*//g'`; \
 	mv dist "ndless-v3.1-beta-r$$svnrev"; \
+	mv distsdk "ndless-v3.1-beta-r$${svnrev}-sdk"; \
  	rm -rf ndless.zip ; \
+	rm -rf ndless-sdk.zip ; \
 	7z a ndless.zip "ndless-v3.1-beta-r$$svnrev"; \
+	7z a ndless-sdk.zip "ndless-v3.1-beta-r$${svnrev}-sdk"; \
 	curl --cookie upload_cookies.txt -F 'super_id=1' -F 'form_type=file' -F '__FORM_TOKEN=7df6886ff34bf2f3b93a343d' -F "name=ndless-v3.1-beta-r$$svnrev.zip" -F 'submit=Submit' -F 'file_to_upload=@ndless.zip' -F 'sort=' -F 'architecture=' -F 'notes=' http://www.unsads.com/projects/nsptools/admin/general/downloader/files/release > /dev/null; \
+	#curl --cookie upload_cookies.txt -F 'super_id=1' -F 'form_type=file' -F '__FORM_TOKEN=f9cf1b8c51890f79c2a0008e' -F "name=ndless-v3.1-beta-r$${svnrev}-sdk.zip" -F 'submit=Submit' -F 'file_to_upload=@ndless-sdk.zip' -F 'sort=' -F 'architecture=' -F 'notes=' http://www.unsads.com/projects/nsptools/admin/general/downloader/files/release > /dev/null; \
 	rm -rf ndless.zip; \
-	rm -rf "ndless-v3.1-beta-r$$svnrev"
-	echo "Check http://www.unsads.com/projects/nsptools/downloader/download/release/1"
+	#rm -rf ndless-sdk.zip; \
+	rm -rf "ndless-v3.1-beta-r$$svnrev" \
+	rm -rf "ndless-v3.1-beta-r$${svnrev}-sdk" \
+	echo "Check http://www.unsads.com/projects/nsptools/downloader/download/category/1"
 
 update_version_info:
 	@svn update
