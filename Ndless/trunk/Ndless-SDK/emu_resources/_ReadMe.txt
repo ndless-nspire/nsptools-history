@@ -4,6 +4,7 @@ the OS image install itself to a NAND image.
 
 1) Download OS "TI-Nspire CX (v 3.1)" or "TI-Nspire CX CAS (v 3.1)" from 
    http://tiplanet.org/forum/archives_list.php?id=OS+Nspire
+   Emulation of non-CX devices is not supported.
 
 2) Drop it in this directory [emu_resources]
 
