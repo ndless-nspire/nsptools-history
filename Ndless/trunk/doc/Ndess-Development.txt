@@ -11,6 +11,12 @@ to build Ndless.
 You *don't* need to follow this procedure to set up a C/ARM development environment to
 build TI-Nspire programs. This setup is described in ReadMe.txt.
 
+GCC
+===
+
+* Install MinGW which provides GCC for Windows: http://www.mingw.org/
+
+
 Misc
 ====
 
