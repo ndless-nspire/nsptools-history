@@ -39,6 +39,7 @@ EndFunc
 ; Goes to the home screen, takes a screenshot, extracts a sample and checks that it matches the emu_home.png sample to make sure we are on the home screen.
 Func GoHome()
    Send("{ESC}{ESC}{ESC}{HOME}")
+   Sleep(300)
 
    Send("{F7}") ; screenshot
 

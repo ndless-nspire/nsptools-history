@@ -1,5 +1,3 @@
--- TODO search tns, error if not found
-
 local fn = package.loadlib(props['SciteDefaultHome'] .. "/spawner-ex/spawner-ex.dll", "luaopen_spawner")
 if not fn then
 	print("Can't load spawner-ex")
