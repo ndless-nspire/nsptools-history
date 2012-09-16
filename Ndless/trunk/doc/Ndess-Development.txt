@@ -15,6 +15,7 @@ GCC
 ===
 
 * Install MinGW which provides GCC for Windows: http://www.mingw.org/
+* Make sure that the bin/ directory of MinGW is your PATH environment variable
 
 
 Misc
