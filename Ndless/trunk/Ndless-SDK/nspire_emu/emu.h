@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 typedef unsigned char      u8;
 typedef unsigned short     u16;
 typedef unsigned int       u32;
@@ -37,8 +39,8 @@ extern bool turbo_mode;
 extern bool is_halting;
 extern bool show_speed;
 
-enum { LOG_CPU, LOG_IO, LOG_FLASH, LOG_INTS, LOG_ICOUNT, LOG_USB, MAX_LOG };
-#define LOG_TYPE_TBL "CIFQ#U";
+enum { LOG_CPU, LOG_IO, LOG_FLASH, LOG_INTS, LOG_ICOUNT, LOG_USB, LOG_GDB, MAX_LOG };
+#define LOG_TYPE_TBL "CIFQ#UG";
 extern int log_enabled[MAX_LOG];
 void logprintf(int type, char *str, ...);
 
@@ -105,6 +107,8 @@ u32 apb_read_word(u32 addr);
 void apb_write_byte(u32 addr, u8 value);
 void apb_write_half(u32 addr, u16 value);
 void apb_write_word(u32 addr, u32 value);
+void *apb_save_state(size_t *size);
+void apb_reload_state(void *state);
 
 /* Declarations for cpu.c */
 
@@ -153,8 +157,11 @@ extern struct arm_state arm;
 #define EX_IRQ            6
 #define EX_FIQ            7
 
+#define current_instr_size (arm.cpsr_low28 & 0x20 ? 2 /* thumb */ : 4)
+
 void cpu_int_check();
 u32 __attribute__((fastcall)) get_cpsr();
+void set_cpsr_full(u32 cpsr);
 void __attribute__((fastcall)) set_cpsr(u32 cpsr, u32 mask);
 u32 __attribute__((fastcall)) get_spsr();
 void __attribute__((fastcall)) set_spsr(u32 cpsr, u32 mask);
@@ -162,17 +169,35 @@ void cpu_exception(int type);
 void cpu_interpret_instruction(u32 insn);
 void cpu_arm_loop();
 void cpu_thumb_loop();
+void *cpu_save_state(size_t *size);
+void cpu_reload_state(void *state);
 
 /* Declarations for debug.c */
 
+#ifdef EOF // following is only meaningful if stdio.h included
+extern FILE *debugger_input;
+#endif
+extern bool gdb_connected;
+enum DBG_REASON {
+	DBG_USER,
+	DBG_EXCEPTION,
+	DBG_EXEC_BREAKPOINT,
+	DBG_READ_BREAKPOINT,
+	DBG_WRITE_BREAKPOINT,
+};
+
 void backtrace(u32 fp);
-void debugger();
+void debugger(enum DBG_REASON reason, u32 addr);
+void *debug_save_state(size_t *size);
+void debug_reload_state(void *state);
 
 /* Declarations for des.c */
 
 void des_initialize();
 u32 des_read_word(u32 addr);
 void des_write_word(u32 addr, u32 value);
+void *des_save_state(size_t *size);
+void des_reload_state(void *state);
 
 /* Declarations for flash.c */
 
@@ -190,11 +215,25 @@ void flash_save_changes();
 int flash_save_as(char *filename);
 void flash_create_new(char **preload, int product, bool large_sdram);
 void flash_read_settings(u32 *sdram_size);
+void *flash_save_state(size_t *size);
+void flash_reload_state(void *state);
 
+/* Declarations for gdbstub.c */
+
+void gdbstub_init(int port);
+void gdbstub_reset(void);
+void gdbstub_recv(void);
+void gdbstub_debugger(enum DBG_REASON reason, u32 addr);
+void *gdbstub_save_state(size_t *size);
+void gdbstub_reload_state(void *state);
+ 
 /* Declarations for gui.c */
 
 void gui_initialize();
 void get_messages();
+extern char target_folder[256];
+void *gui_save_state(size_t *size);
+void gui_reload_state(void *state);
 
 /* Declarations for interrupt.c */
 
@@ -227,11 +266,15 @@ void int_write_word(u32 addr, u32 value);
 u32 int_cx_read_word(u32 addr);
 void int_cx_write_word(u32 addr, u32 value);
 void int_set(u32 int_num, bool on);
+void *int_save_state(size_t *size);
+void int_reload_state(void *state);
 
 /* Declarations for sha256.c */
 
 u32 sha256_read_word(u32 addr);
 void sha256_write_word(u32 addr, u32 value);
+void *sha256_save_state(size_t *size);
+void sha256_reload_state(void *state);
 
 /* Declarations for keypad.c */
 
@@ -264,6 +307,8 @@ void touchpad_cx_write(u32 addr, u32 value);
 #define TOUCHPAD_Y_MAX 0x069B
 void touchpad_set(u8 proximity, u16 x, u16 y, u8 down);
 void touchpad_gpio_change();
+void *keypad_save_state(size_t *size);
+void keypad_reload_state(void *state);
 
 /* Declarations for lcd.c */
 
@@ -272,6 +317,8 @@ void lcd_cx_draw_frame(u16 buffer[240][320], u32 colormasks[3]);
 void lcd_reset(void);
 u32 lcd_read_word(u32 addr);
 void lcd_write_word(u32 addr, u32 value);
+void *lcd_save_state(size_t *size);
+void lcd_reload_state(void *state);
 
 /* Declarations for link.c */
 
@@ -279,6 +326,8 @@ void send_file(char *filename);
 
 u32 ti84_io_link_read(u32 addr);
 void ti84_io_link_write(u32 addr, u32 value);
+void *link_save_state(size_t *size);
+void link_reload_state(void *state);
 
 /* Declarations for memory.c */
 
@@ -307,6 +356,7 @@ struct mem_area_desc {
 	u8 *ptr;
 };
 extern struct mem_area_desc mem_areas[4];
+void *virt_mem_ptr(u32 addr, u32 size);
 void *phys_mem_ptr(u32 addr, u32 size);
 
 /* Each word of memory has a flag word associated with it. For fast access,
@@ -325,7 +375,17 @@ void *phys_mem_ptr(u32 addr, u32 size);
 #define RF_CODE_TRANSLATED   32
 #define RF_CODE_NO_TRANSLATE 64
 #define RF_READ_ONLY         128
+#define RF_ARMLOADER_CB      256
 #define RFS_TRANSLATION_INDEX 8
+
+#define OS_VERSION (*(u32 *)MEM_PTR(0xA4000020))
+#define OS_VERSION_1_4_BOOT2 0x1181F220
+#define OS_VERSION_1_1_CAS 0x1014A9F0
+#define OS_VERSION_1_1_NON_CAS 0x1014A9C0
+#define OS_VERSION_1_7_CAS 0x102132A0
+#define OS_VERSION_1_7_NON_CAS 0x10211290
+#define OS_VERSION_2_0_1_CAS 0x10266900
+#define OS_VERSION_2_0_1_NON_CAS 0x10266030 
 
 u8 bad_read_byte(u32 addr);
 u16 bad_read_half(u32 addr);
@@ -342,6 +402,8 @@ void __attribute__((fastcall)) mmio_write_half(u32 addr, u32 value);
 void __attribute__((fastcall)) mmio_write_word(u32 addr, u32 value);
 
 void memory_initialize();
+void *memory_save_state(size_t *size);
+void memory_reload_state(void *state);
 
 /* Declarations for mmu.c */
 
@@ -382,6 +444,8 @@ extern ac_entry *addr_cache;
 bool addr_cache_pagefault(void *addr);
 void *addr_cache_miss(u32 addr, bool writing, fault_proc *fault);
 void addr_cache_flush();
+void *mmu_save_state(size_t *size);
+void mmu_reload_state(void *state);
 
 /* Declarations for asmcode.S */
 
@@ -393,6 +457,31 @@ u32 __attribute__((fastcall)) read_word(u32 addr);
 void __attribute__((fastcall)) write_byte(u32 addr, u32 value);
 void __attribute__((fastcall)) write_half(u32 addr, u32 value);
 void __attribute__((fastcall)) write_word(u32 addr, u32 value);
+
+/* Declarations for armsnippets.S */
+
+enum SNIPPETS {
+	SNIPPET_file_export, SNIPPET_free_block, SNIPPET_file_open, SNIPPET_file_read, SNIPPET_file_write, SNIPPET_file_close,
+	SNIPPET_file_unlink, SNIPPET_ndls_debug_alloc, SNIPPET_ndls_debug_free
+};
+extern char binary_snippets_bin_start[];
+extern char binary_snippets_bin_end[];
+#define SNIPPETS_EP_SYSCALLS_TABLE 0
+#define SNIPPETS_EP_LOAD 1
+enum ARMLOADER_PARAM_TYPE {ARMLOADER_PARAM_VAL, ARMLOADER_PARAM_PTR};
+struct armloader_load_params {
+	enum ARMLOADER_PARAM_TYPE t;
+	union {
+		struct p {
+			void *ptr;
+			unsigned int size;
+		} p;
+		u32 v; // simple value
+	};
+};
+void armloader_cb(void);
+int armloader_load_snippet(enum SNIPPETS snippet, struct armloader_load_params params[],
+                           unsigned params_num, void (*callback)(struct arm_state *));
 
 /* Declarations for schedule.c */
 
@@ -421,6 +510,8 @@ void event_clear(int index);
 void event_set(int index, int ticks);
 u32 event_ticks_remaining(int index);
 void sched_set_clocks(int count, u32 *new_rates);
+void *sched_save_state(size_t *size);
+void sched_reload_state(void *state);
 
 /* Declarations for translate.c */
 
@@ -439,6 +530,9 @@ int translate(u32 start_pc, u32 *insnp);
 void flush_translations();
 void invalidate_translation(int index);
 void fix_pc_for_fault();
+int range_translated(u32 range_start, u32 range_end);
+void *translate_save_state(size_t *size);
+void translate_reload_state(void *state);
 
 /* Declarations for usb.c */
 
@@ -462,9 +556,10 @@ void usb_write_word(u32 addr, u32 value);
 
 /* Declarations for usblink.c */
 
-void usblink_put_file(char *filepath, char *folder);
+bool usblink_put_file(char *filepath, char *folder);
 void usblink_send_os(char *filepath);
 
 void usblink_reset();
 void usblink_connect();
-void usblink_disconnect();
+void *usblink_save_state(size_t *size);
+void usblink_reload_state(void *state);

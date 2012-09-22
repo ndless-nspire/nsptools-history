@@ -184,7 +184,7 @@ void usblink_received_packet(u8 *data, u32 size) {
 	}
 }
 
-void usblink_put_file(char *filepath, char *folder) {
+bool usblink_put_file(char *filepath, char *folder) {
 	char *filename = filepath;
 	char *p;
 	for (p = filepath; *p; p++)
@@ -192,8 +192,10 @@ void usblink_put_file(char *filepath, char *folder) {
 			filename = p + 1;
 
 	FILE *f = fopen(filepath, "rb");
-	if (!f)
-		return;
+	if (!f) {
+		perror(filepath);
+		return 0;
+	}
 	if (put_file)
 		fclose(put_file);
 	put_file = f;
@@ -215,6 +217,7 @@ void usblink_put_file(char *filepath, char *folder) {
 	*(u32 *)data = BSWAP32(put_file_size); data += 4;
 	out->data_size = data - out->data;
 	usblink_send_packet();
+	return 1;
 }
 
 void usblink_send_os(char *filepath) {
@@ -327,3 +330,14 @@ void usblink_start_send() {
 		}
 	}
 }
+
+#if 0
+void *usblink_save_state(size_t *size) {
+	(void)size;
+	return NULL;
+}
+
+void usblink_reload_state(void *state) {
+	(void)state;
+}
+#endif

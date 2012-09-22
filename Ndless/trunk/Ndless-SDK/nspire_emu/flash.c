@@ -122,7 +122,7 @@ void nand_write_command(u8 command, u32 address, int addr_bytes) {
 		default:
 		unknown:
 			warn("Unknown NAND command %02X", command);
-			//debugger();
+			//debugger(DBG_EXCEPTION, 0);
 	}
 	//printf("State %02X row %08X column %04X\n", nand_state, nand_row, nand_column);
 }
@@ -142,7 +142,7 @@ u8 nand_read_data_byte() {
 		case 0x90+1: nand_state = 0xFF; return nand_metrics.chip_model;
 		default:
 			//printf("NAND read byte in state %02X\n", nand_state);
-			//debugger();
+			//debugger(DBG_EXCEPTION, 0);
 			return 0;
 	}
 }
@@ -160,7 +160,7 @@ u32 nand_read_data_word() {
 		case 0x90: nand_state = 0xFF; return nand_metrics.chip_model << 8 | nand_metrics.chip_manuf;
 		default:
 			//printf("NAND read word in state %02X\n", nand_state);
-			//debugger();
+			//debugger(DBG_EXCEPTION, 0);
 			return 0;
 	}
 }
@@ -175,7 +175,7 @@ void nand_write_data_byte(u8 value) {
 			return;
 		default:
 			printf("NAND write in state %02X\n", nand_state);
-			debugger();
+			debugger(DBG_EXCEPTION, 0);
 			return;
 	}
 }
@@ -190,7 +190,7 @@ void nand_write_data_word(u32 value) {
 			break;
 		default:
 			printf("NAND write in state %02X\n", nand_state);
-			debugger();
+			debugger(DBG_EXCEPTION, 0);
 			return;
 	}
 }
@@ -599,3 +599,14 @@ void flash_read_settings(u32 *sdram_size) {
 		*sdram_size = 32 * 1024 * 1024;
 	}
 }
+
+#if 0
+void *flash_save_state(size_t *size) {
+	(void)size;
+	return NULL;
+}
+
+void flash_reload_state(void *state) {
+	(void)state;
+}
+#endif

@@ -150,3 +150,13 @@ void int_set(u32 int_num, bool on) {
 		update_cx();
 }
 
+#if 0
+void *int_save_state(size_t *size) {
+	(void)size;
+	return NULL;
+}
+
+void int_reload_state(void *state) {
+	(void)state;
+}
+#endif

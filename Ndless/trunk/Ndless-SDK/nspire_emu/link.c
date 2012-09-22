@@ -423,3 +423,14 @@ void ti84_io_link_write(u32 addr, u32 value) {
 	}
 	bad_write_word(addr, value);
 }
+
+#if 0
+void *link_save_state(size_t *size) {
+	(void)size;
+	return NULL;
+}
+
+void link_reload_state(void *state) {
+	(void)state;
+}
+#endif

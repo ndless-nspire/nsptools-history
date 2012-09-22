@@ -119,3 +119,14 @@ void sched_set_clocks(int count, u32 *new_rates) {
 
 	sched_update_next_event(cputick);
 }
+
+#if 0
+void *sched_save_state(size_t *size) {
+	(void)size;
+	return NULL;
+}
+
+void sched_reload_state(void *state) {
+	(void)state;
+}
+#endif

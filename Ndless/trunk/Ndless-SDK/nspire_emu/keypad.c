@@ -270,3 +270,14 @@ void touchpad_cx_write(u32 addr, u32 value) {
 	}
 	//bad_write_word(addr, value);
 }
+
+#if 0
+void *keypad_save_state(size_t *size) {
+	(void)size;
+	return NULL;
+}
+
+void keypad_reload_state(void *state) {
+	(void)state;
+}
+#endif

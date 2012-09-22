@@ -29,7 +29,9 @@ LRESULT CALLBACK message_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 				free((void *)lParam);
 				break;
 			case ID_DEBUGGER:
-				debugger();
+				SetForegroundWindow(GetConsoleWindow());
+				debugger(DBG_USER, 0);
+				SetForegroundWindow(hwndMain);
 				break;
 			case ID_RESET:
 				cpu_events |= EVENT_RESET;
@@ -251,7 +253,7 @@ LRESULT CALLBACK keys_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		UINT align = SetTextAlign(hdc, TA_CENTER);
 		for (row = 0; row < KEYPAD_ROWS; row++) {
 			for (col = 0; col < KEYPAD_COLUMNS; col++) {
-				COLORREF tc, bc;
+				COLORREF tc = 0, bc = 0; // values not used, just suppressing uninitialized variable warning
 				const char *str;
 				if (row < 8 && col < 11)
 					str = key_names[keypad_type][row][col];
@@ -563,3 +565,14 @@ void get_messages() {
 	while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		DispatchMessage(&msg);
 }
+
+#if 0
+void *gui_save_state(size_t *size) {
+	(void)size;
+	return NULL;
+}
+
+void gui_reload_state(void *state) {
+	(void)state;
+}
+#endif

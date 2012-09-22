@@ -25,7 +25,8 @@ u32 __attribute__((fastcall)) get_cpsr() {
 	     | arm.cpsr_v << 28
 	     | arm.cpsr_low28;
 }
-static void set_cpsr_full(u32 cpsr) {
+
+void set_cpsr_full(u32 cpsr) {
 	if ((cpsr ^ arm.cpsr_low28) & 0x1F) {
 		/* Switching to a different processor mode. Swap out registers of old mode */
 		if ((arm.cpsr_low28 & 0x1F) == MODE_FIQ)
@@ -486,7 +487,7 @@ void cpu_interpret_instruction(u32 insn) {
 		} else if ((insn & 0xFFF000F0) == 0xE1200070) {
 			printf("Software breakpoint at %08x (%04x)\n",
 				arm.reg[15], (insn >> 4 & 0xFFF0) | (insn & 0xF));
-			debugger();
+			debugger(DBG_EXEC_BREAKPOINT, 0);
 		} else {
 			goto bad_insn;
 		}
@@ -689,7 +690,7 @@ void cpu_interpret_instruction(u32 insn) {
 				break;
 			default:
 				warn("Unknown coprocessor instruction MCR %08X\n", insn);
-				debugger();
+				debugger(DBG_EXCEPTION, 0);
 				break;
 		}
 	} else if ((insn & 0xF100F10) == 0xE100F10) {
@@ -735,7 +736,7 @@ void cpu_interpret_instruction(u32 insn) {
 				break;
 			default:
 				warn("Unknown coprocessor instruction MRC %08X\n", insn);
-				debugger();
+				debugger(DBG_EXCEPTION, 0);
 				value = 0;
 				break;
 		}
@@ -788,7 +789,7 @@ void cpu_arm_loop() {
 				if (flags & RF_EXEC_BREAKPOINT)
 					printf("Hit breakpoint at %08X. Entering debugger.\n", pc);
 enter_debugger:
-				debugger();
+				debugger(DBG_EXEC_BREAKPOINT, 0);
 			}
 			if (flags & RF_EXEC_HACK)
 				if (exec_hack())
@@ -822,7 +823,7 @@ void cpu_thumb_loop() {
 			if (flags & RF_EXEC_BREAKPOINT)
 				printf("Hit breakpoint at %08X. Entering debugger.\n", pc);
 enter_debugger:
-			debugger();
+			debugger(DBG_EXEC_BREAKPOINT, 0);
 		}
 
 		arm.reg[15] += 2;
@@ -961,7 +962,7 @@ enter_debugger:
 			}
 			case 0xBE:
 				printf("Software breakpoint at %08x (%02x)\n", arm.reg[15], insn & 0xFF);
-				debugger();
+				debugger(DBG_EXEC_BREAKPOINT, 0);
 				break;
 
 			CASE_x8(0xC0): { /* STMIA Rn!, {reglist} */
@@ -976,19 +977,11 @@ enter_debugger:
 			CASE_x8(0xC8): { /* LDMIA Rn!, {reglist} */
 				int i;
 				u32 addr = REG8;
-				u32 tmp;
-				for (i = 0; i < 8; i++) {
-					if (insn >> i & 1) {
-						if (i == (insn >> 8 & 7))
-							tmp = read_word(addr);
-						else
-							arm.reg[i] = read_word(addr);
-						addr += 4;
-					}
-				}
-				REG8 = addr;
-				if (insn >> (insn >> 8 & 7) & 1)
-					REG8 = tmp;
+				for (i = 0; i < 8; i++)
+					if (insn >> i & 1)
+						arm.reg[i] = read_word(addr), addr += 4;
+				if (!(insn >> (insn >> 8 & 7) & 1))
+					REG8 = addr;
 				break;
 			}
 #define BRANCH_IF(cond) if (cond) arm.reg[15] = pc + 4 + ((s8)insn << 1); break;
@@ -1030,3 +1023,14 @@ enter_debugger:
 		}
 	}
 }
+
+#if 0
+void *cpu_save_state(size_t *size) {
+	(void)size;
+	return NULL;
+}
+
+void cpu_reload_state(void *state) {
+	(void)state;
+}
+#endif

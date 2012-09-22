@@ -6,6 +6,7 @@
 #include "emu.h"
 
 void *virt_mem_ptr(u32 addr, u32 size) {
+	// Note: this is not guaranteed to be correct when range crosses page boundary
 	return phys_mem_ptr(mmu_translate(addr, false, NULL), size);
 }
 
@@ -77,6 +78,9 @@ static u32 parse_expr(char *str) {
 		} else if (*str == '-') {
 			sign = -1;
 			str++;
+		} else if (*str == 'v') {
+			sum += sign * mmu_translate(strtoul(str + 1, &str, 16), false, NULL);
+			sign = 1;
 		} else if (*str == 'r') {
 			reg = strtoul(str + 1, &str, 10);
 			sum += sign * arm.reg[reg];
@@ -131,8 +135,11 @@ static void set_debug_next(u32 *next) {
 	debug_next = next;
 }
 
-void debugger() {
-	char line[80];
+bool gdb_connected = false;
+FILE *debugger_input;
+
+static void native_debugger(void) {
+	char line[300];
 	char *cmd;
 	u32 *cur_insn = virt_mem_ptr(arm.reg[15] & ~3, 4);
 
@@ -152,8 +159,15 @@ void debugger() {
 		printf("debug> ");
 		fflush(stdout);
 		fflush(stderr);
-		if (!fgets(line, sizeof line, stdin))
-			exit(1);
+		while (!fgets(line, sizeof line, debugger_input)) {
+			if (debugger_input == stdin)
+				exit(1);
+			// switch to stdin and try again
+			fclose(debugger_input);
+			debugger_input = stdin;
+		}
+		if (debugger_input != stdin)
+			printf("%s", line);
 		cmd = strtok(line, " \n");
 		if (!cmd) {
 			continue;
@@ -165,17 +179,22 @@ void debugger() {
 				"d <address> - dump memory\n"
 				"k <address> <+r|+w|+x|-r|-w|-x> - add/remove breakpoint\n"
 				"k - show breakpoints\n"
+				"ln c - connect\n"
+				"ln s <file> - send a file\n"
+				"ln st <dir> - set target directory\n"
 				"n - continue until next instruction\n"
-				"pr <address> - port read\n"
-				"pw <address> <value> - port write\n"
+				"pr <address> - port or memory read\n"
+				"pw <address> <value> - port or memory write\n"
 				"q - quit\n"
 				"r - show registers\n"
 				"rs <regnum> <value> - change register value\n"
+				"ss <address> <length> <string> - search a string\n"
 				"s - step instruction\n"
 				"t+ - enable instruction translation\n"
 				"t- - disable instruction translation\n"
 				"u[a|t] [address] - disassemble memory\n"
-				"w <file> <start> <size> - write memory to file\n");
+				"wm <file> <start> <size> - write memory to file\n"
+				"wf <file> <start> [size] - write file to memory\n");
 		} else if (!stricmp(cmd, "b")) {
 			char *fp = strtok(NULL, " \n");
 			backtrace(fp ? parse_expr(fp) : arm.reg[11]);
@@ -209,13 +228,28 @@ void debugger() {
 				printf(" spsr=%08x", get_spsr());
 			printf("\n");
 		} else if (!stricmp(cmd, "rs")) {
-			int reg = atoi(strtok(NULL, " \n"));
-			if (reg >= 0 && reg < 15)
-				arm.reg[reg] = parse_expr(strtok(NULL, " \n"));
+			char *reg = strtok(NULL, " \n");
+			if (!reg) {
+				printf("Parameters are missing.\n");
+			} else {
+				char *value = strtok(NULL, " \n");
+				if (!value) {
+					printf("Missing value parameter.\n");
+				} else {
+					int regi = atoi(reg);
+					int valuei = parse_expr(value);
+					if (regi >= 0 && regi < 15)
+						arm.reg[regi] = valuei;
+					else
+						printf("Invalid register.\n");
+				}
+			}
 		} else if (!stricmp(cmd, "k")) {
 			char *addr_str = strtok(NULL, " \n");
 			char *flag_str = strtok(NULL, " \n");
-			if (addr_str && flag_str) {
+			if (!flag_str)
+				flag_str = "+x";
+			if (addr_str) {
 				u32 addr = parse_expr(addr_str);
 				void *ptr = phys_mem_ptr(addr & ~3, 4);
 				if (ptr) {
@@ -272,14 +306,45 @@ void debugger() {
 				set_debug_next(cur_insn + 1);
 			break;
 		} else if (!stricmp(cmd, "d")) {
-			u32 addr = parse_expr(strtok(NULL, " \n"));
-			dump(addr);
+			char *arg = strtok(NULL, " \n");
+			if (!arg) {
+				printf("Missing address parameter.\n");
+			} else {
+				u32 addr = parse_expr(arg);
+				dump(addr);
+			}
 		} else if (!stricmp(cmd, "u")) {
 			disasm(disasm_insn);
 		} else if (!stricmp(cmd, "ua")) {
 			disasm(disasm_arm_insn);
 		} else if (!stricmp(cmd, "ut")) {
 			disasm(disasm_thumb_insn);
+		} else if (!stricmp(cmd, "ln")) {
+			char *ln_cmd = strtok(NULL, " \n");
+			if (!ln_cmd) continue;
+			if (!stricmp(ln_cmd, "c")) {
+				usblink_connect();
+				break; // and continue, ARM code needs to be run
+			} else if (!stricmp(ln_cmd, "s")) {
+				char *file = strtok(NULL, "\n");
+				if (!file) {
+					printf("Missing file parameter.\n");
+				} else {
+					// remove optional surrounding quotes
+					if (*file == '"') file++;
+					size_t len = strlen(file);
+					if (*(file + len - 1) == '"')
+						*(file + len - 1) = '\0';
+					if (usblink_put_file(file, target_folder))
+						break; // and continue
+				}
+			} else if (!stricmp(ln_cmd, "st")) {
+				char *dir = strtok(NULL, " \n");
+				if (dir)
+					strncpy(target_folder, dir, sizeof target_folder);
+				else
+					printf("Missing directory parameter.\n");
+			}
 		} else if (!stricmp(cmd, "taskinfo")) {
 			u32 task = parse_expr(strtok(NULL, " \n"));
 			u8 *p = virt_mem_ptr(task, 52);
@@ -345,19 +410,69 @@ void debugger() {
 			do_translate = 0;
 		} else if (!stricmp(cmd, "q")) {
 			exit(1);
-		} else if (!stricmp(cmd, "w")) {
+		} else if (!stricmp(cmd, "wm") || !stricmp(cmd, "wf")) {
+			bool frommem = cmd[1] != 'f';
 			char *filename = strtok(NULL, " \n");
-			u32 start = parse_expr(strtok(NULL, " \n"));
-			u32 size = parse_expr(strtok(NULL, " \n"));
+			char *start_str = strtok(NULL, " \n");
+			char *size_str = strtok(NULL, " \n");
+			if (!start_str) {
+				printf("Parameters are missing.\n");
+				continue;
+			}
+			u32 start = parse_expr(start_str);
+			u32 size = 0;
+			if (size_str)
+				size = parse_expr(size_str);
 			void *ram = phys_mem_ptr(start, size);
 			if (!ram) {
 				printf("Address range %08x-%08x is not in RAM.\n", start, start + size - 1);
 				continue;
 			}
-			FILE *f = fopen(filename, "wb");
-			if (!f || (!fwrite(ram, size, 1, f) | fclose(f))) {
+			FILE *f = fopen(filename, frommem ? "wb" : "rb");
+			if (!f) {
 				perror(filename);
 				continue;
+			}
+			if (!size && !frommem) {
+				fseek (f, 0, SEEK_END);
+				size = ftell(f);
+				rewind(f);
+			}
+			// Use of |, not ||, is intentional. File should be closed regardless of read/write success.
+			if (!(frommem ? fwrite(ram, size, 1, f) : fread(ram, size, 1, f)) | fclose(f)) {
+				perror(filename);
+				continue;
+			}
+		} else if (!stricmp(cmd, "ss")) {
+			char *addr_str = strtok(NULL, " \n");
+			char *len_str = strtok(NULL, " \n");
+			char *string = strtok(NULL, " \n");
+			if (!addr_str || !len_str || !string) {
+				printf("Missing parameters.\n");
+			} else {
+				u32 addr = parse_expr(addr_str);
+				u32 len = parse_expr(len_str);
+				char *strptr = phys_mem_ptr(addr, len);
+				char *ptr = strptr;
+				char *endptr = strptr + len;
+				if (ptr) {
+					size_t slen = strlen(string);
+					while (1) {
+						ptr = memchr(ptr, *string, endptr - ptr);
+						if (!ptr) {
+							printf("String not found.\n");
+							break;
+						}
+						if (!memcmp(ptr, string, slen)) {
+							printf("Found at address %08X.\n", ptr - strptr + addr);
+							break;
+						}
+						if (ptr < endptr)
+							ptr++;
+					}
+				} else {
+					printf("Address range %08x-%08x is not in RAM.\n", addr, addr + len - 1);
+				}
 			}
 		} else if (!stricmp(cmd, "int")) {
 			printf("active		= %08x\n", intr.active);
@@ -394,3 +509,21 @@ void debugger() {
 	}
 	throttle_timer_on();
 }
+
+void debugger(enum DBG_REASON reason, u32 addr) {
+	if (gdb_connected)
+		gdbstub_debugger(reason, addr);
+	else
+		native_debugger();
+}
+
+#if 0
+void *debug_save_state(size_t *size) {
+	(void)size;
+	return NULL;
+}
+
+void debug_reload_state(void *state) {
+	(void)state;
+}
+#endif

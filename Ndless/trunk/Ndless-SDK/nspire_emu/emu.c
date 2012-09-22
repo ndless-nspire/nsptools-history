@@ -27,6 +27,8 @@ bool turbo_mode;
 bool is_halting;
 bool show_speed;
 
+volatile int gdb_port = 0;
+
 jmp_buf restart_after_exception;
 
 const char log_type_tbl[] = LOG_TYPE_TBL;
@@ -59,7 +61,7 @@ void error(char *fmt, ...) {
 	va_end(va);
 	fprintf(stderr, "\n\tBacktrace:\n");
 	backtrace(arm.reg[11]);
-	debugger();
+	debugger(DBG_EXCEPTION, 0);
 	cpu_events |= EVENT_RESET;
 	longjmp(restart_after_exception, 0);
 }
@@ -111,10 +113,13 @@ void throttle_interval_event(int index) {
 	if (_kbhit()) {
 		char c = _getch();
 		if (c == 4)
-			debugger();
+			debugger(DBG_USER, 0);
 		else
 			serial_byte_in(c);
 	}
+
+	if (gdb_port)
+		gdbstub_recv();
 
 	get_messages();
 
@@ -150,6 +155,72 @@ void throttle_interval_event(int index) {
 		is_halting--;
 }
 
+#if 0
+void *emu_save_state(size_t *size) {
+	(void)size;
+	return NULL;
+}
+
+void emu_reload_state(void *state) {
+	(void)state;
+}
+
+void save_state(void) {
+	#define SAVE_STATE_WRITE_CHUNK(module) \
+		module##_save_state(NULL);
+	printf("Saving state...\n");
+	// ordered in reload order
+	SAVE_STATE_WRITE_CHUNK(emu);
+	flush_translations();
+	SAVE_STATE_WRITE_CHUNK(memory);
+	SAVE_STATE_WRITE_CHUNK(cpu);
+	SAVE_STATE_WRITE_CHUNK(apb);
+	SAVE_STATE_WRITE_CHUNK(debug);
+	SAVE_STATE_WRITE_CHUNK(flash);
+	SAVE_STATE_WRITE_CHUNK(gdbstub);
+	SAVE_STATE_WRITE_CHUNK(gui);
+	SAVE_STATE_WRITE_CHUNK(int);
+	SAVE_STATE_WRITE_CHUNK(keypad);
+	SAVE_STATE_WRITE_CHUNK(lcd);
+	SAVE_STATE_WRITE_CHUNK(link);
+	SAVE_STATE_WRITE_CHUNK(mmu);
+	SAVE_STATE_WRITE_CHUNK(sha256);
+	SAVE_STATE_WRITE_CHUNK(des);
+	SAVE_STATE_WRITE_CHUNK(translate);
+	SAVE_STATE_WRITE_CHUNK(usblink);
+	//flash_save_changes();
+	printf("State saved.\n");
+}
+
+// Returns true on success
+bool reload_state(void) {
+	#define RELOAD_STATE_READ_CHUNK(module) \
+		module##_reload_state(NULL);
+	printf("Reloading state...\n");
+	//flash_reload();
+	// ordered
+	RELOAD_STATE_READ_CHUNK(emu);
+	RELOAD_STATE_READ_CHUNK(memory);
+	RELOAD_STATE_READ_CHUNK(cpu);
+	RELOAD_STATE_READ_CHUNK(apb);
+	RELOAD_STATE_READ_CHUNK(debug);
+	RELOAD_STATE_READ_CHUNK(flash);
+	RELOAD_STATE_READ_CHUNK(gdbstub);
+	RELOAD_STATE_READ_CHUNK(gui);
+	RELOAD_STATE_READ_CHUNK(int);
+	RELOAD_STATE_READ_CHUNK(keypad);
+	RELOAD_STATE_READ_CHUNK(lcd);
+	RELOAD_STATE_READ_CHUNK(link);
+	RELOAD_STATE_READ_CHUNK(mmu);
+	RELOAD_STATE_READ_CHUNK(sha256);
+	RELOAD_STATE_READ_CHUNK(des);
+	RELOAD_STATE_READ_CHUNK(translate);
+	RELOAD_STATE_READ_CHUNK(usblink);
+	printf("State reloaded.\n");
+	return true;
+}
+#endif
+
 int main(int argc, char **argv) {
 	int i;
 	static FILE *boot2_file = NULL;
@@ -183,12 +254,29 @@ int main(int argc, char **argv) {
 					}
 					break;
 				case 'D':
-					if (*arg) goto usage;
+					if (cpu_events & EVENT_DEBUG_STEP) goto usage;
 					cpu_events |= EVENT_DEBUG_STEP;
+					if (*arg) {
+						if (*arg == '=')
+							arg++;
+						debugger_input = fopen(arg, "rt");
+						if (!debugger_input) {
+							perror(arg);
+							return 1;
+						}
+					}
 					break;
 				case 'F':
 					if (*arg == '=') arg++;
 					flash_filename = arg;
+					break;
+				case 'G':
+					if (*arg == '=') arg++;
+					gdb_port = atoi(arg);
+					if (!gdb_port) {
+						printf("Invalid listen port for GDB stub%s%s\n", *arg ? ": " : "", arg);
+						exit(1);
+					}
 					break;
 				case 'K':
 					keypad_type = 1;
@@ -252,11 +340,12 @@ int main(int argc, char **argv) {
 				default:
 usage:
 					printf(
-						"nspire emulator v0.60\n"
+						"nspire emulator v0.61\n"
 						"  /1=boot1	- location of BOOT1 image\n"
 						"  /B=boot2	- location of decompressed BOOT2 image\n"
-						"  /D		- enter debugger at start\n"
+						"  /D[=cmdfile]	- enter debugger on startup (optionally read from file)\n"
 						"  /F=file	- flash image filename\n"
+						"  /G=port  - enable GDB remote protocol through the TCP port\n"
 						"  /Kn		- set keypad type (2 = TI-84 Plus, 4 = Touchpad)\n"
 						"  /M[X|M][C]	- set model (original/CX/CM, non-CAS/CAS)\n"
 						"  /N		- large NAND flash size\n"
@@ -307,6 +396,9 @@ usage:
 		fclose(f);
 	}
 
+	if (!debugger_input)
+		debugger_input = stdin;
+
 	insn_buffer = os_alloc_executable(INSN_BUFFER_SIZE);
 	insn_bufptr = insn_buffer;
 
@@ -321,11 +413,16 @@ usage:
 	throttle_timer_on();
 	atexit(throttle_timer_off);
 
+	if (gdb_port)
+		gdbstub_init(gdb_port);
+
 reset:
 	memset(&arm, 0, sizeof arm);
 	arm.control = 0x00050078;
 	arm.cpsr_low28 = MODE_SVC | 0xC0;
 	cpu_events &= EVENT_DEBUG_STEP;
+	if (gdb_port)
+		gdbstub_reset();
 	if (boot2_file) {
 		/* Start from BOOT2. (needs to be re-loaded on each reset since
 		 * it can get overwritten in memory) */

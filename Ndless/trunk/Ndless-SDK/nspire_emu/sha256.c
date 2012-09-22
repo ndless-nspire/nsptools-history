@@ -107,3 +107,14 @@ void sha256_write_word(u32 addr, u32 value) {
 	}
 	bad_write_word(addr, value);
 }
+
+#if 0
+void *sha256_save_state(size_t *size) {
+	(void)size;
+	return NULL;
+}
+
+void sha256_reload_state(void *state) {
+	(void)state;
+}
+#endif

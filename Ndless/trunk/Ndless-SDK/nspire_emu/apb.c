@@ -717,3 +717,14 @@ void apb_write_word(u32 addr, u32 value) {
 	if (addr >= 0x90120000) { bad_write_word(addr, value); return; }
 	apb_map[addr >> 16 & 31].write(addr, value);
 }
+
+#if 0
+void *apb_save_state(size_t *size) {
+	(void)size;
+	return NULL;
+}
+
+void apb_reload_state(void *state) {
+	(void)state;
+}
+#endif

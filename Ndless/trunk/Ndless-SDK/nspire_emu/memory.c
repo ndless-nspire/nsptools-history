@@ -11,12 +11,12 @@ void (*write_half_map[64])(u32 addr, u16 value);
 void (*write_word_map[64])(u32 addr, u32 value);
 
 /* For invalid/unknown physical addresses */
-u8 bad_read_byte(u32 addr)               { warn("Bad read_byte: %08x", addr); debugger(); return 0; }
-u16 bad_read_half(u32 addr)              { warn("Bad read_half: %08x", addr); debugger(); return 0; }
-u32 bad_read_word(u32 addr)              { warn("Bad read_word: %08x", addr); debugger(); return 0; }
-void bad_write_byte(u32 addr, u8 value)  { warn("Bad write_byte: %08x %02x",addr,value); debugger(); }
-void bad_write_half(u32 addr, u16 value) { warn("Bad write_half: %08x %04x",addr,value); debugger(); }
-void bad_write_word(u32 addr, u32 value) { warn("Bad write_word: %08x %08x",addr,value); debugger(); }
+u8 bad_read_byte(u32 addr)               { warn("Bad read_byte: %08x", addr); debugger(DBG_EXCEPTION, 0); return 0; }
+u16 bad_read_half(u32 addr)              { warn("Bad read_half: %08x", addr); debugger(DBG_EXCEPTION, 0); return 0; }
+u32 bad_read_word(u32 addr)              { warn("Bad read_word: %08x", addr); debugger(DBG_EXCEPTION, 0); return 0; }
+void bad_write_byte(u32 addr, u8 value)  { warn("Bad write_byte: %08x %02x",addr,value); debugger(DBG_EXCEPTION, 0); }
+void bad_write_half(u32 addr, u16 value) { warn("Bad write_half: %08x %04x",addr,value); debugger(DBG_EXCEPTION, 0); }
+void bad_write_word(u32 addr, u32 value) { warn("Bad write_word: %08x %08x",addr,value); debugger(DBG_EXCEPTION, 0); }
 
 u8 *mem_and_flags;
 struct mem_area_desc mem_areas[4] = {
@@ -49,8 +49,9 @@ u32 phys_mem_addr(void *ptr) {
 #define DO_READ_ACTION (RF_READ_BREAKPOINT)
 void read_action(void *ptr) {
 	u32 addr = phys_mem_addr(ptr);
-	printf("Hit read breakpoint at %08x. Entering debugger.\n", addr);
-	debugger();
+	if (!gdb_connected)
+		printf("Hit read breakpoint at %08x. Entering debugger.\n", addr);
+	debugger(DBG_READ_BREAKPOINT, addr);
 }
 
 #define DO_WRITE_ACTION (RF_WRITE_BREAKPOINT | RF_CODE_TRANSLATED | RF_CODE_NO_TRANSLATE)
@@ -58,8 +59,9 @@ void write_action(void *ptr) {
 	u32 addr = phys_mem_addr(ptr);
 	u32 *flags = &RAM_FLAGS((size_t)ptr & ~3);
 	if (*flags & RF_WRITE_BREAKPOINT) {
-		printf("Hit write breakpoint at %08x. Entering debugger.\n", addr);
-		debugger();
+		if (!gdb_connected)
+			printf("Hit write breakpoint at %08x. Entering debugger.\n", addr);
+		debugger(DBG_WRITE_BREAKPOINT, addr);
 	}
 	if (*flags & RF_CODE_TRANSLATED) {
 		logprintf(LOG_CPU, "Wrote to translated code at %08x. Deleting translations.\n", addr);
@@ -491,3 +493,14 @@ void memory_initialize(u32 sdram_size) {
 		write_word_map[0xDC >> 2] = int_cx_write_word;
 	}
 }
+
+#if 0
+void *memory_save_state(size_t *size) {
+	(void)size;
+	return NULL;
+}
+
+void memory_reload_state(void *state) {
+	(void)state;
+}
+#endif

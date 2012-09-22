@@ -229,3 +229,14 @@ void lcd_write_word(u32 addr, u32 value) {
 	}
 	return bad_write_word(addr, value);
 }
+
+#if 0
+void *lcd_save_state(size_t *size) {
+	(void)size;
+	return NULL;
+}
+
+void lcd_reload_state(void *state) {
+	(void)state;
+}
+#endif
