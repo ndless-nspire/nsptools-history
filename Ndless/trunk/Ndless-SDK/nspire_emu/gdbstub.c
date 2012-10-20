@@ -195,7 +195,6 @@ static int hex(char ch) {
 
 static char remcomInBuffer[BUFMAX];
 static char remcomOutBuffer[BUFMAX];
-static char databuffer[BUFMAX / 2];
 
 /* scan for the sequence $<data>#<checksum>. # will be replaced with \0.
  * Returns NULL on disconnection. */
@@ -368,24 +367,6 @@ __attribute__((unused)) static void binary_escape(char *in, int insize, char *ou
 	*out = '\0';
 }
 
-/* See Appendix D - GDB Remote Serial Protocol - Overview.
- * Returns the unescaped data size. */
-static int binary_unescape(char *in, int insize, char *out, int outsize) {
-	int unsize = 0;;
-	while (insize-- > 0 && outsize > 0) {
-		if (*in == '}') {
-			in++;
-			*out++ = (0x20 ^ *in++);
-			insize -= 2;
-		}
-		else 
-			*out++ = *in++;
-		outsize--;
-		unsize++;
-	}
-	return unsize;
-}
-
 /* From emu to GDB. Returns regbuf. */
 static unsigned long *get_registers(unsigned long regbuf[NUMREGS]) {
 	// GDB's format in arm-tdep.c/arm_register_names
@@ -402,67 +383,6 @@ static void set_registers(const unsigned long regbuf[NUMREGS]) {
 }
 
 /* GDB Host I/O */
-
-static void remote_vfile_cb(int result) {
-	char *ptr;
-	/* response: F result [, errno] [; attachment] */
-	ptr = remcomOutBuffer;
-	sprintf(ptr, "F%x", result);
-	if (result < 0)
-		strcat(ptr, ",270F"); /* EUNKNOWN=9999 */
-	else
-		strcat(ptr, ",0"); /* success */
-/*	if (data) {
-		strcat(ptr, ";");
-		ptr += strlen(ptr);
-		binary_escape(data, datasize, ptr, remcomOutBuffer + sizeof(remcomOutBuffer) - ptr);
-	}
-	*/
-	putpacket(remcomOutBuffer);
-}
-
-static void remote_open_cb(struct arm_state *after_exec_arm_state) {
-	remote_vfile_cb(after_exec_arm_state->reg[0]);
-}
-
-/* returns the fd */
-static int remote_open(char *pathname, int flags) {
-	struct armloader_load_params params[2];
-	params[0].t = ARMLOADER_PARAM_PTR;
-	params[0].p.ptr = pathname;
-	params[0].p.size = strlen(pathname) + 1;
-	params[1].t = ARMLOADER_PARAM_VAL;
-	params[1].v = flags;
-	armloader_load_snippet(SNIPPET_file_open, params, 2, remote_open_cb);
-	return 0;
-}
-
-/* returns 0 if successful */
-static int remote_close(__attribute__((unused)) int fd) {
-	return 0;
-}
-
-/* Writes the data read to databuffer.
- * returns the number of target bytes read */
-static int remote_read(__attribute__((unused)) int fd, __attribute__((unused)) int count, __attribute__((unused)) int offset) {
-	strcpy(databuffer, "a$a"); // test
-	return 2;
-}
-
-/* returns the number of bytes written */
-static int remote_write(__attribute__((unused)) int fd, __attribute__((unused)) int offset, char *data, int size) {
-	printf("remote_write: ");
-	int i;
-	for (i = 0; i < size; i++)
-		printf("%2x", (int)data[i]);
-	return size;
-}
-
-/* returns 0 if successful */
-static int remote_unlink(char *pathname) {
-	puts(pathname);
-	return 0;
-}
 
 #define append_hex_char(ptr,ch) do {*ptr++ = hexchars[(ch) >> 4]; *ptr++ = hexchars[(ch) & 0xf];} while (0)
 
@@ -495,11 +415,7 @@ static void send_stop_reply(int signal, const char *stop_reason, const char *r) 
 void gdbstub_loop(void) {
 	int addr;
 	int length;
-	int ret;
-	int datasize, size;
-	char *ptr, *ptr1, *ptr2, *ptr3;
-	int i, j;
-	char *data;
+	char *ptr, *ptr1;
 	void *ramaddr;
 	unsigned long regbuf[NUMREGS];
 	bool reply, set;
@@ -609,77 +525,6 @@ parse_new_pc:
 				if (!strcmp("Offsets", ptr)) {
 					sprintf(remcomOutBuffer, "Text=%x;Data=%x;Bss=%x",
 						ndls_debug_alloc_block, ndls_debug_alloc_block,	ndls_debug_alloc_block);
-				}
-				break;
-			case 'v':
-				ptr = strtok(ptr, ";:");
-				if (!strcmp("File", ptr)) { /* vFile:operation:parameter... */
-					ptr = strtok(NULL, ":"); /* operation */
-					if (!ptr) {
-						strcpy(remcomOutBuffer,"E01");
-						break;
-					}
-					ptr1 = strtok(NULL, ","); /* arg1 */
-					ptr2 = strtok(NULL, ","); /* arg1 */
-					ptr3 = strtok(NULL, ","); /* arg3 */
-					data = NULL;
-					datasize = 0;
-					ret = 0;
-					if (!strcmp("open", ptr)) { /* pathname, flags, mode */
-						if (!ptr1 || !ptr2 || !ptr3 || !hexToInt(&ptr2, &i))  {
-							strcpy(remcomOutBuffer,"E02");
-							break;
-						}
-						*(char*)hex2mem(ptr1, databuffer, 0) = '\0'; /* to string */
-						ret = remote_open(databuffer, i);
-						reply = false;
-						return; // remote_vfile_cb will finish processing
-					}
-					else if (!strcmp("close", ptr)) { /* fd */
-						if (!ptr1 || !hexToInt(&ptr1, &i))  {
-							strcpy(remcomOutBuffer,"E02");
-							break;
-						}
-						ret = remote_close(i);
-						reply = false;
-						return;
-					}
-					else if (!strcmp("pread", ptr)) { /* fd, count, offset */
-						if (   !ptr1 || !ptr2 || !ptr3 || !hexToInt(&ptr1, &i)
-							  || !hexToInt(&ptr2, &datasize) || !hexToInt(&ptr3, &j)) {
-							strcpy(remcomOutBuffer,"E02");
-							break;
-						}
-						if (datasize > (int)sizeof(databuffer)) {
-							strcpy(remcomOutBuffer,"E03");
-							break;
-						}
-						ret = remote_read(i, datasize, j);
-						data = databuffer;
-						datasize = ret;
-						reply = false;
-						return;
-					}
-					else if (!strcmp("pwrite", ptr)) { /* fd, offset, data */
-						if (!ptr1 || !ptr2 || !ptr3 || !hexToInt(&ptr1, &i) || !hexToInt(&ptr2, &j))  {
-							strcpy(remcomOutBuffer,"E02");
-							break;
-						}
-						size = binary_unescape(ptr3, strchr(ptr3, '#') - ptr3, databuffer, sizeof(databuffer));
-						ret = remote_write(i, j, databuffer, size);
-						reply = false;
-						return;
-					}
-					else if (!strcmp("unlink", ptr)) { /* pathname */
-						if (!ptr1)  {
-							strcpy(remcomOutBuffer,"E02");
-							break;
-						}
-						*(char*)hex2mem(ptr1, databuffer, 0) = '\0'; /* to string */
-						ret = remote_unlink(databuffer);
-						reply = false;
-						return;
-					}
 				}
 				break;
 			case 'Z': /* 0|1|2|3|4,addr,kind  */

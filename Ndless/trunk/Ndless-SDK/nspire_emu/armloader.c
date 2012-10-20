@@ -31,11 +31,9 @@ void armloader_cb(void) {
  */
 int armloader_load_snippet(enum SNIPPETS snippet, struct armloader_load_params params[],
 	                         unsigned params_num, void (*callback)(struct arm_state*)) {
-	unsigned int i, syscalls_tbl_num;
+	unsigned int i;
 	int code_size;
 	void *code_ptr;
-	u32 *entry_points, *syscalls_ptr;
-	u32 os_version;
 	u32 orig_pc;
 	
 	code_size = binary_snippets_bin_end - binary_snippets_bin_start;
@@ -57,29 +55,10 @@ int armloader_load_snippet(enum SNIPPETS snippet, struct armloader_load_params p
 		return -1;
 	}
 	memcpy(code_ptr, binary_snippets_bin_start, code_size);
-	entry_points = code_ptr;
-	
-	/* get the syscall table ptr */
-	syscalls_ptr = code_ptr + entry_points[SNIPPETS_EP_SYSCALLS_TABLE];
-	syscalls_tbl_num = *syscalls_ptr++;
-	arm.reg[11] = 0;
-	os_version = OS_VERSION;
-	while(syscalls_tbl_num--) {
-		if (os_version == *syscalls_ptr++) {
-			arm.reg[11] = arm.reg[13] + *syscalls_ptr; // syscall table
-			break;
-		}
-		syscalls_ptr++;
-	}
-	if (!arm.reg[11]) {
-		printf("OS version not supported by ARM loader\n");
-		armloader_restore_state();
-		return -1;
-	}
 	
 	orig_pc = arm.reg[15];
 	arm.reg[14] = arm.reg[15]; // return address
-	arm.reg[15] = arm.reg[13] + entry_points[SNIPPETS_EP_LOAD];
+	arm.reg[15] = arm.reg[13] + *(u32*)code_ptr; // load_snippet
 	arm.reg[12] = snippet;
 	
 	for (i = 0; i < params_num; i++) {

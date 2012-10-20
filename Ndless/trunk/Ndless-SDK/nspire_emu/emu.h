@@ -461,13 +461,10 @@ void __attribute__((fastcall)) write_word(u32 addr, u32 value);
 /* Declarations for armsnippets.S */
 
 enum SNIPPETS {
-	SNIPPET_file_export, SNIPPET_free_block, SNIPPET_file_open, SNIPPET_file_read, SNIPPET_file_write, SNIPPET_file_close,
-	SNIPPET_file_unlink, SNIPPET_ndls_debug_alloc, SNIPPET_ndls_debug_free
+	SNIPPET_ndls_debug_alloc, SNIPPET_ndls_debug_free
 };
 extern char binary_snippets_bin_start[];
 extern char binary_snippets_bin_end[];
-#define SNIPPETS_EP_SYSCALLS_TABLE 0
-#define SNIPPETS_EP_LOAD 1
 enum ARMLOADER_PARAM_TYPE {ARMLOADER_PARAM_VAL, ARMLOADER_PARAM_PTR};
 struct armloader_load_params {
 	enum ARMLOADER_PARAM_TYPE t;
