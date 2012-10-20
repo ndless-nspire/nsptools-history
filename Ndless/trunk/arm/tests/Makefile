@@ -1,11 +1,7 @@
 GCC = nspire-gcc
-LD = nspire-ld
+LD = nspire-ld-bflt
 GCCFLAGS = -Os -Wall -W -marm
 LDFLAGS = 
-OBJCOPY := "$(shell (which arm-elf-objcopy arm-none-eabi-objcopy arm-linux-gnueabi-objcopy | head -1) 2>/dev/null)"
-ifeq (${OBJCOPY},"")
-	OBJCOPY := arm-none-eabi-objcopy
-endif
 EXE = ndless_tests.test.tns ndless_keys.tns ndless_tpad.tns ndless_tests.luax.tns ndless_luatests.tns ndless_popup_tests.tns ndless_docbrowser_tests.tns
 DISTDIR = ../../calcbin/tests
 vpath %.tns $(DISTDIR)
@@ -22,16 +18,13 @@ distdir:
 	luna $< $(DISTDIR)/$@
 
 %.tns: %.o
-	$(LD) $(LDFLAGS) $^ -o $(@:.tns=.elf)
-	$(OBJCOPY) -O binary $(@:.tns=.elf) $(DISTDIR)/$@
+	$(LD) $(LDFLAGS) $^ -o  $(DISTDIR)/$@
 
 ndless_tests.test.tns: ndless_tests.o assert.o ../config.o
-	$(LD) $(LDFLAGS) $^ -o $(@:.tns=.elf)
-	$(OBJCOPY) -O binary $(@:.tns=.elf) $(DISTDIR)/$@
+	$(LD) $(LDFLAGS) $^ -o  $(DISTDIR)/$@
 
 ndless_tests.luax.tns: ndless_tests.luax.o assert.o
-	$(LD) $(LDFLAGS) $^ -o $(@:.tns=.elf)
-	$(OBJCOPY) -O binary $(@:.tns=.elf) $(DISTDIR)/$@
+	$(LD) $(LDFLAGS) $^ -o  $(DISTDIR)/$@
 
 static:
 	@cp ReadMe.txt $(DISTDIR)

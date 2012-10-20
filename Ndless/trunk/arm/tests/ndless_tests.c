@@ -32,7 +32,8 @@
 // TODO: use snprintf instead of sprintf
 
 int global_int;
-int* nl_relocdata_data[] = {&global_int};
+int *nl_relocdata_data[] = {&global_int};
+int *nl_relocdata_data_bflt[] = {&global_int};
 
 static const unsigned custom_sprintf_addrs[] = {0x10376F28}; // only non-CAS 3.1
 #define custom_sprintf SYSCALL_CUSTOM(custom_sprintf_addrs, int __attribute__((__format__(__printf__,2,3))), char *s, const char *format, ...)
@@ -75,10 +76,9 @@ int main(int argc, char *argv[]) {
 	}
 	
 	global_int = 1; // tests relocation of global variables 
-	nl_relocdata((unsigned*)nl_relocdata_data, 1);
-	assertUIntEquals("nl_relocdata", 1, (unsigned)*nl_relocdata_data[0]);
-	
-	nl_set_resident(); // caution, ;will leak. This at least checks that it doesn't crash.
+	assertUIntEquals("nl_relocdata_data bflt", 1, (unsigned)*nl_relocdata_data_bflt[0]);
+		
+	nl_set_resident(); // caution, will leak. This at least checks that it doesn't crash.
 	
 	/* syscalls */
 	buf[0] = 1; buf[1] = 2; buf[2] = 3; buf[3] = 4; buf[4] = 5;
@@ -188,9 +188,9 @@ int main(int argc, char *argv[]) {
 	rewind(file);
 	assertNonZero("fputs", fputs("abc\ndef", file));
 	rewind(file);
-	assertStrEquals("fgets", "abc\n", fgets(buf2, 10, file));
-	assertNull("fgets-eof-1", fgets(buf2, 10, file));
-	assertStrEquals("fgets-eof-2", "def", buf2);
+	assertStrEquals("fgets-1", "abc\n", fgets(buf2, 10, file));
+	assertStrEquals("fgets-2", "def", fgets(buf2, 10, file));
+	assertNull("fgets-eof", fgets(buf2, 10, file));
 	rewind(file);
 	fputc('a', file);
 	rewind(file);

@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-W -Wall
-SCRIPTS=nspire-gcc nspire-ld nspire-as nspire-tools Makefile.tpl
+SCRIPTS=nspire-gcc nspire-ld nspire-ld-bflt nspire-as nspire-tools Makefile.tpl
 vpath ../../Ndless-SDK/ndless/bin
 
 all: init scripts

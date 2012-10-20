@@ -1,5 +1,11 @@
 #!/bin/bash
 # bash and not sh: we use bash arrays
+# 
+# Legacy ld: doesn't use the bFLT binary format.
+# Used for backward compatibility and Ndless build.
+# May produce binaries that cannot be fully relocated by Ndless's lightweight relocator, for example when
+# adresses of global variables are used as static initializers of other global variables.
+# 
 # Available non-GCC options:
 # --no-startup: do not link with the startup code
 # --light-startup: use crt0light.o instead

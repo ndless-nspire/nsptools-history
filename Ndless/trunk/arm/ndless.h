@@ -27,7 +27,7 @@
 
 #include "ndless_version.h"
 
-// Marker at the beginning of a program
+// Marker at the beginning of a plain-old Ndless program. Deprecated, only used for Ndless itself, bFLT is now used for programs.
 #define PRGMSIG "PRG"
 // Directory where it is installed
 #define NDLESS_DIR "/documents/ndless"

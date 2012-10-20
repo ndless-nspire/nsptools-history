@@ -5,6 +5,7 @@ SECTIONS
 {
 	. = 0x0;
 	.text : { *(.text); }
+	/* .bss before .data, to make sure space is allocated for it in the binary file */
 	.bss : {
 		/* symbol required by newlib */
 		__bss_start__ = .;

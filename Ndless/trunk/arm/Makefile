@@ -44,7 +44,7 @@ syscalls_light_thumb.o: syscalls.c
 # utils.c contains C-preprocessor logic based on OS_VERSION. Build an .o for each version.
 utils_light_thumb_%.o: utils.c
 	$(GCC) $(GCCFLAGS) -c $< -o $@
-# Prevent automatic deletion of these files considered as intermediate because not explicitely named as a target 
+# Prevent automatic deletion of these files considered as intermediate because not explicitely named as a target
 .PRECIOUS: utils_light_thumb_%.o
 
 # Explicit dependencies strangely required for the target to avoid being rebuilt when not really needed
@@ -88,7 +88,7 @@ ndless_installer-%.tcc:ndless_installer-%-cascx.bin tno_template.bin
 	mkdir -p $(DISTDIR)
 	MakeTNO $< $(DISTDIR)/$@ $(OS_NAME) tno_template.bin  86
 
-ndless_installer-bin-%.o: ndless_installer-%.bin tno_template_installed.bin 
+ndless_installer-bin-%.o: ndless_installer-%.bin tno_template_installed.bin
 	MakeTNO $< $(@:.o=.tmp.o) $* tno_template_installed.bin  0
 	$(OBJCOPY) -I binary -O elf32-littlearm -B arm $(@:.o=.tmp.o) $@
 #	@rm $(@:.o=.tmp.o)
@@ -96,11 +96,11 @@ ndless_installer-bin-%.o: ndless_installer-%.bin tno_template_installed.bin
 .PRECIOUS: ndless_installer-%.bin
 
 SYSCALLS_LIGHT_OBJS :=  $(foreach os_version, $(OS_VERSIONS), $(foreach model, $(MODELS), syscalls-light_$(model)-$(os_version).o))
-# Prevent automatic deletion of these files considered as intermediate because not explicitely named as a target 
+# Prevent automatic deletion of these files considered as intermediate because not explicitely named as a target
 .PRECIOUS: $(SYSCALLS_LIGHT_OBJS)
 SYSCALLS_OBJS :=  $(foreach os_version, $(OS_VERSIONS), $(foreach model, $(MODELS), syscalls_$(model)-$(os_version).o))
 INSTALLER_BIN_OBJS := $(foreach os_version, $(OS_VERSIONS), $(foreach model, $(MODELS), ndless_installer-bin-$(os_version)-$(model).o))
-CORE_OBJS := install.o ploaderhook.o ints.o syscalls.o utils.o emu.o config.o luaext.o $(SYSCALLS_OBJS) $(INSTALLER_BIN_OBJS)
+CORE_OBJS := install.o ploaderhook.o bflt.o ints.o syscalls.o utils.o emu.o config.o luaext.o $(SYSCALLS_OBJS) $(INSTALLER_BIN_OBJS)
 RES_OBJS := $(CORE_OBJS)
 
 # Build with the light switch (temporarily added to $GCCFLAGS)
@@ -133,7 +133,7 @@ cleanres:
 
 cleanbin:
 	rm -rf *.o *.elf *.tno *.tnc ndless_installer-*.bin
-	
+
 cleansubdirs:
 	@for i in $(SUBDIRS); do \
 	echo "make all in $$i..."; \
