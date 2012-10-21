@@ -4,7 +4,7 @@
 #define _BFLT_CONFIG_H_
 
 /* Comment out if you're not planning on loading shared libraries */
-//#define SHARED_LIB_SUPPORT
+#define SHARED_LIB_SUPPORT
 
 #ifdef SHARED_LIB_SUPPORT
 /* This is the maximal allowed id value for shared libraries */
@@ -31,6 +31,6 @@
      2 = Prints errors only
      1 = Show user readable errors only
      0 = Print nothing and fail silently */
-#define VERBOSE_LEVEL 3
+#define VERBOSE_LEVEL 2
 
 #endif

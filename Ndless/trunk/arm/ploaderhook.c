@@ -138,13 +138,11 @@ int ld_exec(const char *path, void **resident_ptr) {
 
     // try to load as plain-old Ndless binary first
     if (ndless_load(docpath, &base, &size, &entry) != 0) {
-    		puts("db: ndless_load != 0");
         // if failed, try to load as bflt binary
         if (bflt_load(docpath, &base, &size, &entry) != 0) {
             puts("ld_exec: unknown bin format");
             return 1;
         } else {
-        		puts("db: bflt_load done");
             loaded = BFLT_BIN;
         }
     }else {
