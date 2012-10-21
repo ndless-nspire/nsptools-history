@@ -33,7 +33,6 @@
 
 int global_int;
 int *nl_relocdata_data[] = {&global_int};
-int *nl_relocdata_data_bflt[] = {&global_int};
 
 static const unsigned custom_sprintf_addrs[] = {0x10376F28}; // only non-CAS 3.1
 #define custom_sprintf SYSCALL_CUSTOM(custom_sprintf_addrs, int __attribute__((__format__(__printf__,2,3))), char *s, const char *format, ...)
@@ -76,7 +75,7 @@ int main(int argc, char *argv[]) {
 	}
 	
 	global_int = 1; // tests relocation of global variables 
-	assertUIntEquals("nl_relocdata_data bflt", 1, (unsigned)*nl_relocdata_data_bflt[0]);
+	assertUIntEquals("nl_relocdata_data bflt", 1, (unsigned)*nl_relocdata_data[0]);
 		
 	nl_set_resident(); // caution, will leak. This at least checks that it doesn't crash.
 	

@@ -1,11 +1,7 @@
 GCC = nspire-gcc
-LD = nspire-ld
+LD = nspire-ld-bflt
 GCCFLAGS = -Os -Wall -W -marm
 LDFLAGS = 
-OBJCOPY := "$(shell (which arm-elf-objcopy arm-none-eabi-objcopy arm-linux-gnueabi-objcopy | head -1) 2>/dev/null)"
-ifeq (${OBJCOPY},"")
-	OBJCOPY := arm-none-eabi-objcopy
-endif
 EXE = particles.tns
 OBJS = $(patsubst %.c,%.o,$(wildcard *.c))
 DISTDIR = .
@@ -20,9 +16,8 @@ all: $(EXE)
 	$(GCC) $(GCCFLAGS) -c $<
 
 $(EXE): $(OBJS)
-	$(LD) $(LDFLAGS) $^ -o $(@:.tns=.elf)
-	@mkdir -p $(DISTDIR)
-	$(OBJCOPY) -O binary $(@:.tns=.elf) $(DISTDIR)/$@
+	mkdir -p $(DISTDIR)
+	$(LD) $(LDFLAGS) $^ -o $(DISTDIR)/$@
 
 clean:
 	rm -f *.o *.elf
