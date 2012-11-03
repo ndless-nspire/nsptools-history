@@ -554,6 +554,68 @@ _SYSCALL2(void, lua_concat, lua_State *, int)
 _SYSCALL3(int, lua_getstack, lua_State *, int, lua_Debug *)
 _SYSCALL3(int, lua_getinfo, lua_State *, const char *, lua_Debug *)
 
+// TI-Nspire-specific USB stuff
+#include <bsdcompat.h>
+_SYSCALLVAR(int,, usb_register_driver, __attribute__((unused)) int a, __attribute__((unused)) int (*methods[])(device_t), __attribute__((unused)) const char *driver_name, __attribute__((unused)) int b, __attribute__((unused)) unsigned softc_size)
+
+// From *BSD's bus.h
+_SYSCALL1(void *, device_get_ivars, device_t)
+_SYSCALL1(void *, device_get_softc, device_t)
+
+// From *BSD's ubsdi.h
+#include <usbdi.h>
+
+_SYSCALL4(usbd_status, usbd_open_pipe, usbd_interface_handle, u_int8_t, u_int8_t, usbd_pipe_handle *)
+_SYSCALL1(usbd_status, usbd_close_pipe, usbd_pipe_handle)
+_SYSCALL1(usbd_status, usbd_transfer, usbd_xfer_handle)
+_SYSCALL1(usbd_xfer_handle, usbd_alloc_xfer, usbd_device_handle)
+_SYSCALL1(usbd_status, usbd_free_xfer, usbd_xfer_handle)
+_SYSCALLVAR(void,, usbd_setup_xfer, __attribute__((unused)) usbd_xfer_handle a, __attribute__((unused)) usbd_pipe_handle b, __attribute__((unused)) usbd_private_handle c, __attribute__((unused)) void *d, __attribute__((unused)) u_int32_t e, __attribute__((unused)) u_int16_t f, __attribute__((unused)) u_int32_t g, __attribute__((unused)) usbd_callback h)
+//_SYSCALLVAR(void,, usbd_setup_default_xfer, __attribute__((unused)) usbd_xfer_handle a, __attribute__((unused)) usbd_device_handle b, __attribute__((unused)) usbd_private_handle c, __attribute__((unused)) u_int32_t d, __attribute__((unused)) usb_device_request_t *e, __attribute__((unused)) void *f, __attribute__((unused)) u_int32_t g, __attribute__((unused)) u_int16_t h, __attribute__((unused)) usbd_callback i)
+_SYSCALLVAR(void,, usbd_setup_isoc_xfer, __attribute__((unused)) usbd_xfer_handle a, __attribute__((unused)) usbd_pipe_handle b, __attribute__((unused)) usbd_private_handle c, __attribute__((unused)) u_int16_t *d, __attribute__((unused)) u_int32_t e, __attribute__((unused)) u_int16_t f, __attribute__((unused)) usbd_callback g)
+_SYSCALLVAR(void,, usbd_get_xfer_status, __attribute__((unused)) usbd_xfer_handle a, __attribute__((unused)) usbd_private_handle *b, __attribute__((unused)) void **c, __attribute__((unused)) u_int32_t *d, __attribute__((unused)) usbd_status *e)
+_SYSCALL2(usb_endpoint_descriptor_t *, usbd_interface2endpoint_descriptor, usbd_interface_handle, u_int8_t)
+_SYSCALL1(usbd_status, usbd_abort_pipe, usbd_pipe_handle)
+_SYSCALL1(usbd_status, usbd_clear_endpoint_stall, usbd_pipe_handle)
+//_SYSCALL1(usbd_status, usbd_clear_endpoint_stall_async, usbd_pipe_handle)
+//_SYSCALL1(void, usbd_clear_endpoint_toggle, usbd_pipe_handle)
+_SYSCALL2(usbd_status, usbd_endpoint_count, usbd_interface_handle, u_int8_t *)
+_SYSCALL2(usbd_status, usbd_interface_count, usbd_device_handle, u_int8_t *)
+_SYSCALL2(usbd_status, usbd_interface2device_handle, usbd_interface_handle, usbd_device_handle *)
+_SYSCALL3(usbd_status, usbd_device2interface_handle, usbd_device_handle, u_int8_t, usbd_interface_handle *)
+_SYSCALL1(usbd_device_handle, usbd_pipe2device_handle, usbd_pipe_handle)
+//_SYSCALL2(void *, usbd_alloc_buffer, usbd_xfer_handle, u_int32_t)
+//_SYSCALL1(void, usbd_free_buffer, usbd_xfer_handle)
+//_SYSCALL1(void *, usbd_get_buffer, usbd_xfer_handle)
+_SYSCALL1(usbd_status, usbd_sync_transfer, usbd_xfer_handle)
+_SYSCALLVAR(usbd_status,, usbd_open_pipe_intr, __attribute__((unused)) usbd_interface_handle b, __attribute__((unused)) u_int8_t c, __attribute__((unused)) u_int8_t d, __attribute__((unused)) usbd_pipe_handle * e, __attribute__((unused)) usbd_private_handle f, __attribute__((unused)) void *g, __attribute__((unused)) u_int32_t h, __attribute__((unused)) usbd_callback i, __attribute__((unused)) int j)
+_SYSCALL3(usbd_status, usbd_do_request, usbd_device_handle , usb_device_request_t *, void *)
+//_SYSCALL3(usbd_status, usbd_do_request_async, usbd_device_handle, usb_device_request_t *, void *)
+_SYSCALLVAR(usbd_status,, usbd_do_request_flags, __attribute__((unused)) usbd_device_handle a, __attribute__((unused)) usb_device_request_t *b, __attribute__((unused)) void *c, __attribute__((unused)) u_int16_t d, __attribute__((unused)) int *e)
+_SYSCALLVAR(usbd_status,, usbd_do_request_flags_pipe, __attribute__((unused)) usbd_device_handle a, __attribute__((unused)) usbd_pipe_handle b, __attribute__((unused)) usb_device_request_t *c, __attribute__((unused)) void *d, __attribute__((unused)) u_int16_t e, __attribute__((unused)) int *f)
+_SYSCALL1(usb_interface_descriptor_t *, usbd_get_interface_descriptor, usbd_interface_handle)
+_SYSCALL1(usb_config_descriptor_t *, usbd_get_config_descriptor, usbd_device_handle)
+_SYSCALL1(usb_device_descriptor_t *, usbd_get_device_descriptor, usbd_device_handle)
+_SYSCALL2(usbd_status, usbd_set_interface, usbd_interface_handle, int)
+//_SYSCALL2(int, usbd_get_no_alts, usb_config_descriptor_t *, int)
+_SYSCALL2(usbd_status,  usbd_get_interface, usbd_interface_handle, u_int8_t *)
+//_SYSCALL3(void, usbd_fill_deviceinfo, usbd_device_handle, struct usb_device_info *, int)
+//_SYSCALL1(int, usbd_get_interface_altindex, usbd_interface_handle)
+_SYSCALL3(usb_interface_descriptor_t *,usbd_find_idesc, usb_config_descriptor_t *, int, int)
+//_SYSCALL4(usb_endpoint_descriptor_t *,usbd_find_edesc, usb_config_descriptor_t *, int, int, int)
+//_SYSCALL1(void, usbd_dopoll, usbd_interface_handle)
+//_SYSCALL2(void, usbd_set_polling, usbd_interface_handle, int)
+_SYSCALL1(const char *, usbd_errstr, usbd_status)
+//_SYSCALL2(void, usbd_add_dev_event, int, usbd_device_handle)
+//_SYSCALL3(void, usbd_add_drv_event, int, usbd_device_handle, device_ptr_t)
+_SYSCALL3(void, usbd_devinfo, usbd_device_handle, int, char *)
+_SYSCALL1(const struct usbd_quirks *, usbd_get_quirks, usbd_device_handle)
+_SYSCALL2(usb_endpoint_descriptor_t *, usbd_get_endpoint_descriptor, usbd_interface_handle, u_int8_t)
+//_SYSCALL1(usbd_status, usbd_reload_device_desc, usbd_device_handle)
+//_SYSCALL2(void, usb_add_task, usbd_device_handle, struct usb_task *)
+//_SYSCALL2(void, usb_rem_task, usbd_device_handle, struct usb_task *)
+
+
 /* Ndless extensions. Not available in thumb state. */
 // Given a list of OS-specific value and its size, returns the value for the current OS.
 // The order must be:  3.1.0, 3.1.0 CAS, 3.1.0 CX, 3.1.0 CAS CX

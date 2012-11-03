@@ -242,11 +242,45 @@
 #define e_string_insert_replace_utf16 224
 #define e_string_insert_utf16 225
 #define e_string_sprintf_utf16 226
+#define e_usbd_open_pipe 227
+#define e_usbd_close_pipe 228
+#define e_usbd_transfer 229
+#define e_usbd_alloc_xfer 230
+#define e_usbd_free_xfer 231
+#define e_usbd_setup_xfer 232
+#define e_usbd_setup_isoc_xfer 233
+#define e_usbd_get_xfer_status 234
+#define e_usbd_interface2endpoint_descriptor 235
+#define e_usbd_abort_pipe 236
+#define e_usbd_clear_endpoint_stall 237
+#define e_usbd_endpoint_count 238
+#define e_usbd_interface_count 239
+#define e_usbd_interface2device_handle 240
+#define e_usbd_device2interface_handle 241
+#define e_usbd_pipe2device_handle 242
+#define e_usbd_sync_transfer 243
+#define e_usbd_open_pipe_intr 244
+#define e_usbd_do_request 245
+#define e_usbd_do_request_flags 246
+#define e_usbd_do_request_flags_pipe 247
+#define e_usbd_get_interface_descriptor 248
+#define e_usbd_get_config_descriptor 249
+#define e_usbd_get_device_descriptor 250
+#define e_usbd_set_interface 251
+#define e_usbd_get_interface 252
+#define e_usbd_find_idesc 253
+#define e_usbd_errstr 254
+#define e_usbd_devinfo 255
+#define e_usbd_get_quirks 256
+#define e_usbd_get_endpoint_descriptor 257
+#define e_usb_register_driver 258
+#define e_device_get_softc 259
+#define e_device_get_ivars 260
 
 // END_OF_LIST (always keep this line after the last constant, used by mksyscalls.sh)
 
 // Must be kept up-to-date with the value of the last syscall
-#define __SYSCALLS_LAST 226
+#define __SYSCALLS_LAST 260
 
 // Flag: 3 higher bits of the 3-bytes comment field of the swi instruction
 #define __SYSCALLS_ISEXT 0x200000
