@@ -44,14 +44,14 @@ static const unsigned usbd_interface2device_handle_addrs[] = {0x103F3388, 0, 0, 
 static const unsigned usbd_open_pipe_intr_addrs[] = {0x103F4548, 0, 0, 0}; // non-CAS 3.1, CAS 3.1, non-CAS CX 3.1, CAS CX 3.1 addresses
 #define usbd_open_pipe_intr SYSCALL_CUSTOM(usbd_open_pipe_intr_addrs, usbd_status, usbd_interface_handle iface, u_int8_t address, u_int8_t flags, usbd_pipe_handle *pipe, usbd_private_handle priv, void *buffer, u_int32_t len, usbd_callback cb, int ival)
 
+// TODO replace with malloc(), should work
 static const unsigned bsd_malloc_addrs[] = {0x1035F998, 0, 0, 0}; // non-CAS 3.1, CAS 3.1, non-CAS CX 3.1, CAS CX 3.1 addresses
 #define bsd_malloc SYSCALL_CUSTOM(bsd_malloc_addrs, void*, size_t size, BOOL init)
 
-// + cf debug.c
-
 /* usbhid.h */ 
 
-#define UR_SET_PROTOCOL		0x0b
+#define UR_SET_IDLE 0x0a
+#define UR_SET_PROTOCOL 0x0b
 
 #if 0
 static void dump_info(usbd_device_handle dev) { // uaa->device
@@ -66,7 +66,7 @@ nio_console csl;
 static void init_console(void) {
 	// 53 columns, 15 rows. 0/110px offset for x/y. Background color 15 (white), foreground color 0 (black)
 	nio_InitConsole(&csl,53,15,0,110,15,0);
-	//nio_DrawConsole(&csl);
+	nio_DrawConsole(&csl);
 }
 
 /** TODO
@@ -94,6 +94,19 @@ usbd_status usbd_set_protocol(usbd_interface_handle iface, int report) {
 	req.bRequest = UR_SET_PROTOCOL;
 	USETW(req.wValue, report);
 	USETW(req.wIndex, id->bInterfaceNumber);
+	USETW(req.wLength, 0);
+	return (usbd_do_request(dev, &req, 0));
+}
+
+ usbd_status usbd_set_idle(usbd_interface_handle iface, int duration, int id) {
+	usb_interface_descriptor_t *ifd = usbd_get_interface_descriptor(iface);
+	usbd_device_handle dev;
+	usb_device_request_t req;
+	usbd_interface2device_handle(iface, &dev);
+	req.bmRequestType = UT_WRITE_CLASS_INTERFACE;
+	req.bRequest = UR_SET_IDLE;
+	USETW2(req.wValue, duration, id);
+	USETW(req.wIndex, ifd->bInterfaceNumber);
 	USETW(req.wLength, 0);
 	return (usbd_do_request(dev, &req, 0));
 }
@@ -232,13 +245,13 @@ static int attach(device_t self) {
 	if (!sc->sc_ibuf.buf)
 		return (ENXIO);
 	usbd_set_protocol(sc->sc_iface, 0);
-	//ocd_set_breakpoint(0X103F7224);
+	usbd_set_idle(sc->sc_iface, 0, 0);
 	sc->sc_ibuf.dummy1 = 0;
 	sc->sc_ibuf.dummy2 = 0;
 	err = usbd_open_pipe_intr(sc->sc_iface, sc->sc_ep_addr,
 	                          USBD_SHORT_XFER_OK, &sc->sc_intrpipe, sc,
-	                          &sc->sc_ibuf, sc->sc_isize, ums_intr, //ukbd_intr,
-	                          0xC);//USBD_DEFAULT_INTERVAL);
+	                          &sc->sc_ibuf, sc->sc_isize, ukbd_intr, //ums_intr,
+	                          USBD_DEFAULT_INTERVAL);
 	if (err)
 		return (ENXIO);
 	return 0;

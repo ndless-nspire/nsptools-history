@@ -11,16 +11,19 @@ OBJS = $(patsubst %.c,%.o,$(wildcard *.c))
 DISTDIR = .
 vpath %.tns $(DISTDIR)
 
-all: $(EXE)
+all: usb.tns usbaudio.tns
+
+usb.tns: usb.o
+usbaudio.tns: usbaudio.o
 
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<
 
-$(EXE): $(OBJS)
+%.tns: %.o
 	$(LD) $^ -o $(@:.tns=.elf) $(LDFLAGS)
 	mkdir -p $(DISTDIR)
 	$(OBJCOPY) -O binary $(@:.tns=.elf) $(DISTDIR)/$@
 
 clean:
 	rm -f *.o *.elf
-	rm -f $(DISTDIR)/$(EXE)
+	rm -f "$(DISTDIR)/*.tns"
