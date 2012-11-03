@@ -336,7 +336,8 @@
 	MakeName	(0X10313428,	"tftp_transfer");
 	MakeName	(0X10355350,	"device_get_ivars");
 	MakeName	(0X10355390,	"device_get_softc");
-	MakeName	(0X10355574,	"register_driver");
+	MakeName	(0X10355574,	"usb_register_driver");
+	MakeName	(0X10355D74,	"usbd_errstr");
 	MakeName	(0X10359F8C,	"dcd_free_pipe");
 	MakeName	(0X1035A268,	"build_single_td");
 	MakeName	(0X1035FA64,	"start_usb_stack");

@@ -349,10 +349,11 @@
 	MakeName	(0X10354C20,	"device_get_ivars");
 	MakeName	(0X10354C60,	"device_get_softc");
 	MakeName	(0X10354D48,	"_usb_mk_device_name");
-	MakeName	(0X10354E44,	"alloc_driver");
+	MakeName	(0X10354E44,	"usb_register_driver");
 	MakeName	(0X10354F38,	"unregister_drivers");
 	MakeName	(0X10354F84,	"register_drivers");
 	MakeName	(0X10354FCC,	"_usb_match");
+	MakeName	(0X10355644,	"usbd_errstr");
 	MakeName	(0X1035608C,	"alloc_tdi_4x_otg");
 	MakeName	(0X10358914,	"alloc_tdi_4x");
 	MakeName	(0X1035985C,	"dcd_free_pipe");

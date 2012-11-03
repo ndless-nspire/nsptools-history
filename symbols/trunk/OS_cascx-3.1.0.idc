@@ -351,7 +351,7 @@
 	MakeName	(0X10352C70,	"device_get_ivars");
 	MakeName	(0X10352CB0,	"device_get_softc");
 	MakeName	(0X10352D98,	"_usb_mk_device_name");
-	MakeName	(0X10352E94,	"alloc_driver");
+	MakeName	(0X10352E94,	"usb_register_driver");
 	MakeName	(0X10352F88,	"unregister_drivers");
 	MakeRptCmt	(0X10352F90,	"chained list of drivers");
 	MakeName	(0X10352FD4,	"register_drivers");
