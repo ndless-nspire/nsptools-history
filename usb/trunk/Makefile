@@ -11,10 +11,9 @@ OBJS = $(patsubst %.c,%.o,$(wildcard *.c))
 DISTDIR = .
 vpath %.tns $(DISTDIR)
 
-all: usb.tns usbaudio.tns
+all: usb.tns
 
 usb.tns: usb.o
-usbaudio.tns: usbaudio.o
 
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<
