@@ -368,6 +368,16 @@ _SYSCALL_OSVAR(unsigned char *, keypad_type)
 _SYSCALL3(int, touchpad_read, unsigned char /* start */, unsigned char /* end */, void * /* buf */)
 // For internal use by libndls. Returns 0 on failure, 1 on success.
 _SYSCALL3(int, touchpad_write, unsigned char /* start */, unsigned char /* end */, void * /* buf */)
+struct s_ns_event {
+ unsigned int timestamp;
+ unsigned short type; // 0x8 is key down, 0x10 is key up. 0x20 may be APD
+ unsigned short ascii;
+ unsigned int key;
+ unsigned int unknown[3];
+ unsigned int modifiers; // Shift = 3, Ctrl = 4, Caps = 0x10
+};
+_SYSCALL1(int, get_event, struct s_ns_event*)
+_SYSCALL4(void, send_key_event, struct s_ns_event* /* eventbuf */, unsigned short /* keycode_asciicode */, BOOL /* is_key_up */, BOOL /* fill_event_struct */)
 
 _SYSCALL0(void, refresh_homescr)
 _SYSCALL1(void, refresh_docbrowser, int)
