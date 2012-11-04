@@ -105,13 +105,26 @@ char HIDtoa(struct s_boot_kbd_report *buf, unsigned index) {
 	return( 0x07 );         //Bell 
 }
 
+// from 'A' to 'Z'
+unsigned char ascii_to_ns_key[] = {0x66, 0x46, 0x26, 0x85, 0x65, 0x45, 0x25, 0x84, 0x64, 0x44 /* J */, 0x24, 0x83, 0x63, 0x43, 0x23, 0x82, 0x62, 0x42, 0x22 /* S */, 0x81, 0x61, 0x41, 0x21, 0x80, 0x60, 0x40};
+
+unsigned short ascii_to_ns_key_ascii(char ascii) {
+	if (!ascii || ascii > 'z' || ascii < 'a')
+		return 0;
+	return ascii_to_ns_key[ascii - 'a'] << 8 | ascii;
+}
+
 static void ukbd_intr(usbd_xfer_handle __attribute__((unused)) xfer, usbd_private_handle addr, usbd_status  __attribute__((unused)) status) {
 	struct ukbd_softc *sc = addr;
 	struct s_boot_kbd_report *ibuf = (struct s_boot_kbd_report *)sc->sc_ibuf.buf;
 	unsigned i;
+		struct s_ns_event ns_ev;
 	for (i = 0; i < 6; i++) {
-		if (ibuf->keycode[i])
-			nio_printf(&csl, "%c", HIDtoa(ibuf, i));
+		if (ibuf->keycode[i]) {
+			unsigned short ns_key_ascii = ascii_to_ns_key_ascii(HIDtoa(ibuf, i));
+			send_key_event(&ns_ev, ns_key_ascii, FALSE, TRUE);
+			send_key_event(&ns_ev, ns_key_ascii, TRUE, TRUE);
+		}
 	}
 }
 
