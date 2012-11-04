@@ -14,10 +14,17 @@ static void init_console(void) {
 static int match(device_t self) {
 	init_console();
 	struct usb_attach_arg *uaa = device_get_ivars(self);
-  if (!uaa->iface) {
-  	return (UMATCH_NONE);
-  }
-	return UMATCH_DEVCLASS_DEVSUBCLASS;
+  if (!uaa->iface)
+  	return UMATCH_NONE;
+  usb_interface_descriptor_t *id = usbd_get_interface_descriptor(uaa->iface);
+  if (!id)
+  	return UMATCH_NONE;
+  if (id->bInterfaceClass == UICLASS_HID &&
+	    id->bInterfaceSubClass == UISUBCLASS_BOOT &&
+	    id->bInterfaceProtocol == UIPROTO_BOOT_KEYBOARD)
+		return UMATCH_IFACECLASS;
+	else
+		return UMATCH_NONE;
 }
 
 struct ukbd_softc {
