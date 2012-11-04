@@ -10,5 +10,7 @@ static inline void ocd_break(void) {
 }
 /* Programmatically sets a breakpoint at the give address */
 void ocd_set_breakpoint(unsigned addr);
+/* Programmatically remove the breakpoint at the give address */
+void ocd_remove_breakpoint(unsigned addr);
 
 #endif

@@ -63,12 +63,23 @@ void ocd_set_breakpoint(unsigned addr) {
 	_ocd_set_breakpoint(addr, BSTD);
 }
 
-void remove_all_breakpoints(void) {
+static void remove_all_breakpoints(void) {
 	unsigned i;
 	for (i = 0; i < MAX_BKPTS; i++) {
 		if (breakpoints[i].used)
 			*(unsigned*)breakpoints[i].addr = breakpoints[i].orig_instr;
 		breakpoints[i].used = FALSE;
+	}
+	clear_cache();
+}
+
+void ocd_remove_breakpoint(unsigned addr) {
+	unsigned i;
+	for (i = 0; i < MAX_BKPTS; i++) {
+		if (breakpoints[i].used && *(unsigned*)breakpoints[i].addr == addr)
+			*(unsigned*)breakpoints[i].addr = breakpoints[i].orig_instr;
+			breakpoints[i].used = FALSE;
+			break;
 	}
 	clear_cache();
 }
@@ -407,7 +418,7 @@ unsigned ocd_prefetch_abort_handler_body(unsigned *exception_addr) {
 				"e - show program screen\n"
 				"k[t] <address> - add [temporary] breakpoint\n"
 				"k - show breakpoints\n"
-				"k <num> - remove breakpoint\n"
+				"k- <num> - remove breakpoint\n"
 				"n - continue until next instruction\n"
 				"pr <address> - port read\n"
 				"pw <address> <value> - port write\n"
