@@ -2,7 +2,6 @@
 #include <usbdi.h>
 #include <usb.h>
 #include <nspireio2.h>
-#include <ocd.h>
 
 nio_console csl;
 
@@ -63,7 +62,6 @@ static void ums_intr(usbd_xfer_handle __attribute__((unused)) xfer, usbd_private
 }
 
 static int attach(device_t self) {
-	ocd_remove_breakpoint(0x103F3718);
 	struct ums_softc *sc = device_get_softc(self);
 	struct usb_attach_arg *uaa = device_get_ivars(self);
 	usbd_status err;
@@ -102,14 +100,12 @@ static int detach(device_t self) {
 		free(sc->sc_ibuf.buf);
 		sc->sc_enabled = 0;
 	}
-	ocd_set_breakpoint(0x103F3718);
 	return 0;
 }
 
 static int (*methods[])(device_t) = {match, attach, detach, NULL};
 
 int main(void) {
-	ocd_init();
 	nl_relocdata((unsigned*)methods, sizeof(methods)/sizeof(methods[0]) - 1);
 	usb_register_driver(2, methods, "ums", 0, sizeof(struct ums_softc));
 	nl_set_resident();
