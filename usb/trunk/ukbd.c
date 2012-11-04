@@ -1,20 +1,7 @@
 #include <os.h>
-#include <ocd.h>
 #include <usbdi.h>
 #include <usb.h>
 #include <nspireio2.h>
-
-/* usbhid.h */ 
-
-#define UR_SET_IDLE 0x0a
-#define UR_SET_PROTOCOL 0x0b
-
-#if 0
-static void dump_info(usbd_device_handle dev) { // uaa->device
-	char devinfo[1024];
-	usbd_devinfo(dev, 0, devinfo);
-}
-#endif
 
 nio_console csl;
 
@@ -24,61 +11,21 @@ static void init_console(void) {
 	nio_DrawConsole(&csl);
 }
 
-/** TODO
-- Crash aléatoire lors d'une reconnexion
-- crash si shutdown. Manque methode non implémentée ?
-- manque unregister. Fonction non trouvée dans OS, existe ?
-*/
-
 static int match(device_t self) {
 	init_console();
 	struct usb_attach_arg *uaa = device_get_ivars(self);
-	//usb_device_descriptor_t *dd = usbd_get_device_descriptor(uaa->device);
   if (!uaa->iface) {
-  	nio_printf(&csl, "nomatch\n");
   	return (UMATCH_NONE);
   }
 	return UMATCH_DEVCLASS_DEVSUBCLASS;
 }
 
-usbd_status usbd_set_protocol(usbd_interface_handle iface, int report) {
-	usb_interface_descriptor_t *id = usbd_get_interface_descriptor(iface);
-	usbd_device_handle dev;
-	usb_device_request_t req;
-	usbd_interface2device_handle(iface, &dev);
-	req.bmRequestType = UT_WRITE_CLASS_INTERFACE;
-	req.bRequest = UR_SET_PROTOCOL;
-	USETW(req.wValue, report);
-	USETW(req.wIndex, id->bInterfaceNumber);
-	USETW(req.wLength, 0);
-	return (usbd_do_request(dev, &req, 0));
-}
-
- usbd_status usbd_set_idle(usbd_interface_handle iface, int duration, int id) {
-	usb_interface_descriptor_t *ifd = usbd_get_interface_descriptor(iface);
-	usbd_device_handle dev;
-	usb_device_request_t req;
-	usbd_interface2device_handle(iface, &dev);
-	req.bmRequestType = UT_WRITE_CLASS_INTERFACE;
-	req.bRequest = UR_SET_IDLE;
-	USETW2(req.wValue, duration, id);
-	USETW(req.wIndex, ifd->bInterfaceNumber);
-	USETW(req.wLength, 0);
-	return (usbd_do_request(dev, &req, 0));
-}
-
-struct s_ibuf { // strangely needed by TI's usbd_open_pipe_intr
- 	u_char *buf;
- 	int dummy1;
- 	int dummy2;
- };
-
 struct ukbd_softc {
- device_t sc_dev;                /* base device */
- usbd_interface_handle sc_iface; /* interface */
- usbd_pipe_handle sc_intrpipe;   /* interrupt pipe */
+ device_t sc_dev;
+ usbd_interface_handle sc_iface;
+ usbd_pipe_handle sc_intrpipe;
  int sc_ep_addr;
- struct s_ibuf sc_ibuf;
+ struct s_usb_pipe_buf sc_ibuf;
  int sc_isize;
  int sc_enabled;
 };
@@ -96,13 +43,6 @@ struct s_boot_kbd_report {
 	} mod;
 	char reserved;
 	char keycode[6];
-};
-
-struct s_boot_ums_report {
-	char button;        
-	signed char xdispl;
-	signed char ydispl;
-	char bytes3to7[5] ; //optional bytes
 };
 
 // From https://github.com/felis/lightweight-usb-host/blob/e790c8c7e29f04fd938939f4dd5f88b52125b8af/cli.c
@@ -159,7 +99,6 @@ char HIDtoa(struct s_boot_kbd_report *buf, unsigned index) {
 }
 
 static void ukbd_intr(usbd_xfer_handle __attribute__((unused)) xfer, usbd_private_handle addr, usbd_status  __attribute__((unused)) status) {
-	nio_printf(&csl, "ukbd_intr");
 	struct ukbd_softc *sc = addr;
 	struct s_boot_kbd_report *ibuf = (struct s_boot_kbd_report *)sc->sc_ibuf.buf;
 	unsigned i;
@@ -167,40 +106,19 @@ static void ukbd_intr(usbd_xfer_handle __attribute__((unused)) xfer, usbd_privat
 		if (ibuf->keycode[i])
 			nio_printf(&csl, "%c", HIDtoa(ibuf, i));
 	}
-	nio_printf(&csl, "end ukbd_intr");
-}
-
-static int ums_xcoord = 0;
-static int ums_ycoord = 0;
-
-static void ums_intr(usbd_xfer_handle __attribute__((unused)) xfer, usbd_private_handle addr, usbd_status __attribute__((unused)) status) {
-	struct ukbd_softc *sc = addr;
-	struct s_boot_ums_report *ibuf = (struct s_boot_ums_report *)sc->sc_ibuf.buf;
-	ums_xcoord += (int)(ibuf->xdispl / 2);
-	ums_ycoord += (int)(ibuf->ydispl / 2);
-	if (ums_xcoord < 0) ums_xcoord = 0;
-	if (ums_ycoord < 0) ums_ycoord = 0;
-	if (ums_xcoord >= SCREEN_WIDTH) ums_xcoord = SCREEN_WIDTH - 1;
-	if (ums_ycoord >= SCREEN_HEIGHT) ums_ycoord = SCREEN_HEIGHT - 1;
-	setPixel(ums_xcoord, ums_ycoord, BLACK);
-	if(ibuf->button)
-		putChar(ums_xcoord, ums_ycoord, 'i', BLACK, WHITE);
 }
 
 static int attach(device_t self) {
-	nio_printf(&csl, "attach\n");
 	struct ukbd_softc *sc = device_get_softc(self);
 	struct usb_attach_arg *uaa = device_get_ivars(self);
-	//ocd_dump(&csl, uaa);
 	usbd_status err;
 	if (sc == NULL)
 		return (ENXIO);
-	sc->sc_iface = uaa->iface; // or usbd_device2interface_handle
+	sc->sc_iface = uaa->iface;
 	sc->sc_dev = self;
 	usb_endpoint_descriptor_t *ed = usbd_interface2endpoint_descriptor(sc->sc_iface, 0);
 	sc->sc_ep_addr = ed->bEndpointAddress;
 	sc->sc_isize = 16;
-	nio_printf(&csl, "attach before set_proto\n");
 	usbd_set_protocol(sc->sc_iface, 0);
 	usbd_set_idle(sc->sc_iface, 0, 0);
 	sc->sc_ibuf.dummy1 = 0;
@@ -209,48 +127,34 @@ static int attach(device_t self) {
 	if (!sc->sc_ibuf.buf)
 		return (ENXIO);
 	sc->sc_enabled = 1;
-	nio_printf(&csl, "attach before open_pipe\n");
 	err = usbd_open_pipe_intr(sc->sc_iface, sc->sc_ep_addr,
 	                          USBD_SHORT_XFER_OK, &sc->sc_intrpipe, sc,
-	                          &sc->sc_ibuf, sc->sc_isize, ukbd_intr, //ums_intr,
+	                          &sc->sc_ibuf, sc->sc_isize, ukbd_intr,
 	                          USBD_DEFAULT_INTERVAL);
 	if (err) {
 		free(sc->sc_ibuf.buf);
 		sc->sc_enabled = 0;
 		return (ENXIO);
 	}
-	nio_printf(&csl, "attached\n");
 	return 0;
 }
 
 static int detach(device_t self) {
-	nio_printf(&csl, "detach\n");
 	struct ukbd_softc *sc = device_get_softc(self);
 	if (sc->sc_enabled) {
-		//usbd_abort_pipe(sc->sc_intrpipe);
+		//usbd_abort_pipe(sc->sc_intrpipe); // strangely crashes
 		usbd_close_pipe(sc->sc_intrpipe);
 		free(sc->sc_ibuf.buf);
 		sc->sc_enabled = 0;
 	}
-	nio_printf(&csl, "detached\n");
 	return 0;
 }
 
 static int (*methods[])(device_t) = {match, attach, detach, NULL};
 
-int register_driver(void) {
-	// softc_size: must not be 0
-	return usb_register_driver(2, methods, "mydriver", 0, sizeof(struct ukbd_softc));
-}
-
 int main(void) {
 	nl_relocdata((unsigned*)methods, sizeof(methods)/sizeof(methods[0]) - 1);
-
-	//ocd_init();
-
-	register_driver();
-	
+	usb_register_driver(2, methods, "ukbd", 0, sizeof(struct ukbd_softc));
 	nl_set_resident();
-
 	return 0;
 }
