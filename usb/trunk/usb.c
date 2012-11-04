@@ -13,7 +13,6 @@
 static void dump_info(usbd_device_handle dev) { // uaa->device
 	char devinfo[1024];
 	usbd_devinfo(dev, 0, devinfo);
-	putStr(0, 0, devinfo, 15, 0);
 }
 #endif
 
@@ -26,7 +25,7 @@ static void init_console(void) {
 }
 
 /** TODO
-- free du malloc dans softc
+- Crash aléatoire lors d'une reconnexion
 - crash si shutdown. Manque methode non implémentée ?
 - manque unregister. Fonction non trouvée dans OS, existe ?
 */
@@ -81,6 +80,7 @@ struct ukbd_softc {
  int sc_ep_addr;
  struct s_ibuf sc_ibuf;
  int sc_isize;
+ int sc_enabled;
 };
 
 struct s_boot_kbd_report {
@@ -159,6 +159,7 @@ char HIDtoa(struct s_boot_kbd_report *buf, unsigned index) {
 }
 
 static void ukbd_intr(usbd_xfer_handle __attribute__((unused)) xfer, usbd_private_handle addr, usbd_status  __attribute__((unused)) status) {
+	nio_printf(&csl, "ukbd_intr");
 	struct ukbd_softc *sc = addr;
 	struct s_boot_kbd_report *ibuf = (struct s_boot_kbd_report *)sc->sc_ibuf.buf;
 	unsigned i;
@@ -166,6 +167,7 @@ static void ukbd_intr(usbd_xfer_handle __attribute__((unused)) xfer, usbd_privat
 		if (ibuf->keycode[i])
 			nio_printf(&csl, "%c", HIDtoa(ibuf, i));
 	}
+	nio_printf(&csl, "end ukbd_intr");
 }
 
 static int ums_xcoord = 0;
@@ -186,6 +188,7 @@ static void ums_intr(usbd_xfer_handle __attribute__((unused)) xfer, usbd_private
 }
 
 static int attach(device_t self) {
+	nio_printf(&csl, "attach\n");
 	struct ukbd_softc *sc = device_get_softc(self);
 	struct usb_attach_arg *uaa = device_get_ivars(self);
 	//ocd_dump(&csl, uaa);
@@ -196,43 +199,56 @@ static int attach(device_t self) {
 	sc->sc_dev = self;
 	usb_endpoint_descriptor_t *ed = usbd_interface2endpoint_descriptor(sc->sc_iface, 0);
 	sc->sc_ep_addr = ed->bEndpointAddress;
-	//sc->sc_isize = 8;
 	sc->sc_isize = 16;
-	sc->sc_ibuf.buf = malloc(sc->sc_isize);
-	if (!sc->sc_ibuf.buf)
-		return (ENXIO);
+	nio_printf(&csl, "attach before set_proto\n");
 	usbd_set_protocol(sc->sc_iface, 0);
 	usbd_set_idle(sc->sc_iface, 0, 0);
 	sc->sc_ibuf.dummy1 = 0;
 	sc->sc_ibuf.dummy2 = 0;
+	sc->sc_ibuf.buf = malloc(sc->sc_isize);
+	if (!sc->sc_ibuf.buf)
+		return (ENXIO);
+	sc->sc_enabled = 1;
+	nio_printf(&csl, "attach before open_pipe\n");
 	err = usbd_open_pipe_intr(sc->sc_iface, sc->sc_ep_addr,
 	                          USBD_SHORT_XFER_OK, &sc->sc_intrpipe, sc,
 	                          &sc->sc_ibuf, sc->sc_isize, ukbd_intr, //ums_intr,
 	                          USBD_DEFAULT_INTERVAL);
-	if (err)
+	if (err) {
+		free(sc->sc_ibuf.buf);
+		sc->sc_enabled = 0;
 		return (ENXIO);
+	}
+	nio_printf(&csl, "attached\n");
 	return 0;
 }
 
-static int detach(device_t __attribute__((unused)) self) {
-	//putStr(0, 0, "                                                  ", 15, 0);
+static int detach(device_t self) {
+	nio_printf(&csl, "detach\n");
+	struct ukbd_softc *sc = device_get_softc(self);
+	if (sc->sc_enabled) {
+		//usbd_abort_pipe(sc->sc_intrpipe);
+		usbd_close_pipe(sc->sc_intrpipe);
+		free(sc->sc_ibuf.buf);
+		sc->sc_enabled = 0;
+	}
+	nio_printf(&csl, "detached\n");
 	return 0;
 }
 
 static int (*methods[])(device_t) = {match, attach, detach, NULL};
 
-int register_my_driver(void) {
+int register_driver(void) {
 	// softc_size: must not be 0
 	return usb_register_driver(2, methods, "mydriver", 0, sizeof(struct ukbd_softc));
 }
 
 int main(void) {
-	//TCT_Local_Control_Interrupts(0); if enabled and wait_key_pressed(), the hook won't work!
 	nl_relocdata((unsigned*)methods, sizeof(methods)/sizeof(methods[0]) - 1);
 
-	ocd_init();
+	//ocd_init();
 
-	register_my_driver();
+	register_driver();
 	
 	nl_set_resident();
 
