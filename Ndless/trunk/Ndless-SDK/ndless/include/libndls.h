@@ -14,6 +14,7 @@ halt\@: b halt\@
 
 #include <stdint.h>
 #include <sys/types.h>
+#include <usbdi.h>
 
 typedef struct {
 	uint16_t width;
@@ -73,6 +74,8 @@ touchpad_info_t *touchpad_getinfo(void);
 int touchpad_scan(touchpad_report_t *report);
 BOOL touchpad_arrow_pressed(tpad_arrow_t arrow); /* internal, use isKeyPressed() */
 int truncate(const char *path, off_t length);
+usbd_status usbd_set_idle(usbd_interface_handle iface, int duration, int id);
+usbd_status usbd_set_protocol(usbd_interface_handle iface, int report);
 void wait_key_pressed(void);
 void wait_no_key_pressed(void);
 

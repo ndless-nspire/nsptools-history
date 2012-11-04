@@ -556,6 +556,7 @@ _SYSCALL3(int, lua_getinfo, lua_State *, const char *, lua_Debug *)
 
 // TI-Nspire-specific USB stuff
 #include <bsdcompat.h>
+// 'a' must be 2. softc_size must not be null.
 _SYSCALLVAR(int,, usb_register_driver, __attribute__((unused)) int a, __attribute__((unused)) int (*methods[])(device_t), __attribute__((unused)) const char *driver_name, __attribute__((unused)) int b, __attribute__((unused)) unsigned softc_size)
 
 // From *BSD's bus.h
@@ -588,6 +589,11 @@ _SYSCALL1(usbd_device_handle, usbd_pipe2device_handle, usbd_pipe_handle)
 //_SYSCALL1(void, usbd_free_buffer, usbd_xfer_handle)
 //_SYSCALL1(void *, usbd_get_buffer, usbd_xfer_handle)
 _SYSCALL1(usbd_status, usbd_sync_transfer, usbd_xfer_handle)
+struct s_usb_pipe_buf { // strangely needed by TI's usbd_open_pipe_intr
+ 	u_char *buf;
+ 	int dummy1; // set to 0
+ 	int dummy2; // set to 0
+ };
 _SYSCALLVAR(usbd_status,, usbd_open_pipe_intr, __attribute__((unused)) usbd_interface_handle b, __attribute__((unused)) u_int8_t c, __attribute__((unused)) u_int8_t d, __attribute__((unused)) usbd_pipe_handle * e, __attribute__((unused)) usbd_private_handle f, __attribute__((unused)) void *g, __attribute__((unused)) u_int32_t h, __attribute__((unused)) usbd_callback i, __attribute__((unused)) int j)
 _SYSCALL3(usbd_status, usbd_do_request, usbd_device_handle , usb_device_request_t *, void *)
 //_SYSCALL3(usbd_status, usbd_do_request_async, usbd_device_handle, usb_device_request_t *, void *)
