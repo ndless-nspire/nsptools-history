@@ -1,18 +1,8 @@
 #include <os.h>
 #include <usbdi.h>
 #include <usb.h>
-#include <nspireio2.h>
-
-nio_console csl;
-
-static void init_console(void) {
-	// 53 columns, 15 rows. 0/110px offset for x/y. Background color 15 (white), foreground color 0 (black)
-	nio_InitConsole(&csl,53,15,0,110,15,0);
-	nio_DrawConsole(&csl);
-}
 
 static int match(device_t self) {
-	init_console();
 	struct usb_attach_arg *uaa = device_get_ivars(self);
   if (!uaa->iface)
   	return UMATCH_NONE;
@@ -60,15 +50,15 @@ static char trtab_key[256] = {
 	0x65, 0x45, 0x25, 0x84, 0x64, 0x44, 0x24, 0x83, /* 08 - 0F */
 	0x63, 0x43, 0x23, 0x82, 0x62, 0x42, 0x22, 0x81, /* 10 - 17 */
 	0x61, 0x41, 0x21, 0x80, 0x60, 0x40, 0x00, 0x00, /* 18 - 1F */
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* 20 - 27 */
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* 28 - 2F */
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* 20 - 27 TODO */
+	0x10, 0x96, 0x15, 0x95, 0x20, 0x00, 0x00, 0x00, /* 28 - 2F TODO 2D to 49 */
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* 30 - 37 */
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* 38 - 3F */
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* 40 - 47 */
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* 48 - 4F */
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* 50 - 57 */
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* 58 - 5F */
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* 60 - 67 */
+	0x00, 0x00, 0xFD, 0x00, 0x00, 0x00, 0x00, 0x27, /* 48 - 4F */
+	0x07, 0x37, 0x17, 0x00, 0x14, 0x13, 0x12, 0x11, /* 50 - 57 */
+	0x10, 0x73, 0x53, 0x33, 0x72, 0x52, 0x32, 0x71, /* 58 - 5F */
+	0x51, 0x31, 0x50, 0x00, 0x00, 0x00, 0x00, 0x00, /* 60 - 67 */
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* 68 - 6F */
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* 70 - 77 */
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* 78 - 7F */
@@ -98,14 +88,14 @@ static char trtab_ascii[256] = {
 	'm' , 'n' , 'o' , 'p' , 'q' , 'r' , 's' , 't' , /* 10 - 17 */
 	'u' , 'v' , 'w' , 'x' , 'y' , 'z' , '\0', '\0', /* 18 - 1F */
 	'\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', /* 20 - 27 */  
-	'\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', /* 28 - 2F */  
+	'\r', '\x1b', '\b', '\t', ' ', '\0', '\0', '\0', /* 28 - 2F */  
 	'\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', /* 30 - 37 */  
 	'\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', /* 38 - 3F */  
 	'\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', /* 40 - 47 */  
 	'\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', /* 48 - 4F */  
-	'\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', /* 50 - 57 */  
-	'\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', /* 58 - 5F */  
-	'\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', /* 60 - 67 */  
+	'\0', '\0', '\0', '\0', '/' , '*' , '-' , '+' , /* 50 - 57 */  
+	'\r', '1' , '2' , '3' , '4' , '5' , '6' , '7' , /* 58 - 5F */  
+	'8' , '9' , '0' , '\0', '\0', '\0', '\0', '\0', /* 60 - 67 */  
 	'\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', /* 68 - 6F */  
 	'\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', /* 70 - 77 */  
 	'\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', /* 78 - 7F */  
@@ -187,8 +177,7 @@ unsigned short usage_id_to_ns_key_ascii(unsigned char usage_id) {
 }
 
 // TODO
-// other keys (space, enter, arrows, home)
-// key repeat si appuyé, pas naturellement pas l'OS ?
+// key repeat si appuyé, pas naturellement pas l'OS. Seulement pour certaines touches. Quoi d'autres que les flèches ?
 // modifiers
 // azerty
 // special case for ErrorRollOver?
@@ -199,15 +188,6 @@ static void ukbd_intr(usbd_xfer_handle __attribute__((unused)) xfer, usbd_privat
 	unsigned char key;
 	struct s_ns_event ns_ev;
 	
-#if 0
-		nio_printf(&csl, "was: ");
-		for (i = 0; i < NKEYCODE; i++)
-			nio_printf(&csl, "%02X ", (int) sc->sc_prev_report.keycode[i]);
-		nio_printf(&csl, "\nis: ");
-		for (i = 0; i < NKEYCODE; i++)
-			nio_printf(&csl, "%02X ", (int) ibuf->keycode[i]);
-		nio_printf(&csl, "\n");
-#endif
 	
 	/* Check for released keys. */
 	for (i = 0; i < NKEYCODE; i++) {
