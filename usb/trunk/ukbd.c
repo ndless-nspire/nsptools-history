@@ -27,29 +27,30 @@ static int match(device_t self) {
 		return UMATCH_NONE;
 }
 
-struct ukbd_softc {
- device_t sc_dev;
- usbd_interface_handle sc_iface;
- usbd_pipe_handle sc_intrpipe;
- int sc_ep_addr;
- struct s_usb_pipe_buf sc_ibuf;
- int sc_isize;
- int sc_enabled;
-};
+#define NKEYCODE 6
 
 struct s_boot_kbd_report {
-	struct {
-		unsigned LCtrl:1;
-		unsigned LShift:1;
-		unsigned LAlt:1;
-		unsigned LWin:1;
-		unsigned RCtrl:1;
-		unsigned RShift:1;
-		unsigned RAlt:1;
-		unsigned RWin:1;
-	} mod;
-	char reserved;
-	char keycode[6];
+	unsigned char  modifiers;
+#define MOD_CONTROL_L   0x01
+#define MOD_CONTROL_R   0x10
+#define MOD_SHIFT_L     0x02
+#define MOD_SHIFT_R     0x20
+#define MOD_ALT_L       0x04
+#define MOD_ALT_R       0x40
+#define MOD_WIN_L       0x08
+	unsigned char reserved;
+	unsigned char keycode[NKEYCODE];
+};
+
+struct ukbd_softc {
+	device_t sc_dev;
+	usbd_interface_handle sc_iface;
+	usbd_pipe_handle sc_intrpipe;
+	int sc_ep_addr;
+	struct s_usb_pipe_buf sc_ibuf;
+	int sc_isize;
+	int sc_enabled;
+	struct s_boot_kbd_report sc_prev_report;
 };
 
 // USB usage ID to TI-Nspire scancode as expected by get_event() / send_key_event()
@@ -126,6 +127,7 @@ static char trtab_ascii[256] = {
 	'\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', /* F8 - FF */
 };
 
+#if 0
 // From https://github.com/felis/lightweight-usb-host/blob/e790c8c7e29f04fd938939f4dd5f88b52125b8af/cli.c
 // TODO cleanup
 /* function to convert HID keyboard code to ASCII */
@@ -133,17 +135,17 @@ char HIDtoa(struct s_boot_kbd_report *buf, unsigned index) {
 	char HIDcode = buf->keycode[ index ];    
 	/* symbols a-z,A-Z */
 	if( HIDcode >= 0x04 && HIDcode <= 0x1d ) {  
-			if( buf->mod.LShift || buf->mod.RShift ) {                          //uppercase 
+			if( buf->modifiers.LShift || buf->modifiers.RShift ) {                          //uppercase 
 					return( HIDcode + 0x3d );
 			}
-			if( buf->mod.LCtrl || buf->mod.RCtrl ) {                            //Ctrl
+			if( buf->modifiers.LCtrl || buf->modifiers.RCtrl ) {                            //Ctrl
 					return( HIDcode - 3 );
 			}
 			return( HIDcode + 0x5d );                             //lowercase
 	}
 	/* Numbers 1-9,0 */
 	if(  HIDcode >= 0x1e && HIDcode <= 0x27 ) {
-			if( buf->mod.LShift || buf->mod.RShift ) {                          //uppercase
+			if( buf->mod.LShift || buf->modifiers.RShift ) {                          //uppercase
 					switch( HIDcode ) {
 							case( 0x1f ):   //HID code for '2'
 									return('@');
@@ -178,23 +180,68 @@ char HIDtoa(struct s_boot_kbd_report *buf, unsigned index) {
 	}
 	return( 0x07 );         //Bell 
 }
+#endif
 
 unsigned short usage_id_to_ns_key_ascii(unsigned char usage_id) {
 	return trtab_key[usage_id] << 8 | trtab_ascii[usage_id];
 }
 
+// TODO
+// other keys (space, enter, arrows, home)
+// key repeat si appuyé, pas naturellement pas l'OS ?
+// modifiers
+// azerty
+// special case for ErrorRollOver?
 static void ukbd_intr(usbd_xfer_handle __attribute__((unused)) xfer, usbd_private_handle addr, usbd_status  __attribute__((unused)) status) {
 	struct ukbd_softc *sc = addr;
 	struct s_boot_kbd_report *ibuf = (struct s_boot_kbd_report *)sc->sc_ibuf.buf;
-	unsigned i;
-		struct s_ns_event ns_ev;
-	for (i = 0; i < 6 /* sizeof((struct s_boot_kbd_report).keycode) */; i++) {
-		if (ibuf->keycode[i]) {
-			unsigned short ns_key_ascii = usage_id_to_ns_key_ascii(ibuf->keycode[i]);
-			send_key_event(&ns_ev, ns_key_ascii, FALSE, TRUE);
-			send_key_event(&ns_ev, ns_key_ascii, TRUE, TRUE);
+	unsigned i, j;
+	unsigned char key;
+	struct s_ns_event ns_ev;
+	
+#if 0
+		nio_printf(&csl, "was: ");
+		for (i = 0; i < NKEYCODE; i++)
+			nio_printf(&csl, "%02X ", (int) sc->sc_prev_report.keycode[i]);
+		nio_printf(&csl, "\nis: ");
+		for (i = 0; i < NKEYCODE; i++)
+			nio_printf(&csl, "%02X ", (int) ibuf->keycode[i]);
+		nio_printf(&csl, "\n");
+#endif
+	
+	/* Check for released keys. */
+	for (i = 0; i < NKEYCODE; i++) {
+		key = sc->sc_prev_report.keycode[i];
+		if (key == 0)
+			break;
+		for (j = 0; j < NKEYCODE; j++) {
+			if (ibuf->keycode[j] == 0)
+				break;
+			if (key == ibuf->keycode[j])
+				goto rfound;
 		}
+		send_key_event(&ns_ev, usage_id_to_ns_key_ascii(key), TRUE, TRUE); // released
+		rfound:
+			;
 	}
+					
+	/* Check for pressed keys. */
+	for (i = 0; i < NKEYCODE; i++) {
+		key = ibuf->keycode[i];
+		if (key == 0)
+			break;
+		for (j = 0; j < NKEYCODE; j++) {
+			if (sc->sc_prev_report.keycode[j] == 0)
+				break;
+			if (key == sc->sc_prev_report.keycode[j])
+				goto pfound;
+		}
+		send_key_event(&ns_ev, usage_id_to_ns_key_ascii(key), FALSE, TRUE); // pressed
+		pfound:
+			;
+	}
+	
+	memcpy(&(sc->sc_prev_report), ibuf, sizeof(struct s_boot_kbd_report));
 }
 
 static int attach(device_t self) {
@@ -207,7 +254,7 @@ static int attach(device_t self) {
 	sc->sc_dev = self;
 	usb_endpoint_descriptor_t *ed = usbd_interface2endpoint_descriptor(sc->sc_iface, 0);
 	sc->sc_ep_addr = ed->bEndpointAddress;
-	sc->sc_isize = 16;
+	sc->sc_isize = sizeof(struct s_boot_kbd_report);
 	usbd_set_protocol(sc->sc_iface, 0);
 	usbd_set_idle(sc->sc_iface, 0, 0);
 	sc->sc_ibuf.dummy1 = 0;
@@ -216,6 +263,7 @@ static int attach(device_t self) {
 	if (!sc->sc_ibuf.buf)
 		return (ENXIO);
 	sc->sc_enabled = 1;
+	memset(&(sc->sc_prev_report), 0, sizeof(struct s_boot_kbd_report));
 	err = usbd_open_pipe_intr(sc->sc_iface, sc->sc_ep_addr,
 	                          USBD_SHORT_XFER_OK, &sc->sc_intrpipe, sc,
 	                          &sc->sc_ibuf, sc->sc_isize, ukbd_intr,
