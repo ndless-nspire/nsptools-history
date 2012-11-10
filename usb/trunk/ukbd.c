@@ -11,7 +11,6 @@ nio_console csl;
 
 static int match(device_t self) {
 #ifdef DEBUG
-	init_console();
 	// 53 columns, 15 rows. 0/110px offset for x/y. Background color 15 (white), foreground color 0 (black)
 	nio_InitConsole(&csl,53,15,0,110,15,0);
 	nio_DrawConsole(&csl);
@@ -42,6 +41,7 @@ struct s_boot_kbd_report {
 #define MOD_ALT_L       0x04
 #define MOD_ALT_R       0x40
 #define MOD_WIN_L       0x08
+#define MOD_WIN_R       0x80
 	unsigned char reserved;
 	unsigned char keycode[NKEYCODE];
 };
@@ -92,70 +92,27 @@ static unsigned short trtab_key[256] = {
 	0x0000    , 0x0000    , 0x0000    , 0x0000    , 0x0000    , 0x0000    , 0x0000    , 0x0000    , /* E8 - EF */
 	0x0000    , 0x0000    , 0x0000    , 0x0000    , 0x0000    , 0x0000    , 0x0000    , 0x0000    , /* F0 - F7 */
 	0x0000    , 0x0000    , 0x0000    , 0x0000    , 0x0000    , 0x0000    , 0x0000    , 0x0000    , /* F8 - FF */   
-};                                                
+};     
 
-#if 0
-// From https://github.com/felis/lightweight-usb-host/blob/e790c8c7e29f04fd938939f4dd5f88b52125b8af/cli.c
-// TODO cleanup
-/* function to convert HID keyboard code to ASCII */
-char HIDtoa(struct s_boot_kbd_report *buf, unsigned index) {
-	char HIDcode = buf->keycode[ index ];    
-	/* symbols a-z,A-Z */
-	if( HIDcode >= 0x04 && HIDcode <= 0x1d ) {  
-			if( buf->modifiers.LShift || buf->modifiers.RShift ) {                          //uppercase 
-					return( HIDcode + 0x3d );
-			}
-			if( buf->modifiers.LCtrl || buf->modifiers.RCtrl ) {                            //Ctrl
-					return( HIDcode - 3 );
-			}
-			return( HIDcode + 0x5d );                             //lowercase
-	}
-	/* Numbers 1-9,0 */
-	if(  HIDcode >= 0x1e && HIDcode <= 0x27 ) {
-			if( buf->mod.LShift || buf->modifiers.RShift ) {                          //uppercase
-					switch( HIDcode ) {
-							case( 0x1f ):   //HID code for '2'
-									return('@');
-							case( 0x23 ):   //HID code for '6'
-									return('^');
-							case( 0x24 ):   //HID code for '7'
-									return('&');    
-							case( 0x25 ):   //HID code for '8'
-									return('*');
-							case( 0x26 ):   //HID code for '9'
-									return('(');
-							case( 0x27 ):   //HID code for '0'
-									return(')');     
-							default:        //1,3,4,5
-									return( HIDcode + 3 );
-					}     
-			}
-			return( HIDcode + 0x13 );
-	}
-	/* Misc. non-modifiable keys in no particular order */
-	switch( HIDcode ) {
-			case( 0x28 ):       //Enter
-					return( 0x0d ); //CR
-			case( 0x29 ):       //ESC
-					return( 0x1b ); //ESC
-			case( 0x2c ):       //spacebar
-					return( 0x20 ); //
-			case( 0x36 ):       //comma
-					return(',');
-			case( 0x37 ):       //dot        
-					return('.');
-	}
-	return( 0x07 );         //Bell 
-}
-#endif
-
-unsigned short usage_id_to_ns_key_ascii(unsigned char usage_id) {
-	return trtab_key[usage_id];
-}
+#define NMOD 8
+// USB modifiers to TI-Nspire scancode and ASCII code as expected by send_key_event()
+static struct {
+	unsigned short mask, key;
+} mods[NMOD] = {
+	{ MOD_CONTROL_L, 0xAA00 },
+	{ MOD_CONTROL_R, 0xAA00 },
+	{ MOD_SHIFT_L,   0xAB00 },
+	{ MOD_SHIFT_R,   0xAB00 },
+	{ MOD_ALT_L,     0x0000 },
+	{ MOD_ALT_R,     0x0000 },
+	{ MOD_WIN_L,     0x0000 },
+	{ MOD_WIN_R,     0x0000 },
+};
 
 // TODO
 // key repeat si appuyé, pas naturellement pas l'OS. Seulement pour certaines touches. Quoi d'autres que les flèches ?
-// modifiers
+// broken modifiers, although the send_key_event is executed
+// CAPS strangely always displayed
 // azerty
 // special case for ErrorRollOver?
 // LEDs
@@ -166,6 +123,18 @@ static void ukbd_intr(usbd_xfer_handle __attribute__((unused)) xfer, usbd_privat
 	unsigned char key;
 	struct s_ns_event ns_ev;
 	
+	/* Check for modifiers */
+	unsigned char mod = ibuf->modifiers;
+	unsigned char omod = sc->sc_prev_report.modifiers;
+	if (mod != omod) {
+		for (i = 0; i < NMOD; i++) {
+			if (   (mod & mods[i].mask) != (omod & mods[i].mask)
+				&& (mods[i].key)) {
+				send_key_event(&ns_ev, mods[i].key, !(mod & mods[i].mask), TRUE);
+			}
+		}
+	}
+
 	
 	/* Check for released keys. */
 	for (i = 0; i < NKEYCODE; i++) {
@@ -178,7 +147,7 @@ static void ukbd_intr(usbd_xfer_handle __attribute__((unused)) xfer, usbd_privat
 			if (key == ibuf->keycode[j])
 				goto rfound;
 		}
-		send_key_event(&ns_ev, usage_id_to_ns_key_ascii(key), TRUE, TRUE); // released
+		send_key_event(&ns_ev, trtab_key[key], TRUE, TRUE); // released
 		rfound:
 			;
 	}
@@ -194,7 +163,7 @@ static void ukbd_intr(usbd_xfer_handle __attribute__((unused)) xfer, usbd_privat
 			if (key == sc->sc_prev_report.keycode[j])
 				goto pfound;
 		}
-		send_key_event(&ns_ev, usage_id_to_ns_key_ascii(key), FALSE, TRUE); // pressed
+		send_key_event(&ns_ev, trtab_key[key], FALSE, TRUE); // pressed
 		pfound:
 			;
 	}
