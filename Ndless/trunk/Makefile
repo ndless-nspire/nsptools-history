@@ -56,9 +56,9 @@ clean: cleandist cleandistsdk
 	@for i in $(SUBDIRSCLEAN); do \
 	echo "Clearing in $$i..."; \
 	(cd $$i; make clean) || exit 1; done
+	(cd Ndless-SDK/ndless/system && make clean)
 	@# may fail because of nspire_emu keeping a lock on it
 	-rm -rf calcbin
-	rm -rf $(SDKDISTDIRS)
 
 # Useful shortcuts
 .PHONY: libndls
