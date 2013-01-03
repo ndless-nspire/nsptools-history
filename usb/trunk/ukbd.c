@@ -11,6 +11,7 @@ nio_console csl;
 
 static int match(device_t self) {
 #ifdef DEBUG
+	lcd_ingray();
 	// 53 columns, 15 rows. 0/110px offset for x/y. Background color 15 (white), foreground color 0 (black)
 	nio_InitConsole(&csl,53,15,0,110,15,0);
 	nio_DrawConsole(&csl);
@@ -130,7 +131,7 @@ static unsigned short map_lang_azerty[256] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* F8 - FF */   
 };
 
-static unsigned short *use_lang_map = map_lang_azerty;
+static unsigned short *use_lang_map = NULL;
 
 #define NMOD 8
 // USB modifiers to TI-Nspire scancode and ASCII code as expected by send_key_event()
@@ -153,11 +154,12 @@ static unsigned char map_key_with_lang(unsigned char key) {
 }
 
 // TODO:
+// fix random crash when replugged in
+// uninstallation
 // Ctrl and/or CAPS strangely always displayed
 // broken modifiers, although the send_key_event is executed
-// key repeat si appuyé, pas naturellement pas l'OS. Seulement pour certaines touches. Quoi d'autres que les flèches ?
-// fin des touches spéciales : ', ", : , ...
-// external config for azerty
+// key repeat, not handled by the OS except for some keys such as the arrow keys
+// handle special keys such as : ', ", : , ...
 // special case for ErrorRollOver?
 // LEDs
 static void ukbd_intr(usbd_xfer_handle __attribute__((unused)) xfer, usbd_private_handle addr, usbd_status  __attribute__((unused)) status) {
@@ -259,7 +261,15 @@ static int detach(device_t self) {
 
 static int (*methods[])(device_t) = {match, attach, detach, NULL};
 
-int main(void) {
+int main(int __attribute__((unused)) argc, char **argv) {
+	// if program name ends with -azerty, use azerty map
+	unsigned azerty_suffix_len = strlen("-azerty.tns");
+	unsigned prgm_path_len = strlen(argv[0]);
+	if (prgm_path_len >= azerty_suffix_len && !strcmp(argv[0] + prgm_path_len - azerty_suffix_len, "-azerty.tns"))
+		use_lang_map = map_lang_azerty;
+	else
+		use_lang_map = NULL;
+	
 	nl_relocdata((unsigned*)methods, sizeof(methods)/sizeof(methods[0]) - 1);
 	usb_register_driver(2, methods, "ukbd", 0, sizeof(struct ukbd_softc));
 	nl_set_resident();
