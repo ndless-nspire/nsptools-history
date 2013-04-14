@@ -1,7 +1,8 @@
 Current limitations:
 - Random crashes when the keyboard is unplugged and plugged back in
 - No uninstallation (except by rebooting the calc)
-- Ctrl and/or CAPS modifiers are strangely always displayed, and not taken into account
+- Key modifiers support broken
+- CAPS not supported
 - No key repeat for most keys
 - Partial key mapping. Some AZERTY keys cannot be mapped, language mapping shouldn't be applied on USB Usage ID.
 - No LED support

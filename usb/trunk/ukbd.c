@@ -176,7 +176,7 @@ static void ukbd_intr(usbd_xfer_handle __attribute__((unused)) xfer, usbd_privat
 		for (i = 0; i < NMOD; i++) {
 			if (   (mod & mods[i].mask) != (omod & mods[i].mask)
 				&& (mods[i].key)) {
-				send_key_event(&ns_ev, mods[i].key, !(mod & mods[i].mask), TRUE);
+				;//BROKEN end_key_event(&ns_ev, mods[i].key, !(mod & mods[i].mask), TRUE);
 			}
 		}
 	}
