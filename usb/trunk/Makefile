@@ -11,10 +11,12 @@ OBJS = $(patsubst %.c,%.o,$(wildcard *.c))
 DISTDIR = .
 vpath %.tns $(DISTDIR)
 
-all: ukbd.tns ums.tns
+all: ukbd.tns ukbd-azerty.tns ums.tns
 
 ukbd.tns: ukbd.o
 ums.tns: ums.o
+ukbd-azerty.tns: ukbd.tns
+	cp $< $@
 
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<
