@@ -154,6 +154,15 @@ static unsigned char map_key_with_lang(unsigned char key) {
 	else return use_lang_map[key];
 }
 
+// Apply TI-Nspire modifier to TI-Nspire key. Quick workaround to handle capital letters.
+static unsigned short nsmod(unsigned int ns_modifier, unsigned short ns_key) {
+	if (ns_modifier == 3) { // shift
+		if ((ns_key & 0xFF) >= 'a' && (ns_key & 0xFF) <= 'z')
+			return (ns_key & 0xFF00) | ((ns_key & 0xFF) - 'a' + 'A');
+	}
+	return ns_key;
+}
+
 // TODO:
 // fix random crash when replugged in
 // uninstallation
@@ -197,7 +206,7 @@ static void ukbd_intr(usbd_xfer_handle __attribute__((unused)) xfer, usbd_privat
 			if (key == ibuf->keycode[j])
 				goto rfound;
 		}
-		send_key_event(&ns_ev, trtab_key[map_key_with_lang(key)], TRUE, TRUE); // released
+		send_key_event(&ns_ev, nsmod(sc->modifier, trtab_key[map_key_with_lang(key)]), TRUE, TRUE); // released
 		rfound:
 			;
 	}
@@ -213,7 +222,7 @@ static void ukbd_intr(usbd_xfer_handle __attribute__((unused)) xfer, usbd_privat
 			if (key == sc->sc_prev_report.keycode[j])
 				goto pfound;
 		}
-		send_key_event(&ns_ev, trtab_key[map_key_with_lang(key)], FALSE, TRUE); // pressed
+		send_key_event(&ns_ev, nsmod(sc->modifier, trtab_key[map_key_with_lang(key)]), FALSE, TRUE); // pressednsmod(
 		pfound:
 			;
 	}
