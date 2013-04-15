@@ -56,6 +56,7 @@ struct ukbd_softc {
 	int sc_isize;
 	int sc_enabled;
 	struct s_boot_kbd_report sc_prev_report;
+	unsigned int modifier; // active modifier TI-Nspire code
 };
 
 // USB usage ID to TI-Nspire scancode and ASCII code as expected by send_key_event()
@@ -134,18 +135,18 @@ static unsigned short map_lang_azerty[256] = {
 static unsigned short *use_lang_map = NULL;
 
 #define NMOD 8
-// USB modifiers to TI-Nspire scancode and ASCII code as expected by send_key_event()
+// USB modifiers to TI-Nspire scancode/ASCII code and modifier as expected by send_key_event()
 static struct {
-	unsigned short mask, key;
+	unsigned short mask, key, modifier;
 } mods[NMOD] = {
-	{ MOD_CONTROL_L, 0xAA00 },
-	{ MOD_CONTROL_R, 0xAA00 },
-	{ MOD_SHIFT_L,   0xAB00 },
-	{ MOD_SHIFT_R,   0xAB00 },
-	{ MOD_ALT_L,     0x0000 },
-	{ MOD_ALT_R,     0x0000 },
-	{ MOD_WIN_L,     0x0000 },
-	{ MOD_WIN_R,     0x0000 },
+	{ MOD_CONTROL_L, 0xAA00, 4},
+	{ MOD_CONTROL_R, 0xAA00, 4},
+	{ MOD_SHIFT_L,   0xAB00, 3},
+	{ MOD_SHIFT_R,   0xAB00, 3},
+	{ MOD_ALT_L,     0x0000, 0},
+	{ MOD_ALT_R,     0x0000, 0},
+	{ MOD_WIN_L,     0x0000, 0},
+	{ MOD_WIN_R,     0x0000, 0},
 };
 
 static unsigned char map_key_with_lang(unsigned char key) {
@@ -169,6 +170,8 @@ static void ukbd_intr(usbd_xfer_handle __attribute__((unused)) xfer, usbd_privat
 	unsigned char key;
 	struct s_ns_event ns_ev;
 	
+	memset(&ns_ev, 0, sizeof(struct s_ns_event));
+	ns_ev.modifiers = sc->modifier;
 	/* Check for modifiers */
 	unsigned char mod = ibuf->modifiers;
 	unsigned char omod = sc->sc_prev_report.modifiers;
@@ -176,7 +179,9 @@ static void ukbd_intr(usbd_xfer_handle __attribute__((unused)) xfer, usbd_privat
 		for (i = 0; i < NMOD; i++) {
 			if (   (mod & mods[i].mask) != (omod & mods[i].mask)
 				&& (mods[i].key)) {
-				;//BROKEN end_key_event(&ns_ev, mods[i].key, !(mod & mods[i].mask), TRUE);
+				sc->modifier = (mod & mods[i].mask) ? mods[i].modifier : 0;
+				ns_ev.modifiers = sc->modifier;
+				send_key_event(&ns_ev, mods[i].key, !!!(mod & mods[i].mask), TRUE);
 			}
 		}
 	}
