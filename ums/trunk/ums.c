@@ -1,18 +1,28 @@
 #include <os.h>
 #include <usbdi.h>
 #include <usb.h>
+
+//#define DEBUG
+
+#ifdef DEBUG
 #include <nspireio2.h>
-
 nio_console csl;
+#endif
 
-static void init_console(void) {
+static const unsigned send_click_event_addrs[] = {0x1005E350, 0, 0, 0}; // non-CAS 3.1, CAS 3.1, non-CAS CX 3.1, CAS CX 3.1 addresses
+#define send_click_event SYSCALL_CUSTOM(send_click_event_addrs, void, struct s_ns_event* /* eventbuf */, unsigned short /* keycode_asciicode */, BOOL /* is_key_up */, BOOL /* fill_event_struct */)
+
+static const unsigned send_pad_event_addrs[] = {0x1005E410, 0, 0, 0}; // non-CAS 3.1, CAS 3.1, non-CAS CX 3.1, CAS CX 3.1 addresses
+#define send_pad_event SYSCALL_CUSTOM(send_pad_event_addrs, void, struct s_ns_event* /* eventbuf */, unsigned short /* keycode_asciicode */, BOOL /* is_key_up */, BOOL /* fill_event_struct */)
+
+
+static int match(device_t self) {
+#ifdef DEBUG
+	lcd_ingray();
 	// 53 columns, 15 rows. 0/110px offset for x/y. Background color 15 (white), foreground color 0 (black)
 	nio_InitConsole(&csl,53,15,0,110,15,0);
 	nio_DrawConsole(&csl);
-}
-
-static int match(device_t self) {
-	init_console();
+#endif
 	struct usb_attach_arg *uaa = device_get_ivars(self);
   if (!uaa->iface)
   	return UMATCH_NONE;
@@ -28,13 +38,15 @@ static int match(device_t self) {
 }
 
 struct ums_softc {
- device_t sc_dev;
- usbd_interface_handle sc_iface;
- usbd_pipe_handle sc_intrpipe;
- int sc_ep_addr;
- struct s_usb_pipe_buf sc_ibuf;
- int sc_isize;
- int sc_enabled;
+	device_t sc_dev;
+	usbd_interface_handle sc_iface;
+	usbd_pipe_handle sc_intrpipe;
+	int sc_ep_addr;
+	struct s_usb_pipe_buf sc_ibuf;
+	int sc_isize;
+	int sc_enabled;
+	char sc_prev_button;
+	struct s_ns_event sc_last_ns_ev;
 };
 
 struct s_boot_ums_report {
@@ -44,21 +56,40 @@ struct s_boot_ums_report {
 	char bytes3to7[5] ; //optional bytes
 };
 
-static int ums_xcoord = 0;
-static int ums_ycoord = 0;
-
 static void ums_intr(usbd_xfer_handle __attribute__((unused)) xfer, usbd_private_handle addr, usbd_status __attribute__((unused)) status) {
 	struct ums_softc *sc = addr;
 	struct s_boot_ums_report *ibuf = (struct s_boot_ums_report *)sc->sc_ibuf.buf;
-	ums_xcoord += (int)(ibuf->xdispl / 2);
-	ums_ycoord += (int)(ibuf->ydispl / 2);
-	if (ums_xcoord < 0) ums_xcoord = 0;
-	if (ums_ycoord < 0) ums_ycoord = 0;
-	if (ums_xcoord >= SCREEN_WIDTH) ums_xcoord = SCREEN_WIDTH - 1;
-	if (ums_ycoord >= SCREEN_HEIGHT) ums_ycoord = SCREEN_HEIGHT - 1;
-	setPixel(ums_xcoord, ums_ycoord, BLACK);
-	if(ibuf->button)
-		putChar(ums_xcoord, ums_ycoord, 'i', BLACK, WHITE);
+	int dx = (int)(ibuf->xdispl);
+	int dy = (int)(ibuf->ydispl);
+	struct s_ns_event ns_ev;
+	
+	unsigned short ns_key = 0;
+	if (dx < 0) {
+		if (dy > 0)      ns_key = 1 << 7;
+		else if (!dy)    ns_key = 1 << 6;
+		else             ns_key = 1 << 5;
+	} else if (!dx) {
+		if (dy > 0)      ns_key = 1 << 4;
+		else if (dy < 0) ns_key = 1 << 0;
+	} else {
+		if (dy > 0)      ns_key = 1 << 1;
+		else if (!dy)    ns_key = 1 << 2;
+		else             ns_key = 1 << 3;
+	}
+	memset(&ns_ev, 0, sizeof(struct s_ns_event));
+	if (!ns_key) send_pad_event(&ns_ev, 0x7F00, TRUE, TRUE);
+	else {
+		send_pad_event(&ns_ev, 0x7F00 | ns_key, FALSE, FALSE);
+		memcpy(&(sc->sc_last_ns_ev), &ns_ev, sizeof(struct s_ns_event));
+	}
+	if (!!(ibuf->button) ^ !!(sc->sc_prev_button)) {
+		memset(&ns_ev, 0, sizeof(struct s_ns_event));
+		ns_ev.modifiers = 0x80000;
+		ns_ev.cursor_x = sc->sc_last_ns_ev.cursor_x;
+		ns_ev.cursor_y = sc->sc_last_ns_ev.cursor_y;
+		send_click_event(&ns_ev, 0xFB00, !!!(ibuf->button), TRUE);
+	}
+	sc->sc_prev_button = ibuf->button;
 }
 
 static int attach(device_t self) {
