@@ -46,7 +46,8 @@ struct ums_softc {
 	int sc_isize;
 	int sc_enabled;
 	char sc_prev_button;
-	struct s_ns_event sc_last_ns_ev;
+	int sc_xcoord;
+	int sc_ycoord;
 };
 
 struct s_boot_ums_report {
@@ -59,34 +60,24 @@ struct s_boot_ums_report {
 static void ums_intr(usbd_xfer_handle __attribute__((unused)) xfer, usbd_private_handle addr, usbd_status __attribute__((unused)) status) {
 	struct ums_softc *sc = addr;
 	struct s_boot_ums_report *ibuf = (struct s_boot_ums_report *)sc->sc_ibuf.buf;
-	int dx = (int)(ibuf->xdispl);
-	int dy = (int)(ibuf->ydispl);
-	struct s_ns_event ns_ev;
+	sc->sc_xcoord += (int)(ibuf->xdispl / 2);
+	sc->sc_ycoord += (int)(ibuf->ydispl / 2);
+	if (sc->sc_xcoord < 0) sc->sc_xcoord = 0;
+	if (sc->sc_ycoord < 0) sc->sc_ycoord = 0;
+	if (sc->sc_xcoord >= SCREEN_WIDTH) sc->sc_xcoord = SCREEN_WIDTH - 1;
+	if (sc->sc_ycoord >= SCREEN_HEIGHT) sc->sc_ycoord = SCREEN_HEIGHT - 1;
 	
-	unsigned short ns_key = 0;
-	if (dx < 0) {
-		if (dy > 0)      ns_key = 1 << 7;
-		else if (!dy)    ns_key = 1 << 6;
-		else             ns_key = 1 << 5;
-	} else if (!dx) {
-		if (dy > 0)      ns_key = 1 << 4;
-		else if (dy < 0) ns_key = 1 << 0;
-	} else {
-		if (dy > 0)      ns_key = 1 << 1;
-		else if (!dy)    ns_key = 1 << 2;
-		else             ns_key = 1 << 3;
-	}
+	struct s_ns_event ns_ev;
 	memset(&ns_ev, 0, sizeof(struct s_ns_event));
-	if (!ns_key) send_pad_event(&ns_ev, 0x7F00, TRUE, TRUE);
-	else {
-		send_pad_event(&ns_ev, 0x7F00 | ns_key, FALSE, FALSE);
-		memcpy(&(sc->sc_last_ns_ev), &ns_ev, sizeof(struct s_ns_event));
-	}
+	ns_ev.cursor_x = sc->sc_xcoord;
+	ns_ev.cursor_y = sc->sc_ycoord;
+	send_pad_event(&ns_ev, 0x7F00, FALSE, FALSE);
+	send_pad_event(&ns_ev, 0x7F00, TRUE, TRUE);
 	if (!!(ibuf->button) ^ !!(sc->sc_prev_button)) {
 		memset(&ns_ev, 0, sizeof(struct s_ns_event));
 		ns_ev.modifiers = 0x80000;
-		ns_ev.cursor_x = sc->sc_last_ns_ev.cursor_x;
-		ns_ev.cursor_y = sc->sc_last_ns_ev.cursor_y;
+		ns_ev.cursor_x = sc->sc_xcoord;
+		ns_ev.cursor_y = sc->sc_ycoord;
 		send_click_event(&ns_ev, 0xFB00, !!!(ibuf->button), TRUE);
 	}
 	sc->sc_prev_button = ibuf->button;

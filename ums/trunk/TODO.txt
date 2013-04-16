@@ -1,4 +1,5 @@
-* Click badly supported: coords (anc click?) not taken into account
+* Drag n' drop not supported
+* Cursor sometimes disappear in Home or Documents screen
 * Check that send_click_event and send_pad_event are really useful, and couldn't be replaced by send_key_event
 * Implement them as syscalls
 * Smoother and slower cursor
