@@ -71,6 +71,8 @@ static void ums_intr(usbd_xfer_handle __attribute__((unused)) xfer, usbd_private
 	memset(&ns_ev, 0, sizeof(struct s_ns_event));
 	ns_ev.cursor_x = sc->sc_xcoord;
 	ns_ev.cursor_y = sc->sc_ycoord;
+	if (ibuf->button)
+		ns_ev.modifiers = 0x80000;
 	send_pad_event(&ns_ev, 0x7F00, FALSE, FALSE);
 	send_pad_event(&ns_ev, 0x7F00, TRUE, TRUE);
 	if (!!(ibuf->button) ^ !!(sc->sc_prev_button)) {
@@ -78,7 +80,9 @@ static void ums_intr(usbd_xfer_handle __attribute__((unused)) xfer, usbd_private
 		ns_ev.modifiers = 0x80000;
 		ns_ev.cursor_x = sc->sc_xcoord;
 		ns_ev.cursor_y = sc->sc_ycoord;
-		send_click_event(&ns_ev, 0xFB00, !!!(ibuf->button), TRUE);
+		// 0xFB00: single click
+		// 0xAC00: drag
+		send_click_event(&ns_ev, 0xAC00, !!!(ibuf->button), TRUE);
 	}
 	sc->sc_prev_button = ibuf->button;
 }
