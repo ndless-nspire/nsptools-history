@@ -373,8 +373,11 @@ struct s_ns_event {
  unsigned short type; // 0x8 is key down, 0x10 is key up. 0x20 may be APD
  unsigned short ascii;
  unsigned int key;
- unsigned int unknown[3];
- unsigned int modifiers; // Shift = 3, Ctrl = 4, Caps = 0x10
+ unsigned int cursor_x;
+ unsigned int cursor_y;
+ unsigned int unknown;
+ unsigned short modifiers; // Shift = 3, Ctrl = 4, Caps = 0x10
+ unsigned char click; // Click = 8
 };
 _SYSCALL1(int, get_event, struct s_ns_event*)
 _SYSCALL4(void, send_key_event, struct s_ns_event* /* eventbuf */, unsigned short /* keycode_asciicode */, BOOL /* is_key_up */, BOOL /* fill_event_struct */)
