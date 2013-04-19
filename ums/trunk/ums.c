@@ -81,7 +81,7 @@ static void ums_intr(usbd_xfer_handle __attribute__((unused)) xfer, usbd_private
 			memset(&ns_ev, 0, sizeof(struct s_ns_event));
 			ns_ev.cursor_x = sc->sc_click_xcoord;
 			ns_ev.cursor_y = sc->sc_click_ycoord;
-			ns_ev.modifiers = 0x80000;
+			ns_ev.click = 0x8;
 			send_click_event(&ns_ev, 0xAC00, FALSE, TRUE); // dragging
 		}
 		
@@ -89,7 +89,7 @@ static void ums_intr(usbd_xfer_handle __attribute__((unused)) xfer, usbd_private
 		ns_ev.cursor_x = sc->sc_xcoord;
 		ns_ev.cursor_y = sc->sc_ycoord;
 		if (ibuf->button)
-			ns_ev.modifiers = 0x80000;
+			ns_ev.click = 0x8;
 		send_pad_event(&ns_ev, 0x7F00, FALSE, FALSE); // move
 		send_pad_event(&ns_ev, 0x7F00, TRUE, TRUE);
 	}
@@ -102,19 +102,19 @@ static void ums_intr(usbd_xfer_handle __attribute__((unused)) xfer, usbd_private
 	else if ((sc->sc_prev_button) && !(ibuf->button)) {
 		if (!sc->sc_dragging) {
 			memset(&ns_ev, 0, sizeof(struct s_ns_event));
-			ns_ev.modifiers = 0x80000;
+			ns_ev.click = 0x8;
 			ns_ev.cursor_x = sc->sc_xcoord;
 			ns_ev.cursor_y = sc->sc_ycoord;
 			send_click_event(&ns_ev, 0xFB00, FALSE, TRUE); // click
 		}
 		memset(&ns_ev, 0, sizeof(struct s_ns_event));
-		ns_ev.modifiers = 0x80000;
+		ns_ev.click = 0x8;
 		ns_ev.cursor_x = sc->sc_xcoord;
 		ns_ev.cursor_y = sc->sc_ycoord;
 		send_click_event(&ns_ev, sc->sc_dragging ? 0xAC00 : 0xFB00, TRUE, TRUE); // up
 		if (sc->sc_dragging) {
 			memset(&ns_ev, 0, sizeof(struct s_ns_event));
-			ns_ev.modifiers = 0x80000;
+			ns_ev.click = 0x8;
 			ns_ev.cursor_x = sc->sc_xcoord;
 			ns_ev.cursor_y = sc->sc_ycoord;
 			send_click_event(&ns_ev, 0xAC00, FALSE, TRUE); // dragging again... strangely required to stop dragging.

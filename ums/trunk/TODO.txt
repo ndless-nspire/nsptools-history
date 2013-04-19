@@ -1,4 +1,4 @@
-* Implement them as syscalls
+* Implement send_click_event and send_pad_event as syscalls
 * Check that send_click_event and send_pad_event are really useful, and couldn't be replaced by send_key_event
 * Share the current coordinates with the OS
 * Cursor sometimes disappear in Home or Documents screen. Test on CX.
