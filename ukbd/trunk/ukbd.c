@@ -179,6 +179,9 @@ static void ukbd_intr(usbd_xfer_handle __attribute__((unused)) xfer, usbd_privat
 	unsigned char key;
 	struct s_ns_event ns_ev;
 	
+	if (status == USBD_CANCELLED)
+		return;
+	
 	memset(&ns_ev, 0, sizeof(struct s_ns_event));
 	ns_ev.modifiers = sc->modifier;
 	/* Check for modifiers */
@@ -265,7 +268,7 @@ static int attach(device_t self) {
 static int detach(device_t self) {
 	struct ukbd_softc *sc = device_get_softc(self);
 	if (sc->sc_enabled) {
-		//usbd_abort_pipe(sc->sc_intrpipe); // strangely crashes
+		usbd_abort_pipe(sc->sc_intrpipe);
 		usbd_close_pipe(sc->sc_intrpipe);
 		free(sc->sc_ibuf.buf);
 		sc->sc_enabled = 0;

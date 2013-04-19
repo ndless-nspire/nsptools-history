@@ -17,7 +17,6 @@ static const unsigned send_click_event_addrs[] = {0x1005E350, 0, 0, 0x1005D9B0};
 static const unsigned send_pad_event_addrs[] = {0x1005E410, 0, 0, 0}; // non-CAS 3.1, CAS 3.1, non-CAS CX 3.1, CAS CX 3.1 addresses
 #define send_pad_event SYSCALL_CUSTOM(send_pad_event_addrs, void, struct s_ns_event* /* eventbuf */, unsigned short /* keycode_asciicode */, BOOL /* is_key_up */, BOOL /* unknown */)
 
-
 static int match(device_t self) {
 #ifdef DEBUG
 	lcd_ingray();
@@ -66,6 +65,10 @@ static void ums_intr(usbd_xfer_handle __attribute__((unused)) xfer, usbd_private
 	struct ums_softc *sc = addr;
 	struct s_boot_ums_report *ibuf = (struct s_boot_ums_report *)sc->sc_ibuf.buf;
 	struct s_ns_event ns_ev;
+	
+	if (status == USBD_CANCELLED)
+		return;
+	
 	if ((ibuf->xdispl || ibuf->ydispl)) {
 		sc->sc_xcoord += (int)(ibuf->xdispl / 2);
 		sc->sc_ycoord += (int)(ibuf->ydispl / 2);
@@ -155,7 +158,7 @@ static int attach(device_t self) {
 static int detach(device_t self) {
 	struct ums_softc *sc = device_get_softc(self);
 	if (sc->sc_enabled) {
-		//usbd_abort_pipe(sc->sc_intrpipe); // strangely crashes
+		usbd_abort_pipe(sc->sc_intrpipe);
 		usbd_close_pipe(sc->sc_intrpipe);
 		free(sc->sc_ibuf.buf);
 		sc->sc_enabled = 0;
