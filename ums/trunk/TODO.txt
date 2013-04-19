@@ -1,5 +1,4 @@
-* Support both click and drag n' drop
-* Cursor sometimes disappear in Home or Documents screen
+* Cursor sometimes disappear in Home or Documents screen. Test on CX.
 * Check that send_click_event and send_pad_event are really useful, and couldn't be replaced by send_key_event
 * Implement them as syscalls
 * Share the current coordinates with the OS
