@@ -2,7 +2,7 @@
 #include <usbdi.h>
 #include <usb.h>
 
-//#define DEBUG
+#define DEBUG
 
 #ifdef DEBUG
 #include <nspireio2.h>
@@ -65,8 +65,8 @@ static void ums_intr(usbd_xfer_handle __attribute__((unused)) xfer, usbd_private
 	struct ums_softc *sc = addr;
 	struct s_boot_ums_report *ibuf = (struct s_boot_ums_report *)sc->sc_ibuf.buf;
 	struct s_ns_event ns_ev;
-	
-	if (status == USBD_CANCELLED)
+
+	if (status != USBD_NORMAL_COMPLETION)
 		return;
 	
 	if ((ibuf->xdispl || ibuf->ydispl)) {
@@ -142,16 +142,15 @@ static int attach(device_t self) {
 	sc->sc_ibuf.buf = malloc(sc->sc_isize);
 	if (!sc->sc_ibuf.buf)
 		return (ENXIO);
-	sc->sc_enabled = 1;
 	err = usbd_open_pipe_intr(sc->sc_iface, sc->sc_ep_addr,
 	                          USBD_SHORT_XFER_OK, &sc->sc_intrpipe, sc,
 	                          &sc->sc_ibuf, sc->sc_isize, ums_intr,
 	                          USBD_DEFAULT_INTERVAL);
 	if (err) {
 		free(sc->sc_ibuf.buf);
-		sc->sc_enabled = 0;
 		return (ENXIO);
 	}
+	sc->sc_enabled = 1;
 	return 0;
 }
 

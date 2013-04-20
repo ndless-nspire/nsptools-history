@@ -179,7 +179,7 @@ static void ukbd_intr(usbd_xfer_handle __attribute__((unused)) xfer, usbd_privat
 	unsigned char key;
 	struct s_ns_event ns_ev;
 	
-	if (status == USBD_CANCELLED)
+	if (status != USBD_NORMAL_COMPLETION)
 		return;
 	
 	memset(&ns_ev, 0, sizeof(struct s_ns_event));
