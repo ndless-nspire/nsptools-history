@@ -654,6 +654,7 @@ _SYSCALL0(BOOL, nl_isstartup)
 _SYSCALL0(lua_State *, nl_lua_getstate)
 _SYSCALL0(void, nl_set_resident)
 _SYSCALL0(unsigned, nl_ndless_rev)
+_SYSCALL0(void, nl_no_scr_redraw)
 
 /* stdlib replacements not directly available as syscalls */
 extern unsigned __crt0exit;

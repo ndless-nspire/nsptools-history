@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Olivier ARMAND
  * <olivier.calc@gmail.com>.
- * Portions created by the Initial Developer are Copyright (C) 2010-2012
+ * Portions created by the Initial Developer are Copyright (C) 2010-2013
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -165,7 +165,8 @@ int ld_exec(const char *path, void **resident_ptr) {
 	if (has_colors) {
 		lcd_incolor(); // in case not restored by the program
 	}
-	memcpy(SCREEN_BASE_ADDRESS, savedscr, SCREEN_BYTES_SIZE);
+	if (!plh_noscrredraw)
+		memcpy(SCREEN_BASE_ADDRESS, savedscr, SCREEN_BYTES_SIZE);
 	free(savedscr);
 	wait_no_key_pressed(); // let the user release the key used to exit the program, to avoid being read by the OS
 	TCT_Local_Control_Interrupts(intmask);
@@ -208,6 +209,7 @@ static int startup_file_recur_cb(const char *path, __attribute__((unused)) void 
 }
 
 BOOL plh_isstartup = FALSE;
+BOOL plh_noscrredraw = FALSE;
 
 // Try to run all the documents in the startup folder and its sub-folders
 HOOK_DEFINE(plh_startup_hook) {

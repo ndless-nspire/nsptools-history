@@ -66,7 +66,8 @@ void ints_setup_handlers(void);
 #define INTS_DATA_ABORT_HANDLER_ADDR 0x30
 
 /* ploaderhook.c */
-BOOL plh_isstartup;
+extern BOOL plh_isstartup;
+extern BOOL plh_noscrredraw;
 void ld_set_resident(void);
 int ld_exec(const char *path, void **resident_ptr);
 void ld_free(void *resident_ptr);

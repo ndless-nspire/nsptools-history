@@ -88,9 +88,9 @@ upload: update_version_info dist distsdk
 	rm -rf ndless-sdk.zip ; \
 	7z a ndless.zip "ndless-v3.1-beta-r$$svnrev"; \
 	7z a ndless-sdk.zip "ndless-v3.1-beta-r$${svnrev}-sdk"; \
-	curl --cookie upload_cookies.txt -F 'super_id=1' -F 'form_type=file' -F '__FORM_TOKEN=7df6886ff34bf2f3b93a343d' -F "name=ndless-v3.1-beta-r$$svnrev.zip" -F 'submit=Submit' -F 'file_to_upload=@ndless.zip' -F 'sort=' -F 'architecture=' -F 'notes=' http://www.unsads.com/projects/nsptools/admin/general/downloader/files/release > /dev/null; \
+	#curl --cookie upload_cookies.txt -F 'super_id=1' -F 'form_type=file' -F '__FORM_TOKEN=7df6886ff34bf2f3b93a343d' -F "name=ndless-v3.1-beta-r$$svnrev.zip" -F 'submit=Submit' -F 'file_to_upload=@ndless.zip' -F 'sort=' -F 'architecture=' -F 'notes=' http://www.unsads.com/projects/nsptools/admin/general/downloader/files/release > /dev/null; \
 	#curl --cookie upload_cookies.txt -F 'super_id=1' -F 'form_type=file' -F '__FORM_TOKEN=f9cf1b8c51890f79c2a0008e' -F "name=ndless-v3.1-beta-r$${svnrev}-sdk.zip" -F 'submit=Submit' -F 'file_to_upload=@ndless-sdk.zip' -F 'sort=' -F 'architecture=' -F 'notes=' http://www.unsads.com/projects/nsptools/admin/general/downloader/files/release > /dev/null; \
-	rm -rf ndless.zip; \
+	#rm -rf ndless.zip; \
 	#rm -rf ndless-sdk.zip; \
 	rm -rf "ndless-v3.1-beta-r$$svnrev" \
 	rm -rf "ndless-v3.1-beta-r$${svnrev}-sdk" \
