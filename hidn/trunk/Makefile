@@ -25,4 +25,4 @@ usbhidn-azerty.tns: usbhidn.tns
 
 clean:
 	rm -f *.o *.elf
-	rm -f "$(DISTDIR)/*.tns"
+	rm -f "$(DISTDIR)"/*.tns
