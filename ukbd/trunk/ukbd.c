@@ -1,11 +1,11 @@
 #include <os.h>
 #include <usbdi.h>
 #include <usb.h>
+#include <nspireio2.h>
 
 //#define DEBUG
 
 #ifdef DEBUG
-#include <nspireio2.h>
 nio_console csl;
 #endif
 
@@ -279,6 +279,7 @@ static int detach(device_t self) {
 static int (*methods[])(device_t) = {match, attach, detach, NULL};
 
 int main(int __attribute__((unused)) argc, char **argv) {
+	assert_ndless_rev(750); 
 	// if program name ends with -azerty, use azerty map
 	unsigned azerty_suffix_len = strlen("-azerty.tns");
 	unsigned prgm_path_len = strlen(argv[0]);
@@ -290,5 +291,7 @@ int main(int __attribute__((unused)) argc, char **argv) {
 	nl_relocdata((unsigned*)methods, sizeof(methods)/sizeof(methods[0]) - 1);
 	usb_register_driver(2, methods, "ukbd", 0, sizeof(struct ukbd_softc));
 	nl_set_resident();
+	nl_no_scr_redraw();
+	nio_grid_puts(0, 0, 7, 1, "ukbd [USB keyboard driver] installed.", is_cx ? NIO_COLOR_BLACK : NIO_COLOR_WHITE, is_cx ? NIO_COLOR_WHITE : NIO_COLOR_BLACK);
 	return 0;
 }

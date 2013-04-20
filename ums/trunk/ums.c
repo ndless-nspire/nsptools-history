@@ -1,21 +1,13 @@
 #include <os.h>
 #include <usbdi.h>
 #include <usb.h>
+#include <nspireio2.h>
 
-#define DEBUG
+//#define DEBUG
 
 #ifdef DEBUG
-#include <nspireio2.h>
 nio_console csl;
 #endif
-
-// 0xFB00: single click
-// 0xAC00: drag
-static const unsigned send_click_event_addrs[] = {0x1005E350, 0, 0, 0x1005D9B0}; // non-CAS 3.1, CAS 3.1, non-CAS CX 3.1, CAS CX 3.1 addresses
-#define send_click_event SYSCALL_CUSTOM(send_click_event_addrs, void, struct s_ns_event* /* eventbuf */, unsigned short /* keycode_asciicode */, BOOL /* is_key_up */, BOOL /* unknown */)
-
-static const unsigned send_pad_event_addrs[] = {0x1005E410, 0, 0, 0}; // non-CAS 3.1, CAS 3.1, non-CAS CX 3.1, CAS CX 3.1 addresses
-#define send_pad_event SYSCALL_CUSTOM(send_pad_event_addrs, void, struct s_ns_event* /* eventbuf */, unsigned short /* keycode_asciicode */, BOOL /* is_key_up */, BOOL /* unknown */)
 
 static int match(device_t self) {
 #ifdef DEBUG
@@ -168,8 +160,12 @@ static int detach(device_t self) {
 static int (*methods[])(device_t) = {match, attach, detach, NULL};
 
 int main(void) {
+	assert_ndless_rev(750); 
 	nl_relocdata((unsigned*)methods, sizeof(methods)/sizeof(methods[0]) - 1);
 	usb_register_driver(2, methods, "ums", 0, sizeof(struct ums_softc));
 	nl_set_resident();
+	
+	nl_no_scr_redraw();
+	nio_grid_puts(0, 0, 10, 1, "ums [USB mouse driver] installed.", is_cx ? NIO_COLOR_BLACK : NIO_COLOR_WHITE, is_cx ? NIO_COLOR_WHITE : NIO_COLOR_BLACK);
 	return 0;
 }
