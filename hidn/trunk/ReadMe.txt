@@ -39,6 +39,7 @@ Both:
    drivers, you can run HIDn again without uninstallation, but there will be a 
    slight memory leak.
  * USB hubs are not supported. Using one will make the TI-Nspire OS reboot.
+ * No integration with Ndless-based programs.
 
 Mouse:
 
