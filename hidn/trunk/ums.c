@@ -2,12 +2,7 @@
 #include <usbdi.h>
 #include <usb.h>
 #include <nspireio2.h>
-
-//#define DEBUG
-
-#ifdef DEBUG
-nio_console csl;
-#endif
+#include "hidn.h"
 
 static int match(device_t self) {
 #ifdef DEBUG
@@ -159,13 +154,7 @@ static int detach(device_t self) {
 
 static int (*methods[])(device_t) = {match, attach, detach, NULL};
 
-int main(void) {
-	assert_ndless_rev(750); 
+void ums_register(void) {
 	nl_relocdata((unsigned*)methods, sizeof(methods)/sizeof(methods[0]) - 1);
 	usb_register_driver(2, methods, "ums", 0, sizeof(struct ums_softc));
-	nl_set_resident();
-	
-	nl_no_scr_redraw();
-	nio_grid_puts(0, 0, 10, 1, "ums [USB mouse driver] installed.", is_cx ? NIO_COLOR_BLACK : NIO_COLOR_WHITE, is_cx ? NIO_COLOR_WHITE : NIO_COLOR_BLACK);
-	return 0;
 }

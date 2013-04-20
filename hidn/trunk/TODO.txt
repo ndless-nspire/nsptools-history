@@ -1,5 +1,12 @@
-* Implement send_click_event and send_pad_event as syscalls
-* Check that send_click_event and send_pad_event are really useful, and couldn't be replaced by send_key_event
+Both:
+* Uninstallation
+
+ums:
 * Share the current coordinates with the OS
 * Cursor sometimes disappear in Home or Documents screen. Test on CX.
-* Uninstallation
+
+ukbd:
+* CAPS not supported
+* No key repeat for most keys
+* Partial key mapping. Some AZERTY keys cannot be mapped, language mapping shouldn't be applied on USB Usage ID.
+* No LED support

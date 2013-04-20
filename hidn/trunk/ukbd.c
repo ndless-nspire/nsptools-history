@@ -2,12 +2,7 @@
 #include <usbdi.h>
 #include <usb.h>
 #include <nspireio2.h>
-
-//#define DEBUG
-
-#ifdef DEBUG
-nio_console csl;
-#endif
+#include "hidn.h"
 
 static int match(device_t self) {
 #ifdef DEBUG
@@ -97,7 +92,7 @@ static unsigned short trtab_key[256] = {
 };
 
 // Language support - USB usage ID (QWERTY) to USB usage ID
-static unsigned short map_lang_azerty[256] = {
+unsigned short map_lang_azerty[256] = {
 	0x00, 0x00, 0x00, 0x00, 0x14, 0x00, 0x00, 0x00, /* 00 - 07 */   
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* 08 - 0F */   
 	0x36, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, /* 10 - 17 */   
@@ -132,7 +127,7 @@ static unsigned short map_lang_azerty[256] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* F8 - FF */   
 };
 
-static unsigned short *use_lang_map = NULL;
+unsigned short *use_lang_map = NULL;
 
 #define NMOD 8
 // USB modifiers to TI-Nspire scancode/ASCII code and modifier as expected by send_key_event()
@@ -278,20 +273,8 @@ static int detach(device_t self) {
 
 static int (*methods[])(device_t) = {match, attach, detach, NULL};
 
-int main(int __attribute__((unused)) argc, char **argv) {
-	assert_ndless_rev(750); 
-	// if program name ends with -azerty, use azerty map
-	unsigned azerty_suffix_len = strlen("-azerty.tns");
-	unsigned prgm_path_len = strlen(argv[0]);
-	if (prgm_path_len >= azerty_suffix_len && !strcmp(argv[0] + prgm_path_len - azerty_suffix_len, "-azerty.tns"))
-		use_lang_map = map_lang_azerty;
-	else
-		use_lang_map = NULL;
-	
+void ukbd_register(BOOL azerty) {
 	nl_relocdata((unsigned*)methods, sizeof(methods)/sizeof(methods[0]) - 1);
+	use_lang_map = azerty ? map_lang_azerty : NULL;
 	usb_register_driver(2, methods, "ukbd", 0, sizeof(struct ukbd_softc));
-	nl_set_resident();
-	nl_no_scr_redraw();
-	nio_grid_puts(0, 0, 7, 1, "ukbd [USB keyboard driver] installed.", is_cx ? NIO_COLOR_BLACK : NIO_COLOR_WHITE, is_cx ? NIO_COLOR_WHITE : NIO_COLOR_BLACK);
-	return 0;
 }
