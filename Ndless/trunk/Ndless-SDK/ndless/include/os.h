@@ -380,7 +380,11 @@ struct s_ns_event {
  unsigned char click; // Click = 8
 };
 _SYSCALL1(int, get_event, struct s_ns_event*)
-_SYSCALL4(void, send_key_event, struct s_ns_event* /* eventbuf */, unsigned short /* keycode_asciicode */, BOOL /* is_key_up */, BOOL /* fill_event_struct */)
+_SYSCALL4(void, send_key_event, struct s_ns_event* /* eventbuf */, unsigned short /* keycode_asciicode */, BOOL /* is_key_up */, BOOL /* unknown */)
+// keycode_asciicode=0xFB00: single click
+// keycode_asciicode=0xAC00: drag
+_SYSCALL4(void, send_click_event, struct s_ns_event* /* eventbuf */, unsigned short /* keycode_asciicode */, BOOL /* is_key_up */, BOOL /* unknown */)
+_SYSCALL4(void, send_pad_event, struct s_ns_event* /* eventbuf */, unsigned short /* keycode_asciicode */, BOOL /* is_key_up */, BOOL /* unknown */)
 
 _SYSCALL0(void, refresh_homescr)
 _SYSCALL1(void, refresh_docbrowser, int)

@@ -6,8 +6,8 @@ OBJCOPY := "$(shell (which arm-elf-objcopy arm-none-eabi-objcopy arm-linux-gnuea
 ifeq (${OBJCOPY},"")
 	OBJCOPY := arm-none-eabi-objcopy
 endif
-EXE = ConsoleDemo.tns
-OBJS = ConsoleDemo.o
+EXE = hello.tns
+OBJS = hello.o
 DISTDIR = .
 vpath %.tns $(DISTDIR)
 
@@ -17,7 +17,7 @@ all: $(EXE)
 	$(GCC) $(GCCFLAGS) -c $<
 
 $(EXE): $(OBJS)
-	$(LD) $(LDFLAGS) $^ -o $(@:.tns=.elf) -lnspireio2
+	$(LD) $(LDFLAGS) $^ -o $(@:.tns=.elf) -lnspireio
 	mkdir -p $(DISTDIR)
 	$(OBJCOPY) -O binary $(@:.tns=.elf) $(DISTDIR)/$@
 
