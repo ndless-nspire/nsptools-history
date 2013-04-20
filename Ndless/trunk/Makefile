@@ -81,7 +81,7 @@ rtests:
 
 upload: update_version_info dist distsdk
 	svn update
-	svnrev=`svn info --xml |grep revision | uniq | sed 's/\(revision="\)//' | sed 's/">//' | sed 's/[[:blank:]]*//g'`; \
+	svnrev=`svn info --xml |grep revision | uniq | sort -r | head -1 | sed 's/\(revision="\)//' | sed 's/">//' | sed 's/[[:blank:]]*//g'`; \
 	mv dist "ndless-v3.1-beta-r$$svnrev"; \
 	mv distsdk "ndless-v3.1-beta-r$${svnrev}-sdk"; \
  	rm -rf ndless.zip ; \
@@ -98,6 +98,6 @@ upload: update_version_info dist distsdk
 
 update_version_info:
 	@svn update
-	@svnrev=`svn info --xml |grep revision | uniq | sed 's/\(revision="\)//' | sed 's/">//' | sed 's/[[:blank:]]*//g'`; \
+	@	svnrev=`svn info --xml |grep revision | uniq | sort -r | head -1 | sed 's/\(revision="\)//' | sed 's/">//' | sed 's/[[:blank:]]*//g'`; \
 	echo "#define NDLESS_REVISION $$((svnrev+1))" > arm/ndless_version.h
 	svn commit -m "ndless_version.h: update revision" arm/ndless_version.h
