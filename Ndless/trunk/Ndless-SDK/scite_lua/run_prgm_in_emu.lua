@@ -12,15 +12,7 @@ end
 fn()
 
 function get_tns_name()
-	local out = spawner.popen(props['ndls.sh'] .. " 'cd \"" .. props['FileDir'] .. "\" ^&^& ls *.tns'")
-	for line in out:lines() do
-		if string.find(line, "No such file")	then
-			return nil
-		else
-			return line
-		end
-	end
-	
+	return ls_file(props['FileDir'], "*.tns")
 end
 
 local tns = get_tns_name()

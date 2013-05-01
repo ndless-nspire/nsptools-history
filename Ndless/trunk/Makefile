@@ -43,14 +43,21 @@ distsrc: clean
 
 distsdk: dist
 	mkdir -p distsdk
+	mkdir -p distsdk-msys-yagarto
 	cp -r Ndless-SDK/* distsdk
 	find distsdk -name .svn -o -name "*~" -o -name "*.img.tns" -o -name "*.img" -o -name "*.tcc" | xargs rm -rf
+	cp -r distsdk/yagarto distsdk-msys-yagarto
+	cp -r distsdk/mingw-get distsdk-msys-yagarto
+	cp doc/ReadMe-MSYS-YAGARTO.txt distsdk-msys-yagarto
+	rm -rf distsdk/yagarto
+	rm -rf distsdk/mingw-get
 
 cleandist:
 	rm -rf dist
 
 cleandistsdk:
 	rm -rf distsdk
+	rm -rf distsdk-msys-yagarto
 
 clean: cleandist cleandistsdk
 	@for i in $(SUBDIRSCLEAN); do \
@@ -84,16 +91,20 @@ upload: update_version_info dist distsdk
 	svnrev=`svn info --xml |grep revision | uniq | sort -r | head -1 | sed 's/\(revision="\)//' | sed 's/">//' | sed 's/[[:blank:]]*//g'`; \
 	mv dist "ndless-v3.1-beta-r$$svnrev"; \
 	mv distsdk "ndless-v3.1-beta-r$${svnrev}-sdk"; \
+	mv distsdk-msys-yagarto "ndless-v3.1-beta-r$${svnrev}-sdk-msys-yagarto"; \
  	rm -rf ndless.zip ; \
 	rm -rf ndless-sdk.zip ; \
+	rm -rf ndless-sdk-msys-yagarto.zip ; \
 	7z a ndless.zip "ndless-v3.1-beta-r$$svnrev"; \
 	7z a ndless-sdk.zip "ndless-v3.1-beta-r$${svnrev}-sdk"; \
+	7z a ndless-sdk-msys-yagarto.zip "ndless-v3.1-beta-r$${svnrev}-sdk-msys-yagarto"; \
 	#curl --cookie upload_cookies.txt -F 'super_id=1' -F 'form_type=file' -F '__FORM_TOKEN=7df6886ff34bf2f3b93a343d' -F "name=ndless-v3.1-beta-r$$svnrev.zip" -F 'submit=Submit' -F 'file_to_upload=@ndless.zip' -F 'sort=' -F 'architecture=' -F 'notes=' http://www.unsads.com/projects/nsptools/admin/general/downloader/files/release > /dev/null; \
 	#curl --cookie upload_cookies.txt -F 'super_id=1' -F 'form_type=file' -F '__FORM_TOKEN=f9cf1b8c51890f79c2a0008e' -F "name=ndless-v3.1-beta-r$${svnrev}-sdk.zip" -F 'submit=Submit' -F 'file_to_upload=@ndless-sdk.zip' -F 'sort=' -F 'architecture=' -F 'notes=' http://www.unsads.com/projects/nsptools/admin/general/downloader/files/release > /dev/null; \
 	#rm -rf ndless.zip; \
 	#rm -rf ndless-sdk.zip; \
 	rm -rf "ndless-v3.1-beta-r$$svnrev" \
 	rm -rf "ndless-v3.1-beta-r$${svnrev}-sdk" \
+	rm -rf "ndless-v3.1-beta-r$${svnrev}-sdk-msys-yagarto" \
 	echo "Check http://www.unsads.com/projects/nsptools/downloader/download/category/1"
 
 update_version_info:
