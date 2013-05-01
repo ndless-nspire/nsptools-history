@@ -1,3 +1,9 @@
+local clock = os.clock
+function sleep(n) -- seconds
+  local t0 = clock()
+  while clock() - t0 <= n do end
+end
+
 local fn = package.loadlib(props['SciteDefaultHome'] .. "/spawner-ex/spawner-ex.dll", "luaopen_spawner")
 if not fn then
 	print("Can't load spawner-ex")
@@ -19,6 +25,7 @@ else
 	for line in out:lines() do
 		if line == "NO" then
 			dofile(props['SciteDefaultHome'] .. "/scite_lua/run_emu.lua")
+			sleep(14)
 		end
 		break
 	end
