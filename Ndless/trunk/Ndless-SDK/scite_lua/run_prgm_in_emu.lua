@@ -11,15 +11,28 @@ if not fn then
 end
 fn()
 
-local out = spawner.popen(props['ndls.sh'] .. " 'cd \"" .. props['FileDir'] .. "\" ^&^& ls *.tns'")
-local tns
-for line in out:lines() do
-	tns = line
-	break
+function get_tns_name()
+	local out = spawner.popen(props['ndls.sh'] .. " 'cd \"" .. props['FileDir'] .. "\" ^&^& ls *.tns'")
+	for line in out:lines() do
+		if string.find(line, "No such file")	then
+			return nil
+		else
+			return line
+		end
+	end
+	
 end
-if string.find(tns, "No such file")	then
-	print("You must first build the program with Tools > Build.")
-else
+
+local tns = get_tns_name()
+if tns == nil then
+	dofile(props['SciteDefaultHome'] .. "/scite_lua/build.lua")
+	for i = 0, 5 do
+		sleep(1)
+		tns = get_tns_name()
+		if tns ~= nil then break end
+	end
+end
+if tns ~= nil then
 	-- Launch the emu if not running
 	local out = spawner.popen(props['SciteDefaultHome'] .. "\\autoit\\autoit3.exe \"" .. props['SciteDefaultHome'] .. "\\autoit\\scripts\\is_emu_running.au3\"")
 	for line in out:lines() do

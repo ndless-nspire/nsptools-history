@@ -23,7 +23,7 @@ end
 
 local file = io.open(props['FileDir'] .. "/Makefile", "r")
 if not file then
-	print("Please choose a name for the program.")
+	print("Please choose a name for the program below.")
 	scite.StripShow("!'Target program name:'[]((OK))(&Cancel)")
 else
 	io.close(file)
