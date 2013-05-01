@@ -38,7 +38,7 @@ dist: cleandist distsrc distbin
 
 distsrc: clean
 	mkdir -p dist/src
-	cp -r `ls | grep -v dist | grep -v Ndless-SDK` dist/src
+	-cp -r `ls | grep -v dist | grep -v Ndless-SDK` dist/src
 	find dist -name Makefile.config -o -name upload_cookies.txt | xargs rm -rf
 
 distsdk: dist

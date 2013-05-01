@@ -30,5 +30,5 @@ end
 -- =========================
 
 if not folder_exists('yagarto') or not folder_exists('mingw-get') then
-	print "WARNING: MSYS and YAGARTO components are missing, some commands won't work. Get them from http://http://ndlessly.wordpress.com/ ."
+	print "WARNING: MSYS and YAGARTO components are missing, some commands won't work. Get them from http://ndlessly.wordpress.com/ ."
 end
