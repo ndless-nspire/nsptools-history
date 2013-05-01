@@ -2,6 +2,10 @@ GCC = nspire-gcc
 LD = nspire-ld
 GCCFLAGS = -Os -Wall -W -marm
 LDFLAGS = 
+OBJCOPY := "$(shell which arm-elf-objcopy 2>/dev/null)"
+ifeq (${OBJCOPY},"")
+	OBJCOPY := arm-none-eabi-objcopy
+endif
 EXE = helloworld-sdl.tns
 OBJS = $(patsubst %.c,%.o,$(wildcard *.c))
 DISTDIR = .
@@ -13,8 +17,9 @@ all: $(EXE)
 	$(GCC) $(GCCFLAGS) -c $<
 
 $(EXE): $(OBJS)
+	$(LD) $^ -o $(@:.tns=.elf) $(LDFLAGS)
 	mkdir -p $(DISTDIR)
-	$(LD) $(LDFLAGS) $^ -o $(DISTDIR)/$@
+	$(OBJCOPY) -O binary $(@:.tns=.elf) $(DISTDIR)/$@
 
 clean:
 	rm -f *.o *.elf

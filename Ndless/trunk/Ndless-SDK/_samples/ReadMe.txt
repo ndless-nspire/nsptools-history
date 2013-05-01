@@ -1,5 +1,6 @@
 - colors: color screen demo. Only for TI-Nspire CX.
-- particles.tns: screen/keyboard demo.
-- helloworld.tns: nspireio-based Hello World.
-- helloworld.tns: nSDL-based Hello World.
-- luaextdemo.luax.tns and runluaextdemo.lua: Lua native extension demo.
+- helloworld: nspireio-based Hello World.
+- helloworld-sdl: nSDL-based Hello World.
+- link-sdl: nSDL demo from the nSDL distribution.
+- luaext: Lua native extension demo.
+- particles: screen/keyboard demo.

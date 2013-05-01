@@ -28,19 +28,23 @@
 /* General platform specific identifiers */
 #include "SDL_platform.h"
 
-#define NSP_DEBUG	1
-#define NSP_MSGBOX_ERROR	1
+#define NSDL_VERSION	"1.1.1"
+#define NSP_HALT_ON_ERROR	1
+
+#if 0
+#define NSP_DEBUG_BUILD	1
 #define DEBUG_BUILD	1
 #define DEBUG_VIDEO	1
 #define DEBUG_ERROR	1
+#endif
 
-#define NSDL_VERSION	"0.3.2"
+#define NSP_WARNING(s) fprintf(stderr, "[nSDL] Warning: %s\n", s)
 
-#if NSP_DEBUG
-#define NSP_DPRINT(fmt, args...) \
-	fprintf(stderr, "[nSDL] %s():%d: " fmt "\n", __FUNCTION__, __LINE__, ## args)
+#if NSP_DEBUG_BUILD
+#define NSP_DEBUG(fmt, args...) \
+	fprintf(stderr, "[nSDL] %s(): " fmt "\n", __FUNCTION__, ## args)
 #else
-#define NSP_DPRINT(fmt, args...) (void)0
+#define NSP_DEBUG(fmt, args...) (void)0
 #endif
 
 #define SDL_HAS_64BIT_TYPE	1
@@ -91,20 +95,14 @@
 /* Enable assembly routines */
 #define SDL_ASSEMBLY_ROUTINES	1
 
-/* Font flags */
-#define NSDL_FONTCFG_NONE	0
-#define NSDL_FONTCFG_TEXTWRAP	(1 << 0)
-#define NSDL_FONTCFG_AUTOSIZE	(1 << 1)
-#define NSDL_FONTCFG_FORMAT	(1 << 2)
-#define NSDL_FONTCFG_DEFAULT	(NSDL_FONTCFG_TEXTWRAP | NSDL_FONTCFG_AUTOSIZE | NSDL_FONTCFG_FORMAT)
-
-/* Fonts; needs to match nsp_font_charmaps in SDL_tinspirevideo.c */
+/* Fonts; needs to match nsp_font_charmaps in SDL_tinspirefonts.c */
 enum {
 	NSDL_FONT_THIN = 0,
 	NSDL_FONT_SPACE,
 	NSDL_FONT_VGA,
 	NSDL_FONT_FANTASY,
-	NSDL_FONT_TINYTYPE
+	NSDL_FONT_TINYTYPE,
+	NSP_NUMFONTS
 };
 
 #endif /* _SDL_config_tinspire_h */
