@@ -44,6 +44,9 @@
 	MakeName	(0X10056A10,	"parse_ini_content");
 	MakeName	(0X10056BCC,	"parse_ini_file");
 	MakeName	(0X10056F08,	"open_parse_ini_file");
+	MakeName	(0X1005DD2C,	"send_key_event");
+	MakeName	(0X1005E350,	"send_click_event");
+	MakeName	(0X1005E410,	"send_pad_event");
 	MakeName	(0X10069994,	"j_j_free_5");
 	MakeName	(0X1006AF3C,	"j_j_free_6");
 	MakeName	(0X1006B7A8,	"log_0");
@@ -214,6 +217,7 @@
 	MakeName	(0X101C4490,	"touchpad_write");
 	MakeName	(0X101C47CC,	"touchpad_read");
 	MakeName	(0X10208D9C,	"j_j_free_13");
+	MakeName	(0X1021E544,	"get_event");
 	MakeName	(0X1021FBF4,	"string_str");
 	MakeName	(0X1021FBFC,	"string_len");
 	MakeName	(0X1021FC04,	"string_charAt");

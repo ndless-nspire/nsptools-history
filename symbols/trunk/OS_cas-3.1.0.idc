@@ -37,6 +37,9 @@
 	MakeName	(0X1005694C,	"parse_ini_content");
 	MakeName	(0X10056B08,	"parse_ini_file");
 	MakeName	(0X10056E44,	"open_parse_ini_file");
+	MakeName	(0X1005DC68,	"send_key_event");
+	MakeName	(0X1005E28C,	"send_click_event");
+	MakeName	(0X1005E34C,	"send_pad_event");
 	MakeName	(0X100698D0,	"j_j_free_5");
 	MakeName	(0X1006AE78,	"j_j_free_6");
 	MakeName	(0X1006B6E4,	"log_0");
@@ -206,6 +209,7 @@
 	MakeName	(0X101C4EC4,	"touchpad_read");
 	MakeName	(0X10209494,	"j_j_free_13");
 	MakeName	(0X1020D978,	"TI_ColorPicker");
+	MakeName	(0X1021EC70,	"get_event");
 	MakeName	(0X10220320,	"string_str");
 	MakeName	(0X10220328,	"string_len");
 	MakeName	(0X10220330,	"string_charAt");
