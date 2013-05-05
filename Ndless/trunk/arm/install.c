@@ -35,6 +35,10 @@ extern char _binary_ndless_installer_bin_3_1_0_ncascx_tmp_o_start[];
 extern char _binary_ndless_installer_bin_3_1_0_ncascx_tmp_o_end[];
 extern char _binary_ndless_installer_bin_3_1_0_cascx_tmp_o_start[];
 extern char _binary_ndless_installer_bin_3_1_0_cascx_tmp_o_end[];
+extern char _binary_ndless_installer_bin_3_1_0_cmc_tmp_o_start[];
+extern char _binary_ndless_installer_bin_3_1_0_cmc_tmp_o_end[];
+extern char _binary_ndless_installer_bin_3_1_0_cascmc_tmp_o_start[];
+extern char _binary_ndless_installer_bin_3_1_0_cascmc_tmp_o_end[];
 
 // OS-specific
 static char* const os_patch_data_addrs[] = {
@@ -42,6 +46,8 @@ static char* const os_patch_data_addrs[] = {
 	_binary_ndless_installer_bin_3_1_0_cas_tmp_o_start,
 	_binary_ndless_installer_bin_3_1_0_ncascx_tmp_o_start,
 	_binary_ndless_installer_bin_3_1_0_cascx_tmp_o_start,
+	_binary_ndless_installer_bin_3_1_0_cmc_tmp_o_start,
+	_binary_ndless_installer_bin_3_1_0_cascmc_tmp_o_start,
 };
 // OS-specific
 static char* const os_patch_data_end_addrs[] = {
@@ -49,6 +55,8 @@ static char* const os_patch_data_end_addrs[] = {
 	_binary_ndless_installer_bin_3_1_0_cas_tmp_o_end,
 	_binary_ndless_installer_bin_3_1_0_ncascx_tmp_o_end,
 	_binary_ndless_installer_bin_3_1_0_cascx_tmp_o_end,
+	_binary_ndless_installer_bin_3_1_0_cmc_tmp_o_end,
+	_binary_ndless_installer_bin_3_1_0_cascmc_tmp_o_end,
 };
 
 static void freados(void * ptr, size_t count, FILE * stream) {
@@ -214,16 +222,16 @@ static BOOL persistent(BOOL only_uninstall) {
 
 // OS-specific
 // Call to the dialog box display telling that the format isn't recognized.
-static unsigned const ploader_hook_addrs[] = {0x10009984, 0x1000995C, 0x10009924, 0x10009924};
+static unsigned const ploader_hook_addrs[] = {0x10009984, 0x1000995C, 0x10009924, 0x10009924, 0x100098CC, 0x0}; // TODO: CAS CM-C
 
 // OS-specific
-static unsigned const init_task_return_addrs[] = {0x10001548, 0x10001548, 0x10001510, 0x10001510};
+static unsigned const init_task_return_addrs[] = {0x10001548, 0x10001548, 0x10001510, 0x10001510, 0x100014F8, 0x0}; // TODO: CAS CM-C
 
 // OS-specific
-static unsigned const api100_task_return_addrs[] = {0x100777A0, 0x10077708, 0x10076E9C, 0x10076e2c};
+static unsigned const api100_task_return_addrs[] = {0x100777A0, 0x10077708, 0x10076E9C, 0x10076e2c, 0x100738F0, 0x0}; // TODO: CAS CM-C
 
 // OS-specific
-static unsigned const end_of_init_addrs[] = {0X100104F0, 0x10010478, 0x100104BC, 0x1001046C};
+static unsigned const end_of_init_addrs[] = {0X100104F0, 0x10010478, 0x100104BC, 0x1001046C, 0x1000ED30, 0x0}; // TODO: CAS CM-C
 
 int main(int __attribute__((unused)) argc, char* argv[]) {
 	ut_debug_trace(INSTTR_INS_ENTER);

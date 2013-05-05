@@ -65,6 +65,15 @@ s_os_addrs os_addrs[] = {
 		"3.1.0-cascx",
 		{ 0x1004D478 /* mov lr, #0 */, 0x10379CDC /* strcpy */}
 	},
+		{
+		"3.1.0-cmc",
+		{ 0x10049FB0 /* mov lr, #0 */, 0x10362918 /* strcpy */}
+	},
+		{
+		"3.1.0-cascmc",
+		{ 0x0 /* mov lr, #0 */, 0x0 /* strcpy */} // TODO: CAS CM-C
+	},
+
 };
 
 int main(int argc, const char* argv[]) {

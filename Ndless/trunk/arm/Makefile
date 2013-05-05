@@ -10,6 +10,8 @@ vpath %.tno $(DISTDIR)
 vpath %.tnc $(DISTDIR)
 vpath %.tco $(DISTDIR)
 vpath %.tcc $(DISTDIR)
+vpath %.tmo $(DISTDIR)
+vpath %.tmc $(DISTDIR)
 vpath %.tns $(DISTDIR)
 
 .DEFAULT_GOAL := all
@@ -68,6 +70,10 @@ ndless_installer-%-ncascx.elf: stage0.o stage1.o ints_light_thumb.o syscalls_lig
 	$(LD) --light-startup-no-header $(LDFLAGS) $^ -o $@
 ndless_installer-%-cascx.elf: stage0.o stage1.o ints_light_thumb.o syscalls_light_thumb.o utils_light_thumb_cascx-$$*.o syscalls-light_cascx-%.o
 	$(LD) --light-startup-no-header $(LDFLAGS) $^ -o $@
+ndless_installer-%-cmc.elf: stage0.o stage1.o ints_light_thumb.o syscalls_light_thumb.o utils_light_thumb_cmc-$$*.o syscalls-light_cmc-%.o
+	$(LD) --light-startup-no-header $(LDFLAGS) $^ -o $@
+ndless_installer-%-cascmc.elf: stage0.o stage1.o ints_light_thumb.o syscalls_light_thumb.o utils_light_thumb_cascmc-$$*.o syscalls-light_cascmc-%.o
+	$(LD) --light-startup-no-header $(LDFLAGS) $^ -o $@
 
 ndless_installer-%.bin: ndless_installer-%.elf
 	$(OBJCOPY) -O binary $< $@
@@ -85,6 +91,14 @@ ndless_installer-%.tco: ndless_installer-%-ncascx.bin tno_template.bin
 	MakeTNO $< $(DISTDIR)/$@ $(OS_NAME)  tno_template.bin 86
 
 ndless_installer-%.tcc:ndless_installer-%-cascx.bin tno_template.bin
+	mkdir -p $(DISTDIR)
+	MakeTNO $< $(DISTDIR)/$@ $(OS_NAME) tno_template.bin  86
+
+ndless_installer-%.tmo: ndless_installer-%-cmc.bin tno_template.bin
+	mkdir -p $(DISTDIR)
+	MakeTNO $< $(DISTDIR)/$@ $(OS_NAME) tno_template.bin  86
+
+ndless_installer-%.tmc: ndless_installer-%-cascmc.bin tno_template.bin
 	mkdir -p $(DISTDIR)
 	MakeTNO $< $(DISTDIR)/$@ $(OS_NAME) tno_template.bin  86
 

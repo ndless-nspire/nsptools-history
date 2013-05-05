@@ -46,7 +46,7 @@ void sc_ext_relocdatab(unsigned *dataptr, unsigned size, void *base) {
 }
 
 unsigned sc_nl_hwtype(void) {
-	return (ut_os_version_index % 4) / 2;
+	return ut_os_version_index >= 2; // 1 if CX
 }
 
 BOOL sc_nl_isstartup(void) {

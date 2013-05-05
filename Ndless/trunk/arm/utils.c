@@ -44,6 +44,10 @@ extern unsigned syscalls_ncascx_3_1_0[];
 extern unsigned syscalls_light_ncascx_3_1_0[];
 extern unsigned syscalls_cascx_3_1_0[];
 extern unsigned syscalls_light_cascx_3_1_0[];
+extern unsigned syscalls_cmc_3_1_0[];
+extern unsigned syscalls_light_cmc_3_1_0[];
+extern unsigned syscalls_cascmc_3_1_0[];
+extern unsigned syscalls_light_cascmc_3_1_0[];
 
 /* Writes to ut_os_version_index a zero-based index identifying the OS version and HW model.
  * Also sets up the syscalls table.
@@ -66,6 +70,13 @@ void ut_read_os_version_index(void) {
 		case 0x102F11A0:  // 3.1.0 CAS CX
 			ut_os_version_index = 3;
 			break;
+		case 0x102DBF20:  // 3.1.0 CM-C
+			ut_os_version_index = 4;
+			break;
+		case 0x0:  // 3.1.0 CAS CM-C // TODO: CAS CM-C
+			ut_os_version_index = 5;
+			break;
+
 	}
 	#else
 	/* The heuristic is based on the address of INT_Initialize - Thanks Goplat.
@@ -88,6 +99,14 @@ void ut_read_os_version_index(void) {
 		case 0x102F11A0:  // 3.1.0 CAS CX
 			ut_os_version_index = 3;
 			sc_addrs_ptr = syscalls_cascx_3_1_0;
+			break;
+		case 0x102DBF20:  // 3.1.0 CM-C
+			ut_os_version_index = 4;
+			sc_addrs_ptr = syscalls_cmc_3_1_0;
+			break;
+		case 0x0:  // 3.1.0 CAS CM-C // TODO: CAS CM-C
+			ut_os_version_index = 5;
+			sc_addrs_ptr = syscalls_cascmc_3_1_0;
 			break;
 		default:
 			ut_panic("v?");

@@ -61,11 +61,11 @@ static const luaL_reg baselib[] = {
 
 // At the end of luaL_openlibs
 // OS-specific
-static unsigned const interp_startup_addrs[] = {0x101003CC, 0x101009F0, 0x100FFEE0, 0x1010052C};
+static unsigned const interp_startup_addrs[] = {0x101003CC, 0x101009F0, 0x100FFEE0, 0x1010052C, 0x100FC700, 0x0}; // TODO: CAS CM-C
 
 // At the beginning of lua_close
 // OS-specific
-static unsigned const interp_shutdown_addrs[] = {0x106D14B0, 0x106B59A4, 0x106B249C, 0x106B2C38};
+static unsigned const interp_shutdown_addrs[] = {0x106D14B0, 0x106B59A4, 0x106B249C, 0x106B2C38, 0x106AA5B4, 0x0}; // TODO: CAS CM-C
 
 void lua_install_hooks(void) {
 	HOOK_INSTALL(interp_startup_addrs[ut_os_version_index], lua_interp_startup);

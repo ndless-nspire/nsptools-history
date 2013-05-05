@@ -7,17 +7,19 @@ get_ext() {
 		cas)    echo tnc;;
 		ncascx) echo tco;;
 		cascx)  echo tcc;;
+		cmc)  echo tmo;;
+		cascmc)  echo tmc;;
 		esac
 }
 
 # OS-specific
 OS_VERSIONS="3.1.0"
-MODELS="ncas cas ncascx cascx"
+MODELS="ncas cas ncascx cascx cmc cascmc"
 
 echo "OS_VERSIONS := $OS_VERSIONS"
 echo "MODELS := $MODELS"
 
-extensions=".tno .tnc .tco .tcc"
+extensions=".tno .tnc .tco .tcc .tmo .tmc"
 
 for os_version in $OS_VERSIONS; do
 	for model in $MODELS; do
