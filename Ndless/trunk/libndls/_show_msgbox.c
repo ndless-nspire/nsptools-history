@@ -48,15 +48,15 @@ unsigned _show_msgbox(const char *title, const char *msg, unsigned button_num, .
 	if (button_num == 2 || button_num == 3) {
 		char *button1 = va_arg(ap, char*);
 		char *button2 = va_arg(ap, char*);
-		char button1_16[14];
-		char button2_16[14];
+		char button1_16[(strlen(button1) + 1) * 2];
+		char button2_16[(strlen(button2) + 1) * 2];
 		ascii2utf16(button1_16, button1, sizeof(button1_16));
 		ascii2utf16(button2_16, button2, sizeof(button2_16));
 		if (button_num == 2) {
 			button_pressed = _show_msgbox_2b(0, title16, msg16, button1_16, 1, button2_16, 2, undef_buf);
 		} else {
 			char *button3 = va_arg(ap, char*);
-			char button3_16[14];
+			char button3_16[(strlen(button3) + 1) * 2];
 			ascii2utf16(button3_16, button3, sizeof(button3_16));
 			button_pressed = _show_msgbox_3b(0, title16, msg16, button1_16, 1, button2_16, 2, button3_16, 3, undef_buf);
 		}

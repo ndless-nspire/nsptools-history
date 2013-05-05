@@ -22,6 +22,8 @@ int main(void) {
 	if (show_1numeric_input(title, subtitle, msg1, &value1, -42, 9001) != 1) return 0;
 	sprintf(popup1_result, "%s:%d", msg1, value1);
 	show_msgbox(title, popup1_result);
+	show_msgbox_2b(title, "Text", "Button 1", "Button 2");
+	show_msgbox_3b(title, "Text", "Button 1", "Button 2", "Button 3");
 	if (show_2numeric_input(title, subtitle, msg1, &value1, -42, 9001, msg2, &value2, -42, 9001) != 1) return 0;
 	sprintf(popup2_result, "%s:%d\n%s:%d", msg1, value1, msg2, value2);
 	show_msgbox(title, popup2_result);
