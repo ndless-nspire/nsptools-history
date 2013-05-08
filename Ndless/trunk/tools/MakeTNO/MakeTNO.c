@@ -71,7 +71,7 @@ s_os_addrs os_addrs[] = {
 	},
 		{
 		"3.1.0-cascmc",
-		{ 0x0 /* mov lr, #0 */, 0x0 /* strcpy */} // TODO: CAS CM-C
+		{ 0x10049F14 /* mov lr, #0 */, 0x103630A8 /* strcpy */}
 	},
 
 };

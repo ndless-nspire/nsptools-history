@@ -73,7 +73,7 @@ void ut_read_os_version_index(void) {
 		case 0x102DBF20:  // 3.1.0 CM-C
 			ut_os_version_index = 4;
 			break;
-		case 0x0:  // 3.1.0 CAS CM-C // TODO: CAS CM-C
+		case 0x102DC6B0:  // 3.1.0 CAS CM-C
 			ut_os_version_index = 5;
 			break;
 
@@ -104,7 +104,7 @@ void ut_read_os_version_index(void) {
 			ut_os_version_index = 4;
 			sc_addrs_ptr = syscalls_cmc_3_1_0;
 			break;
-		case 0x0:  // 3.1.0 CAS CM-C // TODO: CAS CM-C
+		case 0x102DC6B0:  // 3.1.0 CAS CM-C
 			ut_os_version_index = 5;
 			sc_addrs_ptr = syscalls_cascmc_3_1_0;
 			break;

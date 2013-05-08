@@ -1,8 +1,7 @@
 include ../../Makefile.config
 
 # OS-specific
-# TODO: CAS CM-C
-OS_VERSIONS=ncas-3.1.0 cas-3.1.0 ncascx-3.1.0 cascx-3.1.0 cmc-3.1.0
+OS_VERSIONS=ncas-3.1.0 cas-3.1.0 ncascx-3.1.0 cascx-3.1.0 cmc-3.1.0 cascmc-3.1.0
 
 all: idb2idc syscalls syscalls_light
 

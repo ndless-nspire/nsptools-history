@@ -222,16 +222,16 @@ static BOOL persistent(BOOL only_uninstall) {
 
 // OS-specific
 // Call to the dialog box display telling that the format isn't recognized.
-static unsigned const ploader_hook_addrs[] = {0x10009984, 0x1000995C, 0x10009924, 0x10009924, 0x100098CC, 0x0}; // TODO: CAS CM-C
+static unsigned const ploader_hook_addrs[] = {0x10009984, 0x1000995C, 0x10009924, 0x10009924, 0x100098CC, 0x100098CC};
 
 // OS-specific
-static unsigned const init_task_return_addrs[] = {0x10001548, 0x10001548, 0x10001510, 0x10001510, 0x100014F8, 0x0}; // TODO: CAS CM-C
+static unsigned const init_task_return_addrs[] = {0x10001548, 0x10001548, 0x10001510, 0x10001510, 0x100014F8, 0x100014F8};
 
 // OS-specific
-static unsigned const api100_task_return_addrs[] = {0x100777A0, 0x10077708, 0x10076E9C, 0x10076e2c, 0x100738F0, 0x0}; // TODO: CAS CM-C
+static unsigned const api100_task_return_addrs[] = {0x100777A0, 0x10077708, 0x10076E9C, 0x10076e2c, 0x100738F0, 0x10073880};
 
 // OS-specific
-static unsigned const end_of_init_addrs[] = {0X100104F0, 0x10010478, 0x100104BC, 0x1001046C, 0x1000ED30, 0x0}; // TODO: CAS CM-C
+static unsigned const end_of_init_addrs[] = {0X100104F0, 0x10010478, 0x100104BC, 0x1001046C, 0x1000ED30, 0x1000ECE0};
 
 int main(int __attribute__((unused)) argc, char* argv[]) {
 	ut_debug_trace(INSTTR_INS_ENTER);
