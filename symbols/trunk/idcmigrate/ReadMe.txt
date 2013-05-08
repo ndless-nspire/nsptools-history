@@ -1,0 +1,1 @@
+This tool is deprecated. Prefer binarysearch.
