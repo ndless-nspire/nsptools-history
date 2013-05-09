@@ -11,6 +11,7 @@
 # --light-startup: use crt0light.o instead
 # --light-startup-no-header: use crt0lightnoheader.o instead
 # --no-ldscript: do not use the standard Ndless linker script
+# --cpp: link a C++ program
 
 UNAME=`uname -s | tr '[A-Z]' '[a-z]'`
 DIRNAME=`dirname "$0"`
@@ -38,6 +39,7 @@ nostartup=false
 lightstartup=false
 noprgmheader=false
 noldscript=false
+cpp=false
 # an array is used to change the arguments while supporting arguments with spaces
 declare -a args
 for arg in "$@"; do
@@ -47,6 +49,7 @@ for arg in "$@"; do
 		--light-startup) lightstartup=true;;
 		--light-startup-no-header) noprgmheader=true;;
 		--no-ldscript) noldscript=true;;
+		--cpp) cpp=true;;
 		*) args=("${args[@]}" $arg);;
 	esac
 done
@@ -62,13 +65,20 @@ ret=$?
 if [ $ret -ne 0 ]; then
 	exit $ret
 fi
+if [ $cpp = true ]; then
+	args=("$DIRNAME/../system/crti.o" "$DIRNAME/../system/cppstub.o" "${args[@]}" "$DIRNAME/../system/crtn.o")
+fi
 if [ $nostartup = false ]; then
 	if [ $lightstartup = true ]; then
 		startupobj=crt0light.o
 	elif [ $noprgmheader = true ]; then
 		startupobj=crt0lightnoheader.o
 	else
-		startupobj=crt0.o
+		if [ $cpp = true ]; then
+			startupobj=crt0-cpp.o
+		else
+			startupobj=crt0.o
+		fi
 	fi
 	args=("$DIRNAME/../system/$startupobj" "${args[@]}")
 fi

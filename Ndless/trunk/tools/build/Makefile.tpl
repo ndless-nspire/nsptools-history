@@ -1,13 +1,18 @@
 GCC = nspire-gcc
+GXX=nspire-g++
 LD = nspire-ld
 GCCFLAGS = -Os -Wall -W -marm
-LDFLAGS = 
+LDFLAGS =
+CPPOBJS = $(patsubst %.cpp,%.o,$(wildcard *.cpp))
+OBJS = $(patsubst %.c,%.o,$(wildcard *.c)) $(CPPOBJS)
+ifneq (${CPPOBJS},"")
+	LDFLAGS += --cpp
+endif
 OBJCOPY := "$(shell which arm-elf-objcopy 2>/dev/null)"
 ifeq (${OBJCOPY},"")
 	OBJCOPY := arm-none-eabi-objcopy
 endif
 EXE = @@EXENAME@@.tns
-OBJS = $(patsubst %.c,%.o,$(wildcard *.c))
 DISTDIR = .
 vpath %.tns $(DISTDIR)
 
@@ -16,6 +21,9 @@ all: $(EXE)
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<
 
+%.o: %.cpp
+	$(GXX) $(GCCFLAGS) -c $<
+	
 $(EXE): $(OBJS)
 	$(LD) $^ -o $(@:.tns=.elf) $(LDFLAGS)
 	mkdir -p $(DISTDIR)

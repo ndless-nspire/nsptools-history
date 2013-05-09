@@ -25,7 +25,13 @@ relocate_loop:
 	bge   relocate_loop
 
 	str  sp, __crt0_savedsp
+#ifdef CRT0_CPP
+	bl __cpp_init /* C++ static initializers */
+#endif
 	bl   main
+#ifdef CRT0_CPP
+	bl __cpp_fini /* C++ static destructors */
+#endif
 __crt0exit: .global __crt0exit
 	ldmfd sp!, {r4-r11,pc}
 

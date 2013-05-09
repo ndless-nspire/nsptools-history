@@ -5,6 +5,10 @@
 #ifndef _OS_H_
 #define _OS_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // So that subsequent standard #include don't conflict
 #define _STDIO_H_
 #define _STRING_H_
@@ -154,9 +158,16 @@ extern int __base;
 // We can't push it onto the stack during the syscall, so save it in a global variable
 // attribute unused: avoids the warning. The symbol will be redefined by the ldscript.
 static __attribute__ ((unused)) unsigned _syscallvar_savedlr;
+
+#ifdef __cplusplus
+#define VARIABLE_ARGS ...
+#else
+#define VARIABLE_ARGS
+#endif
+
 /* Force the use of the stack for the parameters */
 #ifndef __thumb__
-#define _SYSCALL_SWI(rettype, attributes, funcname, param1) static rettype attributes __attribute__((naked)) funcname##_swi() { \
+#define _SYSCALL_SWI(rettype, attributes, funcname, param1) static rettype attributes __attribute__((naked)) funcname##_swi(VARIABLE_ARGS) { \
 	register unsigned __r0 __asm("r0"); \
 	__asm volatile( \
 		" push {r4, r5} \n" \
@@ -170,7 +181,7 @@ static __attribute__ ((unused)) unsigned _syscallvar_savedlr;
 	return (rettype)__r0; \
 }
 #else // slightly less optimized
-#define _SYSCALL_SWI(rettype, attributes, funcname, param1) static rettype attributes __attribute__((naked)) funcname##_swi() { \
+#define _SYSCALL_SWI(rettype, attributes, funcname, param1) static rettype attributes __attribute__((naked)) funcname##_swi(VARIABLE_ARGS) { \
 	register unsigned __r0 __asm("r0"); \
 	__asm volatile( \
 		" push {r4, r5} \n" \
@@ -673,4 +684,7 @@ static void __attribute__((noreturn)) abort(void) {
 }
 
 #endif // GCC C
+#ifdef __cplusplus
+}
+#endif
 #endif
