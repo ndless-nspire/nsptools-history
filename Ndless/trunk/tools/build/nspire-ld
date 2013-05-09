@@ -66,7 +66,7 @@ if [ $ret -ne 0 ]; then
 	exit $ret
 fi
 if [ $cpp = true ]; then
-	args=("$DIRNAME/../system/crti.o" "$DIRNAME/../system/cppstub.o" "${args[@]}" "$DIRNAME/../system/crtn.o")
+	args=("$DIRNAME/../system/crti.o" "$DIRNAME/../system/cppstub.o" "${args[@]}" "$DIRNAME/../system/crtn.o" -lstdc++)
 fi
 if [ $nostartup = false ]; then
 	if [ $lightstartup = true ]; then
@@ -88,4 +88,4 @@ fi
 home="${USERPROFILE:-$HOME}"
 mkdir -p "$home/.ndless/lib"
 # -nostartfiles: avoids newlib startup which would be added before ours
-"$GCC" -nostartfiles -e _nspire_start -L "$DIRNAME/../lib" -L "$USERPROFILE/.ndless/lib" -static "$DIRNAME/../system/crt0sym.o" "${args[@]}" -lSDL -lSDL_gfx -lSDL_image -lfdm -lnspireio -lndls
+"$GCC" -nostartfiles -e _nspire_start -L "$DIRNAME/../lib" -L "$USERPROFILE/.ndless/lib" -static "$DIRNAME/../system/crt0sym.o" "${args[@]}" -lSDL_image -lSDL_gfx -lSDL -lfdm -lnspireio -lndls

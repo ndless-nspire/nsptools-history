@@ -14,6 +14,10 @@ long _write_r(__attribute__((unused)) struct _reent *r, __attribute__((unused)) 
   return 0;
 }
 
+int _open_r(__attribute__((unused))  void *reent, __attribute__((unused)) const char *file, __attribute__((unused)) int flags, __attribute__((unused)) int mode) {
+  return 0;
+}
+
 int _close_r(__attribute__((unused)) struct _reent *r, __attribute__((unused)) int file) {
   return 0;
 }
@@ -52,4 +56,13 @@ int _wait_r(__attribute__((unused)) int *status) {
 
 void _exit(void) {
 	exit(-1);
+}
+
+int _isatty(__attribute__((unused)) int file) {
+	return 1;
+}
+
+	
+int _gettimeofday_r(__attribute__((unused)) struct _reent *ptr, __attribute__((unused)) struct timeval *__tp, __attribute__((unused)) void *__tzp) {
+	return -1;
 }

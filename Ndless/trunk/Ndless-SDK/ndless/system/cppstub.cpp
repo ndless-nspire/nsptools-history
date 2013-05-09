@@ -26,3 +26,5 @@ void operator delete[](void *p)
 }
 
 extern "C" void __cxa_pure_virtual() {} /* Should never happen but it's here anyway */
+
+void *__dso_handle;
