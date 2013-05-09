@@ -43,7 +43,7 @@ void cfg_close(void) {
 	free(kv_offsets);
 }
 
-// Only for tests
+// Only for tests. cfg_open() should be used.
 void cfg_open_file(const char *filepath) {
 	if (file_content) return;
 	FILE *file = fopen(filepath, "rb");

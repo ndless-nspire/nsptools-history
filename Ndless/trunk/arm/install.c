@@ -233,8 +233,12 @@ static unsigned const api100_task_return_addrs[] = {0x100777A0, 0x10077708, 0x10
 // OS-specific
 static unsigned const end_of_init_addrs[] = {0X100104F0, 0x10010478, 0x100104BC, 0x1001046C, 0x1000ED30, 0x1000ECE0};
 
-// initialized at load time
+// initialized at load time. Kept in resident program memory, use nl_is_3rd_party_loader to read it.
 static BOOL loaded_by_3rd_party_loader = FALSE;
+
+BOOL ins_loaded_by_3rd_party_loader(void) {
+	return loaded_by_3rd_party_loader;
+}
 
 /* argv[0]=
  *         NULL if loaded by Ndless's stage1 at installation or OS startup
@@ -283,7 +287,7 @@ int main(int __attribute__((unused)) argc, char* argv[]) {
 	}
 	else { // either OS startup or ndless_resources.tns run
 		if (installed) { // ndless_resources.tns run: uninstall
-			if (loaded_by_3rd_party_loader)
+			if (nl_loaded_by_3rd_party_loader())
 				return 0; // do nothing
 			if (show_msgbox_2b("Ndless", "Do you really want to uninstall Ndless?\nThe device will reboot.", "Yes", "No") == 2)
 				return 0;

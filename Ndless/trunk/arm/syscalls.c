@@ -64,7 +64,8 @@ void sc_nl_no_scr_redraw(void) {
 /* Extension syscalls table */
 unsigned sc_ext_table[] = {
 	(unsigned)sc_nl_osvalue, (unsigned)sc_ext_relocdatab, (unsigned)sc_nl_hwtype, (unsigned)sc_nl_isstartup,
-	(unsigned)luaext_getstate, (unsigned)ld_set_resident, (unsigned)sc_nl_ndless_rev, (unsigned)sc_nl_no_scr_redraw
+	(unsigned)luaext_getstate, (unsigned)ld_set_resident, (unsigned)sc_nl_ndless_rev, (unsigned)sc_nl_no_scr_redraw,
+	(unsigned)ins_loaded_by_3rd_party_loader,
 };
 
 void sc_setup(void) {

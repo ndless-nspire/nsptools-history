@@ -305,9 +305,10 @@
 #define e_nl_set_resident (__SYSCALLS_ISEXT | 5)
 #define e_nl_ndless_rev (__SYSCALLS_ISEXT | 6)
 #define e_nl_no_scr_redraw (__SYSCALLS_ISEXT | 7)
+#define e_nl_loaded_by_3rd_party_loader (__SYSCALLS_ISEXT | 8)
 
 // Must be kept up-to-date with the value of the last syscalls extension without __SYSCALLS_ISEXT
-#define __SYSCALLS_LASTEXT 7
+#define __SYSCALLS_LASTEXT 8
 
 /* Ndless integration with emulators. Grouped to make the integration easier for the emulators (they require
  * only these constants).

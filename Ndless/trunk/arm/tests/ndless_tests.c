@@ -246,6 +246,7 @@ int main(int argc, char *argv[]) {
 	assertTrue("is_cx", (is_cx && *(unsigned*)0x900A0000 == 0x101) || (!is_cx && *(unsigned*)0x900A0000 == 0x01000010));
 	assertTrue("is_touchpad", (*keypad_type != 3  &&  *keypad_type != 4) || is_touchpad);
 	assertTrue("isstartup", nl_isstartup()); // will only pass if run as startup program
+	assertFalse("nl_loaded_by_3rd_party_loader", nl_loaded_by_3rd_party_loader());
 	sleep(100);
 	
 	/* Ndless internals */

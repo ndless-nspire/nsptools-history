@@ -55,6 +55,9 @@ char *cfg_get(const char *key);
 extern void *emu_debug_alloc_ptr;
 extern unsigned emu_sysc_table[];
 
+/* install.c */
+BOOL ins_loaded_by_3rd_party_loader(void);
+
 /* ints.c */
 extern unsigned ints_scextnum;
 extern unsigned *sc_addrs_ptr;
