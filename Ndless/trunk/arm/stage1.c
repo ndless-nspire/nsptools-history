@@ -53,7 +53,7 @@ void stage1(void) {
 	fread(core, res_stat.st_size, 1, res_file);
 	fclose(res_file);
 	ut_debug_trace(INSTTR_S1_LOADINST);
-	char *res_params = " "; // Dummy filename to tell the installer we are booting or installing, and not running ndless_resources
+	char *res_params = NULL; // Dummy filename to tell the installer we are booting or installing
 	clear_cache();
 	((void (*)(int argc, void* argv))(char*)core + sizeof(PRGMSIG))(1, &res_params); // Run the core installation
 }

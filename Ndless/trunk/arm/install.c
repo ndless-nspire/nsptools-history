@@ -265,8 +265,10 @@ int main(int __attribute__((unused)) argc, char* argv[]) {
 		lua_install_hooks();
 	}
 	
-	if (argv[0] || argv[0][0] == 'L') // third-party launcher
+	if (argv[0] && argv[0][0] == 'L') { // third-party launcher
+		loaded_by_3rd_party_loader = TRUE;
 		return 0;
+	}
 	
 	NU_TASK *current_task  = TCC_Current_Task_Pointer();
 	char *task_name = ((char*)current_task) + 16;
