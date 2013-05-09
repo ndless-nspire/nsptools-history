@@ -233,6 +233,14 @@ static unsigned const api100_task_return_addrs[] = {0x100777A0, 0x10077708, 0x10
 // OS-specific
 static unsigned const end_of_init_addrs[] = {0X100104F0, 0x10010478, 0x100104BC, 0x1001046C, 0x1000ED30, 0x1000ECE0};
 
+// initialized at load time
+static BOOL loaded_by_3rd_party_loader = FALSE;
+
+/* argv[0]=
+ *         NULL if loaded by Ndless's stage1 at installation or OS startup
+ *         "L" if loaded by a third party loader such as nLaunchy: we won't install ourself, and we'll exit the regular way
+ *         <path to ndless_resources> if run from the OS documents screen for uninstallation      
+ */
 int main(int __attribute__((unused)) argc, char* argv[]) {
 	ut_debug_trace(INSTTR_INS_ENTER);
 	ut_read_os_version_index();
@@ -246,7 +254,7 @@ int main(int __attribute__((unused)) argc, char* argv[]) {
 			ut_panic("unknown N-ext");
 	}
 
-	if (argv[0][0] != '/') { // not ndless_resources run
+	if (!argv[0] || argv[0][0] == 'L') { // not ndless_resources run
 		ints_setup_handlers();
 		sc_setup();
 	}
@@ -256,6 +264,9 @@ int main(int __attribute__((unused)) argc, char* argv[]) {
 		HOOK_INSTALL(end_of_init_addrs[ut_os_version_index], plh_startup_hook);
 		lua_install_hooks();
 	}
+	
+	if (argv[0] || argv[0][0] == 'L') // third-party launcher
+		return 0;
 	
 	NU_TASK *current_task  = TCC_Current_Task_Pointer();
 	char *task_name = ((char*)current_task) + 16;
@@ -270,6 +281,8 @@ int main(int __attribute__((unused)) argc, char* argv[]) {
 	}
 	else { // either OS startup or ndless_resources.tns run
 		if (installed) { // ndless_resources.tns run: uninstall
+			if (loaded_by_3rd_party_loader)
+				return 0; // do nothing
 			if (show_msgbox_2b("Ndless", "Do you really want to uninstall Ndless?\nThe device will reboot.", "Yes", "No") == 2)
 				return 0;
 			persistent(TRUE);
