@@ -16,6 +16,9 @@ halt\@: b halt\@
 #include <sys/types.h>
 #include <usbdi.h>
 
+// Directory where are stored Ndless files
+#define NDLESS_DIR "/documents/ndless"
+
 typedef struct {
 	uint16_t width;
 	uint16_t height;
@@ -78,6 +81,14 @@ usbd_status usbd_set_idle(usbd_interface_handle iface, int duration, int id);
 usbd_status usbd_set_protocol(usbd_interface_handle iface, int report);
 void wait_key_pressed(void);
 void wait_no_key_pressed(void);
+/* config.c */
+void cfg_open(void);
+void cfg_open_file(const char *filepath);
+void cfg_close(void);
+char *cfg_get(const char *key);
+void cfg_register_fileext(const char *ext, const char *prgm);
+void cfg_register_fileext_file(const char *fielpath, const char *ext, const char *prgm);
+
 
 BOOL _is_touchpad(void);
 #define is_touchpad _is_touchpad()

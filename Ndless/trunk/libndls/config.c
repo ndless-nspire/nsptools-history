@@ -1,5 +1,5 @@
 /****************************************************************************
- * Configuration management
+ * Ndless configuration management
  *
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
@@ -15,13 +15,13 @@
  *
  * The Initial Developer of the Original Code is Olivier ARMAND
  * <olivier.calc@gmail.com>.
- * Portions created by the Initial Developer are Copyright (C) 2012
+ * Portions created by the Initial Developer are Copyright (C) 2012-2013
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): 
  ****************************************************************************/
 
-#include "ndless.h"
+#include <os.h>
 
 /* The config file is open whenever needed with cfg_open, and must be closed.
  * Each line of the file contains a key/value pair (key=value).
@@ -119,8 +119,10 @@ close_quit:
 	kv_num = kv_index;
 }
 
+#define CFG_FILE (NDLESS_DIR "/ndless.cfg.tns")
+
 void cfg_open(void) {
-	cfg_open_file(NDLESS_DIR "/ndless.cfg.tns");
+	cfg_open_file(CFG_FILE);
 }
 
 // Returns the value associated to the key. NULL if not found.
@@ -132,4 +134,35 @@ char *cfg_get(const char *key) {
 			return kv_offsets[i][1] + file_content;
 	}
 	return NULL;
+}
+
+// Only for tests. cfg_register_filext() should be used.
+void cfg_register_fileext_file(const char *filepath, const char *ext, const char *prgm) {
+	char key[15] = "ext.";
+	cfg_open_file(filepath);
+	strncat(key, ext, 15 - 4 - 1);
+	if (cfg_get(key)) {
+		cfg_close();
+		return;
+	}
+	cfg_close();
+	FILE *file = fopen(filepath, "a+b");
+	if (!file) return;
+	fseek(file, 0, SEEK_END);
+	if (ftell(file) > 0) {
+		fseek(file, -1, SEEK_END);
+		if (fgetc(file) != '\n') {
+			fseek(file, 0, SEEK_END);
+			fputc('\n', file);
+		}
+	}
+	fseek(file, 0, SEEK_END);
+	fprintf(file, "%s=%s\n", key, prgm);
+	fclose(file);
+}
+
+
+// ext without leading '.'
+void cfg_register_fileext(const char *ext, const char *prgm) {
+	cfg_register_fileext_file(CFG_FILE, ext, prgm);
 }

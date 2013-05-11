@@ -247,6 +247,7 @@ int main(int argc, char *argv[]) {
 	assertTrue("is_touchpad", (*keypad_type != 3  &&  *keypad_type != 4) || is_touchpad);
 	assertTrue("isstartup", nl_isstartup()); // will only pass if run as startup program
 	assertFalse("nl_loaded_by_3rd_party_loader", nl_loaded_by_3rd_party_loader());
+	
 	sleep(100);
 	
 	/* Ndless internals */
@@ -264,6 +265,10 @@ int main(int argc, char *argv[]) {
 	assertStrEquals("cfg_get_win", "win", cfg_get("windows"));
 	assertStrEquals("cfg_get_empty", "", cfg_get("empty"));
 	assertNull("cfg_get_dummy", cfg_get("dummy"));
+	cfg_close();
+	cfg_register_fileext_file(cfg_path, "dummy", "prgm");
+	cfg_open_file(cfg_path);
+	assertStrEquals("cfg_register_fileext", "prgm", cfg_get("ext.dummy"));
 	cfg_close();
 	remove(cfg_path);
 	

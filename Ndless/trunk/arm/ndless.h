@@ -29,8 +29,6 @@
 
 // Marker at the beginning of a plain-old Ndless program. Deprecated, only used for Ndless itself, bFLT is now used for programs.
 #define PRGMSIG "PRG"
-// Directory where it is installed
-#define NDLESS_DIR "/documents/ndless"
 
 /* Debug levels for ut_debug_trace() for installation failure diagnostic. Keep in execution order. */
 #define INSTTR_S1_ENTER 0
@@ -44,12 +42,6 @@
 #ifndef GNU_AS
 
 #include <os.h>
-
-/* config.c */
-void cfg_open(void);
-void cfg_open_file(const char *filepath);
-void cfg_close(void);
-char *cfg_get(const char *key);
 
 /* emu.c */
 extern void *emu_debug_alloc_ptr;

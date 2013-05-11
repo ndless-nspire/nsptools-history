@@ -36,7 +36,7 @@ distdir:
 ndless_cpp_tests.tns: ndless_cpp_tests.o
 	$(LD-BFLT) --cpp $(LDFLAGS) $^ -o  $(DISTDIR)/$@
 
-ndless_tests.test.tns: ndless_tests.o assert.o ../config.o
+ndless_tests.test.tns: ndless_tests.o assert.o
 	$(LD-BFLT) $(LDFLAGS) $^ -o  $(DISTDIR)/$@
 
 ndless_tests.luax.tns: ndless_tests.luax.o assert.o
