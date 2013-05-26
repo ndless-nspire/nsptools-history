@@ -12,6 +12,10 @@ halt\@: b halt\@
 
 #else /* GNU_AS */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <sys/types.h>
 #include <usbdi.h>
@@ -119,6 +123,9 @@ unsigned hwtype(void);
 #define BLACK                   0x0
 #define WHITE                   0xF
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* GNU_AS */
 #endif /* _LIBNDLS_H_ */

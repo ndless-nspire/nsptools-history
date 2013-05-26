@@ -24,6 +24,10 @@
 #ifndef _NDLESS_TESTS_H_
 #define _NDLESS_TESTS_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define assert(tstname, expr, format, ...) \
 	do { \
 		char sbuf[100]; \
@@ -34,8 +38,6 @@
 		printf("[passed] [%s]\n", tstname);	\
 		} \
 	} while(0)
-
-#endif /* _NDLESS_TESTS_H_ */
 
 /* assert.c */
 
@@ -58,3 +60,8 @@ void assertNull(const char *tstname, void *actual);
 	(void)dummy; \
 	printf("[passed] [%s]\n", tstname);
 
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* _NDLESS_TESTS_H_ */

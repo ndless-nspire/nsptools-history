@@ -10,7 +10,7 @@ __calc_base: /* Calculate base address since theres no PIC relocation in text se
 
 .section .init
 __cpp_init: .global __cpp_init
-	push {r4, r5, lr}
+	push {r0, r1, r4, r5, lr}
 	bl __calc_base
 	mov r5, r0
 	adr r4,ctors
@@ -25,13 +25,13 @@ __cpp_init: .global __cpp_init
 	addne r4, r4, #4
 	bne ctor_runloop
 	
-	pop {r4, r5, pc}
+	pop {r0, r1, r4, r5, pc}
 	ctors: /* Begin list of function pointers */
 	
 	
 .section .fini
 __cpp_fini: .global __cpp_fini
-	push {r4, r5, lr}
+	push {r0, r4, r5, lr}
 	bl __calc_base
 	mov r5, r0
 	adr r4,dtors
@@ -46,5 +46,5 @@ __cpp_fini: .global __cpp_fini
 	addne r4, r4, #4
 	bne dtor_runloop
 	
-	pop {r4, r5, pc}
+	pop {r0, r4, r5, pc}
 	dtors:

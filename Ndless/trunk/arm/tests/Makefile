@@ -29,11 +29,7 @@ distdir:
 %.tns: %.o
 	$(LD-BFLT) $(LDFLAGS) $^ -o  $(DISTDIR)/$@
 
-#ndless_cpp_tests.tns: ndless_cpp_tests.o
-#	$(LD) --cpp $^ -o $(@:.tns=.elf) $(LDFLAGS)
-#	$(OBJCOPY) -O binary $(@:.tns=.elf) $(DISTDIR)/$@
-
-ndless_cpp_tests.tns: ndless_cpp_tests.o
+ndless_cpp_tests.tns: ndless_cpp_tests.o assert.o
 	$(LD-BFLT) --cpp $(LDFLAGS) $^ -o  $(DISTDIR)/$@
 
 ndless_tests.test.tns: ndless_tests.o assert.o

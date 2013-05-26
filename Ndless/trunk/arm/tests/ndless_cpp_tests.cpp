@@ -21,34 +21,45 @@
  ****************************************************************************/
 
 #include <os.h>
+#include "ndless_tests.h"
 
 class test_class {
 	public:
-	test_class() {
-			printf("test_class constructor called\n");
+	test_class(int *call_counter) {
+		(*call_counter)++;
 	}
-	int class_method() {
-			printf("test_class->class_method called\n");
-			return 0;
+	int class_method(const char **call_marker) {
+		*call_marker = "method1";
+		return 1;
 	}
 };
 
 class test_class2 : test_class {
 	public:
-	test_class2() {
-			printf("test_class2 constructor called\n");
+	test_class2(int *call_counter) : test_class(call_counter) {
+		(*call_counter)++;
 	}
-	int class_method() {
-			printf("test_class2->class_method called\n");
-			return 0;
+	int class_method(const char **call_marker) {
+		*call_marker = "method2";
+		return 2;
 	}
 };
 
-int main(void) {
-	test_class *obj1 = new test_class;
-	test_class2 *obj2 = new test_class2;
-	obj1->class_method();
-	obj2->class_method();
+int main(int argc, char *argv[]) {
+	assertIntEquals("argc", 1, argc);
+	assertStrEquals("argv0", "ndless_cpp_tests.tns", strrchr(argv[0], '/') + 1);
+	
+	const char *call_marker;
+	int call_counter = 0;
+	test_class *obj1 = new test_class(&call_counter);
+	assertIntEquals("constructor1", 1, call_counter);
+	call_counter = 0;
+	test_class2 *obj2 = new test_class2(&call_counter);
+	assertIntEquals("constructor1", 2, call_counter);
+	assertIntEquals("method1_return", 1, obj1->class_method(&call_marker));
+	assertStrEquals("method1", "method1", call_marker);
+	assertIntEquals("method2_return", 2, obj2->class_method(&call_marker));
+	assertStrEquals("method2", "method2", call_marker);
 	delete obj1;
 	delete obj2;
 	return 0;
