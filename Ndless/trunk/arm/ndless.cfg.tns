@@ -6,4 +6,5 @@ ext.nvid=nPlayer
 ext.cvid=nPlayer
 ext.bmp=mviewer_cx
 ext.png=mviewer_cx
+ext.jpg=mviewer_cx
 ext.wad=ndoom
