@@ -59,7 +59,8 @@ int main(int argc, char *argv[]) {
 	DSTAT dstat;
 
 	assertUIntEquals("TCT_Local_Control_Interrupts", 0xFFFFFFFF, TCT_Local_Control_Interrupts(0));
-	assertUIntEquals("argc", 2, argc);
+	if (argc != 2)
+		puts("Make sure to use ndless.cfg from the tests/ directory.");
 	assertStrEquals("argv0", "ndless_tests.test.tns", strrchr(argv[0], '/') + 1);
 	assertStrEquals("argv1", "ndless_tests.test.tns", strrchr(argv[1], '/') + 1); // file association (run with ourself)
 		
