@@ -32,19 +32,19 @@ for line in out:lines() do
 	if line == "NO" then
 
 		local txx = getres("*.tco")
-		if not txx then txx = getres("*.tcc", "OS [*.tco,*.tcc] not found.") end
+		if not txx then txx = getres("*.tcc", "OS not found.") end
 		if txx then
 			local casswitch = string.find(txx, ".tcc$") and "C" or ""
-			local boot1 = getres("boot1.img.tns", "boot1.img not found.")
+			local boot1 = getres("boot1.img.tns", "Boot1 not found.")
 			if boot1 then
-				local nand_path = getres("nand.img")
+
+				local nand_path = getres("*.img")
 				if nand_path then
 					local ns_spawner = spawner.new(props['SciteDefaultHome'] .. "\\nspire_emu\\nspire_emu.bat \"/1=" .. boot1 .. "\" \"/F=" .. nand_path .. "\" \"/MX" .. casswitch ..  "\"")
 					ns_spawner:run()
 				
 				else
-					local boot2 = getres("boot2.img.tns")
-					if not boot2 then boot2 = getres("boot2.img", "boot2.img not found.") end
+					local boot2 = getres("boot2.img.tns", "Boot2 not found.")
 					if boot2 then
 						local ns_spawner = spawner.new(props['SciteDefaultHome'] .. "\\nspire_emu\\nspire_emu.bat \"/1=" .. boot1 .. "\" \"/PO=" .. txx .. "\" \"/PB=" .. boot2 .. "\" /MX" .. casswitch)
 						ns_spawner:run()
