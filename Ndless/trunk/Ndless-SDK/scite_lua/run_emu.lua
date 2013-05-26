@@ -32,7 +32,7 @@ for line in out:lines() do
 	if line == "NO" then
 
 		local txx = getres("*.tco")
-		if not txx then txx = getres("*.tcc", "OS [*.tcc] not found.") end
+		if not txx then txx = getres("*.tcc", "OS [*.tco,*.tcc] not found.") end
 		if txx then
 			local casswitch = string.find(txx, ".tcc$") and "C" or ""
 			local boot1 = getres("boot1.img.tns", "boot1.img not found.")
