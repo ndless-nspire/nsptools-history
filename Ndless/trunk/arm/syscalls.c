@@ -33,13 +33,15 @@ int sc_nl_osvalue(const int *values, unsigned size) {
 	return values[ut_os_version_index];
 }
 
-/* Our lightweight relocation support unfortunately cannot handle 
+/* The lightweight relocation support unfortunately cannot handle 
  * initializers with relocation (for example arrays of function pointers).
  * data.rel and data.rel.ro sections are created, but may contain both
  * non-relocable and relocable data, for which we have no clue.
- * This function allows to relocate an array of pointers. */
+ * This function allows to relocate an array of pointers.
+ * This is function is useless when the bFLT binary format is used. */
 void sc_ext_relocdatab(unsigned *dataptr, unsigned size, void *base) {
 	unsigned i;
+	if (ld_bin_format == LD_BFLT_BIN) return;
 	for (i = size; i > 0; i--) {
 		*dataptr++ += (unsigned)base;
 	}

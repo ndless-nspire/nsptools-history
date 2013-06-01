@@ -56,6 +56,8 @@ void ld_set_resident(void) {
 	is_current_prgm_resident = TRUE;
 }
 
+enum e_ld_bin_format ld_bin_format = LD_ERROR_BIN;
+
 static int ndless_load(char *docpath, void **base, size_t *size, int (**entry_address_ptr)(int, char*[])) {
 	int ret;
     FILE *docfile = fopen(docpath, "rb");
@@ -126,12 +128,7 @@ int ld_exec(const char *path, void **resident_ptr) {
 		cfg_close();
 	}
 
-    enum {
-        ERROR_BIN,
-        NDLESS_BIN,
-        BFLT_BIN
-    }; // binary formats
-    int loaded = ERROR_BIN;
+	ld_bin_format = LD_ERROR_BIN;
     void *base;
     size_t size;
     int (*entry)(int argc, char *argv[]);
@@ -143,10 +140,10 @@ int ld_exec(const char *path, void **resident_ptr) {
             puts("ld_exec: unknown bin format");
             return 1;
         } else {
-            loaded = BFLT_BIN;
+            ld_bin_format = LD_BFLT_BIN;
         }
     }else {
-        loaded = NDLESS_BIN;
+        ld_bin_format = LD_NDLESS_BIN;
     }
 
 	int intmask = TCT_Local_Control_Interrupts(-1); /* TODO workaround: disable the interrupts to avoid the clock on the screen */
@@ -177,8 +174,8 @@ int ld_exec(const char *path, void **resident_ptr) {
 	if (is_current_prgm_resident) // required by the program itself
 		return 0;
 	if (!emu_debug_alloc_ptr) {
-	    if (loaded == NDLESS_BIN) free(base);
-	    if (loaded == BFLT_BIN) bflt_free(base);
+	    if (ld_bin_format == LD_NDLESS_BIN) free(base);
+	    if (ld_bin_format == LD_BFLT_BIN) bflt_free(base);
 	}
 	return 0;
 }

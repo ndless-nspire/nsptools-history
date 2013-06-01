@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Olivier ARMAND
  * <olivier.calc@gmail.com>.
- * Portions created by the Initial Developer are Copyright (C) 2010-2011
+ * Portions created by the Initial Developer are Copyright (C) 2010-2013
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): 
@@ -63,6 +63,12 @@ void ints_setup_handlers(void);
 /* ploaderhook.c */
 extern BOOL plh_isstartup;
 extern BOOL plh_noscrredraw;
+enum e_ld_bin_format {
+	LD_ERROR_BIN,
+	LD_NDLESS_BIN,
+	LD_BFLT_BIN
+};
+extern enum e_ld_bin_format ld_bin_format;
 void ld_set_resident(void);
 int ld_exec(const char *path, void **resident_ptr);
 void ld_free(void *resident_ptr);
