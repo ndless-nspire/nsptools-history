@@ -38,10 +38,13 @@ SECTIONS {
         PROVIDE(_syscallvar_savedlr = .);
         . += 4;
     }
+    . = ALIGN(4);
+    .ARM.extab : { *(.ARM.extab) }
     .bss : {
         . = ALIGN(0x4) ;
         *(.bss*)
     }
+    
 }
 __exidx_start = .;
 __exidx_end = .;
