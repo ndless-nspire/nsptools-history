@@ -1,6 +1,6 @@
 GCC = nspire-gcc
 GXX=nspire-g++
-LD = nspire-ld
+LD = nspire-ld-bflt
 GCCFLAGS = -Os -Wall -W -marm
 LDFLAGS =
 CPPOBJS = $(patsubst %.cpp,%.o,$(wildcard *.cpp))
@@ -25,9 +25,8 @@ all: $(EXE)
 	$(GXX) $(GCCFLAGS) -c $<
 	
 $(EXE): $(OBJS)
-	$(LD) $^ -o $(@:.tns=.elf) $(LDFLAGS)
 	mkdir -p $(DISTDIR)
-	$(OBJCOPY) -O binary $(@:.tns=.elf) $(DISTDIR)/$@
+	$(LD) $^ -o $(DISTDIR)/$@ $(LDFLAGS)
 
 clean:
 	rm -f *.o *.elf
