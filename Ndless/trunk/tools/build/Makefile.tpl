@@ -5,7 +5,7 @@ GCCFLAGS = -Os -Wall -W -marm
 LDFLAGS =
 CPPOBJS = $(patsubst %.cpp,%.o,$(wildcard *.cpp))
 OBJS = $(patsubst %.c,%.o,$(wildcard *.c)) $(CPPOBJS)
-ifneq (${CPPOBJS},"")
+ifneq ($(strip $(CPPOBJS)),)
 	LDFLAGS += --cpp
 endif
 OBJCOPY := "$(shell which arm-elf-objcopy 2>/dev/null)"
