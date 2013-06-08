@@ -344,7 +344,7 @@ void loadmedia()
 
 void mainloop()
 {
-  long int looptime;
+  long int looptime = 0;
   
   /*Start on our main loop*/
   while (brunning)
@@ -369,15 +369,17 @@ void mainloop()
         const char *game_over_str = "GAME OVER. Press N for new game.";
         widthoftext = nSDL_GetStringWidth(font, game_over_str);
         heightoftext = nSDL_GetStringHeight(font, game_over_str);
+	    if (widthoftext > 320)
+			widthoftext = 320; // work around nSDL bug
 		gamedialog = SDL_CreateRGBSurface(SDL_SWSURFACE, widthoftext, heightoftext, COLOR_DEPTH, 0, 0, 0, 255);
         	  
 		/*Check to see if anything went wrong in rendering the text.*/
         if (gamedialog == 0)
         {
-          printf("Unable to render text");
+          printf("Unable to render text\n");
           exit(1);
         }
-		nSDL_DrawString(gamedialog, font, 0, 0, game_over_str);
+		//nSDL_DrawString(gamedialog, font, 0, 0, game_over_str);
       }
       SDL_FillRect(screen, 0, SDL_MapRGB(screen->format, 0, 0, 0));
       drawimage(gamedialog, 0, 0, widthoftext, heightoftext, screen, 25, 25, 255);
@@ -517,7 +519,7 @@ void NewLevel()
 	/*Make sure our levelmap arrray is big enough for the new level. If it isn't, panic!*/
         if (CurLevelIndex > MAPINDEX)
         {
-          printf("MAPINDEX not high enough");
+          printf("MAPINDEX not high enough\n");
           exit(1);
         }
         
@@ -696,15 +698,16 @@ void UpdateDisplay()
   if (widthoftext > 320)
 	widthoftext = 320; // work around nSDL bug
   heightoftext = nSDL_GetStringHeight(font, scoretext);
-  gamedialog = SDL_CreateRGBSurface(SDL_SWSURFACE, widthoftext, heightoftext, COLOR_DEPTH, 255, 255, 255, 255);
+  if (gamedialog == 0)
+    gamedialog = SDL_CreateRGBSurface(SDL_SWSURFACE, widthoftext, heightoftext, COLOR_DEPTH, 255, 255, 255, 255);
 
   /*Check to see if anything went wrong in rendering the text.*/
   if (gamedialog == 0)
   {
-    printf("Unable to render text");
+    printf("Unable to render text\n");
     exit(1);
   }
-  nSDL_DrawString(gamedialog, font, 0, 0, scoretext);
+  //nSDL_DrawString(gamedialog, font, 0, 0, scoretext);
   
   /*Check to see if either player or computer has won and if so enter game over mode so the next iteration of the mainloop will be drawing the game over message on the screen.*/
   if (Lives < 0)
