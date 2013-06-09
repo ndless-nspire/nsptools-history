@@ -12,7 +12,7 @@
 #include "core.h"
 
 
-int main(int argc, char* argv[])
+int main(void)
 {
     // instanciate a CORE object    
     core *gameCore = new core();

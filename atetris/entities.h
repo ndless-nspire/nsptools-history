@@ -1,8 +1,7 @@
 #include "graphics.h"
-#include "audio.h"
 
-#define GAMEBOARD_X 12
-#define GAMEBOARD_Y 28
+#define GAMEBOARD_X 10
+#define GAMEBOARD_Y 14
 #define GAME_SHAPES 7
 #define GAME_IMAGES 6
 #define LINES_PER_LEVEL 5        // Defines after how many lines the level increases :)
@@ -22,7 +21,7 @@ struct shape
 class game
 {
       public:
-             game(graphics *GFXController, audio *SoundController);
+             game(graphics *GFXController);
              ~game();
              
              bool commitMovements(); // This is what makes the bricks "fall" with time...
@@ -36,7 +35,7 @@ class game
              void resetShape(int id); // Function used to initialise a shape and all it's rotations
              void reset(); // Used mainly after game over or simply to reset the game :)
              
-             int renderBoardData(); // Draw the tetris board on screen
+             void renderBoardData(); // Draw the tetris board on screen
              void renderNextBrickFrame();
              
              void updateMoveBoard(); // Function used to refresh the movement board depending on the shape data, block_x and block_y
@@ -80,5 +79,4 @@ class game
               int lineCount;
               
               graphics *GFX;
-              audio    *SFX;
 };

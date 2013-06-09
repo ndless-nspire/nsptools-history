@@ -1,7 +1,7 @@
+#include <ctime>
 #include "entities.h"
 
-
-game::game(graphics *GFXController, audio *SoundController)
+game::game(graphics *GFXController)
 {
      srand((unsigned)time(0)); 
      
@@ -35,7 +35,6 @@ game::game(graphics *GFXController, audio *SoundController)
      updateMoveBoard();
      
      GFX = GFXController;
-     SFX = SoundController;
 }
 
 game::~game()
@@ -43,14 +42,16 @@ game::~game()
              
 }
 
-int game::renderBoardData()
+#define BOARD_Y_OFFSET 10
+
+void game::renderBoardData()
 {
     for ( int i=0; i<GAMEBOARD_X; i++ )
         for ( int j=0; j<GAMEBOARD_Y; j++ )
             if ( gameBoard[i][j] != -1 )
-               GFX->blitImage( gameBoard[i][j], 15*(i+1), 15*(j+1)+150 );
+               GFX->blitImage( gameBoard[i][j], 15*(i+1), 15*(j+1)+BOARD_Y_OFFSET );
             else if ( moveBoard[i][j] != -1 )
-               GFX->blitImage( moveBoard[i][j], 15*(i+1), 15*(j+1)+150 );
+               GFX->blitImage( moveBoard[i][j], 15*(i+1), 15*(j+1)+BOARD_Y_OFFSET );
                 
 
 }
@@ -143,7 +144,6 @@ bool game::lineDump()
                   {
                      GameLevel++;
                      dropInterval = (int)( (double)dropInterval * SPEED_INCREASE_RATIO );
-                     SFX->playSound(3);
                   }
                       
                   return true;
@@ -163,12 +163,7 @@ bool game::commitMovements()
                  if ( gameShapes[shape_id]->data[block_status][i][j] != 0 )
                     gameBoard[block_x+i][block_y+j] = curColourID;
                     
-          bool dumpDone = lineDump();
           while (lineDump());
-          if ( dumpDone )
-                SFX->playSound(1);
-          else
-                SFX->playSound(2);
           
           if (block_y == 0)
              return true;
@@ -305,8 +300,6 @@ void game::rotate()
            block_status--;
         if (block_status == -1)
            block_status = 3;
-           
-        SFX->playSound(0);
      }
 }
 

@@ -13,7 +13,7 @@
 core::core()
 {
     // Initialize SDL 
-    if (SDL_Init (SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO) < 0)
+    if (SDL_Init (SDL_INIT_VIDEO) < 0)
     {
         printf ("Couldn't initialize SDL : %s\n", SDL_GetError ());
         exit (1);
@@ -22,19 +22,13 @@ core::core()
     atexit (SDL_Quit);
 
     // Set 800x600 32-bits video mode
-    screen = SDL_SetVideoMode (SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BPP, SDL_HWSURFACE | SDL_DOUBLEBUF );
+    screen = SDL_SetVideoMode (SCREEN_WIDTH, SCREEN_HEIGHT, is_cx ? 16 : 8, SDL_FULLSCREEN);
     if (screen == NULL)
     {
         printf ("Couldn't set video mode : %s\n", SDL_GetError ());
         exit (2);
     }
     
-    // Enable the TTF font printing library for SDL
-    if( TTF_Init() == -1 )
-    {
-        printf ("Couldn't start SDL TTF : %s\n", SDL_GetError ());
-        exit (3);
-    }
     
     // Set the title of our application window handler
     SDL_WM_SetCaption ("Marko's SDL Framework", NULL);
@@ -48,18 +42,12 @@ core::core()
     
     // Instanciate our graphics controller and load all the image data
     GFXController = new graphics(screen);
-    GFXController -> loadBitmapImageData();
     GFXController -> loadImageData();
     
     // Load all fonts needed by the game
     GFXController -> loadFontData();
     
-    // Instanciate the sound controller and load sound FX
-    SoundController = new audio();
-    SoundController -> loadWavSoundData();
-    
-    
-    tetris = new game(GFXController, SoundController);
+    tetris = new game(GFXController);
     gameOver = false;
     gamePaused = false;
     Timer = 0;
@@ -72,7 +60,6 @@ core::core()
 core::~core()
 {
     delete GFXController;
-    delete SoundController;
     delete tmpBuff;
     SDL_FreeSurface( screen );
     SDL_Quit();
@@ -157,13 +144,12 @@ int core::gameLoop()
 // to cover the screen and then draw the ball above
 void core::renderGraphics()
 {
-     GFXController->blitImage(12,0,0);
-     GFXController->blitImage(11,350,500);
-     
+	GFXController->drawBackground();
+
      // Render the GAME LEVEL 
      sprintf(tmpBuff, "Level : %d", tetris->getGameLevel());
      GFXController->renderText(0, tmpBuff, 190, 110, 255, 250, 30 );
-     
+	
      
      // Render the LINE COUNT 
      sprintf(tmpBuff, "Lines  : %d", tetris->getLineCount());

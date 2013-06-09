@@ -1,0 +1,9 @@
+- Font loading in graphics:graphics, ~graphics, loadFontData
+- graphics::renderText(). Coords in core::renderGraphics().
+
+- keys
+
+- Background image blitted at the beginning of renderGraphics()
+- srand()
+- Bug affichage pièces les plus hautes
+- Afficher bordures

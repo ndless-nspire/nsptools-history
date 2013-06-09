@@ -27,7 +27,6 @@ class core
               SDL_Surface *screen;
               
               graphics *GFXController;
-              audio *SoundController;
               
               Uint32 Timer;
               Uint32 DropTimer;
