@@ -432,85 +432,6 @@ void graphics::loadImageData()
 	loadImage(5, image_cube_blue);
 }
 
-// The function below loads all the fonts defined in the data/fonts.dat
-void graphics::loadFontData()
-{
-#if 0
-    FILE *f_conf = fopen("data/fonts.dat","r");
-    if ( !f_conf )
-       printf("*** ERROR *** can't load data/fonts.dat config file\n");
-    else 
-    {
-          printf("Opening font data config file\n");
-          printf("==========================================\n");
-          char* line = new char[256];
-          char* path = new char[256];
-          char* data = new char[256];
-          
-          int nb = 0;
-          int font_size = 0;
-          
-          while (fgets(line,256,f_conf)!=NULL)
-          {
-              nb = -1;
-                
-              if ( !strstr( line, "#" ) && (strlen(line)>3) )
-              {
-                    char* r = line;
-                    char* w = data;
-                    
-                    // Load cell id
-                    while (r && *r!='\n' && *r!='\r' && *r!='[')
-                          r++;
-                    r++;
-                    while (r && *r!='\n' && *r!='\r' && *r!=']')
-                          *w++ = *r++;
-                    *w = 0;
-                    nb = atoi(data);
-                    w = path;
-                    
-                    // Load font path 
-                    while (r && *r!='\n' && *r!='\r' && *r!='[' )
-                          r++;
-                    r++;
-                    while (r && *r!='\n' && *r!='\r' && *r!=']' )
-                          *w++ = *r++;
-                    *w = 0;
-                    w = data;
-                    
-                    // Load font size 
-                    while (r && *r!='\n' && *r!='\r' && *r!='[' )
-                          r++;
-                    r++;
-                    while (r && *r!='\n' && *r!='\r' && *r!=']' )
-                          *w++ = *r++;
-                    *w = 0;
-                    font_size = atoi( data );
-                    
-                    if ( nb > -1 && nb < FONT_COUNT)
-                    {
-                            if ( ! fonts[nb] )
-                            {
-                                 fonts[nb] = TTF_OpenFont( path, font_size );
-                                 printf ("\tLoaded font '%s' to cell [%d] using font size '%d'\n", path, nb, font_size); 
-                            }
-                             else
-                                  printf ("\t***ERROR*** cell [%d] has already been allocated... can't load font '%s'\n",nb,path); 
-                     }
-                     else
-                         printf ("\t***ERROR*** Error, can't load font in non allocated memory cell [%d] '%s'!!!!\n",nb, path); 
-              }
-          }
-
-          delete line;
-          delete path;
-          delete data;
-          fclose(f_conf);
-          printf("\n\n");
-     }
-#endif
-}
-
 void graphics::drawBackground(void)
 {
 	SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0, 0, 0));
@@ -521,18 +442,8 @@ void graphics::drawBackground(void)
 // and its position on screen...
 bool graphics::renderText(int font_id, const char* text, int R, int G, int B, int x, int y)
 {
-#if 0
-     if ( font_id < FONT_COUNT && font_id > -1 && fonts[font_id] )
-     {
-          SDL_Color textColor = { R, G, B };
-          font_surf = TTF_RenderText_Solid( fonts[font_id], text, textColor );
-          blitImage( font_surf, x, y );
-          SDL_FreeSurface( font_surf ); // No more memory leaks! \o/
-          font_surf = NULL; // Probably a good idea to make it point to NULL. Just in case... 
-          return true;
-     }
-     return false;
-#else
-	return true;
-#endif
+	nSDL_Font *font = nSDL_LoadFont(NSDL_FONT_TINYTYPE, R, G, B);
+	int result = nSDL_DrawString(screen, font, x, y, text);
+	nSDL_FreeFont(font);
+	return result;
 }

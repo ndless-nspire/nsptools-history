@@ -46,14 +46,13 @@ class graphics
              SDL_Surface* getScreen() {return screen;}
              
              void loadImageData();
-             void loadFontData();
              
       private:
               // Pointer to our screen SDL_Surface
               SDL_Surface *screen;
               // Array of SDL_surfaces used to store images
               SDL_Surface *surfaces[IMAGE_COUNT];
-
+	  
               // Pointer to a temporary surface used to render fonts on              
               SDL_Surface *font_surf;
 			  

@@ -1,9 +1,14 @@
-- Font loading in graphics:graphics, ~graphics, loadFontData
-- graphics::renderText(). Coords in core::renderGraphics().
+- Text coords
+- Clickpad compatibility
+- Tune Key repeat
+
+- Use different fonts for GAME OVER/PAUSED
 
 - keys
 
+- Confirm when exiting
+
 - Background image blitted at the beginning of renderGraphics()
 - srand()
-- Bug affichage pièces les plus hautes
+- Bug affichage pièces les plus hautes. Adapter GAMEBOARD_Y ?
 - Afficher bordures
