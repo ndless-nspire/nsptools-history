@@ -1,0 +1,17 @@
+# This file defines all the images loaded by the game
+# They are assigned in a static array and limited to 128 images by default
+#
+# If you need to re-assign the upper limit, you need to edit IMAGE_COUNT
+# field in config.h and recompile the game
+
+# Syntax to define an image
+# [image_number] [image_file_path] [alpha]
+# Alpha has to be set to 0 all the time, unless your image has
+# a transparency layer in which case you have to set alpha to 1
+
+# Make sure the image number you enter here DO NOT interfere with those
+# define in the bitmap image ressource definition file !!!
+
+[11]	[data/img/gdo.png]	[1]
+[12]	[data/img/background.jpg]	[0]
+
