@@ -145,12 +145,12 @@ void core::renderGraphics()
 
      // Render the GAME LEVEL 
      sprintf(tmpBuff, "Level:  %d", tetris->getGameLevel());
-     GFXController->renderText(0, tmpBuff, 190, 110, 255, 240, 15 );
+     GFXController->renderText(0, tmpBuff, 190, 110, 255, 230, 15 );
 	
      
      // Render the LINE COUNT 
      sprintf(tmpBuff, "Lines:  %d", tetris->getLineCount());
-     GFXController->renderText(0, tmpBuff, 190, 110, 255, 240, 15+12 );
+     GFXController->renderText(0, tmpBuff, 190, 110, 255, 230, 15+12 );
      
      // Render the next brick 
      tetris -> renderNextBrickFrame();
@@ -161,17 +161,17 @@ void core::renderGraphics()
      // If the game is over, display the GAME OVER text
      if ( gameOver )
      {
-          GFXController->renderText(1, "GAME OVER", 190, 255, 255, 220, 110 );
-          GFXController->renderText(0, "Hit Enter", 190, 255, 255, 220, 110+10 );
-          GFXController->renderText(0, "to restart", 190, 255, 255, 220, 110+20 );
+          GFXController->renderText(1, "GAME OVER", 190, 255, 255, 230, 150 );
+          GFXController->renderText(0, "Hit Enter", 190, 255, 255, 230, 150+10 );
+          GFXController->renderText(0, "to restart", 190, 255, 255, 230, 150+20 );
      }
      
      // If the game is paused, display the GAME PAUSED text
      else if ( gamePaused )
      {
-          GFXController->renderText(1, "GAME PAUSED", 190, 255, 255, 220, 110 );
-          GFXController->renderText(0, "Press P", 190, 255, 255, 220, 110+10 );
-          GFXController->renderText(0, "to resume", 190, 255, 255, 220, 110+20 );
+          GFXController->renderText(1, "GAME PAUSED", 190, 255, 255, 225, 150 );
+          GFXController->renderText(0, "Press P", 190, 255, 255, 235, 150+10 );
+          GFXController->renderText(0, "to resume", 190, 255, 255, 235, 150+20 );
      }
      
      

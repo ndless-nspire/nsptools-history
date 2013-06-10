@@ -6,6 +6,8 @@
 //                              http://www.gamedesign-online.com //
 //---------------------------------------------------------------//
 
+#ifndef GRAPHICS_H
+#define GRAPHICS_H
 
 // The aim of this file is to provide an image framework, and 
 // make the image handling much easier for the developer.
@@ -66,3 +68,4 @@ class graphics
 			  static unsigned short image_cube_blue[];
 };
 
+#endif

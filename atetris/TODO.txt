@@ -1,14 +1,5 @@
-- Text coords
-- Clickpad compatibility
+﻿- Clickpad compatibility
 - Tune Key repeat
-
-- Use different fonts for GAME OVER/PAUSED
-
-- keys
-
+- keys (SDLK_SPACE, ...)
 - Confirm when exiting
-
-- Background image blitted at the beginning of renderGraphics()
 - srand()
-- Bug affichage pièces les plus hautes. Adapter GAMEBOARD_Y ?
-- Afficher bordures

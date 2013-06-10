@@ -2,6 +2,12 @@
 
 #define GAMEBOARD_X 10
 #define GAMEBOARD_Y 14
+#define INIT_BLOCK_X 3
+#define BOARD_Y_OFFSET_PX 2
+#define BOARD_X_OFFSET_PX 30
+#define NEXT_SHAPE_X_OFFSET_PX 240
+#define NEXT_SHAPE_Y_OFFSET_PX 55
+#define BLOCK_WIDTH_PX 15
 #define GAME_SHAPES 7
 #define GAME_IMAGES 6
 #define LINES_PER_LEVEL 5        // Defines after how many lines the level increases :)

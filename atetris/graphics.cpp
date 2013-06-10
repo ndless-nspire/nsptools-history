@@ -7,7 +7,7 @@
 //---------------------------------------------------------------//
 
 #include "graphics.h"
-
+#include "entities.h"
 
 // GRAPHICS class constructor. Is copies the screen pointer defined 
 // in the core class, so as to have direct access to that surface 
@@ -435,6 +435,19 @@ void graphics::loadImageData()
 void graphics::drawBackground(void)
 {
 	SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0, 0, 0));
+	SDL_Rect rect;
+	// board
+	rect.x = BOARD_X_OFFSET_PX + BLOCK_WIDTH_PX/2;
+	rect.y = BOARD_Y_OFFSET_PX + BLOCK_WIDTH_PX/2;
+	rect.h = (BLOCK_WIDTH_PX+1)*GAMEBOARD_Y;
+	rect.w = (BLOCK_WIDTH_PX+1)*GAMEBOARD_X;
+	SDL_FillRect(screen, &rect, SDL_MapRGB(screen->format, 50, 50, 50));
+	// next shape
+	rect.x = NEXT_SHAPE_X_OFFSET_PX - BLOCK_WIDTH_PX/2;
+	rect.y = NEXT_SHAPE_Y_OFFSET_PX - BLOCK_WIDTH_PX/2;
+	rect.h = BLOCK_WIDTH_PX*5;
+	rect.w = BLOCK_WIDTH_PX*4;
+	SDL_FillRect(screen, &rect, SDL_MapRGB(screen->format, 30, 30, 30));
 }
 
 // Font rendering function. The font_id param is used to specify which font you want
@@ -442,7 +455,7 @@ void graphics::drawBackground(void)
 // and its position on screen...
 bool graphics::renderText(int font_id, const char* text, int R, int G, int B, int x, int y)
 {
-	nSDL_Font *font = nSDL_LoadFont(NSDL_FONT_TINYTYPE, R, G, B);
+	nSDL_Font *font = nSDL_LoadFont(font_id ? NSDL_FONT_THIN : NSDL_FONT_TINYTYPE, R, G, B);
 	int result = nSDL_DrawString(screen, font, x, y, text);
 	nSDL_FreeFont(font);
 	return result;

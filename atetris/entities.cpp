@@ -18,7 +18,7 @@ game::game(graphics *GFXController)
      initShapes();
 
      block_status = 0;
-     block_x = 5 ;
+     block_x = INIT_BLOCK_X;
      block_y = 0;
      
      GameLevel = 0;
@@ -42,16 +42,14 @@ game::~game()
              
 }
 
-#define BOARD_Y_OFFSET 10
-
 void game::renderBoardData()
 {
     for ( int i=0; i<GAMEBOARD_X; i++ )
         for ( int j=0; j<GAMEBOARD_Y; j++ )
             if ( gameBoard[i][j] != -1 )
-               GFX->blitImage( gameBoard[i][j], 15*(i+1), 15*(j+1)+BOARD_Y_OFFSET );
+               GFX->blitImage( gameBoard[i][j], BLOCK_WIDTH_PX*(i+1)+BOARD_X_OFFSET_PX, BLOCK_WIDTH_PX*(j+1)+BOARD_Y_OFFSET_PX );
             else if ( moveBoard[i][j] != -1 )
-               GFX->blitImage( moveBoard[i][j], 15*(i+1), 15*(j+1)+BOARD_Y_OFFSET );
+               GFX->blitImage( moveBoard[i][j], BLOCK_WIDTH_PX*(i+1)+BOARD_X_OFFSET_PX, BLOCK_WIDTH_PX*(j+1)+BOARD_Y_OFFSET_PX );
                 
 
 }
@@ -61,7 +59,7 @@ void game::renderNextBrickFrame()
      for (int i=0; i<4; i++)
          for (int j=0; j<4; j++)
              if ( gameShapes[nextShapeID]->data[0][i][j] == 1)
-                GFX->blitImage( nextColourID, 350+(15*i), 80+15*j );
+                GFX->blitImage( nextColourID, NEXT_SHAPE_X_OFFSET_PX+(BLOCK_WIDTH_PX*i), NEXT_SHAPE_Y_OFFSET_PX+BLOCK_WIDTH_PX*j );
 }
  
 
@@ -169,7 +167,7 @@ bool game::commitMovements()
              return true;
              
           block_status = 0;
-          block_x = int (GAMEBOARD_X / 2);
+          block_x = INIT_BLOCK_X;
           block_y = 0;
           
           shape_id    = nextShapeID;
@@ -547,7 +545,7 @@ void game::reset()
          
      
      block_status = 0;
-     block_x = 5 ;
+     block_x = INIT_BLOCK_X;
      block_y = 0;
      
      GameLevel = 0;
