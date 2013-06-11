@@ -22,7 +22,7 @@ core::core()
     atexit (SDL_Quit);
 
     // Set 800x600 32-bits video mode
-    screen = SDL_SetVideoMode (SCREEN_WIDTH, SCREEN_HEIGHT, is_cx ? 16 : 8, SDL_FULLSCREEN);
+    screen = SDL_SetVideoMode (SCREEN_WIDTH, SCREEN_HEIGHT, is_cx ? 16 : 8, SDL_SWSURFACE);
     if (screen == NULL)
     {
         printf ("Couldn't set video mode : %s\n", SDL_GetError ());
@@ -80,7 +80,7 @@ int core::gameLoop()
                 
             if ( !gameOver && !gamePaused)
             {
-                 if ( keys[SDLK_UP] || keys[SDLK_KP8] ) { tetris->rotate(); }
+                 if ( keys[SDLK_UP] || keys[SDLK_8] ) { tetris->rotate(); }
                  if ( keys[SDLK_SPACE] ) {  tetris->drop(); }
             }
             if ( keys[SDLK_RETURN] && !gamePaused ) {  tetris->reset(); gameOver = false; }
@@ -106,9 +106,9 @@ int core::gameLoop()
             
             if ( !gameOver )
             {
-                  if ( keys[SDLK_DOWN] || keys[SDLK_KP2] ) {  tetris->moveDown(); }
-                  if ( keys[SDLK_LEFT] || keys[SDLK_KP4] ) {  tetris->moveLeft(); }
-                  if ( keys[SDLK_RIGHT] || keys[SDLK_KP6] ) {  tetris->moveRight(); }
+                  if ( keys[SDLK_DOWN] || keys[SDLK_2] ) {  tetris->moveDown(); }
+                  if ( keys[SDLK_LEFT] || keys[SDLK_4] ) {  tetris->moveLeft(); }
+                  if ( keys[SDLK_RIGHT] || keys[SDLK_6] ) {  tetris->moveRight(); }
                   tetris -> updateMoveBoard();
             }
             

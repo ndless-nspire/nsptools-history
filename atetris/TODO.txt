@@ -1,5 +1,6 @@
 ﻿- Clickpad compatibility
-- Tune Key repeat
 - keys (SDLK_SPACE, ...)
+- keys (nums)
+- Key help
 - Confirm when exiting
 - srand()
