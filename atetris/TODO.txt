@@ -1,6 +1,3 @@
 ﻿- Clickpad compatibility
-- keys (SDLK_SPACE, ...)
-- keys (nums)
-- Key help
-- Confirm when exiting
-- srand()
+- Don't handler UP+RIGHT & co
+

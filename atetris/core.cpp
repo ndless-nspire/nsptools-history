@@ -47,6 +47,7 @@ core::core()
     tetris = new game(GFXController);
     gameOver = false;
     gamePaused = false;
+	escPressedTime = 0;
     Timer = 0;
     DropTimer = 0;
     
@@ -75,19 +76,27 @@ int core::gameLoop()
             SDL_PumpEvents();
             keys = SDL_GetKeyState(NULL);
 
-            if( event.type == SDL_QUIT || keys[SDLK_ESCAPE])
+            if ( event.type == SDL_QUIT)
                 return 1;
-                
+			if (keys[SDLK_ESCAPE]) {
+				if (escPressedTime) return 1;
+				else escPressedTime = SDL_GetTicks();
+			}
+				
             if ( !gameOver && !gamePaused)
             {
                  if ( keys[SDLK_UP] || keys[SDLK_8] ) { tetris->rotate(); }
-                 if ( keys[SDLK_SPACE] ) {  tetris->drop(); }
+                 if ( keys[SDLK_BACKSPACE] ) {  tetris->drop(); }
             }
             if ( keys[SDLK_RETURN] && !gamePaused ) {  tetris->reset(); gameOver = false; }
             if ( keys[SDLK_p] ) {  gamePaused = !gamePaused; }
      }
      
-     
+	 // if escape not pressed 2 times in the same second, do not exit
+     if ( (SDL_GetTicks()-escPressedTime) > 1000 )
+		 escPressedTime = 0;
+	 
+	 
      // #2 - Handle our game key presses. Since we want our game to run at the same speed
      //      whatever the computer it is tested on, we need to have all our actions, movements,
      //      events, object changes only within this if ( elapsed time > T_FRAME_INTERVAL ) loop.
@@ -151,7 +160,10 @@ void core::renderGraphics()
      // Render the LINE COUNT 
      sprintf(tmpBuff, "Lines:  %d", tetris->getLineCount());
      GFXController->renderText(0, tmpBuff, 190, 110, 255, 230, 15+12 );
-     
+	
+	 GFXController->renderText(0, "Backspace: Drop", 130, 130, 130, 210, 210 );
+	 GFXController->renderText(0, "P: Pause", 130, 130, 130, 210, 210+10 );
+	
      // Render the next brick 
      tetris -> renderNextBrickFrame();
 

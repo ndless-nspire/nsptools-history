@@ -14,6 +14,8 @@
 
 int main(void)
 {
+	//assert_ndless_rev(804);
+	
     // instanciate a CORE object    
     core *gameCore = new core();
     

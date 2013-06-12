@@ -37,6 +37,7 @@ class core
               game *tetris;
               bool gameOver;
               bool gamePaused;
+              Uint32 escPressedTime;
               
               char* tmpBuff; // temp string to dump data in before using GFX->rendertext function
               
