@@ -63,6 +63,8 @@ int _isatty(__attribute__((unused)) int file) {
 }
 
 	
-int _gettimeofday_r(__attribute__((unused)) struct _reent *ptr, __attribute__((unused)) struct timeval *__tp, __attribute__((unused)) void *__tzp) {
-	return -1;
+int _gettimeofday_r(__attribute__((unused)) struct _reent *ptr, struct timeval *tp, __attribute__((unused)) void *tz) {
+	tp->tv_sec = *(volatile unsigned*)0x90090000;
+	tp->tv_usec = 0;
+	return 0;
 }
