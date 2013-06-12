@@ -43,6 +43,7 @@ core::core()
     // Instanciate our graphics controller and load all the image data
     GFXController = new graphics(screen);
     GFXController -> loadImageData();
+	GFXController -> loadFonts();
         
     tetris = new game(GFXController);
     gameOver = false;
@@ -154,15 +155,15 @@ void core::renderGraphics()
 
      // Render the GAME LEVEL 
      sprintf(tmpBuff, "Level:  %d", tetris->getGameLevel());
-     GFXController->renderText(0, tmpBuff, 190, 110, 255, 230, 15 );
+     GFXController->renderText(0, tmpBuff, 230, 15 );
 	
      
      // Render the LINE COUNT 
      sprintf(tmpBuff, "Lines:  %d", tetris->getLineCount());
-     GFXController->renderText(0, tmpBuff, 190, 110, 255, 230, 15+12 );
+     GFXController->renderText(0, tmpBuff, 230, 15+12 );
 	
-	 GFXController->renderText(0, "Backspace: Drop", 130, 130, 130, 210, 210 );
-	 GFXController->renderText(0, "P: Pause", 130, 130, 130, 210, 210+10 );
+	 GFXController->renderText(1, "Backspace: Drop", 220, 210 );
+	 GFXController->renderText(1, "P: Pause", 220, 210+10 );
 	
      // Render the next brick 
      tetris -> renderNextBrickFrame();
@@ -173,17 +174,17 @@ void core::renderGraphics()
      // If the game is over, display the GAME OVER text
      if ( gameOver )
      {
-          GFXController->renderText(1, "GAME OVER", 190, 255, 255, 230, 150 );
-          GFXController->renderText(0, "Hit Enter", 190, 255, 255, 230, 150+10 );
-          GFXController->renderText(0, "to restart", 190, 255, 255, 230, 150+20 );
+          GFXController->renderText(2, "GAME OVER", 230, 150 );
+          GFXController->renderText(3, "Hit Enter", 230, 150+10 );
+          GFXController->renderText(3, "to restart", 230, 150+20 );
      }
      
      // If the game is paused, display the GAME PAUSED text
      else if ( gamePaused )
      {
-          GFXController->renderText(1, "GAME PAUSED", 190, 255, 255, 225, 150 );
-          GFXController->renderText(0, "Press P", 190, 255, 255, 235, 150+10 );
-          GFXController->renderText(0, "to resume", 190, 255, 255, 235, 150+20 );
+          GFXController->renderText(2, "GAME PAUSED",  225, 150 );
+          GFXController->renderText(3, "Press P", 235, 150+10 );
+          GFXController->renderText(3, "to resume", 235, 150+20 );
      }
      
      

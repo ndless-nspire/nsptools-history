@@ -1,3 +1,3 @@
-﻿- Clickpad compatibility
-- Don't handler UP+RIGHT & co
-
+﻿- Don't handler UP+RIGHT & co. ALso broken on Clickpad.
+- nSDL : src\timer\tinspire\SDL_systimer.c -> Should be 32 on Clickpad, not 33
+- Too fast on clickpad

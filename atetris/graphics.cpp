@@ -27,6 +27,8 @@ graphics::~graphics()
     for (int i=0; i<IMAGE_COUNT; i++)
 	   if( surfaces[i] ) // Is it pointing to anything?
 		   SDL_FreeSurface( surfaces[i] );
+	
+	freeFonts();
 }
 
 // A function used to draw a pixel on a surface. The surface is 
@@ -414,12 +416,26 @@ unsigned short graphics::image_cube_blue[] = {
     0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000
 };
 
-void graphics::loadImage(unsigned nb, unsigned short  *img) {
+void graphics::loadImage(unsigned nb, unsigned short  *img)
+{
 	SDL_Surface* temp = nSDL_LoadImage(img);
 	surfaces[nb] = SDL_DisplayFormat(temp);
 	SDL_SetColorKey(surfaces[nb],SDL_SRCCOLORKEY|SDL_RLEACCEL, SDL_MapRGB(screen->format, 0, 0, 0));
 	surfaces[nb] = SDL_DisplayFormatAlpha(surfaces[nb]);
 	SDL_FreeSurface(temp);
+}
+
+void graphics::loadFonts(void)
+{
+	fonts[0] = nSDL_LoadFont(NSDL_FONT_TINYTYPE, 190, 110, 255);
+	fonts[1] = nSDL_LoadFont(NSDL_FONT_TINYTYPE, 130, 130, 130);
+	fonts[2] = nSDL_LoadFont(NSDL_FONT_THIN, 190, 255, 255);
+	fonts[3] = nSDL_LoadFont(NSDL_FONT_TINYTYPE, 190, 255, 255);
+}
+
+void graphics::freeFonts(void) {
+	for (int i = 0; i < 4; i++)
+		nSDL_FreeFont(fonts[i]);
 }
 
 void graphics::loadImageData()
@@ -453,10 +469,8 @@ void graphics::drawBackground(void)
 // Font rendering function. The font_id param is used to specify which font you want
 // to render on the screen. The next params are the text you want to print out
 // and its position on screen...
-bool graphics::renderText(int font_id, const char* text, int R, int G, int B, int x, int y)
+bool graphics::renderText(int font_id, const char* text, int x, int y)
 {
-	nSDL_Font *font = nSDL_LoadFont(font_id ? NSDL_FONT_THIN : NSDL_FONT_TINYTYPE, R, G, B);
-	int result = nSDL_DrawString(screen, font, x, y, text);
-	nSDL_FreeFont(font);
+	int result = nSDL_DrawString(screen, fonts[font_id], x, y, text);
 	return result;
 }

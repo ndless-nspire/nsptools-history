@@ -43,11 +43,13 @@ class graphics
              void colourFillRect(int id, SDL_Rect *r, Uint32 colour) {SDL_FillRect(surfaces[id],r,colour);}   // Clear the entire screen with black
              void colourFillScreenRect(SDL_Rect *r, Uint32 colour) {SDL_FillRect(screen,r,colour);}   // Clear the entire screen with black
              
-             bool renderText(int font_id, const char* text, int R, int G, int B, int x, int y);
+             bool renderText(int font_id, const char* text, int x, int y);
              
              SDL_Surface* getScreen() {return screen;}
              
              void loadImageData();
+			 void loadFonts();
+			 void freeFonts();
              
       private:
               // Pointer to our screen SDL_Surface
@@ -66,6 +68,8 @@ class graphics
 			  static unsigned short image_cube_red[];
 			  static unsigned short image_cube_yellow[];
 			  static unsigned short image_cube_blue[];
+	  
+			  nSDL_Font *fonts[4];
 };
 
 #endif
