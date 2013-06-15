@@ -30,3 +30,11 @@ $(EXE): $(OBJS)
 
 clean:
 	rm -f *.o *.elf
+
+dist: all
+	-rm -rf dist
+	mkdir -p dist/src
+	cp -r img *.h *.cpp dist/src
+	cp ReadMe.txt dist
+	cp *.tns dist
+
