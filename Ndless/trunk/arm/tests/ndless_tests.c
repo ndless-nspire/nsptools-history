@@ -165,12 +165,10 @@ int main(int argc, char *argv[]) {
 	srand(1818);
 	assertUIntEquals("rand-2", 0x264, rand());
 	
-	strncpy(buf, argv[0], sizeof(buf));
-	*(strrchr(buf, '/') + 1) = '\0'; // keep the folder
-	strncat(buf, "__testfile.tns", sizeof(buf)); // buf = temp file path
-	file = fopen(buf, "wb+");
+	assertIntEquals("enable_relative_paths", 0, enable_relative_paths(argv));
+	file = fopen("__testfile.tns", "wb+");
 	assertNotNull("fopen", file);
-	file = freopen(buf, "wb+", file);
+	file = freopen("__testfile.tns", "wb+", file);
 	assertNotNull("freopen", file);
 	assertUIntEquals("fwrite", 4, fwrite("abc", 1, 4, file));
 	assertZero("fflush", fflush(file));
@@ -197,22 +195,22 @@ int main(int argc, char *argv[]) {
 	assertUIntEquals("ungetc-1", 'a', ungetc(fgetc(file), file));
 	assertUIntEquals("ungetc-2", 'a', fgetc(file));
 	assertZero("fclose", fclose(file));
-	assertZero("truncate", truncate(buf, 2));
-	assertZero("stat", stat(buf, &sstat));
+	assertZero("truncate", truncate("__testfile.tns", 2));
+	assertZero("stat", stat("__testfile.tns", &sstat));
 	assertIntEquals("stat-truncate", sstat.st_size, 2);
 	
-	assertZero("unlink", unlink(buf));
-	file = fopen(buf, "wb+");
+	assertZero("unlink", unlink("__testfile.tns"));
+	file = fopen("__testfile.tns", "wb+");
 	assertNonZero("feof-1", feof(file));
 	fputc('a', file);
 	rewind(file);
 	assertZero("feof-2", feof(file));
 	fclose(file);
-	file = fopen(buf, "wb");
+	file = fopen("__testfile.tns", "wb");
 	fread(buf2, 1, 1, file);
 	assertNonZero("ferror", ferror(file));
 	fclose(file);
-	assertZero("remove", remove(buf));
+	assertZero("remove", remove("__testfile.tns"));
 	assertZero("mkdir", mkdir("/tmp/__testdir", 0));
 	assertZero("rename", rename("/tmp/__testdir", "/tmp/__testdir2"));
 	assertZero("chdir", chdir("/tmp"));

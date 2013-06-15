@@ -54,6 +54,7 @@ void assert_ndless_rev(unsigned required_rev);
 BOOL any_key_pressed(void);
 void clear_cache(void);
 void clrscr(void);
+int enable_relative_paths(char **argv);
 int feof(FILE * stream);
 char *fgets(char * str, int num, FILE *stream);
 int fputs(const char *str, FILE *stream);
