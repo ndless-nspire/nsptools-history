@@ -453,10 +453,10 @@ void graphics::drawBackground(void)
 	SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0, 0, 0));
 	SDL_Rect rect;
 	// board
-	rect.x = BOARD_X_OFFSET_PX + BLOCK_WIDTH_PX/2;
-	rect.y = BOARD_Y_OFFSET_PX + BLOCK_WIDTH_PX/2;
-	rect.h = (BLOCK_WIDTH_PX+1)*GAMEBOARD_Y;
-	rect.w = (BLOCK_WIDTH_PX+1)*GAMEBOARD_X;
+	rect.x = BOARD_X_OFFSET_PX + BLOCK_WIDTH_PX + 1;
+	rect.y = BOARD_Y_OFFSET_PX + BLOCK_WIDTH_PX / 2;
+	rect.h = (BLOCK_WIDTH_PX+1)*GAMEBOARD_Y - BLOCK_WIDTH_PX / 2;
+	rect.w = (BLOCK_WIDTH_PX)*GAMEBOARD_X - 1;
 	SDL_FillRect(screen, &rect, SDL_MapRGB(screen->format, 50, 50, 50));
 	// next shape
 	rect.x = NEXT_SHAPE_X_OFFSET_PX - BLOCK_WIDTH_PX/2;
