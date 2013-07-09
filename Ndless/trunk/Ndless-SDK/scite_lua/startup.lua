@@ -1,3 +1,5 @@
+dofile(props["SciteDefaultHome"].."\\scite-debug\\extman.lua")
+
 -- ==== Custom function ====
 
 -- Return the result of "cd <dir> && ls <mask>", or nil if no file found
