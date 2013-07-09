@@ -5,15 +5,15 @@
 #ifndef _LIBNDLS_H_
 #define _LIBNDLS_H_
 
-#ifdef GNU_AS
-	.macro halt
-halt\@: b halt\@
-	.endm
-
 #define SCREEN_WIDTH            320
 #define SCREEN_HEIGHT           240
 #define BLACK                   0x0
 #define WHITE                   0xF
+
+#ifdef GNU_AS
+	.macro halt
+halt\@: b halt\@
+	.endm
 
 	.macro bkpt
 	.long 0xE1212374
