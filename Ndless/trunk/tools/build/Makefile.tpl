@@ -1,10 +1,11 @@
 GCC = nspire-gcc
+AS = nspire-as
 GXX=nspire-g++
 LD = nspire-ld-bflt
 GCCFLAGS = -Os -Wall -W -marm
 LDFLAGS =
 CPPOBJS = $(patsubst %.cpp,%.o,$(wildcard *.cpp))
-OBJS = $(patsubst %.c,%.o,$(wildcard *.c)) $(CPPOBJS)
+OBJS = $(patsubst %.c,%.o,$(wildcard *.c)) $(patsubst %.S,%.o,$(wildcard *.S)) $(CPPOBJS)
 ifneq ($(strip $(CPPOBJS)),)
 	LDFLAGS += --cpp
 endif
@@ -24,6 +25,9 @@ all: $(EXE)
 %.o: %.cpp
 	$(GXX) $(GCCFLAGS) -c $<
 	
+%.o: %.S
+	$(AS) -c $<
+
 $(EXE): $(OBJS)
 	mkdir -p $(DISTDIR)
 	$(LD) $^ -o $(DISTDIR)/$@ $(LDFLAGS)

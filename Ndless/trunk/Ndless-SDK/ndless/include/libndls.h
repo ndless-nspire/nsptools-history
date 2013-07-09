@@ -10,6 +10,15 @@
 halt\@: b halt\@
 	.endm
 
+#define SCREEN_WIDTH            320
+#define SCREEN_HEIGHT           240
+#define BLACK                   0x0
+#define WHITE                   0xF
+
+	.macro bkpt
+	.long 0xE1212374
+	.endm
+
 #else /* GNU_AS */
 
 #ifdef __cplusplus
@@ -119,10 +128,7 @@ unsigned hwtype(void);
 
 #define SCREEN_BASE_ADDRESS     ADDR_(*(volatile unsigned*)0xC0000010)
 #define SCREEN_BYTES_SIZE       ((int)({_scrsize();}))
-#define SCREEN_WIDTH            320
-#define SCREEN_HEIGHT           240
-#define BLACK                   0x0
-#define WHITE                   0xF
+#define SCREEN_BYTES_SIZE       ((int)({_scrsize();}))
 
 #ifdef __cplusplus
 }
