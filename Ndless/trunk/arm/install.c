@@ -278,7 +278,7 @@ int main(int __attribute__((unused)) argc, char* argv[]) {
 	char *task_name = ((char*)current_task) + 16;
 	if (!strcmp(task_name, "API-100.")) { // Installation over USB
 		BOOL is_update = persistent(FALSE);
-		show_msgbox("Ndless", is_update ? "Ndless successfully updated to r" STRINGIFY(NDLESS_REVISION) "!\nThe device will now reboot.\n*Always* keep 'ndless/ndless_resources.tns'." : "Ndless r" STRINGIFY(NDLESS_REVISION) "successfully installed!\n*Always* keep 'ndless/ndless_resources.tns'.");
+		show_msgbox("Ndless", is_update ? "Ndless successfully updated to r" STRINGIFY(NDLESS_REVISION) "!\nThe device will now reboot.\n*Always* keep 'ndless/ndless_resources.tns'." : "Ndless r" STRINGIFY(NDLESS_REVISION) " successfully installed!\n*Always* keep 'ndless/ndless_resources.tns'.");
 		if (is_update) ut_calc_reboot();
 		// simulate cleanup function prolog and return to it, required for OS reception not to be broken afterwards
 		// current_task + 0x64 contain a resource expected in r4

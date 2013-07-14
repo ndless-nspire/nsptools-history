@@ -45,7 +45,6 @@ void ints_setup_handlers(void) {
 /* All the code run with _NDLS_LIGHT defined must be PC-relative (the loader is not relocated)
  * TODO:
  * Check that the swi number is correct
- * Check if it is null. If not null, reboot
  */
 asm(
 " .arm \n"
@@ -66,6 +65,12 @@ asm(
 " bic   r0, #0b100000     @ clear the caller's thumb bit. The syscall is run in 32-bit state \n"
 "stateok: \n"
 " adr   r1, saved_spsr \n"
+" ldr   r2, [r1] \n"
+#ifndef STAGE1
+" @ no recursion support required for stage 1\n"
+" cmp   r2, #0 \n"
+" addne r1, #8          @ use vars for level-1 recursion \n"
+#endif
 " str   r0, [r1], #4 \n"
 " str   lr, [r1]          @ save to saved_lr \n"
 " msr   spsr, r0 \n"
@@ -77,7 +82,7 @@ asm(
 " bic   r0, r0, #0xFF00 \n"
 #else
 " tst   lr, #1            @ was the caller in thumb state? \n"
-"	ldreq r0, [lr, #-4]     @ ARM state \n"
+" ldreq r0, [lr, #-4]     @ ARM state \n"
 " biceq r0, r0, #0xFF000000 \n"
 " ldrneh r0, [lr, #-3]    @ thumb state (-2-1, because of the previous +1) \n"
 " bicne r0, r0, #0xFF00 \n"
@@ -104,16 +109,26 @@ asm(
 " mov   lr, pc \n"
 " ldmfd sp!, {r0-r2, pc}  @ restore the regs and jump to the syscall \n"
 "back_to_caller: \n"
-" stmfd sp!, {r0-r1} \n"
+" stmfd sp!, {r0-r3} \n"
 " mrs   r0, cpsr \n"
-" adr   r1, saved_lr \n"
-" ldr   lr, [r1], #-4 \n"
-" ldr   r1, [r1]          @ read from saved_spsr \n"
+#ifdef STAGE1
+" @ no recursion support required for stage 1\n"
+" adr   r2, saved_spsr \n"
+" ldr   r1, [r2], #4 \n"
+#else
+" adr   r2, saved_spsr2 \n"
+" ldr   r1, [r2] \n"
+" cmp   r1, #0            @ returning from level-1 recursion? \n"
+" ldreq r1, [r2, #-8]!    @ no, use saved_spsr \n"
+" mov   r3, #0 \n"
+" str   r3, [r2], #4      @ update the recursion level, and point to saved_lr(2) \n"
+#endif
+" ldr   lr, [r2]          @ read from saved_lr(2) \n"
 " and   r1, #0xFFFFFF3F   @ remove the mask \n"
 " and   r0, #0xC0         @ keep the mask \n"
 " orr   r1, r0            @ keep the new mask \n"
 " msr   cpsr, r1          @ swi *must* restore cpsr. GCC may optimize with a cmp just after the swi for instance \n"
-" ldmfd sp!, {r0-r1} \n"
+" ldmfd sp!, {r0-r3} \n"
 " bx    lr                @ back to the caller \n"
 
 #ifndef _NDLS_LIGHT // with extension/emu support
@@ -137,8 +152,15 @@ asm(
 
 "sc_addrs_ptr: .global sc_addrs_ptr @ defined here because accessed with pc-relative instruction \n"
 " .long 0 \n"
+"@ if not null, in level-1 recursion \n"
 "saved_spsr: .long 0 \n"
 "saved_lr: .long 0 \n"
+#ifndef STAGE1
+"@ for 1-level recursion (syscall calling a syscall) \n"
+"@ if not null, in level-1 recursion \n"
+"saved_spsr2: .long 0 \n"
+"saved_lr2: .long 0 \n"
+#endif
 #ifndef _NDLS_LIGHT
 "get_ext_table_reloc: .long _GLOBAL_OFFSET_TABLE_-(get_ext_table+8) \n"
 " .long sc_ext_table(GOT) \n"
