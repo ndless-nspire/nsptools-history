@@ -112,7 +112,8 @@ function Gdb:init(root)
 	print('locals pattern"'..locals_pattern..'"')
 	local esc = string.char(26)	
 	self.prompt = '(GDB)'
-    self.no_target_ext = ''
+	-- Ndless SDK
+	self.no_target_ext = 'elf'
 	self.cmd_file = root..'/prompt.cmd'
 	self.postprocess_command = postprocess_command
 	-- commands where one ignores gdb's response
@@ -153,9 +154,13 @@ function Gdb:special_debugger_setup(out)
     end
 	-- @doc under Windows it's usually better to force GDB to create a new console window
 	-- for a command-line application.
-	if not GTK then
-		out:write('set new-console on\n')
-	end
+	-- Ndless SDK: don't use, not recognized
+	-- if not GTK then
+	-- 	out:write('set new-console on\n')
+	-- end
+	
+	-- Ndless SDK: remote connection
+	out:write('target remote localhost:' .. props['ndless.gdb.port'] .. '\n')
 end
 
 function Gdb:detect_program_end(line)

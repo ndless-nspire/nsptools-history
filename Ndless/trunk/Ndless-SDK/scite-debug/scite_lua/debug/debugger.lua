@@ -207,7 +207,8 @@ end
 function Dbg:default_target()
     local ext = self.no_target_ext
     if ext then
-        local res = props['FileName']
+		-- Ndless SDK: don't use a relative path. Use any ELF file.
+        local res = props['FileDir']..'/*'
         if ext ~= '' then res = res..'.'..ext end
         return res
     else
@@ -351,7 +352,8 @@ function Dbg:dump_breakpoints(out)
 end
 
 function Dbg:run_program(out,parms)
-	out:write('run '..parms..'\n')
+	-- Ndless SDK: 'continue' instead of 'run'
+	out:write('c '..parms..'\n')
 end
 
 function Dbg:detect_program_crash(line)
