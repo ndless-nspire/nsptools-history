@@ -21,7 +21,7 @@ snippets_list:      @ defined by SNIPPET_*
 @  r12=index (SNIPPET_*)
 @ destroys: r10, r12
 load_snippet:
-  stmfd sp!, {lr}
+	stmfd sp!, {lr}
 	adr   r10, snippets_list
 	ldr   r12, [r10, r12, lsl#2]
 	add   r10, r10, r12
