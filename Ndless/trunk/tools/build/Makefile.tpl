@@ -1,17 +1,20 @@
+DEBUG = FALSE
 GCC = nspire-gcc
 AS = nspire-as
 GXX=nspire-g++
 LD = nspire-ld-bflt
-GCCFLAGS = -Os -Wall -W -marm
+GCCFLAGS = -Wall -W -marm
 LDFLAGS =
+ifeq ($(DEBUG),FALSE)
+	GCCFLAGS += -Os
+else
+	GCCFLAGS += -O0 -g
+	LDFLAGS += --debug
+endif
 CPPOBJS = $(patsubst %.cpp,%.o,$(wildcard *.cpp))
 OBJS = $(patsubst %.c,%.o,$(wildcard *.c)) $(patsubst %.S,%.o,$(wildcard *.S)) $(CPPOBJS)
 ifneq ($(strip $(CPPOBJS)),)
 	LDFLAGS += --cpp
-endif
-OBJCOPY := "$(shell which arm-elf-objcopy 2>/dev/null)"
-ifeq (${OBJCOPY},"")
-	OBJCOPY := arm-none-eabi-objcopy
 endif
 EXE = @@EXENAME@@.tns
 DISTDIR = .
@@ -33,4 +36,4 @@ $(EXE): $(OBJS)
 	$(LD) $^ -o $(DISTDIR)/$@ $(LDFLAGS)
 
 clean:
-	rm -f *.o *.elf
+	rm -f *.o *.elf *.gdb

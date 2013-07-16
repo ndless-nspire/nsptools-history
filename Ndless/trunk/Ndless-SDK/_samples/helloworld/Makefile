@@ -1,7 +1,16 @@
+DEBUG = FALSE
 GCC = nspire-gcc
+AS = nspire-as
+GXX=nspire-g++
 LD = nspire-ld-bflt
-GCCFLAGS = -O0 -g -Wall -W -marm
-LDFLAGS = 
+GCCFLAGS = -Wall -W -marm
+LDFLAGS =
+ifeq ($(DEBUG),FALSE)
+	GCCFLAGS += -Os
+else
+	GCCFLAGS += -O0 -g
+	LDFLAGS += --debug
+endif
 EXE = helloworld.tns
 OBJS = $(patsubst %.c,%.o,$(wildcard *.c))
 DISTDIR = .

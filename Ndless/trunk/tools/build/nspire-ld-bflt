@@ -5,6 +5,7 @@
 # Available non-GCC options:
 # --no-startup: do not link with the startup code
 # --cpp: link a C++ program
+# --debug: keep debugging symbols (.gdb)
 
 UNAME=`uname -s | tr '[A-Z]' '[a-z]'`
 DIRNAME=`dirname "$0"`
@@ -29,12 +30,14 @@ fi
 
 nostdlib=false
 cpp=false
+debug=false
 # an array is used to change the arguments while supporting arguments with spaces
 declare -a args
 for arg in "$@"; do
 	case $arg in
 		-nostdlib) nostdlib=true; args=("${args[@]}" $arg);;
 		--cpp) cpp=true;;
+		--debug) debug=true;;
 		*) args=("${args[@]}" $arg);;
 	esac
 done
@@ -58,4 +61,6 @@ fi
 # -nostartfiles: avoids newlib startup which would be added before ours
 "$GCC" -Wl,-elf2flt -nostartfiles -T "$DIRNAME/../system/ldscript-bflt" -e _nspire_start -L "$DIRNAME/../lib" -L "$USERPROFILE/.ndless/lib" -static "$DIRNAME/../system/crt0sym.o" "${args[@]}" -lSDL_gfx -lSDL_image -lSDL -lfdm -lnspireio -lndls
 # Emitted by elf2flt, useless
-#rm -f *.gdb
+if [ $debug = false ]; then
+	rm -f *.gdb
+fi
