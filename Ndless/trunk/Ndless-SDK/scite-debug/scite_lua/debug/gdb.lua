@@ -113,7 +113,7 @@ function Gdb:init(root)
 	local esc = string.char(26)	
 	self.prompt = '(GDB)'
 	-- Ndless SDK
-	self.no_target_ext = 'elf'
+	self.no_target_ext = 'gdb'
 	self.cmd_file = root..'/prompt.cmd'
 	self.postprocess_command = postprocess_command
 	-- commands where one ignores gdb's response

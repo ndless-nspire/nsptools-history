@@ -265,7 +265,7 @@ int bflt_fload(FILE* fp, void **mem_ptr, size_t *mem_size, int (**entry_address_
 
     size_t binary_size = header.bss_end - header.entry;
     info("Attempting to alloc %u bytes",binary_size);
-    mem = malloc(binary_size);
+    mem = emu_debug_alloc_ptr ? emu_debug_alloc_ptr : malloc(binary_size);
     if (!mem) error_goto_error("Failed to alloc binary memory");
 
     if (copy_segments(fp, &header, mem, binary_size) != 0) error_goto_error("Failed to copy segments");
