@@ -1,3 +1,4 @@
+#include <string.h>
 #include "emu.h"
 
 static u32 des_block[2];
@@ -155,6 +156,12 @@ static void des_process_block(u32 L, u32 R) {
 
 	des_block[0] = R;
 	des_block[1] = L;
+}
+
+void des_reset(void) {
+	memset(des_block, 0, sizeof des_block);
+	memset(des_key, 0, sizeof des_key);
+	des_key_schedule_valid = false;
 }
 
 u32 des_read_word(u32 addr) {

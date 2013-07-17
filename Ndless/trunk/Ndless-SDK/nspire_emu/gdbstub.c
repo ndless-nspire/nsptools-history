@@ -28,11 +28,13 @@
 static void gdbstub_disconnect(void);
 
 bool ndls_is_installed(void) {
-	// The Ndless marker is 8 bytes before the SWI handler
-	return *(unsigned*)(virt_mem_ptr(
-		*(unsigned*)virt_mem_ptr(0x20 + 2 * 4 /* SWI handler address */, 4)
-		, 4) - 8)
-	== 0x4E455854 /* 'NEXT' */;
+	u32 *vectors = virt_mem_ptr(0x20, 0x20);
+	if (vectors) {
+		// The Ndless marker is 8 bytes before the SWI handler
+		u32 *sig = virt_mem_ptr(vectors[EX_SWI] - 8, 4);
+		if (sig) return *sig == 0x4E455854 /* 'NEXT' */;
+	}
+	return false;
 }
 
 static int listen_socket_fd = 0;
@@ -90,25 +92,13 @@ static void put_debug_char(char c) {
 /* Returns -1 on disconnection */
 static char get_debug_char(void) {
 	char c;
-	int r;
-	while (1) {
-		r = recv(socket_fd, &c, 1, 0);
-		if (r == -1) {
-#ifdef __MINGW32__
-			if (WSAGetLastError() == WSAEWOULDBLOCK)
-#else
-			if (errno == EAGAIN)
-#endif
-				continue; // data not yet available
-			else {
-				// only for debugging - log_socket_error("Failed to recv from GDB stub socket");
-				return -1;
-			}
-		}
-		if (r == 0)
-			return -1; // disconnected
-		break;
+	int r = recv(socket_fd, &c, 1, 0);
+	if (r == -1) {
+		// only for debugging - log_socket_error("Failed to recv from GDB stub socket");
+		return -1;
 	}
+	if (r == 0)
+		return -1; // disconnected
 	if (log_enabled[LOG_GDB]) {
 		logprintf(LOG_GDB, "%c", c);
 		fflush(stdout);
@@ -116,6 +106,16 @@ static char get_debug_char(void) {
 			logprintf(LOG_GDB, "\n");
 	}
 	return c;
+}
+
+static void set_nonblocking(int socket, bool nonblocking) {
+#ifdef __MINGW32__
+	u_long mode = nonblocking;
+	ioctlsocket(socket, FIONBIO, &mode);
+#else
+	ret = fcntl(socket, F_GETFL, 0);
+	fcntl(socket, F_SETFL, nonblocking ? ret | O_NONBLOCK : ret & ~O_NONBLOCK);
+#endif
 }
 
 static void gdbstub_bind(int port) {
@@ -136,18 +136,12 @@ static void gdbstub_bind(int port) {
 		log_socket_error("Failed to create GDB stub socket");
 		exit(1);
 	}
-#ifdef __MINGW32__
-	u_long mode = 1;
-	ioctlsocket(listen_socket_fd, FIONBIO, &mode);
-#else
-  ret = fcntl(listen_socket_fd, F_GETFL, 0);
-  fcntl(listen_socket_fd, F_SETFL, ret | O_NONBLOCK);
-#endif
+	set_nonblocking(listen_socket_fd, true);
 
 	memset (&sockaddr, '\000', sizeof sockaddr);
 	sockaddr.sin_family = AF_INET;
 	sockaddr.sin_port = htons(port);
-	sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	sockaddr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 	r = bind(listen_socket_fd, (struct sockaddr *)&sockaddr, sizeof(sockaddr));
 	if (r == -1) {
 		log_socket_error("Failed to bind GDB stub socket. Check that nspire_emu is not already running");
@@ -211,7 +205,7 @@ char *getpacket(void) {
 			ch = get_debug_char();
 			if (ch == -1) // disconnected
 				return NULL;
-		}	while (ch != '$');
+		} while (ch != '$');
 		
 retry:
 		checksum = 0;
@@ -240,7 +234,7 @@ retry:
 			if (checksum != xmitcsum) {
 				put_debug_char('-');	/* failed checksum */
 				flush_out_buffer();
-			}	else {
+			} else {
 				put_debug_char('+');	/* successful transfer */
 				
 				/* if a sequence char is present, reply the sequence ID */
@@ -265,26 +259,26 @@ static void putpacket(char *buffer) {
 
 	/*  $<packet info>#<checksum> */
 	do {
-			put_debug_char('$');
-			checksum = 0;
-			count = 0;
+		put_debug_char('$');
+		checksum = 0;
+		count = 0;
 
-			while ((ch = buffer[count])) {
-				put_debug_char(ch);
-				checksum += ch;
-				count += 1;
-			}
+		while ((ch = buffer[count])) {
+			put_debug_char(ch);
+			checksum += ch;
+			count += 1;
+		}
 
-			put_debug_char('#');
-			put_debug_char(hexchars[checksum >> 4]);
-			put_debug_char(hexchars[checksum & 0xf]);
-			flush_out_buffer();
-			ch = get_debug_char();
+		put_debug_char('#');
+		put_debug_char(hexchars[checksum >> 4]);
+		put_debug_char(hexchars[checksum & 0xf]);
+		flush_out_buffer();
+		ch = get_debug_char();
 	} while (ch != '+' && ch != -1);
 }
 
 /* Indicate to caller of mem2hex or hex2mem that there has been an
-	 error.  */
+ * error.  */
 static volatile int mem_err = 0;
 
 /* Convert the memory pointed to by mem into hex, placing result in buf.
@@ -296,7 +290,7 @@ static volatile int mem_err = 0;
 static char *mem2hex(void *mem, char *buf, int count) {
 	unsigned char ch;
 
-	while (count-- > 0)	{
+	while (count-- > 0) {
 		ch = *(unsigned char*)mem++;
 		if (mem_err)
 			return 0;
@@ -420,7 +414,7 @@ void gdbstub_loop(void) {
 	unsigned long regbuf[NUMREGS];
 	bool reply, set;
 	
-	while (1)	{
+	while (1) {
 		remcomOutBuffer[0] = 0;
 
 		ptr = getpacket();
@@ -429,7 +423,7 @@ void gdbstub_loop(void) {
 			return;
 		}
 		reply = true;
-		switch (*ptr++) 	{
+		switch (*ptr++) {
 			case '?':
 				send_stop_reply(SIGNAL_TRAP, NULL, 0);
 				reply = false; // already done
@@ -474,12 +468,14 @@ void gdbstub_loop(void) {
 				/* Try to read %x,%x */
 				if (hexToInt(&ptr, &addr)
 				    && *ptr++ == ','
-				    && hexToInt(&ptr, &length)) {
+				    && hexToInt(&ptr, &length)
+				    && (size_t)length < (sizeof(remcomOutBuffer) - 1) / 2)
+				{
 					ramaddr = virt_mem_ptr(addr, length);
 					if (!ramaddr || mem2hex(ramaddr, remcomOutBuffer, length))
 						break;
 					strcpy(remcomOutBuffer, "E03");
-				}	else
+				} else
 					strcpy(remcomOutBuffer,"E01");
 				break;
 		
@@ -488,19 +484,20 @@ void gdbstub_loop(void) {
 				if (hexToInt(&ptr, &addr)
 				    && *ptr++ == ','
 				    && hexToInt(&ptr, &length)
-				    && *ptr++ == ':')	{
-				  ramaddr = virt_mem_ptr(addr, length);
-				  if (!ramaddr) {
-				  	strcpy(remcomOutBuffer, "E03");
-				  	break;
-				  }
-				  if (range_translated((u32)ramaddr, (u32)((char *)ramaddr + length)))
-				  	flush_translations();
+				    && *ptr++ == ':')
+				{
+					ramaddr = virt_mem_ptr(addr, length);
+					if (!ramaddr) {
+						strcpy(remcomOutBuffer, "E03");
+						break;
+					}
+					if (range_translated((u32)ramaddr, (u32)((char *)ramaddr + length)))
+						flush_translations();
 					if (hex2mem(ptr, ramaddr, length))
 						strcpy(remcomOutBuffer, "OK");
 					else
 						strcpy(remcomOutBuffer, "E03");
-				}	else
+				} else
 					strcpy(remcomOutBuffer, "E02");
 				break;
 		
@@ -598,6 +595,7 @@ void gdbstub_recv(void) {
 		if (ret == -1)
 			return;
 		socket_fd = ret;
+		set_nonblocking(socket_fd, false);
 		/* Disable Nagle for low latency */
 		on = 1;
 #ifdef __MINGW32__

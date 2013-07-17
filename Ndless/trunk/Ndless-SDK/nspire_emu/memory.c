@@ -11,19 +11,15 @@ void (*write_half_map[64])(u32 addr, u16 value);
 void (*write_word_map[64])(u32 addr, u32 value);
 
 /* For invalid/unknown physical addresses */
-u8 bad_read_byte(u32 addr)               { warn("Bad read_byte: %08x", addr); debugger(DBG_EXCEPTION, 0); return 0; }
-u16 bad_read_half(u32 addr)              { warn("Bad read_half: %08x", addr); debugger(DBG_EXCEPTION, 0); return 0; }
-u32 bad_read_word(u32 addr)              { warn("Bad read_word: %08x", addr); debugger(DBG_EXCEPTION, 0); return 0; }
-void bad_write_byte(u32 addr, u8 value)  { warn("Bad write_byte: %08x %02x",addr,value); debugger(DBG_EXCEPTION, 0); }
-void bad_write_half(u32 addr, u16 value) { warn("Bad write_half: %08x %04x",addr,value); debugger(DBG_EXCEPTION, 0); }
-void bad_write_word(u32 addr, u32 value) { warn("Bad write_word: %08x %08x",addr,value); debugger(DBG_EXCEPTION, 0); }
+u8 bad_read_byte(u32 addr)               { warn("Bad read_byte: %08x", addr); return 0; }
+u16 bad_read_half(u32 addr)              { warn("Bad read_half: %08x", addr); return 0; }
+u32 bad_read_word(u32 addr)              { warn("Bad read_word: %08x", addr); return 0; }
+void bad_write_byte(u32 addr, u8 value)  { warn("Bad write_byte: %08x %02x", addr, value); }
+void bad_write_half(u32 addr, u16 value) { warn("Bad write_half: %08x %04x", addr, value); }
+void bad_write_word(u32 addr, u32 value) { warn("Bad write_word: %08x %08x", addr, value); }
 
 u8 *mem_and_flags;
-struct mem_area_desc mem_areas[4] = {
-	{ 0x00000000, ROM_SIZE,    NULL },
-	{ 0x10000000, 0,           NULL },
-	{ 0xA4000000, RAM_A4_SIZE, NULL },
-};
+struct mem_area_desc mem_areas[4];
 
 void *phys_mem_ptr(u32 addr, u32 size) {
 	unsigned int i;
@@ -115,264 +111,41 @@ void memory_write_word(u32 addr, u32 value) {
 	*ptr = value;
 }
 
-/* 8FFF0000 */
-void sdramctl_write_word(u32 addr, u32 value) {
-	switch (addr - 0x8FFF0000) {
-		case 0x00: return;
-		case 0x04: return;
-		case 0x08: return;
-		case 0x0C: return;
-		case 0x10: return;
-		case 0x14: return;
-	}
-	bad_write_word(addr, value);
+/* The APB (Advanced Peripheral Bus) hosts peripherals that do not require
+ * high bandwidth. The bridge to the APB is accessed via addresses 90xxxxxx. */
+/* The AMBA specification does not mention anything about transfer sizes in APB,
+ * so probably all reads/writes are effectively 32 bit. */
+struct apb_map_entry {
+	u32 (*read)(u32 addr);
+	void (*write)(u32 addr, u32 value);
+} apb_map[0x12];
+void apb_set_map(int entry, u32 (*read)(u32 addr), void (*write)(u32 addr, u32 value)) {
+	apb_map[entry].read = read;
+	apb_map[entry].write = write;
 }
-
-u32 memctl_cx_status;
-u32 memctl_cx_config;
-u32 memctl_cx_read_word(u32 addr) {
-	switch (addr - 0x8FFF0000) {
-		case 0x0000: return memctl_cx_status | 0x80;
-		case 0x000C: return memctl_cx_config;
-		case 0x0FE0: return 0x40;
-		case 0x0FE4: return 0x13;
-		case 0x0FE8: return 0x14;
-		case 0x0FEC: return 0x00;
-		case 0x1000: return 0x20; // memc_status (raw interrupt bit set when flash op complete?)
-		case 0x1FE0: return 0x51;
-		case 0x1FE4: return 0x13;
-		case 0x1FE8: return 0x34;
-		case 0x1FEC: return 0x00;
-	}
-	return bad_read_word(addr);
+u8 apb_read_byte(u32 addr) {
+	if (addr >= 0x90120000) return bad_read_byte(addr);
+	return apb_map[addr >> 16 & 31].read(addr & ~3) >> ((addr & 3) << 3);
 }
-void memctl_cx_write_word(u32 addr, u32 value) {
-	switch (addr - 0x8FFF0000) {
-		case 0x0004:
-			switch (value) {
-				case 0: memctl_cx_status = 1; return; // go
-				case 1: memctl_cx_status = 3; return; // sleep
-				case 2: case 3: memctl_cx_status = 2; return; // wakeup, pause
-				case 4: memctl_cx_status = 0; return; // configure
-			}
-			break;
-		case 0x0008: return;
-		case 0x000C: memctl_cx_config = value; return;
-		case 0x0010: return; // refresh_prd
-		case 0x0018: return; // t_dqss
-		case 0x0028: return; // t_rcd
-		case 0x002C: return; // t_rfc
-		case 0x0030: return; // t_rp
-		case 0x0104: return;
-		case 0x0200: return;
-		case 0x1008: return; // memc_cfg_set
-		case 0x1010: return; // direct_cmd
-		case 0x1014: return; // set_cycles
-		case 0x1018: return; // set_opmode
-		case 0x1204: nand_writable = value & 1; return;
-	}
-	bad_write_word(addr, value);
+u16 apb_read_half(u32 addr) {
+	if (addr >= 0x90120000) return bad_read_half(addr);
+	return apb_map[addr >> 16 & 31].read(addr & ~2) >> ((addr & 2) << 3);
 }
-
-/* A9000000: SPI */
-u32 spi_read_word(u32 addr) {
-	switch (addr - 0xA9000000) {
-		case 0x0C: return 0;
-		case 0x10: return 1;
-		case 0x14: return 0;
-		case 0x18: return -1;
-		case 0x1C: return -1;
-		case 0x20: return 0;
-	}
-	return bad_read_word(addr);
+u32 apb_read_word(u32 addr) {
+	if (addr >= 0x90120000) return bad_read_word(addr);
+	return apb_map[addr >> 16 & 31].read(addr);
 }
-void spi_write_word(u32 addr, u32 value) {
-	switch (addr - 0xA9000000) {
-		case 0x08: return;
-		case 0x0C: return;
-		case 0x14: return;
-		case 0x18: return;
-		case 0x1C: return;
-		case 0x20: return;
-	}
-	bad_write_word(addr, value);
+void apb_write_byte(u32 addr, u8 value) {
+	if (addr >= 0x90120000) { bad_write_byte(addr, value); return; }
+	apb_map[addr >> 16 & 31].write(addr & ~3, value * 0x01010101);
 }
-
-/* AC000000: SDIO */
-u8 sdio_read_byte(u32 addr) {
-	switch (addr & 0x3FFFFFF) {
-		case 0x29: return -1;
-	}
-	return bad_read_byte(addr);
+void apb_write_half(u32 addr, u16 value) {
+	if (addr >= 0x90120000) { bad_write_half(addr, value); return; }
+	apb_map[addr >> 16 & 31].write(addr & ~2, value * 0x00010001);
 }
-u16 sdio_read_half(u32 addr) {
-	switch (addr & 0x3FFFFFF) {
-		case 0x10: return -1;
-		case 0x12: return -1;
-		case 0x14: return -1;
-		case 0x16: return -1;
-		case 0x18: return -1;
-		case 0x1A: return -1;
-		case 0x1C: return -1;
-		case 0x1E: return -1;
-		case 0x2C: return -1;
-		case 0x30: return -1;
-	}
-	return bad_read_half(addr);
-}
-u32 sdio_read_word(u32 addr) {
-	switch (addr & 0x3FFFFFF) {
-		case 0x20: return -1;
-	}
-	return bad_read_word(addr);
-}
-void sdio_write_byte(u32 addr, u8 value) {
-	switch (addr & 0x3FFFFFF) {
-		case 0x29: return;
-		case 0x2E: return;
-		case 0x2F: return;
-	}
-	bad_write_byte(addr, value);
-}
-void sdio_write_half(u32 addr, u16 value) {
-	switch (addr & 0x3FFFFFF) {
-		case 0x04: return;
-		case 0x0C: return;
-		case 0x0E: return;
-		case 0x2C: return;
-		case 0x30: return;
-		case 0x32: return;
-		case 0x34: return;
-		case 0x36: return;
-	}
-	bad_write_half(addr, value);
-}
-void sdio_write_word(u32 addr, u32 value) {
-	switch (addr & 0x3FFFFFF) {
-		case 0x00: return;
-		case 0x08: return;
-		case 0x20: return;
-	}
-	bad_write_word(addr, value);
-}
-
-/* B8000000 */
-u32 sramctl_read_word(u32 addr) {
-	switch (addr - 0xB8001000) {
-		case 0xFE0: return 0x52;
-		case 0xFE4: return 0x13;
-		case 0xFE8: return 0x34;
-		case 0xFEC: return 0x00;
-	}
-	return bad_read_word(addr);
-}
-void sramctl_write_word(u32 addr, u32 value) {
-	switch (addr - 0xB8001000) {
-		case 0x010: return;
-		case 0x014: return;
-		case 0x018: return;
-	}
-	return bad_write_word(addr, value);
-}
-
-/* BC000000 */
-u32 unknown_BC_read_word(u32 addr) {
-	switch (addr & 0x3FFFFFF) {
-		case 0xC: return 0;
-	}
-	return bad_read_word(addr);
-}
-
-/* C4000000: ADC (Analog-to-Digital Converter) */
-struct {
-	u32 int_status;
-	u32 int_mask;
-	struct adc_channel {
-		u32 unknown;
-		u32 count;
-		u32 address;
-		u16 value;
-		u16 speed;
-	} channel[7];
-} adc;
-static u16 adc_read_channel(int n) {
-	if (pmu.disable2 & 0x10)
-		return 0x3FF;
-
-	// Scale for channels 1-2:   155 units = 1 volt
-	// Scale for other channels: 310 units = 1 volt
-	if (n == 3) {
-		// A value from 0 to 20 indicates normal TI-Nspire keypad.
-		// A value from 21 to 42 indicates TI-84+ keypad.
-		return 10 + (keypad_type * 21);
-	} else {
-		return 930;
-	}
-}
-u32 adc_read_word(u32 addr) {
-	int n;
-	if (!(addr & 0x100)) {
-		switch (addr & 0xFF) {
-			case 0x00: return adc.int_status & adc.int_mask;
-			case 0x04: return adc.int_status;
-			case 0x08: return adc.int_mask;
-		}
-	} else if ((n = addr >> 5 & 7) < 7) {
-		struct adc_channel *c = &adc.channel[n];
-		switch (addr & 0x1F) {
-			case 0x00: return 0;
-			case 0x04: return c->unknown;
-			case 0x08: return c->count;
-			case 0x0C: return c->address;
-			case 0x10: return c->value;
-			case 0x14: return c->speed;
-		}
-	}
-	return bad_read_word(addr);
-}
-void adc_write_word(u32 addr, u32 value) {
-	int n;
-	if (!(addr & 0x100)) {
-		switch (addr & 0xFF) {
-			case 0x04: // Interrupt acknowledge
-				adc.int_status &= ~value;
-				int_set(INT_ADC, adc.int_status & adc.int_mask);
-				return;
-			case 0x08: // Interrupt enable
-				adc.int_mask = value & 0xFFFFFFF;
-				int_set(INT_ADC, adc.int_status & adc.int_mask);
-				return;
-			case 0x0C:
-			case 0x10:
-			case 0x14:
-				return;
-		}
-	} else if ((n = addr >> 5 & 7) < 7) {
-		struct adc_channel *c = &adc.channel[n];
-		switch (addr & 0x1F) {
-			case 0x00: // Command register - write 1 to measure voltage and store to +10
-				// Other commands do exist, including some
-				// that write to memory; not implemented yet.
-				c->value = adc_read_channel(n);
-				adc.int_status |= 3 << (4 * n);
-				int_set(INT_ADC, adc.int_status & adc.int_mask);
-				return;
-			case 0x04: c->unknown = value & 0xFFFFFFF; return;
-			case 0x08: c->count = value & 0x1FFFFFF; return;
-			case 0x0C: c->address = value & ~3; return;
-			case 0x14: c->speed = value & 0x3FF; return;
-		}
-	}
-	return bad_write_word(addr, value);
-}
-
-/* -------------------------------------------------------------------------- */
-
-void __attribute__((fastcall)) read_align_fail(u32 addr) {
-	error("Read align fail: %08x", addr);
-}
-void __attribute__((fastcall)) write_align_fail(u32 addr) {
-	error("Write align fail: %08x", addr);
+void apb_write_word(u32 addr, u32 value) {
+	if (addr >= 0x90120000) { bad_write_word(addr, value); return; }
+	apb_map[addr >> 16 & 31].write(addr, value);
 }
 
 u32 __attribute__((fastcall)) mmio_read_byte(u32 addr) {
@@ -395,28 +168,43 @@ void __attribute__((fastcall)) mmio_write_word(u32 addr, u32 value) {
 }
 
 void memory_initialize(u32 sdram_size) {
+	mem_areas[0].size = 0x80000;
+	mem_areas[1].base = 0x10000000;
+	mem_areas[1].size = sdram_size;
+	if (emulate_casplus) {
+		mem_areas[2].base = 0x20000000;
+		mem_areas[2].size = 0x40000;
+	} else {
+		mem_areas[2].base = 0xA4000000;
+		mem_areas[2].size = 0x20000;
+	}
+
+	u32 total_mem = 0;
+	int i;
+
 	mem_and_flags = os_reserve(MEM_MAXSIZE * 2);
-	if (!mem_and_flags ||
-	    !os_commit(&mem_and_flags[0], ROM_SIZE + RAM_A4_SIZE + sdram_size) ||
-	    !os_commit(&mem_and_flags[MEM_MAXSIZE], ROM_SIZE + RAM_A4_SIZE + sdram_size))
+	for (i = 0; i != sizeof(mem_areas)/sizeof(*mem_areas); i++) {
+		if (mem_areas[i].size) {
+			mem_areas[i].ptr = &mem_and_flags[total_mem];
+			total_mem += mem_areas[i].size;
+		}
+	}
+	if (!mem_and_flags || total_mem > MEM_MAXSIZE ||
+	    !os_commit(&mem_and_flags[0], total_mem) ||
+	    !os_commit(&mem_and_flags[MEM_MAXSIZE], total_mem))
 	{
 		printf("Couldn't allocate memory\n");
 		exit(1);
 	}
-	mem_areas[0].ptr = &mem_and_flags[0];
-	mem_areas[1].size = sdram_size;
-	mem_areas[1].ptr = &mem_and_flags[ROM_SIZE + RAM_A4_SIZE];
-	mem_areas[2].ptr = &mem_and_flags[ROM_SIZE];
 
-	if (product == 0x0D) {
+	if (product == 0x0D0) {
 		// Lab cradle OS reads calibration data from F007xxxx,
 		// probably a mirror of ROM at 0007xxxx
 		mem_areas[3].base = 0xF0000000;
-		mem_areas[3].size = ROM_SIZE;
+		mem_areas[3].size = mem_areas[0].size;
 		mem_areas[3].ptr = mem_areas[0].ptr;
 	}
 
-	int i;
 	for (i = 0; i < 64; i++) {
 		/* will fallback to bad_* on non-memory addresses */
 		read_byte_map[i] = memory_read_byte;
@@ -427,12 +215,46 @@ void memory_initialize(u32 sdram_size) {
 		write_word_map[i] = memory_write_word;
 	}
 
+	if (emulate_casplus) {
+		read_byte_map[0x08 >> 2] = casplus_nand_read_byte;
+		read_half_map[0x08 >> 2] = casplus_nand_read_half;
+		write_byte_map[0x08 >> 2] = casplus_nand_write_byte;
+		write_half_map[0x08 >> 2] = casplus_nand_write_half;
+
+		read_byte_map[0xFF >> 2] = omap_read_byte;
+		read_half_map[0xFF >> 2] = omap_read_half;
+		read_word_map[0xFF >> 2] = omap_read_word;
+		write_byte_map[0xFF >> 2] = omap_write_byte;
+		write_half_map[0xFF >> 2] = omap_write_half;
+		write_word_map[0xFF >> 2] = omap_write_word;
+
+		add_reset_proc(casplus_reset);
+		return;
+	}
+
 	read_byte_map[0x90 >> 2] = apb_read_byte;
 	read_half_map[0x90 >> 2] = apb_read_half;
 	read_word_map[0x90 >> 2] = apb_read_word;
 	write_byte_map[0x90 >> 2] = apb_write_byte;
 	write_half_map[0x90 >> 2] = apb_write_half;
 	write_word_map[0x90 >> 2] = apb_write_word;
+	for (i = 0; i < 0x12; i++) {
+		apb_map[i].read = bad_read_word;
+		apb_map[i].write = bad_write_word;
+	}
+
+	apb_set_map(0x00, gpio_read, gpio_write);
+	add_reset_proc(gpio_reset);
+	apb_set_map(0x06, watchdog_read, watchdog_write);
+	add_reset_proc(watchdog_reset);
+	apb_set_map(0x0A, misc_read, misc_write);
+	apb_set_map(0x0B, pmu_read, pmu_write);
+	add_reset_proc(pmu_reset);
+	apb_set_map(0x0E, keypad_read, keypad_write);
+	add_reset_proc(keypad_reset);
+	apb_set_map(0x0F, hdq1w_read, hdq1w_write);
+	add_reset_proc(hdq1w_reset);
+	apb_set_map(0x11, unknown_9011_read, unknown_9011_write);
 
 	read_byte_map[0xAC >> 2] = sdio_read_byte;
 	read_half_map[0xAC >> 2] = sdio_read_half;
@@ -445,34 +267,55 @@ void memory_initialize(u32 sdram_size) {
 	read_half_map[0xB0 >> 2] = usb_read_half;
 	read_word_map[0xB0 >> 2] = usb_read_word;
 	write_word_map[0xB0 >> 2] = usb_write_word;
+	add_reset_proc(usb_reset);
+	add_reset_proc(usblink_reset);
 
 	read_word_map[0xC0 >> 2] = lcd_read_word;
 	write_word_map[0xC0 >> 2] = lcd_write_word;
+	add_reset_proc(lcd_reset);
 
 	read_word_map[0xC4 >> 2] = adc_read_word;
 	write_word_map[0xC4 >> 2] = adc_write_word;
+	add_reset_proc(adc_reset);
 
+	des_initialize();
 	read_word_map[0xC8 >> 2] = des_read_word;
 	write_word_map[0xC8 >> 2] = des_write_word;
+	add_reset_proc(des_reset);
 
 	read_word_map[0xCC >> 2] = sha256_read_word;
 	write_word_map[0xCC >> 2] = sha256_write_word;
+	add_reset_proc(sha256_reset);
 
 	if (!emulate_cx) {
+		read_byte_map[0x08 >> 2] = nand_phx_raw_read_byte;
+		write_byte_map[0x08 >> 2] = nand_phx_raw_write_byte;
+
 		write_word_map[0x8F >> 2] = sdramctl_write_word;
 
-		memcpy(apb_map, apb_map_normal, sizeof apb_map);
+		apb_set_map(0x01, timer_read, timer_write);
+		apb_set_map(0x0C, timer_read, timer_write);
+		apb_set_map(0x0D, timer_read, timer_write);
+		add_reset_proc(timer_reset);
+		apb_set_map(0x02, serial_read, serial_write);
+		add_reset_proc(serial_reset);
+		apb_set_map(0x08, bad_read_word, unknown_9008_write);
+		apb_set_map(0x09, rtc_read, rtc_write);
+		apb_set_map(0x10, ti84_io_link_read, ti84_io_link_write);
+		add_reset_proc(ti84_io_link_reset);
 
 		read_word_map[0xA9 >> 2] = spi_read_word;
 		write_word_map[0xA9 >> 2] = spi_write_word;
 
 		read_word_map[0xB8 >> 2] = nand_phx_read_word;
 		write_word_map[0xB8 >> 2] = nand_phx_write_word;
+		add_reset_proc(nand_phx_reset);
 
 		read_word_map[0xBC >> 2] = unknown_BC_read_word;
 
 		read_word_map[0xDC >> 2] = int_read_word;
 		write_word_map[0xDC >> 2] = int_write_word;
+		add_reset_proc(int_reset);
 	} else {
 		read_byte_map[0x80 >> 2] = nand_cx_read_byte;
 		read_word_map[0x80 >> 2] = nand_cx_read_word;
@@ -481,8 +324,19 @@ void memory_initialize(u32 sdram_size) {
 
 		read_word_map[0x8F >> 2] = memctl_cx_read_word;
 		write_word_map[0x8F >> 2] = memctl_cx_write_word;
+		add_reset_proc(memctl_cx_reset);
 
-		memcpy(apb_map, apb_map_cx, sizeof apb_map);
+		apb_set_map(0x01, timer_cx_read, timer_cx_write);
+		apb_set_map(0x0C, timer_cx_read, timer_cx_write);
+		apb_set_map(0x0D, timer_cx_read, timer_cx_write);
+		add_reset_proc(timer_cx_reset);
+		apb_set_map(0x02, serial_cx_read, serial_cx_write);
+		add_reset_proc(serial_cx_reset);
+		apb_set_map(0x03, unknown_cx_read, unknown_cx_write);
+		apb_set_map(0x04, unknown_cx_read, unknown_cx_write);
+		apb_set_map(0x05, touchpad_cx_read, touchpad_cx_write);
+		add_reset_proc(touchpad_cx_reset);
+		apb_set_map(0x09, rtc_cx_read, rtc_cx_write);
 
 		read_word_map[0xB4 >> 2] = usb_read_word;
 
@@ -491,6 +345,7 @@ void memory_initialize(u32 sdram_size) {
 
 		read_word_map[0xDC >> 2] = int_cx_read_word;
 		write_word_map[0xDC >> 2] = int_cx_write_word;
+		add_reset_proc(int_reset);
 	}
 }
 

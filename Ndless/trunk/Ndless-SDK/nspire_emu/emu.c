@@ -19,17 +19,18 @@ u32 cpu_events;
 
 bool exiting;
 bool do_translate = true;
-int product = 0x0E;
+int product = 0x0E0;
 int asic_user_flags;
-bool emulate_cx;
-
 bool turbo_mode;
 bool is_halting;
 bool show_speed;
 
-volatile int gdb_port = 0;
+int gdb_port = 0;
 
 jmp_buf restart_after_exception;
+
+void (*reset_procs[20])(void);
+int reset_proc_count;
 
 const char log_type_tbl[] = LOG_TYPE_TBL;
 int log_enabled[MAX_LOG];
@@ -43,6 +44,7 @@ void logprintf(int type, char *str, ...) {
 	}
 }
 
+bool break_on_warn;
 void warn(char *fmt, ...) {
 	va_list va;
 	fprintf(stderr, "Warning at PC=%08X: ", arm.reg[15]);
@@ -50,6 +52,8 @@ void warn(char *fmt, ...) {
 	vfprintf(stderr, fmt, va);
 	va_end(va);
 	fprintf(stderr, "\n");
+	if (break_on_warn)
+		debugger(DBG_EXCEPTION, 0);
 }
 
 __attribute__((noreturn))
@@ -221,6 +225,12 @@ bool reload_state(void) {
 }
 #endif
 
+void add_reset_proc(void (*proc)(void)) {
+	if (reset_proc_count == sizeof(reset_procs)/sizeof(*reset_procs))
+		abort();
+	reset_procs[reset_proc_count++] = proc;
+}
+
 int main(int argc, char **argv) {
 	int i;
 	static FILE *boot2_file = NULL;
@@ -243,7 +253,8 @@ int main(int argc, char **argv) {
 					break;
 				case 'B':
 					if (*arg == '@') {
-						boot2_base = 0x10000000 | (strtoul(arg + 1, &arg, 16) & 0x01FFFFFF);
+						boot2_base = strtoul(arg + 1, &arg, 16);
+						if (boot2_base == 0) boot2_base = 0x10000000;
 					}
 					if (*arg == '=') arg++;
 					boot2_filename = arg;
@@ -279,9 +290,9 @@ int main(int argc, char **argv) {
 					}
 					break;
 				case 'K':
-					keypad_type = 1;
+					keypad_type = 2;
 					if (*arg) {
-						keypad_type = atoi(arg) - 1;
+						keypad_type = atoi(arg);
 						if (keypad_type < 0 || keypad_type >= NUM_KEYPAD_TYPES)
 							goto usage;
 					}
@@ -309,12 +320,13 @@ int main(int argc, char **argv) {
 				}
 				case 'M':
 					switch (toupper(*arg)) {
-						case 'L': product = 0x0D; arg++; goto nocas;
-						case 'X': product = 0x10; arg++; break;
-						case 'M': product = 0x12; arg++; break;
+						case 'P': product = 0x0C0; arg++; goto nocas;
+						case 'L': product = 0x0D0; arg++; goto nocas;
+						case 'X': product = 0x100; arg++; break;
+						case 'M': product = 0x120; arg++; break;
 					}
 					if (toupper(*arg) == 'C') { // CAS
-						product -= (product == 0x0E ? 2 : 1);
+						product = (product == 0x0E0 ? 0x0C1 : (product - 0x10));
 						arg++;
 					}
 				nocas:
@@ -337,6 +349,9 @@ int main(int argc, char **argv) {
 					if (*arg) goto usage;
 					large_sdram = true;
 					break;
+				case 'W':
+					break_on_warn = true;
+					break;
 				default:
 usage:
 					printf(
@@ -345,7 +360,7 @@ usage:
 						"  /B=boot2	- location of decompressed BOOT2 image\n"
 						"  /D[=cmdfile]	- enter debugger on startup (optionally read from file)\n"
 						"  /F=file	- flash image filename\n"
-						"  /G=port  - enable GDB remote protocol through the TCP port\n"
+						"  /G=port	- enable GDB remote protocol through the TCP port\n"
 						"  /Kn		- set keypad type (2 = TI-84 Plus, 4 = Touchpad)\n"
 						"  /M[X|M][C]	- set model (original/CX/CM, non-CAS/CAS)\n"
 						"  /N		- large NAND flash size\n"
@@ -379,11 +394,22 @@ usage:
 
 	flash_read_settings(&sdram_size);
 
+	// If /K not used, pick a default keypad type appropriate for the model
+	if (keypad_type == -1) {
+		if (emulate_casplus)
+			keypad_type = 0;
+		else if (emulate_cx)
+			keypad_type = 4;
+		else
+			keypad_type = 1;
+	}
+
 	memory_initialize(sdram_size);
 
-	memset(MEM_PTR(0x00000000), -1, 0x80000);
+	u8 *rom = mem_areas[0].ptr;
+	memset(rom, -1, 0x80000);
 	for (i = 0x00000; i < 0x80000; i += 4) {
-		RAM_FLAGS(&rom_00[i]) = RF_READ_ONLY;
+		RAM_FLAGS(&rom[i]) = RF_READ_ONLY;
 	}
 	if (boot1_filename) {
 		/* Load the ROM */
@@ -392,7 +418,7 @@ usage:
 			perror(boot1_filename);
 			return 1;
 		}
-		fread(MEM_PTR(0x00000000), 1, 0x80000, f);
+		fread(rom, 1, 0x80000, f);
 		fclose(f);
 	}
 
@@ -404,7 +430,6 @@ usage:
 
 	os_exception_frame_t frame;
 	addr_cache_init(&frame);
-	des_initialize();
 
 	os_query_frequency(perffreq);
 
@@ -426,64 +451,60 @@ reset:
 	if (boot2_file) {
 		/* Start from BOOT2. (needs to be re-loaded on each reset since
 		 * it can get overwritten in memory) */
+		fseek(boot2_file, 0, SEEK_END);
+		u32 boot2_size = ftell(boot2_file);
 		fseek(boot2_file, 0, SEEK_SET);
-		fread(MEM_PTR(boot2_base), 1, 0x12000000 - boot2_base, boot2_file);
+		u8 *boot2_ptr = phys_mem_ptr(boot2_base, boot2_size);
+		if (!boot2_ptr) {
+			printf("Address %08X is not in RAM.\n", boot2_base);
+			return 1;
+		}
+		fread(boot2_ptr, 1, boot2_size, boot2_file);
 		arm.reg[15] = boot2_base;
-		if (*(u8 *)MEM_PTR(boot2_base+3) < 0xE0) {
+		if (boot2_ptr[3] < 0xE0) {
 			printf("%s does not appear to be an uncompressed BOOT2 image.\n", boot2_filename);
 			return 1;
 		}
 
-		/* To enter maintenance mode (home+enter+P), address A4012ECC
-		 * must contain an array indicating those keys before BOOT2 starts */
-		memcpy(MEM_PTR(0xA4012ECC), (void *)key_map, 0x12);
+		if (!emulate_casplus) {
+			/* To enter maintenance mode (home+enter+P), address A4012ECC
+			 * must contain an array indicating those keys before BOOT2 starts */
+			u8 *shared = phys_mem_ptr(0xA4012EB0, 0x200);
+			memcpy(&shared[0x1C], (void *)key_map, 0x12);
 
-		/* BOOT1 is expected to store the address of a function pointer table
-		 * to A4012EE8. OS 3.0 calls some of these functions... */
-		static const struct {
-			u32 ptrs[8];
-			u16 code[16];
-		} stuff = { {
-			0x10020+0x01, // function 0: return *r0
-			0x10020+0x05, // function 1: *r0 = r1
-			0x10020+0x09, // function 2: *r0 |= r1
-			0x10020+0x11, // function 3: *r0 &= ~r1
-			0x10020+0x19, // function 4: *r0 ^= r1
-			0x10020+0x20, // function 5: related to C801xxxx (not implemented)
-			0x10020+0x03, // function 6: related to 9011xxxx (not implemented)
-			0x10020+0x03, // function 7: related to 9011xxxx (not implemented)
-		}, {
-			0x6800,0x4770,               // return *r0
-			0x6001,0x4770,               // *r0 = r1
-			0x6802,0x430A,0x6002,0x4770, // *r0 |= r1
-			0x6802,0x438A,0x6002,0x4770, // *r0 &= ~r1
-			0x6802,0x404A,0x6002,0x4770, // *r0 ^= r1
-		} };
-		*(u32 *)MEM_PTR(0xA4012EE8) = 0x10000;
-		memcpy(MEM_PTR(0x00010000), &stuff, sizeof stuff);
-		RAM_FLAGS(MEM_PTR(0x00010040)) |= RF_EXEC_HACK;
+			/* BOOT1 is expected to store the address of a function pointer table
+			 * to A4012EE8. OS 3.0 calls some of these functions... */
+			static const struct {
+				u32 ptrs[8];
+				u16 code[16];
+			} stuff = { {
+				0x10020+0x01, // function 0: return *r0
+				0x10020+0x05, // function 1: *r0 = r1
+				0x10020+0x09, // function 2: *r0 |= r1
+				0x10020+0x11, // function 3: *r0 &= ~r1
+				0x10020+0x19, // function 4: *r0 ^= r1
+				0x10020+0x20, // function 5: related to C801xxxx (not implemented)
+				0x10020+0x03, // function 6: related to 9011xxxx (not implemented)
+				0x10020+0x03, // function 7: related to 9011xxxx (not implemented)
+			}, {
+				0x6800,0x4770,               // return *r0
+				0x6001,0x4770,               // *r0 = r1
+				0x6802,0x430A,0x6002,0x4770, // *r0 |= r1
+				0x6802,0x438A,0x6002,0x4770, // *r0 &= ~r1
+				0x6802,0x404A,0x6002,0x4770, // *r0 ^= r1
+			} };
+			memcpy(&rom[0x10000], &stuff, sizeof stuff);
+			RAM_FLAGS(&rom[0x10040]) |= RF_EXEC_HACK;
+			*(u32 *)&shared[0x38] = 0x10000;
+		}
 	}
 	addr_cache_flush();
 	flush_translations();
 
 	sched_reset();
 
-	memset(&intr, 0, sizeof intr);
-	intr.noninverted = -1;
-	intr.priority_limit[0] = 8;
-	intr.priority_limit[1] = 8;
-
-	gpio_reset();
-	keypad_reset();
-	lcd_reset();
-	pmu_reset();
-	if (!emulate_cx)
-		timer_reset();
-	else
-		timer_cx_reset();
-	usb_reset();
-	usblink_reset();
-	watchdog_reset();
+	for (i = 0; i < reset_proc_count; i++)
+		reset_procs[i]();
 
 	sched_items[SCHED_THROTTLE].clock = CLOCK_27M;
 	sched_items[SCHED_THROTTLE].proc = throttle_interval_event;
@@ -501,6 +522,12 @@ reset:
 			}
 
 			if (cpu_events & (EVENT_FIQ | EVENT_IRQ)) {
+				// Align PC in case the interrupt occurred immediately after a jump
+				if (arm.cpsr_low28 & 0x20)
+					arm.reg[15] &= ~1;
+				else
+					arm.reg[15] &= ~3;
+
 				if (cpu_events & EVENT_WAITING)
 					arm.reg[15] += 4; // Skip over wait instruction
 				logprintf(LOG_INTS, "Dispatching an interrupt\n");

@@ -15,6 +15,8 @@ u8 *nand_data;
 u8 *nand_block_modified;
 bool nand_writable;
 int nand_state = 0xFF;
+u8 nand_addr_state;
+u8 nand_area_pointer;
 u32 nand_row;
 u32 nand_column;
 u8 nand_buffer[0x840];
@@ -31,80 +33,50 @@ void nand_initialize(bool large) {
 	nand_block_modified = calloc(nand_metrics.num_pages >> nand_metrics.log2_pages_per_block, 1);
 }
 
-void nand_write_command(u8 command, u32 address, int addr_bytes) {
-	//printf("\nCommand %02X Addr %08X(%d) PC %08X\n", command, address, addr_bytes, arm.reg[15]);
+void nand_write_command_byte(u8 command) {
+	//printf("\n[%08X] Command %02X", arm.reg[15], command);
 	switch (command) {
 		case 0x01: case 0x50:
 			if (nand_metrics.page_size >= 0x800)
 				goto unknown;
 			// Fallthrough
 		case 0x00:
-			if (addr_bytes) {
-				if (nand_metrics.page_size < 0x800) {
-					nand_column = (command == 0x50 ? 2 : command) << 8 | (address & 0xFF);
-					nand_row = address >> 8;
-				} else {
-					nand_column = address & 0xFFFF;
-					nand_row = address >> 16;
-				}
-				if (nand_row >= nand_metrics.num_pages) {
-					warn("bad row");
-					nand_row &= nand_metrics.num_pages - 1;
-				}
-			}
-			nand_state = command & ~1;
+			nand_area_pointer = (command == 0x50) ? 2 : command;
+			nand_addr_state = 0;
+			nand_state = 0x00;
 			break;
 		case 0x10:
 			if (nand_state == 0x80) {
 				if (!nand_writable)
-					error("erase with write protect on");
+					error("program with write protect on");
 				u8 *pagedata = &nand_data[nand_row * nand_metrics.page_size + nand_column];
 				int i;
 				for (i = 0; i < nand_buffer_pos; i++)
 					pagedata[i] &= nand_buffer[i];
 				nand_block_modified[nand_row >> nand_metrics.log2_pages_per_block] = true;
-
 				nand_state = 0xFF;
 			}
 			break;
 		case 0x30: // ???
 			break;
-		case 0x60: {
-			u32 valid_bits = nand_metrics.num_pages - (1 << nand_metrics.log2_pages_per_block);
-			if (addr_bytes < 2)
-				error("ERASE op missing address");
-			nand_row = address;
-			if (nand_row & ~valid_bits) {
-				warn("NAND flash: erase nonexistent block %x", nand_row);
-				nand_row &= valid_bits; // Assume extra bits ignored like read
-			}
+		case 0x60:
+			nand_addr_state = 2;
 			nand_state = command;
 			break;
-		}
 		case 0x80:
-			if (nand_metrics.page_size < 0x800) {
-				if (addr_bytes < 3)
-					error("PROGRAM op missing address");
-				//nand_column = (nand_column & ~0xFF) | (address & 0xFF);
-				nand_column = address & 0xFF;
-				nand_row = address >> 8;
-			} else {
-				if (addr_bytes < 4)
-					error("PROGRAM op missing address");
-				nand_column = address & 0xFFFF;
-				nand_row = address >> 16;
-			}
-			if (nand_row >= nand_metrics.num_pages) {
-				warn("bad row");
-				nand_row &= nand_metrics.num_pages - 1;
-			}
 			nand_buffer_pos = 0;
+			nand_addr_state = 0;
 			nand_state = command;
 			break;
 		case 0xD0:
 			if (nand_state == 0x60) {
+				u32 block_bits = (1 << nand_metrics.log2_pages_per_block) - 1;
 				if (!nand_writable)
 					error("erase with write protect on");
+				if (nand_row & block_bits) {
+					warn("NAND flash: erase nonexistent block %x", nand_row);
+					nand_row &= ~block_bits; // Assume extra bits ignored like read
+				}
 				memset(&nand_data[nand_row * nand_metrics.page_size], 0xFF,
 				       nand_metrics.page_size << nand_metrics.log2_pages_per_block);
 				nand_block_modified[nand_row >> nand_metrics.log2_pages_per_block] = true;
@@ -114,26 +86,53 @@ void nand_write_command(u8 command, u32 address, int addr_bytes) {
 		case 0xFF:
 			nand_row = 0;
 			nand_column = 0;
+			nand_area_pointer = 0;
 			// fallthrough
 		case 0x70:
 		case 0x90:
+			nand_addr_state = 6;
 			nand_state = command;
 			break;
 		default:
 		unknown:
 			warn("Unknown NAND command %02X", command);
-			//debugger(DBG_EXCEPTION, 0);
 	}
 	//printf("State %02X row %08X column %04X\n", nand_state, nand_row, nand_column);
+}
+
+void nand_write_address_byte(u8 byte) {
+	//printf(" Addr(%d)=%02X", nand_addr_state, byte);
+	if (nand_addr_state >= 6)
+		return;
+	switch (nand_addr_state++) {
+		case 0:
+			if (nand_metrics.page_size < 0x800) {
+				// High bits of column come from whether 00, 01, or 50 command was used
+				nand_column = nand_area_pointer << 8;
+				nand_addr_state = 2;
+				// Docs imply that an 01 command is only effective once
+				nand_area_pointer &= ~1;
+			}
+			nand_column = (nand_column & ~0xFF) | byte;
+			break;
+		case 1:
+			nand_column = (nand_column & 0xFF) | (byte << 8);
+			break;
+		default: {
+			int bit = (nand_addr_state - 3) * 8;
+			nand_row = (nand_row & ~(0xFF << bit)) | byte << bit;
+			nand_row &= nand_metrics.num_pages - 1;
+			break;
+		}
+	}
 }
 
 u8 nand_read_data_byte() {
 	//putchar('r');
 	switch (nand_state) {
 		case 0x00:
-		case 0x50:
 			if (nand_column >= nand_metrics.page_size) {
-				//warn("read past end of page");
+				//warn("NAND read past end of page");
 				return 0;
 			}
 			return nand_data[nand_row * nand_metrics.page_size + nand_column++];
@@ -141,8 +140,7 @@ u8 nand_read_data_byte() {
 		case 0x90: nand_state++; return nand_metrics.chip_manuf;
 		case 0x90+1: nand_state = 0xFF; return nand_metrics.chip_model;
 		default:
-			//printf("NAND read byte in state %02X\n", nand_state);
-			//debugger(DBG_EXCEPTION, 0);
+			//warn("NAND read byte in state %02X", nand_state);
 			return 0;
 	}
 }
@@ -150,17 +148,15 @@ u32 nand_read_data_word() {
 	//putchar('R');
 	switch (nand_state) {
 		case 0x00:
-		case 0x50:
 			if (nand_column + 4 > nand_metrics.page_size) {
-				//warn("read past end of page\n");
+				//warn("NAND read past end of page");
 				return 0;
 			}
 			return *(u32 *)&nand_data[nand_row * nand_metrics.page_size + (nand_column += 4) - 4];
 		case 0x70: return 0x40 | (nand_writable << 7); // Status register
 		case 0x90: nand_state = 0xFF; return nand_metrics.chip_model << 8 | nand_metrics.chip_manuf;
 		default:
-			//printf("NAND read word in state %02X\n", nand_state);
-			//debugger(DBG_EXCEPTION, 0);
+			//warn("NAND read word in state %02X", nand_state);
 			return 0;
 	}
 }
@@ -169,13 +165,12 @@ void nand_write_data_byte(u8 value) {
 	switch (nand_state) {
 		case 0x80:
 			if (nand_buffer_pos + nand_column >= nand_metrics.page_size)
-				warn("program past end of page");
+				warn("NAND write past end of page");
 			else
 				nand_buffer[nand_buffer_pos++] = value;
 			return;
 		default:
-			printf("NAND write in state %02X\n", nand_state);
-			debugger(DBG_EXCEPTION, 0);
+			warn("NAND write in state %02X", nand_state);
 			return;
 	}
 }
@@ -184,13 +179,14 @@ void nand_write_data_word(u32 value) {
 	switch (nand_state) {
 		case 0x80:
 			if (nand_buffer_pos + nand_column + 4 > nand_metrics.page_size)
-				error("program past end of page");
-			*(u32 *)&nand_buffer[nand_buffer_pos] = value;
-			nand_buffer_pos += 4;
+				warn("NAND write past end of page");
+			else {
+				*(u32 *)&nand_buffer[nand_buffer_pos] = value;
+				nand_buffer_pos += 4;
+			}
 			break;
 		default:
-			printf("NAND write in state %02X\n", nand_state);
-			debugger(DBG_EXCEPTION, 0);
+			warn("NAND write in state %02X", nand_state);
 			return;
 	}
 }
@@ -230,19 +226,15 @@ static u32 ecc_calculate(u8 page[512]) {
 
 struct {
 	u32 operation;
-	union {
-		u32 full_address;
-		struct {
-			u8 column_address;
-			u8 page_address_lo;
-			u8 page_address_mid;
-			u8 page_address_hi;
-		};
-	};
+	u8 address[7];
 	u32 op_size;
 	u32 ram_address;
 	u32 ecc;
 } nand_phx;
+void nand_phx_reset(void) {
+	memset(&nand_phx, 0, sizeof nand_phx);
+	nand_writable = 1;
+}
 u32 nand_phx_read_word(u32 addr) {
 	switch (addr & 0x3FFFFFF) {
 		case 0x00: return 0; /* ??? */
@@ -257,14 +249,18 @@ void nand_phx_write_word(u32 addr, u32 value) {
 	switch (addr & 0x3FFFFFF) {
 		case 0x00: return;
 		case 0x04: nand_writable = value; return;
-		case 0x08: // Begin operation
+		case 0x08: { // Begin operation
 			if (value != 1)
 				error("NAND controller: wrote something other than 1 to reg 8");
 
 			logprintf(LOG_FLASH, "NAND controller: op=%06x addr=%08x size=%08x raddr=%08x\n",
-				nand_phx.operation, nand_phx.full_address, nand_phx.op_size, nand_phx.ram_address);
+				nand_phx.operation, *(u32 *)nand_phx.address, nand_phx.op_size, nand_phx.ram_address);
 
-			nand_write_command(nand_phx.operation, nand_phx.full_address, nand_phx.operation >> 8 & 7);
+			nand_write_command_byte(nand_phx.operation);
+
+			u32 i;
+			for (i = 0; i < (nand_phx.operation >> 8 & 7); i++)
+				nand_write_address_byte(nand_phx.address[i]);
 
 			if (nand_phx.operation & 0x400800) {
 				u8 *ptr = phys_mem_ptr(nand_phx.ram_address, nand_phx.op_size);
@@ -272,11 +268,9 @@ void nand_phx_write_word(u32 addr, u32 value) {
 					error("NAND controller: address %x is not in RAM\n", addr);
 
 				if (nand_phx.operation & 0x000800) {
-					u32 i;
 					for (i = 0; i < nand_phx.op_size; i++)
 						nand_write_data_byte(ptr[i]);
 				} else {
-					u32 i;
 					for (i = 0; i < nand_phx.op_size; i++)
 						ptr[i] = nand_read_data_byte();
 				}
@@ -291,16 +285,17 @@ void nand_phx_write_word(u32 addr, u32 value) {
 			}
 
 			if (nand_phx.operation & 0x100000) // Confirm code
-				nand_write_command(nand_phx.operation >> 12, 0, 0);
+				nand_write_command_byte(nand_phx.operation >> 12);
 			return;
-		case 0x0C: nand_phx.operation = value;        return;
-		case 0x10: nand_phx.column_address = value;   return;
-		case 0x14: nand_phx.page_address_lo = value;  return;
-		case 0x18: nand_phx.page_address_mid = value; return;
-		case 0x1C: nand_phx.page_address_hi = value;  return;
-		case 0x20: return; /* ??? */
-		case 0x24: nand_phx.op_size = value;          return;
-		case 0x28: nand_phx.ram_address = value;      return;
+		}
+		case 0x0C: nand_phx.operation = value; return;
+		case 0x10: nand_phx.address[0] = value; return;
+		case 0x14: nand_phx.address[1] = value; return;
+		case 0x18: nand_phx.address[2] = value; return;
+		case 0x1C: nand_phx.address[3] = value; return;
+		case 0x20: return;
+		case 0x24: nand_phx.op_size = value; return;
+		case 0x28: nand_phx.ram_address = value; return;
 		case 0x2C: return; /* AHB speed / 2500000 */
 		case 0x30: return; /* APB speed / 250000  */
 		case 0x40: return;
@@ -311,6 +306,18 @@ void nand_phx_write_word(u32 addr, u32 value) {
 		case 0x54: return;
 	}
 	bad_write_word(addr, value);
+}
+
+// "U-Boot" diagnostics expects to access the NAND chip directly at 0x08000000
+u8 nand_phx_raw_read_byte(u32 addr) {
+	if (addr == 0x08000000) return nand_read_data_byte();
+	return bad_read_byte(addr);
+}
+void nand_phx_raw_write_byte(u32 addr, u8 value) {
+	if (addr == 0x08000000) return nand_write_data_byte(value);
+	if (addr == 0x08040000) return nand_write_command_byte(value);
+	if (addr == 0x08080000) return nand_write_address_byte(value);
+	bad_write_byte(addr, value);
 }
 
 u8 nand_cx_read_byte(u32 addr) {
@@ -328,20 +335,27 @@ void nand_cx_write_byte(u32 addr, u8 value) {
 		nand_write_data_byte(value);
 
 		if (addr & 0x100000)
-			nand_write_command(addr >> 11, 0, 0);
+			nand_write_command_byte(addr >> 11);
 		return;
 	}
 	bad_write_byte(addr, value);
 }
 void nand_cx_write_word(u32 addr, u32 value) {
 	if (addr >= 0x81000000 && addr < 0x82000000) {
-		if (addr & 0x080000)
+		if (addr & 0x080000) {
 			nand_write_data_word(value);
-		else
-			nand_write_command(addr >> 3, value, addr >> 21 & 7);
+		} else {
+			int addr_bytes = addr >> 21 & 7;
+			if (addr_bytes > 4) error("more than 4 address bytes not implemented");
+			nand_write_command_byte(addr >> 3);
+			for (; addr_bytes != 0; addr_bytes--) {
+				nand_write_address_byte(value);
+				value >>= 8;
+			}
+		}
 
 		if (addr & 0x100000)
-			nand_write_command(addr >> 11, 0, 0);
+			nand_write_command_byte(addr >> 11);
 		return;
 	}
 	bad_write_word(addr, value);
@@ -434,50 +448,107 @@ static void ecc_fix(int page) {
 	}
 }
 
-static u32 load(u32 page, u32 offset, char *filename, u32 *psize) {
+static u32 load_file_part(u32 offset, FILE *f, u32 length) {
+	u32 start = offset;
+	u32 page_data_size = (nand_metrics.page_size & ~0x7F);
+	while (length > 0) {
+		u32 page = offset / page_data_size;
+		u32 pageoff = offset % page_data_size;
+		if (page >= nand_metrics.num_pages) {
+			printf("Preload image(s) too large\n");
+			exit(1);
+		}
+
+		u32 readsize = page_data_size - pageoff;
+		if (readsize > length) readsize = length;
+
+		int ret = fread(&nand_data[page * nand_metrics.page_size + pageoff], 1, readsize, f);
+		if (ret <= 0)
+			break;
+		readsize = ret;
+		ecc_fix(page);
+		offset += readsize;
+		length -= readsize;
+	}
+	return offset - start;
+}
+
+static u32 load_file(u32 offset, char *filename) {
 	FILE *f = fopen(filename, "rb");
 	if (!f) {
 		perror(filename);
 		exit(1);
 	}
-
-	u32 size = 0;
-	u32 page_data_size = (nand_metrics.page_size & ~0x7F);
-	int read;
-	while ((read = fread(&nand_data[page * nand_metrics.page_size + offset],
-	                     1, page_data_size - offset, f)) > 0)
-	{
-		size += read;
-		ecc_fix(page);
-		page++;
-		if (page == nand_metrics.num_pages) {
-			printf("Preload image(s) too large\n");
-			exit(1);
-		}
-		offset = 0;
-	}
-
+	u32 size = load_file_part(offset, f, -1);
 	fclose(f);
-
-	if (psize) *psize = size;
-
-	// Round to next block
-	u32 mask = -1 << nand_metrics.log2_pages_per_block;
-	return (page + ~mask) & mask;
+	return size;
 }
 
-static u32 preload(u32 page, char *name, char *filename) {
-	u32 size;
-	u32 next = load(page, 32, filename, &size);
+static u32 load_zip_entry(u32 offset, FILE *f, char *name) {
+	struct __attribute__((packed)) {
+		u32 sig;
+		u16 version;
+		u16 flags;
+		u16 method;
+		u32 datetime;
+		u32 crc;
+		u32 comp_size, uncomp_size;
+		u16 name_length, extra_length;
+	} zip_entry;
+
+	fseek(f, 0, SEEK_SET);
+	while (fread(&zip_entry, sizeof(zip_entry), 1, f) == 1 && zip_entry.sig == 0x04034B50) {
+		char namebuf[16];
+		if (zip_entry.name_length >= sizeof namebuf) {
+			fseek(f, zip_entry.name_length + zip_entry.extra_length + zip_entry.comp_size, SEEK_CUR);
+			continue;
+		}
+		if (fread(namebuf, zip_entry.name_length, 1, f) != 1)
+			break;
+		namebuf[zip_entry.name_length] = '\0';
+		if (!stricmp(namebuf, name)) {
+			fseek(f, zip_entry.extra_length, SEEK_CUR);
+			return load_file_part(offset, f, zip_entry.comp_size);
+		}
+		fseek(f, zip_entry.extra_length + zip_entry.comp_size, SEEK_CUR);
+	}
+	fprintf(stderr, "Could not locate %s in CAS+ OS file\n", name);
+	exit(1);
+}
+
+static u32 preload(u32 offset, char *name, char *filename) {
+	u32 page_data_size = (nand_metrics.page_size & ~0x7F);
+	u32 page = offset / page_data_size;
+	u32 manifest_size, image_size;
+
+	offset += 32;
+	if (emulate_casplus && strcmp(name, "IMAGE") == 0) {
+		FILE *f = fopen(filename, "rb");
+		if (!f) {
+			perror(filename);
+			exit(1);
+		}
+		manifest_size = load_zip_entry(offset, f, "manifest_img");
+		offset += manifest_size;
+		image_size = load_zip_entry(offset, f, "phoenix.img");
+		offset += image_size;
+		fclose(f);
+	} else {
+		manifest_size = 0;
+		image_size = load_file(offset, filename);
+		offset += image_size;
+	}
 
 	u8 *pagep = &nand_data[page * nand_metrics.page_size];
 	sprintf((char *)&pagep[0], "***PRELOAD_%s***", name);
 	*(u32 *)&pagep[20] = BSWAP32(0x55F00155);
-	*(u32 *)&pagep[24] = 0;
-	*(u32 *)&pagep[28] = BSWAP32(size);
+	*(u32 *)&pagep[24] = BSWAP32(manifest_size);
+	*(u32 *)&pagep[28] = BSWAP32(image_size);
 	ecc_fix(page);
 
-	return next;
+	// Round to next block
+	u32 mask = -page_data_size << nand_metrics.log2_pages_per_block;
+	return (offset + ~mask) & mask;
 }
 
 struct manuf_data_804 {
@@ -525,16 +596,15 @@ struct manuf_data_804 {
 void flash_create_new(char **preload_file, int product, bool large_sdram) {
 	memset(nand_data, 0xFF, nand_metrics.page_size * nand_metrics.num_pages);
 
-	struct manuf_data_804 *manuf = (struct manuf_data_804 *)&nand_data[0x844];
-
 	if (preload_file[0]) {
-		load(0, 0, preload_file[0], NULL);
-	} else {
+		load_file(0, preload_file[0]);
+	} else if (!emulate_casplus) {
 		*(u32 *)&nand_data[0] = 0x796EB03C;
 		ecc_fix(0);
 
-		manuf->product = product;
-		manuf->revision = (product == 0x0C) ? 1 : 0;
+		struct manuf_data_804 *manuf = (struct manuf_data_804 *)&nand_data[0x844];
+		manuf->product = product >> 4;
+		manuf->revision = product & 0xF;
 		if (manuf->product >= 0x0F) {
 			manuf->ext.signature = 0x4C9E5F91;
 			manuf->ext.features = 5;
@@ -566,26 +636,30 @@ void flash_create_new(char **preload_file, int product, bool large_sdram) {
 		ecc_fix(nand_metrics.page_size < 0x800 ? 4 : 1);
 	}
 
-	int page = nand_metrics.page_size < 0x800 ? 0x1000 : 0x800;
-	if (preload_file[1]) page = preload(page, "BOOT2", preload_file[1]);
-	//if (preload_boot2) load(nand_metrics.page_size < 0x800 ? 32 : 64, 0, preload[1], NULL);
-	if (preload_file[2]) page = preload(page, "DIAGS", preload_file[2]);
-	if (preload_file[3]) page = preload(page, "IMAGE", preload_file[3]);
+	int block = nand_metrics.page_size < 0x800 ? 0x200000 : 0x400000;
+	//if (preload_file[1]) block = preload(block, "BOOT2", preload_file[1]);
+	//if (preload_file[2]) block = preload(block, "DIAGS", preload_file[2]);
+	if (preload_file[1]) load_file(nand_metrics.page_size < 0x800 ? 0x004000 : 0x020000, preload_file[1]);
+	if (preload_file[2]) load_file(nand_metrics.page_size < 0x800 ? 0x160000 : 0x320000, preload_file[2]);
+	if (preload_file[3]) block = preload(block, "IMAGE", preload_file[3]);
 }
 
 void flash_read_settings(u32 *sdram_size) {
-	struct manuf_data_804 *manuf = (struct manuf_data_804 *)&nand_data[0x844];
+	asic_user_flags = 0;
+	*sdram_size = 32 * 1024 * 1024;
 
-	// 0C-0E (CAS, lab cradle, plain Nspire) use old ASIC
-	// 0F-12 (CX CAS, CX, CM CAS, CM) use new ASIC
-	product = manuf->product;
-	emulate_cx = manuf->product >= 0x0F;
+	if (*(u32 *)&nand_data[0] == 0xFFFFFFFF) {
+		// No manuf data = CAS+
+		product = 0x0C0;
+		return;
+	}
+
+	struct manuf_data_804 *manuf = (struct manuf_data_804 *)&nand_data[0x844];
+	product = manuf->product << 4 | manuf->revision;
 
 	static const unsigned char flags[] = { 1, 0, 0, 1, 0, 3, 2 };
 	if (manuf->product >= 0x0C && manuf->product <= 0x12)
 		asic_user_flags = flags[manuf->product - 0x0C];
-	else
-		asic_user_flags = 0;
 
 	if (emulate_cx && manuf->ext.signature == 0x4C9E5F91) {
 		u32 cfg = manuf->ext.config_sdram;
@@ -595,8 +669,6 @@ void flash_read_settings(u32 *sdram_size) {
 			exit(1);
 		}
 		*sdram_size = (4 * 1024 * 1024) << logsize;
-	} else {
-		*sdram_size = 32 * 1024 * 1024;
 	}
 }
 

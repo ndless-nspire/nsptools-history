@@ -1,7 +1,7 @@
 #include "emu.h"
 #include <string.h>
 
-volatile int keypad_type;
+volatile int keypad_type = -1;
 volatile u16 key_map[16];
 volatile u16 touchpad_x;
 volatile u16 touchpad_y;
@@ -100,12 +100,6 @@ void keypad_reset() {
 }
 
 u8 touchpad_page = 0x04;
-u8 tp_prev_clock = 1;
-u8 tp_prev_data  = 1;
-u8 tp_state = 0;
-u8 tp_byte = 0;
-u8 tp_bitcount = 0;
-u8 tp_port = 0;
 
 void touchpad_write(u8 addr, u8 value) {
 	//printf("touchpad write: %02x %02x\n", addr, value);
@@ -147,6 +141,20 @@ u8 touchpad_read(u8 addr) {
 	return 0;
 }
 
+u8 tp_prev_clock;
+u8 tp_prev_data;
+u8 tp_state;
+u8 tp_byte;
+u8 tp_bitcount;
+u8 tp_port;
+void touchpad_gpio_reset() {
+	tp_prev_clock = 1;
+	tp_prev_data = 1;
+	tp_state = 0;
+	tp_byte = 0;
+	tp_bitcount = 0;
+	tp_port = 0;
+}
 void touchpad_gpio_change() {
 	u8 value = gpio.input.b[0] & (gpio.output.b[0] | gpio.direction.b[0]) & 0xA;
 	u8 clock = value >> 1 & 1;
@@ -232,18 +240,23 @@ void touchpad_gpio_change() {
 }
 
 /* 90050000 */
-int touchpad_cx_state;
-int touchpad_cx_reading;
-u8 touchpad_cx_port;
+struct {
+	int state;
+	int reading;
+	u8 port;
+} touchpad_cx;
+void touchpad_cx_reset(void) {
+	touchpad_cx.state = 0;
+}
 u32 touchpad_cx_read(u32 addr) {
 	switch (addr & 0xFFFF) {
 		case 0x0010:
-			if (!touchpad_cx_reading)
+			if (!touchpad_cx.reading)
 				break;
-			touchpad_cx_reading--;
-			return touchpad_read(touchpad_cx_port++);
+			touchpad_cx.reading--;
+			return touchpad_read(touchpad_cx.port++);
 		case 0x0070:
-			return touchpad_cx_reading ? 12 : 4;
+			return touchpad_cx.reading ? 12 : 4;
 		default:
 			return 0;
 	}
@@ -252,20 +265,20 @@ u32 touchpad_cx_read(u32 addr) {
 void touchpad_cx_write(u32 addr, u32 value) {
 	switch (addr & 0xFFFF) {
 		case 0x0010:
-			if (touchpad_cx_state == 0) {
-				touchpad_cx_port = value;
-				touchpad_cx_state = 1;
+			if (touchpad_cx.state == 0) {
+				touchpad_cx.port = value;
+				touchpad_cx.state = 1;
 			} else {
 				if (value & 0x100) {
-					touchpad_cx_reading++;
+					touchpad_cx.reading++;
 				} else {
-					touchpad_write(touchpad_cx_port++, value);
+					touchpad_write(touchpad_cx.port++, value);
 				}
 			}
 			return;
 		case 0x0038:
-			touchpad_cx_state = 0;
-			touchpad_cx_reading = 0;
+			touchpad_cx.state = 0;
+			touchpad_cx.reading = 0;
 			return;
 	}
 	//bad_write_word(addr, value);

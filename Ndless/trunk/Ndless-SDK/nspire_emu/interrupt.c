@@ -1,3 +1,4 @@
+#include <string.h>
 #include "emu.h"
 
 /* DC000000: Interrupt controller */
@@ -148,6 +149,13 @@ void int_set(u32 int_num, bool on) {
 		update();
 	else
 		update_cx();
+}
+
+void int_reset() {
+	memset(&intr, 0, sizeof intr);
+	intr.noninverted = -1;
+	intr.priority_limit[0] = 8;
+	intr.priority_limit[1] = 8;
 }
 
 #if 0

@@ -74,6 +74,11 @@ static void process_block() {
 	hash_state[7] += h;
 }
 
+void sha256_reset(void) {
+	memset(hash_state, 0, sizeof hash_state);
+	memset(hash_block, 0, sizeof hash_block);
+}
+
 u32 sha256_read_word(u32 addr) {
 	switch (addr & 0x3FFFFFF) {
 		case 0x00: return 0; // bit 0 = busy

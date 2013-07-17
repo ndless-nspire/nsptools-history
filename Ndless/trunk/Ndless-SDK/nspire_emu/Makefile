@@ -1,4 +1,4 @@
-OBJ = apb.o armloader.o asmcode.o cpu.o des.o debug.o emu.o flash.o gdbstub.o gui.o interrupt.o keypad.o lcd.o link.o memory.o mmu.o os-win32.o resource.o schedule.o sha256.o snippets.o translate.o usb.o usblink.o
+OBJ = armloader.o asmcode.o casplus.o cpu.o des.o debug.o emu.o flash.o gdbstub.o gui.o interrupt.o keypad.o lcd.o link.o memory.o misc.o mmu.o os-win32.o resource.o schedule.o serial.o sha256.o snippets.o translate.o usb.o usblink.o
 
 FLAGS = -W -Wall
 

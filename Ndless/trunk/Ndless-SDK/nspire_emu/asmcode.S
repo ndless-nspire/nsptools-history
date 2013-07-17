@@ -1,13 +1,14 @@
-// arm_state structure
-#define REG_PC 60(%ebx)
-#define REG_CPSR 64(%ebx)
-#define FLAG_C 70(%ebx)
+// arm_state structure offsets
+#define ARM_PC 60
+#define ARM_CPSR 64
+#define ARM_FLAG_C 70
+#define ARM_CONTROL 72
 
-// translation structure
+// translation structure offsets
 #define TRANS_JUMP_TABLE 4
 #define TRANS_END_PTR 12
 
-#define RAM_FLAGS 0x80000+0x20000+0x4000000
+#define RAM_FLAGS (65*1024*1024) // = MEM_MAXSIZE
 #define RF_READ_BREAKPOINT   1
 #define RF_WRITE_BREAKPOINT  2
 #define RF_EXEC_BREAKPOINT   4
@@ -16,7 +17,8 @@
 #define RF_CODE_TRANSLATED   32
 #define RF_CODE_NO_TRANSLATE 64
 #define RF_READ_ONLY         128
-#define RFS_TRANSLATION_INDEX 8
+#define RF_ARMLOADER_CB      256
+#define RFS_TRANSLATION_INDEX 9
 
 #define WRITE_SPECIAL_FLAGS 64+32+2
 
@@ -39,7 +41,7 @@ _translation_enter:
 	movl	%esp, _in_translation_esp
 
 	movl	$_arm, %ebx
-	movl	REG_PC, %eax
+	movl	ARM_PC(%ebx), %eax
 	jmp	_translation_next
 
 .globl	_translation_next_bx
@@ -49,7 +51,7 @@ _translation_next_bx:
 
 .globl	_translation_next
 _translation_next:
-	movl	%eax, REG_PC
+	movl	%eax, ARM_PC(%ebx)
 
 	cmpl	$0, _cycle_count_delta
 	jns	return
@@ -95,10 +97,12 @@ return:
 
 switch_to_thumb:
 	decl	%eax
-	movl	%eax, REG_PC
-	orb	$0x20, REG_CPSR
+	movl	%eax, ARM_PC(%ebx)
+	orb	$0x20, ARM_CPSR(%ebx)
 	jmp	return
 
+	// These shift procedures are called only from translated code,
+	// so they may assume that %ebx == _arm
 	.align	4
 .globl _arm_shift_proc
 _arm_shift_proc:
@@ -142,13 +146,13 @@ lsl_carry:
 	testb	%cl, %cl
 	je	lsl_carry_zero
 	shll	%cl, %eax
-	setc	FLAG_C
+	setc	ARM_FLAG_C(%ebx)
 lsl_carry_zero:
 	ret
 lsl_carry_32:
 	jne	ls_carry_33
 	shrl	$1, %eax
-	setc	FLAG_C
+	setc	ARM_FLAG_C(%ebx)
 	xorl	%eax, %eax
 	ret
 
@@ -158,18 +162,18 @@ lsr_carry:
 	testb	%cl, %cl
 	je	lsr_carry_zero
 	shrl	%cl, %eax
-	setc	FLAG_C
+	setc	ARM_FLAG_C(%ebx)
 lsr_carry_zero:
 	ret
 lsr_carry_32:
 	jne	ls_carry_33
 	shll	$1, %eax
-	setc	FLAG_C
+	setc	ARM_FLAG_C(%ebx)
 	xorl	%eax, %eax
 	ret
 ls_carry_33:
 	xorl	%eax, %eax
-	movb	%al, FLAG_C
+	movb	%al, ARM_FLAG_C(%ebx)
 	ret
 
 asr_carry:
@@ -178,26 +182,26 @@ asr_carry:
 	testb	%cl, %cl
 	je	asr_carry_zero
 	sarl	%cl, %eax
-	setc	FLAG_C
+	setc	ARM_FLAG_C(%ebx)
 asr_carry_zero:
 	ret
 asr_carry_32:
 	sarl	$31, %eax
-	sets	FLAG_C
+	sets	ARM_FLAG_C(%ebx)
 	ret
 
 ror_carry:
 	testb	$31, %cl
 	jz	ror_carry_mult_32
 	rorl	%cl, %eax
-	setc	FLAG_C
+	setc	ARM_FLAG_C(%ebx)
 ror_carry_zero:
 	ret
 ror_carry_mult_32:
 	testb	%cl, %cl
 	je	ror_carry_zero
 	testl	%eax, %eax
-	sets	FLAG_C
+	sets	ARM_FLAG_C(%ebx)
 	ret
 
 // u32 __attribute__((fastcall)) read_byte(u32 addr);
@@ -256,13 +260,17 @@ rh_slow:
 	AC_RELOC
 	subl	%eax, %ecx
 	testl	$1, %ecx
-	jnz	@read_align_fail@4
+	jnz	rh_unaligned
 	shll	$10, %eax
 	jc	rh_miss
 	addl	%eax, %ecx
 	jmp	@mmio_read_half@4
 rh_miss:
 	call	read_miss
+	jmp	@read_half@4
+rh_unaligned:
+	call	align_fault
+	decl	%ecx
 	jmp	@read_half@4
 
 // u32 __attribute__((fastcall)) read_word(u32 addr);
@@ -288,7 +296,7 @@ rw_slow:
 	AC_RELOC
 	subl	%eax, %ecx
 	testl	$3, %ecx
-	jnz	@read_align_fail@4
+	jnz	rw_unaligned
 	shll	$10, %eax
 	jc	rw_miss
 	addl	%eax, %ecx
@@ -296,6 +304,42 @@ rw_slow:
 rw_miss:
 	call	read_miss
 	jmp	@read_word@4
+rw_unaligned:
+	call	align_fault
+	andl	$-4, %ecx
+	jmp	@read_word@4
+
+// u32 __attribute__((fastcall)) read_word_ldr(u32 addr);
+.globl	@read_word_ldr@4
+.align	16
+@read_word_ldr@4:
+	movl	%ecx, %eax
+	shrl	$10, %eax
+	addl	0(, %eax, 8), %ecx
+	AC_RELOC
+	testl	$0x80000003, %ecx
+	jnz	rwl_slow
+	testb	$RF_READ_BREAKPOINT, RAM_FLAGS(%ecx)
+	jnz	rw_special
+	movl	(%ecx), %eax
+	ret
+rwl_slow:
+	movl	0(, %eax, 8), %eax
+	AC_RELOC
+	subl	%eax, %ecx
+	testl	$3, %ecx
+	jnz	rwl_unaligned
+	shll	$10, %eax
+	jc	rw_miss
+	addl	%eax, %ecx
+	jmp	@mmio_read_word@4
+rwl_unaligned:
+	pushl	%ecx
+	call	rw_unaligned
+	popl	%ecx
+	shll	$3, %ecx  // Unaligned ldr rotates the word so that
+	rorl	%cl, %eax // addressed byte ends up in low position
+	ret
 
 read_special:
 	pushl	%ecx
@@ -370,13 +414,17 @@ wh_slow:
 	AC_RELOC
 	subl	%eax, %ecx
 	testl	$1, %ecx
-	jnz	@write_align_fail@4
+	jnz	wh_unaligned
 	shll	$10, %eax
 	jc	wh_miss
 	addl	%eax, %ecx
 	jmp	@mmio_write_half@8
 wh_miss:
 	call	write_miss
+	jmp	@write_half@8
+wh_unaligned:
+	call	align_fault
+	decl	%ecx
 	jmp	@write_half@8
 
 // void __attribute__((fastcall)) write_word(u32 addr, u32 value);
@@ -402,13 +450,17 @@ ww_slow:
 	AC_RELOC
 	subl	%eax, %ecx
 	testl	$3, %ecx
-	jnz	@write_align_fail@4
+	jnz	ww_unaligned
 	shll	$10, %eax
 	jc	ww_miss
 	addl	%eax, %ecx
 	jmp	@mmio_write_word@8
 ww_miss:
 	call	write_miss
+	jmp	@write_word@8
+ww_unaligned:
+	call	align_fault
+	andl	$-4, %ecx
 	jmp	@write_word@8
 
 write_special:
@@ -431,6 +483,14 @@ write_miss:
 	popl	%ecx
 	popl	%edx
 	ret
+
+align_fault:
+	testb	$2, _arm+ARM_CONTROL
+	jz	1f
+	pushl	$1
+	pushl	%ecx
+	call	_data_abort
+1:	ret
 
 	.data
 .globl	_ac_reloc_end

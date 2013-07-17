@@ -30,7 +30,7 @@ void armloader_cb(void) {
  * returns 0 if success.
  */
 int armloader_load_snippet(enum SNIPPETS snippet, struct armloader_load_params params[],
-	                         unsigned params_num, void (*callback)(struct arm_state*)) {
+                           unsigned params_num, void (*callback)(struct arm_state*)) {
 	unsigned int i;
 	int code_size;
 	void *code_ptr;
@@ -83,12 +83,12 @@ int armloader_load_snippet(enum SNIPPETS snippet, struct armloader_load_params p
 	armloader_cb_ptr = callback;
 	u32 *flags = &RAM_FLAGS(virt_mem_ptr(orig_pc, 4));
 	if (*flags & RF_CODE_TRANSLATED) flush_translations();
-	*flags |= RF_ARMLOADER_CB;	
+	*flags |= RF_ARMLOADER_CB;
 
 // TODO for debugging
-//						u32 *flags = &RAM_FLAGS(virt_mem_ptr(arm.reg[15], 4));
-//										if (*flags & RF_CODE_TRANSLATED) flush_translations();
-//									*flags |= RF_EXEC_BREAKPOINT;	
+//	u32 *flags = &RAM_FLAGS(virt_mem_ptr(arm.reg[15], 4));
+//	if (*flags & RF_CODE_TRANSLATED) flush_translations();
+//	*flags |= RF_EXEC_BREAKPOINT;
 	
 	return 0;
 }

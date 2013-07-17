@@ -784,7 +784,7 @@ no_condition:
 
 			if (is_load) {
 				/* LDR/LDRB instruction */
-				emit_call(is_byteop ? (u32)read_byte : (u32)read_word);
+				emit_call(is_byteop ? (u32)read_byte : (u32)read_word_ldr);
 				if (data_reg != 15)
 					emit_mov_armreg_x86reg(data_reg, EAX);
 			} else {

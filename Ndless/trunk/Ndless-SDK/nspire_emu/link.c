@@ -348,9 +348,19 @@ static void next_bit() {
 	}
 }
 
-u8 link_input  = 3; /* Lines not pulled down by emulator. */
-u8 link_output = 3; /* Lines not pulled down by calculator. */
+u8 link_input;  /* Lines not pulled down by emulator. */
+u8 link_output; /* Lines not pulled down by calculator. */
 
+void ti84_io_link_reset() {
+	sending = false;
+	start_send = false;
+	if (var_file)
+		fclose(var_file);
+	var_file = NULL;
+
+	link_input = 3;
+	link_output = 3;
+}
 u32 ti84_io_link_read(u32 addr) {
 	//printf("read %08x (in=%d out=%d)\n", addr, link_input, link_output);
 	switch (addr & 0xFFFF) {

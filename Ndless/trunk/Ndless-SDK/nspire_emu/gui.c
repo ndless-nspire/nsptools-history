@@ -51,6 +51,10 @@ LRESULT CALLBACK message_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 				send_file((char *)lParam);
 				free((void *)lParam);
 				break;
+			case ID_XMODEM_SEND:
+				xmodem_send((char *)lParam);
+				free((void *)lParam);
+				break;
 			case ID_INCREASE_SPEED:
 				if (throttle_delay == 1) break;
 				throttle_timer_off();
@@ -100,6 +104,8 @@ LRESULT CALLBACK gfx_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 		HDC hdc = BeginPaint(hWnd, &ps);
 		if (emulate_cx)
 			lcd_cx_draw_frame(framebuffer, (u32 *)bmi.bmiColors);
+		else if (emulate_casplus)
+			casplus_lcd_draw_frame((BYTE (*)[160])framebuffer);
 		else
 			lcd_draw_frame((BYTE (*)[160])framebuffer);
 		SetDIBitsToDevice(hdc, 0, 0, 320, 240, 0, 0, 0, 240,
@@ -114,7 +120,7 @@ LRESULT CALLBACK gfx_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 }
 
 #define KEYPAD_COLUMNS 16
-#define KEYPAD_ROWS 8
+#define KEYPAD_ROWS 9
 #define KEY_WIDTH 30
 #define KEY_HEIGHT 20
 #define KEYPAD_WIDTH (KEY_WIDTH * KEYPAD_COLUMNS)
@@ -123,7 +129,17 @@ LRESULT CALLBACK keys_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 	int row, col, down;
 	RECT rc;
 
-	static const char key_names[NUM_KEYPAD_TYPES][8][11][5] = {
+	static const char key_names[NUM_KEYPAD_TYPES][9][11][5] = {
+		{{ "ret", "enter","space","(-)", "Z",   ".",   "Y",   "0",    "X",    "on",   "="    },
+		 { ",",   "+",    "W",    "3",   "V",   "2",   "U",   "1",    "T",    "ln",   ">"    },
+		 { "?",   "-",    "S",    "6",   "R",   "5",   "Q",   "4",    "P",    "log",  "<"    },
+		 { ":",   "*",    "O",    "9",   "N",   "8",   "M",   "7",    "L",    "x^2",  "i"    },
+		 { "\"",  "/",    "K",    "tan", "J",   "cos", "I",   "sin",  "H",    "^",    "EE"   },
+		 { "'",   "cat",  "G",    ")",   "F",   "(",   "E",   "sto>", "D",    "shift","pi"   },
+		 { "flag","---",  "C",    "menu","B",   "esc", "A",   "click","theta","hand", "tab"  },
+		 { "left","up",   "right","down","---", "---", "---", "---",  "---",  "---",  "---"  },
+		 { "up",  "u+r",  "right","r+d", "down","d+l", "left","l+u",  "del",  "ctrl", "---"  }},
+
 		{{ "ret", "enter","space","(-)", "Z",   ".",   "Y",   "0",  "X",  "on",   "theta" },
 		 { ",",   "+",    "W",    "3",   "V",   "2",   "U",   "1",  "T",  "e^x",  "pi"    },
 		 { "?",   "-",    "S",    "6",   "R",   "5",   "Q",   "4",  "P",  "10^x", "EE"    },
@@ -131,7 +147,8 @@ LRESULT CALLBACK keys_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		 { "\"",  "/",    "K",    "tan", "J",   "cos", "I",   "sin","H",  "^",    ">"     },
 		 { "'",   "cat",  "G",    ")",   "F",   "(",   "E",   "var","D",  "shift","<"     },
 		 { "flag","click","C",    "home","B",   "menu","A",   "esc","|",  "tab",  "---"   },
-		 { "up",  "u+r",  "right","r+d", "down","d+l", "left","l+u","del","ctrl", "="     }},
+		 { "up",  "u+r",  "right","r+d", "down","d+l", "left","l+u","del","ctrl", "="     },
+		 { "---", "---",  "---",  "---", "---", "---", "---", "---","---","---",  "---"   }},
 
 		{{ "down", "left", "right","up",  "---", "---",  "---",  "---",  "---","on", "---" },
 		 { "enter","+",    "-",    "*",   "/",   "^",    "clear","---",  "---","---","---" },
@@ -140,6 +157,7 @@ LRESULT CALLBACK keys_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		 { "0",    "1",    "4",    "7",   ",",   "sin",  "apps", "X",    "---","---","---" },
 		 { "---",  "sto",  "ln",   "log", "x^2", "x^-1", "math", "alpha","---","---","---" },
 		 { "graph","trace","zoom", "wind","y=",  "2nd",  "mode", "del",  "---","---","---" },
+		 { "---",  "---",  "---",  "---", "---", "---",  "---",  "---",  "---","---","---" },
 		 { "---",  "---",  "---",  "---", "---", "---",  "---",  "---",  "---","---","---" }},
 
 		{{ "ret",  "enter","---",  "(-)", "space","Z",   "Y",   "0",  "?!",  "on",   "---"  },
@@ -149,7 +167,8 @@ LRESULT CALLBACK keys_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		 { "F",    "E",    "D",    "---", "C",    "B",   "A",   "=",  "*",   "^",    "---"  },
 		 { "---",  "var",  "-",    ")",   ".",    "(",   "5",   "cat","frac","shift","---"  },
 		 { "flag", "click","+",    "doc", "2",    "menu","8",   "esc","---", "tab",  "---"  },
-		 { "right","r+u",  "up",   "u+l", "left", "l+d", "down","d+r","del", "ctrl", ","    }},
+		 { "right","r+u",  "up",   "u+l", "left", "l+d", "down","d+r","del", "ctrl", ","    },
+		 { "---",  "---",  "---",  "---", "---", "---",  "---", "---","---", "---",  "---"  }},
 
 		{{ "ret",  "enter","---",  "(-)", "space","Z",   "Y",   "0",  "?!",   "on",  "---"  },
 		 { "X",    "W",    "V",    "3",   "U",    "T",   "S",   "1",  "pi",   "trig","10^x" },
@@ -158,93 +177,101 @@ LRESULT CALLBACK keys_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		 { "F",    "E",    "D",    "---", "C",    "B",   "A",   "=",  "*",    "^",   "---"  },
 		 { "---",  "var",  "-",    ")",   ".",    "(",   "5",   "cat","frac", "del", "pad"  },
 		 { "flag", "---",  "+",    "doc", "2",    "menu","8",   "esc","---",  "tab", "---"  },
-		 { "---",  "---",  "---",  "---", "---",  "---", "---", "---","shift","ctrl",","    }},
+		 { "---",  "---",  "---",  "---", "---",  "---", "---", "---","shift","ctrl",","    },
+		 { "---",  "---",  "---",  "---", "---",  "---", "---", "---","---",  "---", "---"  }},
 	};
 	static const struct key_desc {
 		BYTE vk_code;
 		BYTE ext; /* 1 = non-extended key only, 2 = extended key only, 3 = either */
 		BYTE keypad_code[NUM_KEYPAD_TYPES];
 	} key_table[] = {
-		{ VK_RETURN,    2, { 0x00, 0x10, 0x00, 0x00 } },
-		{ VK_RETURN,    1, { 0x01, 0x10, 0x01, 0x01 } },
-		{ VK_SPACE,     3, { 0x02, 0x40, 0x04, 0x04 } },
-		{ VK_OEM_MINUS, 3, { 0x03, 0x20, 0x03, 0x03 } },
-		{ 'Z',          3, { 0x04, 0x31, 0x05, 0x05 } },
-		{ VK_DECIMAL,   3, { 0x05, 0x30, 0x54, 0x54 } },
-		{ VK_OEM_PERIOD,3, { 0x05, 0x30, 0x54, 0x54 } },
-		{ 'Y',          3, { 0x06, 0x41, 0x06, 0x06 } },
-		{ '0',          3, { 0x07, 0x40, 0x07, 0x07 } },
-		{ 'X',          3, { 0x08, 0x51, 0x10, 0x10 } },
-		{ VK_OEM_COMMA, 3, { 0x10, 0x44, 0x7A, 0x7A } },
-		{ VK_ADD,       3, { 0x11, 0x11, 0x62, 0x62 } },
-		{ 'W',          3, { 0x12, 0x12, 0x11, 0x11 } },
-		{ '3',          3, { 0x13, 0x21, 0x13, 0x13 } },
-		{ 'V',          3, { 0x14, 0x22, 0x12, 0x12 } },
-		{ '2',          3, { 0x15, 0x31, 0x64, 0x64 } },
-		{ 'U',          3, { 0x16, 0x32, 0x14, 0x14 } },
-		{ '1',          3, { 0x17, 0x41, 0x17, 0x17 } },
-		{ 'T',          3, { 0x18, 0x42, 0x15, 0x15 } },
-		{ VK_OEM_2,     3, { 0x20, 0x14, 0x08, 0x08 } }, /* ? / */
-		{ VK_SUBTRACT,  3, { 0x21, 0x12, 0x52, 0x52 } },
-		{ 'S',          3, { 0x22, 0x52, 0x16, 0x16 } },
-		{ '6',          3, { 0x23, 0x22, 0x23, 0x23 } },
-		{ 'R',          3, { 0x24, 0x13, 0x20, 0x20 } },
-		{ '5',          3, { 0x25, 0x32, 0x56, 0x56 } },
-		{ 'Q',          3, { 0x26, 0x23, 0x21, 0x21 } },
-		{ '4',          3, { 0x27, 0x42, 0x27, 0x27 } },
-		{ 'P',          3, { 0x28, 0x33, 0x22, 0x22 } },
-		{ VK_OEM_1,     3, { 0x30, 0xFF, 0x08, 0x08 } }, /* : ; */
-		{ VK_MULTIPLY,  3, { 0x31, 0x13, 0x48, 0x48 } },
-		{ 'O',          3, { 0x32, 0x43, 0x24, 0x24 } },
-		{ '9',          3, { 0x33, 0x23, 0x33, 0x33 } },
-		{ 'N',          3, { 0x34, 0x53, 0x25, 0x25 } },
-		{ '8',          3, { 0x35, 0x33, 0x66, 0x66 } },
-		{ 'M',          3, { 0x36, 0x14, 0x26, 0x26 } },
-		{ '7',          3, { 0x37, 0x43, 0x37, 0x37 } },
-		{ 'L',          3, { 0x38, 0x24, 0x30, 0x30 } },
-		{ VK_OEM_7,     3, { 0x40, 0xFF, 0x08, 0x08 } }, /* " ' */
-		{ VK_DIVIDE,    3, { 0x41, 0x14, 0x38, 0x38 } },
-		{ 'K',          3, { 0x42, 0x34, 0x31, 0x31 } },
-		{ 'J',          3, { 0x44, 0x44, 0x32, 0x32 } },
-		{ 'I',          3, { 0x46, 0x54, 0x34, 0x34 } },
-		{ 'H',          3, { 0x48, 0x15, 0x35, 0x35 } },
-		{ 'G',          3, { 0x52, 0x25, 0x36, 0x36 } },
-		{ VK_OEM_6,     3, { 0x53, 0x34, 0x53, 0x53 } }, /* [ { */
-		{ 'F',          3, { 0x54, 0x35, 0x40, 0x40 } },
-		{ VK_OEM_4,     3, { 0x55, 0x24, 0x55, 0x55 } }, /* ] } */
-		{ 'E',          3, { 0x56, 0x45, 0x41, 0x41 } },
-		{ 'D',          3, { 0x58, 0x55, 0x42, 0x42 } },
-		{ VK_RSHIFT,    3, { 0x59, 0x16, 0x59, 0x78 } },
-		{ VK_LSHIFT,    3, { 0x59, 0x65, 0x59, 0x78 } },
-		{ VK_CLEAR,     3, { 0x61, 0xFF, 0x61, 0x91 } }, /* numeric keypad 5 */
-		{ 'C',          3, { 0x62, 0x36, 0x44, 0x44 } },
-		{ VK_HOME,      2, { 0x63, 0x56, 0x09, 0x09 } },
-		{ 'B',          3, { 0x64, 0x46, 0x45, 0x45 } },
-		{ 'A',          3, { 0x66, 0x56, 0x46, 0x46 } },
-		{ VK_ESCAPE,    3, { 0x67, 0x66, 0x67, 0x67 } },
-		{ VK_OEM_5,     3, { 0x68, 0xFF, 0x08, 0x08 } }, /* \ | */
-		{ VK_TAB,       3, { 0x69, 0xFF, 0x69, 0x69 } },
-		{ VK_UP,        3, { 0x70, 0x03, 0x72, 0x81 } },
-		{ VK_PRIOR,     1, { 0x71, 0x46, 0x71, 0x82 } }, /* numeric keypad 9 */
-		{ VK_RIGHT,     3, { 0x72, 0x02, 0x70, 0x92 } },
-		{ VK_NEXT,      1, { 0x73, 0x36, 0x77, 0xA2 } }, /* numeric keypad 3 */
-		{ VK_DOWN,      3, { 0x74, 0x00, 0x76, 0xA1 } },
-		{ VK_END,       1, { 0x75, 0x37, 0x75, 0xA0 } }, /* numeric keypad 1 */
-		{ VK_LEFT,      3, { 0x76, 0x01, 0x74, 0x90 } },
-		{ VK_HOME,      1, { 0x77, 0x56, 0x73, 0x80 } }, /* numeric keypad 7 */
-		{ VK_BACK,      3, { 0x78, 0xFF, 0x78, 0x59 } },
-		{ VK_CONTROL,   3, { 0x79, 0x57, 0x79, 0x79 } },
-		{ VK_OEM_PLUS,  3, { 0x7A, 0x47, 0x47, 0x47 } }, /* = + */
-		{ VK_INSERT,    3, { 0xFF, 0x26, 0xFF, 0xFF } },
-		{ VK_NEXT,      2, { 0xFF, 0x36, 0xFF, 0xFF } },
-		{ VK_END,       2, { 0xFF, 0x37, 0xFF, 0xFF } },
-		{ VK_PRIOR,     2, { 0xFF, 0x46, 0xFF, 0xFF } },
-		{ VK_F5,        3, { 0xFF, 0x60, 0xFF, 0xFF } },
-		{ VK_F4,        3, { 0xFF, 0x61, 0xFF, 0xFF } },
-		{ VK_F3,        3, { 0xFF, 0x62, 0xFF, 0xFF } },
-		{ VK_F2,        3, { 0xFF, 0x63, 0xFF, 0xFF } },
-		{ VK_F1,        3, { 0xFF, 0x64, 0xFF, 0xFF } },
-		{ VK_DELETE,    3, { 0xFF, 0x67, 0xFF, 0xFF } },
+		{ VK_RETURN,    2, { 0x00, 0x00, 0x10, 0x00, 0x00 } },
+		{ VK_RETURN,    1, { 0x01, 0x01, 0x10, 0x01, 0x01 } },
+		{ VK_SPACE,     3, { 0x02, 0x02, 0x40, 0x04, 0x04 } },
+		{ VK_OEM_MINUS, 3, { 0x03, 0x03, 0x20, 0x03, 0x03 } },
+		{ 'Z',          3, { 0x04, 0x04, 0x31, 0x05, 0x05 } },
+		{ VK_DECIMAL,   3, { 0x05, 0x05, 0x30, 0x54, 0x54 } },
+		{ VK_OEM_PERIOD,3, { 0x05, 0x05, 0x30, 0x54, 0x54 } },
+		{ 'Y',          3, { 0x06, 0x06, 0x41, 0x06, 0x06 } },
+		{ '0',          3, { 0x07, 0x07, 0x40, 0x07, 0x07 } },
+		{ 'X',          3, { 0x08, 0x08, 0x51, 0x10, 0x10 } },
+		{ VK_OEM_COMMA, 3, { 0x10, 0x10, 0x44, 0x7A, 0x7A } },
+		{ VK_ADD,       3, { 0x11, 0x11, 0x11, 0x62, 0x62 } },
+		{ 'W',          3, { 0x12, 0x12, 0x12, 0x11, 0x11 } },
+		{ '3',          3, { 0x13, 0x13, 0x21, 0x13, 0x13 } },
+		{ 'V',          3, { 0x14, 0x14, 0x22, 0x12, 0x12 } },
+		{ '2',          3, { 0x15, 0x15, 0x31, 0x64, 0x64 } },
+		{ 'U',          3, { 0x16, 0x16, 0x32, 0x14, 0x14 } },
+		{ '1',          3, { 0x17, 0x17, 0x41, 0x17, 0x17 } },
+		{ 'T',          3, { 0x18, 0x18, 0x42, 0x15, 0x15 } },
+		{ VK_OEM_2,     3, { 0x20, 0x20, 0x14, 0x08, 0x08 } }, /* ? / */
+		{ VK_SUBTRACT,  3, { 0x21, 0x21, 0x12, 0x52, 0x52 } },
+		{ 'S',          3, { 0x22, 0x22, 0x52, 0x16, 0x16 } },
+		{ '6',          3, { 0x23, 0x23, 0x22, 0x23, 0x23 } },
+		{ 'R',          3, { 0x24, 0x24, 0x13, 0x20, 0x20 } },
+		{ '5',          3, { 0x25, 0x25, 0x32, 0x56, 0x56 } },
+		{ 'Q',          3, { 0x26, 0x26, 0x23, 0x21, 0x21 } },
+		{ '4',          3, { 0x27, 0x27, 0x42, 0x27, 0x27 } },
+		{ 'P',          3, { 0x28, 0x28, 0x33, 0x22, 0x22 } },
+		{ VK_OEM_1,     3, { 0x30, 0x30, 0xFF, 0x08, 0x08 } }, /* : ; */
+		{ VK_MULTIPLY,  3, { 0x31, 0x31, 0x13, 0x48, 0x48 } },
+		{ 'O',          3, { 0x32, 0x32, 0x43, 0x24, 0x24 } },
+		{ '9',          3, { 0x33, 0x33, 0x23, 0x33, 0x33 } },
+		{ 'N',          3, { 0x34, 0x34, 0x53, 0x25, 0x25 } },
+		{ '8',          3, { 0x35, 0x35, 0x33, 0x66, 0x66 } },
+		{ 'M',          3, { 0x36, 0x36, 0x14, 0x26, 0x26 } },
+		{ '7',          3, { 0x37, 0x37, 0x43, 0x37, 0x37 } },
+		{ 'L',          3, { 0x38, 0x38, 0x24, 0x30, 0x30 } },
+		{ VK_OEM_7,     3, { 0x40, 0x40, 0xFF, 0x08, 0x08 } }, /* " ' */
+		{ VK_DIVIDE,    3, { 0x41, 0x41, 0x14, 0x38, 0x38 } },
+		{ 'K',          3, { 0x42, 0x42, 0x34, 0x31, 0x31 } },
+		{ 'J',          3, { 0x44, 0x44, 0x44, 0x32, 0x32 } },
+		{ 'I',          3, { 0x46, 0x46, 0x54, 0x34, 0x34 } },
+		{ 'H',          3, { 0x48, 0x48, 0x15, 0x35, 0x35 } },
+		{ 'G',          3, { 0x52, 0x52, 0x25, 0x36, 0x36 } },
+		{ VK_OEM_6,     3, { 0x53, 0x53, 0x34, 0x53, 0x53 } }, /* [ { */
+		{ 'F',          3, { 0x54, 0x54, 0x35, 0x40, 0x40 } },
+		{ VK_OEM_4,     3, { 0x55, 0x55, 0x24, 0x55, 0x55 } }, /* ] } */
+		{ 'E',          3, { 0x56, 0x56, 0x45, 0x41, 0x41 } },
+		{ 'D',          3, { 0x58, 0x58, 0x55, 0x42, 0x42 } },
+		{ VK_RSHIFT,    3, { 0x59, 0x59, 0x16, 0x59, 0x78 } },
+		{ VK_LSHIFT,    3, { 0x59, 0x59, 0x65, 0x59, 0x78 } },
+		{ VK_CLEAR,     3, { 0x67, 0x61, 0xFF, 0x61, 0xA1 } }, /* numeric keypad 5 */
+		{ 'C',          3, { 0x62, 0x62, 0x36, 0x44, 0x44 } },
+		{ VK_HOME,      2, { 0x63, 0x63, 0x56, 0x09, 0x09 } },
+		{ 'B',          3, { 0x64, 0x64, 0x46, 0x45, 0x45 } },
+		{ 'A',          3, { 0x66, 0x66, 0x56, 0x46, 0x46 } },
+		{ VK_ESCAPE,    3, { 0x65, 0x67, 0x66, 0x67, 0x67 } },
+		{ VK_OEM_5,     3, { 0x68, 0x68, 0xFF, 0x08, 0x08 } }, /* \ | */
+		{ VK_TAB,       3, { 0x6A, 0x69, 0xFF, 0x69, 0x69 } },
+
+		{ VK_UP,        2, { 0x71, 0x70, 0x03, 0x72, 0x91 } },
+		{ VK_RIGHT,     2, { 0x72, 0x72, 0x02, 0x70, 0xA2 } },
+		{ VK_DOWN,      2, { 0x73, 0x74, 0x00, 0x76, 0xB1 } },
+		{ VK_LEFT,      2, { 0x70, 0x76, 0x01, 0x74, 0xA0 } },
+
+		{ VK_UP,        1, { 0x80, 0x70, 0x03, 0x72, 0x91 } },
+		{ VK_PRIOR,     1, { 0x81, 0x71, 0x46, 0x71, 0x92 } }, /* numeric keypad 9 */
+		{ VK_RIGHT,     1, { 0x82, 0x72, 0x02, 0x70, 0xA2 } },
+		{ VK_NEXT,      1, { 0x83, 0x73, 0x36, 0x77, 0xB2 } }, /* numeric keypad 3 */
+		{ VK_DOWN,      1, { 0x84, 0x74, 0x00, 0x76, 0xB1 } },
+		{ VK_END,       1, { 0x85, 0x75, 0x37, 0x75, 0xB0 } }, /* numeric keypad 1 */
+		{ VK_LEFT,      1, { 0x86, 0x76, 0x01, 0x74, 0xA0 } },
+		{ VK_HOME,      1, { 0x87, 0x77, 0x56, 0x73, 0x90 } }, /* numeric keypad 7 */
+
+		{ VK_BACK,      3, { 0x88, 0x78, 0xFF, 0x78, 0x59 } },
+		{ VK_CONTROL,   3, { 0x89, 0x79, 0x57, 0x79, 0x79 } },
+		{ VK_OEM_PLUS,  3, { 0x0A, 0x7A, 0x47, 0x47, 0x47 } }, /* = + */
+		{ VK_INSERT,    3, { 0xFF, 0xFF, 0x26, 0xFF, 0xFF } },
+		{ VK_NEXT,      2, { 0xFF, 0xFF, 0x36, 0xFF, 0xFF } },
+		{ VK_END,       2, { 0xFF, 0xFF, 0x37, 0xFF, 0xFF } },
+		{ VK_PRIOR,     2, { 0xFF, 0xFF, 0x46, 0xFF, 0xFF } },
+		{ VK_F5,        3, { 0xFF, 0xFF, 0x60, 0xFF, 0xFF } },
+		{ VK_F4,        3, { 0xFF, 0xFF, 0x61, 0xFF, 0xFF } },
+		{ VK_F3,        3, { 0xFF, 0xFF, 0x62, 0xFF, 0xFF } },
+		{ VK_F2,        3, { 0xFF, 0xFF, 0x63, 0xFF, 0xFF } },
+		{ VK_F1,        3, { 0xFF, 0xFF, 0x64, 0xFF, 0xFF } },
+		{ VK_DELETE,    3, { 0xFF, 0xFF, 0x67, 0xFF, 0xFF } },
 	};
 	switch (uMsg) {
 	case WM_PAINT: {
@@ -255,7 +282,7 @@ LRESULT CALLBACK keys_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			for (col = 0; col < KEYPAD_COLUMNS; col++) {
 				COLORREF tc = 0, bc = 0; // values not used, just suppressing uninitialized variable warning
 				const char *str;
-				if (row < 8 && col < 11)
+				if (row < 9 && col < 11)
 					str = key_names[keypad_type][row][col];
 				else
 					str = "---";
@@ -301,9 +328,9 @@ LRESULT CALLBACK keys_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 update:
 				if (row >= KEYPAD_ROWS) {
 					// check if this is a touchpad pseudo-key
-					if (row >= 8 && row <= 10) {
+					if (row >= 9 && row <= 11) {
 						touchpad_x = col * TOUCHPAD_X_MAX / 2;
-						touchpad_y = (10 - row) * TOUCHPAD_Y_MAX / 2;
+						touchpad_y = (11 - row) * TOUCHPAD_Y_MAX / 2;
 						touchpad_down = down;
 						PostMessage(hwndMessage, WM_USER + 2, 0, 0);
 					}
@@ -391,6 +418,8 @@ LRESULT CALLBACK emu_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 					memcpy(p, &bmi, headersize);
 					if (emulate_cx)
 						lcd_cx_draw_frame((u16 (*)[320])(p + headersize), (u32 *)(p + sizeof(BITMAPINFOHEADER)));
+					else if (emulate_casplus)
+						casplus_lcd_draw_frame((u8 (*)[160])(p + headersize));
 					else
 						lcd_draw_frame((u8 (*)[160])(p + headersize));
 					GlobalUnlock(hglb);
@@ -422,7 +451,8 @@ LRESULT CALLBACK emu_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 		}
 		case ID_SEND_DOCUMENT:
 		case ID_SEND_OS:
-		case ID_SEND_TI84_FILE: {
+		case ID_SEND_TI84_FILE:
+		case ID_XMODEM_SEND: {
 			char filename[MAX_PATH];
 			char filter[70];
 			int fp = 0;
@@ -445,7 +475,7 @@ LRESULT CALLBACK emu_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 						/* 11 */ "tmc CM CAS",
 						/* 12 */ "tmo CM",
 					};
-					unsigned int idx = product - 0xC;
+					unsigned int idx = (product >> 4) - 0xC;
 					const char *os_ext = os_ext_table[idx < 7 ? idx : 2];
 					fp = sprintf(filter, "TI-Nspire%s OS images (*.%.3s)%c*.%.3s%c",
 					             os_ext+3, os_ext, 0, os_ext, 0);
@@ -468,12 +498,13 @@ LRESULT CALLBACK emu_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			}
 			break;
 		}
+		case ID_KEYPAD_0:
 		case ID_KEYPAD_1:
 		case ID_KEYPAD_2:
 		case ID_KEYPAD_3:
 		case ID_KEYPAD_4:
-			keypad_type = LOWORD(wParam) - ID_KEYPAD_1;
-			CheckMenuRadioItem(hMenu, ID_KEYPAD_1, ID_KEYPAD_4, LOWORD(wParam), MF_BYCOMMAND);
+			keypad_type = LOWORD(wParam) - ID_KEYPAD_0;
+			CheckMenuRadioItem(hMenu, ID_KEYPAD_0, ID_KEYPAD_4, LOWORD(wParam), MF_BYCOMMAND);
 			InvalidateRect(hwndKeys, NULL, FALSE);
 			break;
 		}
@@ -525,7 +556,7 @@ DWORD CALLBACK gui_thread(LPVOID hEvent) {
 		CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top,
 		NULL, NULL, NULL, NULL);
 	hMenu = GetMenu(hwndMain);
-	CheckMenuRadioItem(hMenu, ID_KEYPAD_1, ID_KEYPAD_4, ID_KEYPAD_1 + keypad_type, MF_BYCOMMAND);
+	CheckMenuRadioItem(hMenu, ID_KEYPAD_0, ID_KEYPAD_4, ID_KEYPAD_0 + keypad_type, MF_BYCOMMAND);
 
 	hAccel = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDA_ACCEL));
 

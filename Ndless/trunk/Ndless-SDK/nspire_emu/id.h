@@ -15,10 +15,12 @@
 #define ID_SEND_OS        13
 #define ID_DISCONNECT     14
 #define ID_SEND_TI84_FILE 15
-#define ID_KEYPAD_1       16
-#define ID_KEYPAD_2       17
-#define ID_KEYPAD_3       18
-#define ID_KEYPAD_4       19
+#define ID_XMODEM_SEND    16
+#define ID_KEYPAD_0       17
+#define ID_KEYPAD_1       18
+#define ID_KEYPAD_2       19
+#define ID_KEYPAD_3       20
+#define ID_KEYPAD_4       21
 
 #define IDA_ACCEL 1
 

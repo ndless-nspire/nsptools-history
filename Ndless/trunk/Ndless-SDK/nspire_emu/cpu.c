@@ -330,7 +330,7 @@ void cpu_interpret_instruction(u32 insn) {
 				if (insn & 0x0400000) {
 					ld = read_byte(addr); write_byte(addr, st);
 				} else {
-					ld = read_word(addr); write_word(addr, st);
+					ld = read_word_ldr(addr); write_word(addr, st);
 				}
 				set_reg(insn >> 12 & 15, ld);
 			} else {
@@ -571,7 +571,7 @@ void cpu_interpret_instruction(u32 insn) {
 			if (data_reg == base_reg && writeback)
 				error("Load instruction modifies base register twice");
 			if (insn & (1 << 22)) set_reg_pc_bx(data_reg, read_byte(addr));
-			else                  set_reg_pc_bx(data_reg, read_word(addr));
+			else                  set_reg_pc_bx(data_reg, read_word_ldr(addr));
 		} else {
 			if (insn & (1 << 22)) write_byte(addr, get_reg_pc_store(data_reg));
 			else                  write_word(addr, get_reg_pc_store(data_reg));
@@ -683,14 +683,15 @@ void cpu_interpret_instruction(u32 insn) {
 				addr_cache_flush();
 				break;
 			case 0x070005: /* MCR p15, 0, <Rd>, c7, c5, 0: Invalidate ICache */
+			case 0x070025: /* MCR p15, 0, <Rd>, c7, c5, 1: Invalidate ICache line */
 			case 0x070007: /* MCR p15, 0, <Rd>, c7, c7, 0: Invalidate ICache and DCache */
+			case 0x07002A: /* MCR p15, 0, <Rd>, c7, c10, 1: Clean DCache line */
 			case 0x07008A: /* MCR p15, 0, <Rd>, c7, c10, 4: Drain write buffer */
 			case 0x0F0000: /* MCR p15, 0, <Rd>, c15, c0, 0: Debug Override Register */
 				// Ignore
 				break;
 			default:
-				warn("Unknown coprocessor instruction MCR %08X\n", insn);
-				debugger(DBG_EXCEPTION, 0);
+				warn("Unknown coprocessor instruction MCR %08X", insn);
 				break;
 		}
 	} else if ((insn & 0xF100F10) == 0xE100F10) {
@@ -735,8 +736,7 @@ void cpu_interpret_instruction(u32 insn) {
 				value = 0;
 				break;
 			default:
-				warn("Unknown coprocessor instruction MRC %08X\n", insn);
-				debugger(DBG_EXCEPTION, 0);
+				warn("Unknown coprocessor instruction MRC %08X", insn);
 				value = 0;
 				break;
 		}
@@ -757,11 +757,18 @@ bad_insn:
 	}
 }
 
-static inline void *get_pc_ptr(u32 pc, u32 align) {
+static inline void *get_pc_ptr(u32 align) {
+again:;
+	u32 pc = arm.reg[15];
 	void *ptr = &addr_cache[(pc >> 10) << 1][pc];
 	if ((u32)ptr & (AC_NOT_PTR | (align - 1))) {
+		if (pc & (align - 1)) {
+			// Handle misaligned PC by truncating low bits; gpsp-nspire 
+			arm.reg[15] = pc & -align;
+			goto again;
+		}
 		ptr = addr_cache_miss(pc, false, prefetch_abort);
-		if (!ptr || (pc & (align - 1)))
+		if (!ptr)
 			error("Bad PC: %08x\n", pc);
 	}
 	return ptr;
@@ -769,9 +776,8 @@ static inline void *get_pc_ptr(u32 pc, u32 align) {
 
 void cpu_arm_loop() {
 	while (cycle_count_delta < 0 && !(arm.cpsr_low28 & 0x20)) {
-		u32 pc = arm.reg[15];
-		u32 *insnp = get_pc_ptr(pc, 4);
-		u32 *flags = &RAM_FLAGS(insnp);
+		u32 *insnp = get_pc_ptr(4);
+		u32 flags = RAM_FLAGS(insnp);
 
 		if (cpu_events != 0) {
 			if (cpu_events & ~EVENT_DEBUG_STEP)
@@ -779,28 +785,24 @@ void cpu_arm_loop() {
 			goto enter_debugger;
 		}
 
-		if (*flags & RF_CODE_TRANSLATED) {
+		if (flags & RF_CODE_TRANSLATED) {
 			translation_enter();
 			continue;
 		}
 
-		if (*flags & (RF_EXEC_BREAKPOINT | RF_EXEC_DEBUG_NEXT | RF_ARMLOADER_CB | RF_EXEC_HACK)) {
-			if (*flags & RF_ARMLOADER_CB) {
-				*flags &= ~RF_ARMLOADER_CB;
-				armloader_cb();
-			}
-			if (*flags & (RF_EXEC_BREAKPOINT | RF_EXEC_DEBUG_NEXT)) {
-				if (*flags & RF_EXEC_BREAKPOINT)
-					printf("Hit breakpoint at %08X. Entering debugger.\n", pc);
+		if (flags & (RF_EXEC_BREAKPOINT | RF_EXEC_DEBUG_NEXT | RF_EXEC_HACK)) {
+			if (flags & (RF_EXEC_BREAKPOINT | RF_EXEC_DEBUG_NEXT)) {
+				if (flags & RF_EXEC_BREAKPOINT)
+					printf("Hit breakpoint at %08X. Entering debugger.\n", arm.reg[15]);
 enter_debugger:
 				debugger(DBG_EXEC_BREAKPOINT, 0);
 			}
-			if (*flags & RF_EXEC_HACK)
+			if (flags & RF_EXEC_HACK)
 				if (exec_hack())
 					continue;
 		} else {
-			if (do_translate && !(*flags & (RF_CODE_NO_TRANSLATE))) {
-				translate(pc, insnp);
+			if (do_translate && !(flags & (RF_CODE_NO_TRANSLATE))) {
+				translate(arm.reg[15], insnp);
 				continue;
 			}
 		}
@@ -812,8 +814,7 @@ enter_debugger:
 
 void cpu_thumb_loop() {
 	while (cycle_count_delta < 0) {
-		u32 pc = arm.reg[15];
-		u16 *insnp = get_pc_ptr(pc, 2);
+		u16 *insnp = get_pc_ptr(2);
 		u16 insn = *insnp;
 
 		if (cpu_events != 0) {
@@ -822,10 +823,10 @@ void cpu_thumb_loop() {
 			goto enter_debugger;
 		}
 
-		u32 *flags = &RAM_FLAGS((u32)insnp & ~3);
-		if (*flags & (RF_EXEC_BREAKPOINT | RF_EXEC_DEBUG_NEXT)) {
-			if (*flags & RF_EXEC_BREAKPOINT)
-				printf("Hit breakpoint at %08X. Entering debugger.\n", pc);
+		u32 flags = RAM_FLAGS((u32)insnp & ~3);
+		if (flags & (RF_EXEC_BREAKPOINT | RF_EXEC_DEBUG_NEXT)) {
+			if (flags & RF_EXEC_BREAKPOINT)
+				printf("Hit breakpoint at %08X. Entering debugger.\n", arm.reg[15]);
 enter_debugger:
 			debugger(DBG_EXEC_BREAKPOINT, 0);
 		}
@@ -882,9 +883,7 @@ enter_debugger:
 			}
 			case 0x44: { /* ADD Rd, Rm (high registers allowed) */
 				u32 left = (insn >> 4 & 8) | (insn & 7), right = insn >> 3 & 15;
-				u32 res = add(get_reg_pc_thumb(left), get_reg_pc_thumb(right), 0, true);
-				set_nz_flags(res);
-				set_reg_pc(left, res);
+				set_reg_pc(left, get_reg_pc_thumb(left) + get_reg_pc_thumb(right));
 				break;
 			}
 			case 0x45: { /* CMP Rn, Rm (high registers allowed) */
@@ -900,7 +899,7 @@ enter_debugger:
 			case 0x47: { /* BX/BLX Rm (high register allowed) */
 				u32 target = get_reg_pc_thumb(insn >> 3 & 15);
 				if (insn & 0x80)
-					arm.reg[14] = pc + 3;
+					arm.reg[14] = arm.reg[15] + 1;
 				arm.reg[15] = target & ~1;
 				if (!(target & 1)) {
 					arm.cpsr_low28 &= ~0x20; /* Exit THUMB mode */
@@ -908,24 +907,24 @@ enter_debugger:
 				}
 				break;
 			}
-			CASE_x8(0x48): /* LDR reg, [PC, #imm] */ REG8 = read_word(((pc + 4) & -4) + ((insn & 0xFF) << 2)); break;
+			CASE_x8(0x48): /* LDR reg, [PC, #imm] */ REG8 = read_word_ldr(((arm.reg[15] + 2) & -4) + ((insn & 0xFF) << 2)); break;
 			CASE_x2(0x50): /* STR   Rd, [Rn, Rm] */ write_word(REG3 + REG6, REG0); break;
 			CASE_x2(0x52): /* STRH  Rd, [Rn, Rm] */ write_half(REG3 + REG6, REG0); break;
 			CASE_x2(0x54): /* STRB  Rd, [Rn, Rm] */ write_byte(REG3 + REG6, REG0); break;
 			CASE_x2(0x56): /* LDRSB Rd, [Rn, Rm] */ REG0 = (s8)read_byte(REG3 + REG6); break;
-			CASE_x2(0x58): /* LDR   Rd, [Rn, Rm] */ REG0 = read_word(REG3 + REG6); break;
+			CASE_x2(0x58): /* LDR   Rd, [Rn, Rm] */ REG0 = read_word_ldr(REG3 + REG6); break;
 			CASE_x2(0x5A): /* LDRH  Rd, [Rn, Rm] */ REG0 = read_half(REG3 + REG6); break;
 			CASE_x2(0x5C): /* LDRB  Rd, [Rn, Rm] */ REG0 = read_byte(REG3 + REG6); break;
 			CASE_x2(0x5E): /* LDRSH Rd, [Rn, Rm] */ REG0 = (s16)read_half(REG3 + REG6); break;
 			CASE_x8(0x60): /* STR  Rd, [Rn, #imm] */ write_word(REG3 + (insn >> 4 & 124), REG0); break;
-			CASE_x8(0x68): /* LDR  Rd, [Rn, #imm] */ REG0 = read_word(REG3 + (insn >> 4 & 124)); break;
+			CASE_x8(0x68): /* LDR  Rd, [Rn, #imm] */ REG0 = read_word_ldr(REG3 + (insn >> 4 & 124)); break;
 			CASE_x8(0x70): /* STRB Rd, [Rn, #imm] */ write_byte(REG3 + (insn >> 6 & 31), REG0); break;
 			CASE_x8(0x78): /* LDRB Rd, [Rn, #imm] */ REG0 = read_byte(REG3 + (insn >> 6 & 31)); break;
 			CASE_x8(0x80): /* STRH Rd, [Rn, #imm] */ write_half(REG3 + (insn >> 5 & 62), REG0); break;
 			CASE_x8(0x88): /* LDRH Rd, [Rn, #imm] */ REG0 = read_half(REG3 + (insn >> 5 & 62)); break;
 			CASE_x8(0x90): /* STR Rd, [SP, #imm] */ write_word(arm.reg[13] + ((insn & 0xFF) << 2), REG8); break;
-			CASE_x8(0x98): /* LDR Rd, [SP, #imm] */ REG8 = read_word(arm.reg[13] + ((insn & 0xFF) << 2)); break;
-			CASE_x8(0xA0): /* ADD Rd, PC, #imm */ REG8 = ((pc + 4) & -4) + ((insn & 0xFF) << 2); break;
+			CASE_x8(0x98): /* LDR Rd, [SP, #imm] */ REG8 = read_word_ldr(arm.reg[13] + ((insn & 0xFF) << 2)); break;
+			CASE_x8(0xA0): /* ADD Rd, PC, #imm */ REG8 = ((arm.reg[15] + 2) & -4) + ((insn & 0xFF) << 2); break;
 			CASE_x8(0xA8): /* ADD Rd, SP, #imm */ REG8 = arm.reg[13] + ((insn & 0xFF) << 2); break;
 			case 0xB0: /* ADD/SUB SP, #imm */
 				arm.reg[13] += ((insn & 0x80) ? -(insn & 0x7F) : (insn & 0x7F)) << 2;
@@ -981,14 +980,23 @@ enter_debugger:
 			CASE_x8(0xC8): { /* LDMIA Rn!, {reglist} */
 				int i;
 				u32 addr = REG8;
-				for (i = 0; i < 8; i++)
-					if (insn >> i & 1)
-						arm.reg[i] = read_word(addr), addr += 4;
-				if (!(insn >> (insn >> 8 & 7) & 1))
-					REG8 = addr;
+				u32 tmp = 0; // value not used, just suppressing uninitialized variable warning
+				for (i = 0; i < 8; i++) {
+					if (insn >> i & 1) {
+						if (i == (insn >> 8 & 7))
+							tmp = read_word(addr);
+						else
+							arm.reg[i] = read_word(addr);
+						addr += 4;
+					}
+				}
+				// must set address register last so it is unchanged on exception
+				REG8 = addr;
+				if (insn >> (insn >> 8 & 7) & 1)
+					REG8 = tmp;
 				break;
 			}
-#define BRANCH_IF(cond) if (cond) arm.reg[15] = pc + 4 + ((s8)insn << 1); break;
+#define BRANCH_IF(cond) if (cond) arm.reg[15] += 2 + ((s8)insn << 1); break;
 			case 0xD0: /* BEQ */ BRANCH_IF(arm.cpsr_z)
 			case 0xD1: /* BNE */ BRANCH_IF(!arm.cpsr_z)
 			case 0xD2: /* BCS */ BRANCH_IF(arm.cpsr_c)
@@ -1008,19 +1016,23 @@ enter_debugger:
 				cpu_exception(EX_SWI);
 				return; /* Exits THUMB mode */
 
-			CASE_x8(0xE0): /* B */ arm.reg[15] = pc + 4 + ((s32)insn << 21 >> 20); break;
-			CASE_x8(0xE8): /* Second half of BLX */
-				arm.reg[15] = (arm.reg[14] + ((insn & 0x7FF) << 1)) & ~3;
-				arm.reg[14] = pc + 3;
+			CASE_x8(0xE0): /* B */ arm.reg[15] += 2 + ((s32)insn << 21 >> 20); break;
+			CASE_x8(0xE8): { /* Second half of BLX */
+				u32 target = (arm.reg[14] + ((insn & 0x7FF) << 1)) & ~3;
+				arm.reg[14] = arm.reg[15] + 1;
+				arm.reg[15] = target;
 				arm.cpsr_low28 &= ~0x20; /* Exit THUMB mode */
 				return;
+			}
 			CASE_x8(0xF0): /* First half of BL/BLX */
-				arm.reg[14] = pc + 4 + ((s32)insn << 21 >> 9);
+				arm.reg[14] = arm.reg[15] + 2 + ((s32)insn << 21 >> 9);
 				break;
-			CASE_x8(0xF8): /* Second half of BL */
-				arm.reg[15] = arm.reg[14] + ((insn & 0x7FF) << 1);
-				arm.reg[14] = pc + 3;
+			CASE_x8(0xF8): { /* Second half of BL */
+				u32 target = arm.reg[14] + ((insn & 0x7FF) << 1);
+				arm.reg[14] = arm.reg[15] + 1;
+				arm.reg[15] = target;
 				break;
+			}
 			default:
 				error("Unknown instruction: %04X\n", insn);
 				break;

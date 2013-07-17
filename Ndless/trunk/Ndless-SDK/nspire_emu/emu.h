@@ -34,7 +34,10 @@ extern bool exiting;
 extern bool do_translate;
 extern int product;
 extern int asic_user_flags;
-extern bool emulate_cx;
+#define emulate_casplus (product == 0x0C0)
+// 0C-0E (CAS, lab cradle, plain Nspire) use old ASIC
+// 0F-12 (CX CAS, CX, CM CAS, CM) use new ASIC
+#define emulate_cx (product >= 0x0F0)
 extern bool turbo_mode;
 extern bool is_halting;
 extern bool show_speed;
@@ -51,64 +54,26 @@ void throttle_timer_off();
 int exec_hack();
 typedef void fault_proc(u32 mva, u8 status);
 fault_proc prefetch_abort, data_abort;
+void add_reset_proc(void (*proc)(void));
 
-/* Declarations for apb.c */
+/* Declarations for casplus.c */
 
-union gpio_reg { u32 w; u8 b[4]; };
-extern struct gpio_state {
-	union gpio_reg direction;
-	union gpio_reg output;
-	union gpio_reg input;
-	union gpio_reg invert;
-	union gpio_reg sticky;
-	union gpio_reg unknown_24;
-} gpio;
+void casplus_lcd_draw_frame(u8 buffer[240][160]);
+u8 casplus_nand_read_byte(u32 addr);
+u16 casplus_nand_read_half(u32 addr);
+void casplus_nand_write_byte(u32 addr, u8 value);
+void casplus_nand_write_half(u32 addr, u16 value);
 
-void gpio_reset();
+void casplus_int_set(u32 int_num, bool on);
 
-void serial_byte_in(u8 byte);
+u8 omap_read_byte(u32 addr);
+u16 omap_read_half(u32 addr);
+u32 omap_read_word(u32 addr);
+void omap_write_byte(u32 addr, u8 value);
+void omap_write_half(u32 addr, u16 value);
+void omap_write_word(u32 addr, u32 value);
 
-void watchdog_reset();
-
-extern struct pmu_state {
-	u32 clocks_load;
-	u32 wake_mask;
-	u32 disable;
-	u32 disable2;
-	u32 clocks;
-} pmu;
-void pmu_reset(void);
-
-extern struct timerpair {
-	struct timer {
-		u16 ticks;
-		u16 start_value;     /* Write value of +00 */
-		u16 value;           /* Read value of +00  */
-		u16 divider;         /* Value of +04 */
-		u16 control;         /* Value of +08 */
-	} timers[2];
-	u16 completion_value[6];
-	u8 int_mask;
-	u8 int_status;
-} timerpairs[3];
-void timer_reset(void);
-void timer_cx_reset(void);
-
-extern struct apb_map_entry {
-	u32 (*read)(u32 addr);
-	void (*write)(u32 addr, u32 value);
-} apb_map[0x12];
-extern const struct apb_map_entry apb_map_normal[0x12];
-extern const struct apb_map_entry apb_map_cx[0x12];
-
-u8 apb_read_byte(u32 addr);
-u16 apb_read_half(u32 addr);
-u32 apb_read_word(u32 addr);
-void apb_write_byte(u32 addr, u8 value);
-void apb_write_half(u32 addr, u16 value);
-void apb_write_word(u32 addr, u32 value);
-void *apb_save_state(size_t *size);
-void apb_reload_state(void *state);
+void casplus_reset(void);
 
 /* Declarations for cpu.c */
 
@@ -121,6 +86,13 @@ struct arm_state {  // Remember to update asmcode.S if this gets rearranged
 	u8  cpsr_c;     // CPSR bit 29
 	u8  cpsr_v;     // CPSR bit 28
 
+	/* CP15 registers */
+	u32 control;
+	u32 translation_table_base;
+	u32 domain_access_control;
+	u8  data_fault_status, instruction_fault_status;
+	u32 fault_address;
+
 	u32 r8_usr[5], r13_usr[2];
 	u32 r8_fiq[5], r13_fiq[2], spsr_fiq;
 	u32 r13_irq[2], spsr_irq;
@@ -129,13 +101,6 @@ struct arm_state {  // Remember to update asmcode.S if this gets rearranged
 	u32 r13_und[2], spsr_und;
 
 	u8  interrupts;
-
-	/* CP15 registers */
-	u32 control;
-	u32 translation_table_base;
-	u32 domain_access_control;
-	u8  data_fault_status, instruction_fault_status;
-	u32 fault_address;
 };
 extern struct arm_state arm;
 
@@ -186,6 +151,7 @@ enum DBG_REASON {
 	DBG_WRITE_BREAKPOINT,
 };
 
+void *virt_mem_ptr(u32 addr, u32 size);
 void backtrace(u32 fp);
 void debugger(enum DBG_REASON reason, u32 addr);
 void *debug_save_state(size_t *size);
@@ -194,6 +160,7 @@ void debug_reload_state(void *state);
 /* Declarations for des.c */
 
 void des_initialize();
+void des_reset(void);
 u32 des_read_word(u32 addr);
 void des_write_word(u32 addr, u32 value);
 void *des_save_state(size_t *size);
@@ -201,10 +168,20 @@ void des_reload_state(void *state);
 
 /* Declarations for flash.c */
 
-extern void nand_initialize(bool large);
 extern bool nand_writable;
+void nand_initialize(bool large);
+void nand_write_command_byte(u8 command);
+void nand_write_address_byte(u8 byte);
+u8 nand_read_data_byte(void);
+u32 nand_read_data_word(void);
+void nand_write_data_byte(u8 value);
+void nand_write_data_word(u32 value);
+
+void nand_phx_reset(void);
 u32 nand_phx_read_word(u32 addr);
 void nand_phx_write_word(u32 addr, u32 value);
+u8 nand_phx_raw_read_byte(u32 addr);
+void nand_phx_raw_write_byte(u32 addr, u8 value);
 u8 nand_cx_read_byte(u32 addr);
 u32 nand_cx_read_word(u32 addr);
 void nand_cx_write_byte(u32 addr, u8 value);
@@ -266,11 +243,13 @@ void int_write_word(u32 addr, u32 value);
 u32 int_cx_read_word(u32 addr);
 void int_cx_write_word(u32 addr, u32 value);
 void int_set(u32 int_num, bool on);
+void int_reset();
 void *int_save_state(size_t *size);
 void int_reload_state(void *state);
 
 /* Declarations for sha256.c */
 
+void sha256_reset(void);
 u32 sha256_read_word(u32 addr);
 void sha256_write_word(u32 addr, u32 value);
 void *sha256_save_state(size_t *size);
@@ -278,7 +257,7 @@ void sha256_reload_state(void *state);
 
 /* Declarations for keypad.c */
 
-#define NUM_KEYPAD_TYPES 4
+#define NUM_KEYPAD_TYPES 5
 extern volatile int keypad_type;
 extern volatile u16 key_map[16];
 extern volatile u8 touchpad_proximity;
@@ -300,12 +279,14 @@ void keypad_reset();
 void keypad_int_check();
 u32 keypad_read(u32 addr);
 void keypad_write(u32 addr, u32 value);
+void touchpad_cx_reset(void);
 u32 touchpad_cx_read(u32 addr);
 void touchpad_cx_write(u32 addr, u32 value);
 
 #define TOUCHPAD_X_MAX 0x0918
 #define TOUCHPAD_Y_MAX 0x069B
 void touchpad_set(u8 proximity, u16 x, u16 y, u8 down);
+void touchpad_gpio_reset(void);
 void touchpad_gpio_change();
 void *keypad_save_state(size_t *size);
 void keypad_reload_state(void *state);
@@ -324,6 +305,7 @@ void lcd_reload_state(void *state);
 
 void send_file(char *filename);
 
+void ti84_io_link_reset(void);
 u32 ti84_io_link_read(u32 addr);
 void ti84_io_link_write(u32 addr, u32 value);
 void *link_save_state(size_t *size);
@@ -331,32 +313,15 @@ void link_reload_state(void *state);
 
 /* Declarations for memory.c */
 
-#define ROM_SIZE       0x80000   /* 512 kB */
-#define RAM_A4_SIZE    0x20000   /* 128 kB */
-#define RAM_10_MAXSIZE 0x4000000 /* 64 MB */
-
-#define MEM_MAXSIZE (ROM_SIZE + RAM_A4_SIZE + RAM_10_MAXSIZE)
+#define MEM_MAXSIZE (65*1024*1024) // also defined as RAM_FLAGS in asmcode.S
 
 // Must be allocated below 2GB (see comments for mmu.c)
 extern u8 *mem_and_flags;
-#define rom_00 (&mem_and_flags[0])
-#define ram_A4 (&mem_and_flags[ROM_SIZE])
-#define ram_10 (&mem_and_flags[ROM_SIZE + RAM_A4_SIZE])
-
-/* Get a pointer for a physical RAM/ROM address. Macro is for when address is constant
- * or when speed is needed. Otherwise, use the function */
-#define MEM_PTR(addr) ((void *)( \
-	((u32)((addr) - 0x10000000) < RAM_10_MAXSIZE) ? &ram_10[(addr) - 0x10000000] : \
-	((u32)((addr) - 0xA4000000) < RAM_A4_SIZE)    ? &ram_A4[(addr) - 0xA4000000] : \
-	((u32)((addr) - 0x00000000) < ROM_SIZE)       ? &rom_00[(addr) - 0x00000000] : \
-	NULL))
-
 struct mem_area_desc {
 	u32 base, size;
 	u8 *ptr;
 };
 extern struct mem_area_desc mem_areas[4];
-void *virt_mem_ptr(u32 addr, u32 size);
 void *phys_mem_ptr(u32 addr, u32 size);
 
 /* Each word of memory has a flag word associated with it. For fast access,
@@ -376,16 +341,7 @@ void *phys_mem_ptr(u32 addr, u32 size);
 #define RF_CODE_NO_TRANSLATE 64
 #define RF_READ_ONLY         128
 #define RF_ARMLOADER_CB      256
-#define RFS_TRANSLATION_INDEX 8
-
-#define OS_VERSION (*(u32 *)MEM_PTR(0xA4000020))
-#define OS_VERSION_1_4_BOOT2 0x1181F220
-#define OS_VERSION_1_1_CAS 0x1014A9F0
-#define OS_VERSION_1_1_NON_CAS 0x1014A9C0
-#define OS_VERSION_1_7_CAS 0x102132A0
-#define OS_VERSION_1_7_NON_CAS 0x10211290
-#define OS_VERSION_2_0_1_CAS 0x10266900
-#define OS_VERSION_2_0_1_NON_CAS 0x10266030 
+#define RFS_TRANSLATION_INDEX 9
 
 u8 bad_read_byte(u32 addr);
 u16 bad_read_half(u32 addr);
@@ -404,6 +360,110 @@ void __attribute__((fastcall)) mmio_write_word(u32 addr, u32 value);
 void memory_initialize();
 void *memory_save_state(size_t *size);
 void memory_reload_state(void *state);
+
+/* Declarations for misc.c */
+
+void sdramctl_write_word(u32 addr, u32 value);
+
+void memctl_cx_reset(void);
+u32 memctl_cx_read_word(u32 addr);
+void memctl_cx_write_word(u32 addr, u32 value);
+
+union gpio_reg { u32 w; u8 b[4]; };
+extern struct gpio_state {
+	union gpio_reg direction;
+	union gpio_reg output;
+	union gpio_reg input;
+	union gpio_reg invert;
+	union gpio_reg sticky;
+	union gpio_reg unknown_24;
+} gpio;
+void gpio_reset();
+u32 gpio_read(u32 addr);
+void gpio_write(u32 addr, u32 value);
+
+extern struct timerpair {
+	struct timer {
+		u16 ticks;
+		u16 start_value;     /* Write value of +00 */
+		u16 value;           /* Read value of +00  */
+		u16 divider;         /* Value of +04 */
+		u16 control;         /* Value of +08 */
+	} timers[2];
+	u16 completion_value[6];
+	u8 int_mask;
+	u8 int_status;
+} timerpairs[3];
+u32 timer_read(u32 addr);
+void timer_write(u32 addr, u32 value);
+void timer_reset(void);
+
+void xmodem_send(char *filename);
+void serial_reset(void);
+u32 serial_read(u32 addr);
+void serial_write(u32 addr, u32 value);
+void serial_cx_reset(void);
+u32 serial_cx_read(u32 addr);
+void serial_cx_write(u32 addr, u32 value);
+void serial_byte_in(u8 byte);
+
+u32 unknown_cx_read(u32 addr);
+void unknown_cx_write(u32 addr, u32 value);
+
+void watchdog_reset();
+u32 watchdog_read(u32 addr);
+void watchdog_write(u32 addr, u32 value);
+
+void unknown_9008_write(u32 addr, u32 value);
+
+u32 rtc_read(u32 addr);
+void rtc_write(u32 addr, u32 value);
+u32 rtc_cx_read(u32 addr);
+void rtc_cx_write(u32 addr, u32 value);
+
+u32 misc_read(u32 addr);
+void misc_write(u32 addr, u32 value);
+
+extern struct pmu_state {
+	u32 clocks_load;
+	u32 wake_mask;
+	u32 disable;
+	u32 disable2;
+	u32 clocks;
+} pmu;
+void pmu_reset(void);
+u32 pmu_read(u32 addr);
+void pmu_write(u32 addr, u32 value);
+
+u32 timer_cx_read(u32 addr);
+void timer_cx_write(u32 addr, u32 value);
+void timer_cx_reset(void);
+
+void hdq1w_reset(void);
+u32 hdq1w_read(u32 addr);
+void hdq1w_write(u32 addr, u32 value);
+
+u32 unknown_9011_read(u32 addr);
+void unknown_9011_write(u32 addr, u32 value);
+
+u32 spi_read_word(u32 addr);
+void spi_write_word(u32 addr, u32 value);
+
+u8 sdio_read_byte(u32 addr);
+u16 sdio_read_half(u32 addr);
+u32 sdio_read_word(u32 addr);
+void sdio_write_byte(u32 addr, u8 value);
+void sdio_write_half(u32 addr, u16 value);
+void sdio_write_word(u32 addr, u32 value);
+
+u32 sramctl_read_word(u32 addr);
+void sramctl_write_word(u32 addr, u32 value);
+
+u32 unknown_BC_read_word(u32 addr);
+
+void adc_reset();
+u32 adc_read_word(u32 addr);
+void adc_write_word(u32 addr, u32 value);
 
 /* Declarations for mmu.c */
 
@@ -454,6 +514,7 @@ void translation_enter();
 u32 __attribute__((fastcall)) read_byte(u32 addr);
 u32 __attribute__((fastcall)) read_half(u32 addr);
 u32 __attribute__((fastcall)) read_word(u32 addr);
+u32 __attribute__((fastcall)) read_word_ldr(u32 addr);
 void __attribute__((fastcall)) write_byte(u32 addr, u32 value);
 void __attribute__((fastcall)) write_half(u32 addr, u32 value);
 void __attribute__((fastcall)) write_word(u32 addr, u32 value);
@@ -483,6 +544,7 @@ int armloader_load_snippet(enum SNIPPETS snippet, struct armloader_load_params p
 /* Declarations for schedule.c */
 
 enum clock_id { CLOCK_CPU, CLOCK_AHB, CLOCK_APB, CLOCK_27M, CLOCK_12M, CLOCK_32K };
+extern u32 clock_rates[6];
 enum sched_item_index {
 	SCHED_THROTTLE,
 	SCHED_KEYPAD,
@@ -491,6 +553,9 @@ enum sched_item_index {
 	SCHED_WATCHDOG,
 	SCHED_NUM_ITEMS
 };
+#define SCHED_CASPLUS_TIMER1 SCHED_KEYPAD
+#define SCHED_CASPLUS_TIMER2 SCHED_LCD
+#define SCHED_CASPLUS_TIMER3 SCHED_TIMERS
 extern struct sched_item {
 	enum clock_id clock;
 	int second; // -1 = disabled

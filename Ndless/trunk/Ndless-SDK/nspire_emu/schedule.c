@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-u32 clock_rates[6] = { 90000000, 45000000, 22500000, 27000000, 12000000, 32768 };
+u32 clock_rates[6] = { 0, 0, 0, 27000000, 12000000, 32768 };
 
 struct sched_item sched_items[SCHED_NUM_ITEMS];
 
@@ -16,9 +16,6 @@ static inline u32 muldiv(u32 a, u32 b, u32 c) {
 
 void sched_reset(void) {
 	memset(sched_items, 0, sizeof sched_items);
-	clock_rates[CLOCK_CPU] = 90000000;
-	clock_rates[CLOCK_AHB] = 45000000;
-	clock_rates[CLOCK_APB] = 22500000;
 }
 
 void event_repeat(int index, u32 ticks) {
