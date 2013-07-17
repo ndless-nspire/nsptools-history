@@ -1,5 +1,6 @@
 - colors: color screen demo. Only for TI-Nspire CX.
 - helloworld: nspireio-based Hello World.
+- helloworld-cpp: Hello World written in C++.
 - helloworld-sdl: nSDL-based Hello World.
 - helloworld-assembly: Hello World written in ARM assembly.
 - link-sdl: nSDL demo from the nSDL distribution.
