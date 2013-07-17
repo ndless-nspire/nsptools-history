@@ -1,4 +1,4 @@
-SUBDIRS = tools libndls arm Ndless-SDK/_samples
+SUBDIRS = tools libndls arm Ndless-SDK/_samples Ndless-SDK/nspire_emu
 SUBDIR_TOOLS = tools
 SUBDIRSCLEAN = $(SUBDIRS)
 DISTDIRS = calcbin
