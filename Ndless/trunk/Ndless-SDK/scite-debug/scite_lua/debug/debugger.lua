@@ -724,6 +724,7 @@ function closing_process()
     set_status('dead')
     if catdbg ~= nil then print(catdbg); catdbg:close() end
     RemoveLastMarker(true)
+	os.remove(dbg.cmd_file)
 end
 
 local function finish_pending_actions()
