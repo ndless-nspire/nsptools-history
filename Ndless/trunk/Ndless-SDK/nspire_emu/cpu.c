@@ -777,7 +777,7 @@ again:;
 void cpu_arm_loop() {
 	while (cycle_count_delta < 0 && !(arm.cpsr_low28 & 0x20)) {
 		u32 *insnp = get_pc_ptr(4);
-		u32 flags = RAM_FLAGS(insnp);
+		u32 *flags = &RAM_FLAGS(insnp);
 
 		if (cpu_events != 0) {
 			if (cpu_events & ~EVENT_DEBUG_STEP)
@@ -785,23 +785,27 @@ void cpu_arm_loop() {
 			goto enter_debugger;
 		}
 
-		if (flags & RF_CODE_TRANSLATED) {
+		if (*flags & RF_CODE_TRANSLATED) {
 			translation_enter();
 			continue;
 		}
 
-		if (flags & (RF_EXEC_BREAKPOINT | RF_EXEC_DEBUG_NEXT | RF_EXEC_HACK)) {
-			if (flags & (RF_EXEC_BREAKPOINT | RF_EXEC_DEBUG_NEXT)) {
-				if (flags & RF_EXEC_BREAKPOINT)
-					printf("Hit breakpoint at %08X. Entering debugger.\n", arm.reg[15]);
+		if (*flags & (RF_EXEC_BREAKPOINT | RF_EXEC_DEBUG_NEXT | RF_ARMLOADER_CB | RF_EXEC_HACK)) {
+			if (*flags & RF_ARMLOADER_CB) {
+				*flags &= ~RF_ARMLOADER_CB;
+				armloader_cb();
+			}
+			if (*flags & (RF_EXEC_BREAKPOINT | RF_EXEC_DEBUG_NEXT)) {
+				if (*flags & RF_EXEC_BREAKPOINT)
+					printf("Hit breakpoint at %08X. Entering debugger.\n",  arm.reg[15]);
 enter_debugger:
 				debugger(DBG_EXEC_BREAKPOINT, 0);
 			}
-			if (flags & RF_EXEC_HACK)
+			if (*flags & RF_EXEC_HACK)
 				if (exec_hack())
 					continue;
 		} else {
-			if (do_translate && !(flags & (RF_CODE_NO_TRANSLATE))) {
+			if (do_translate && !(*flags & (RF_CODE_NO_TRANSLATE))) {
 				translate(arm.reg[15], insnp);
 				continue;
 			}
