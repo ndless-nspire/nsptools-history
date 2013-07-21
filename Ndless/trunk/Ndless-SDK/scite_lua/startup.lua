@@ -1,5 +1,7 @@
 dofile(props["SciteDefaultHome"].."\\scite-debug\\extman.lua")
 
+props['SciteDefaultHomeMsys'] = '/' .. props['SciteDefaultHome']:gsub("\\", "/"):gsub(":", "")
+
 -- ==== Custom function ====
 
 -- Return the result of "cd <dir> && ls <mask>", or nil if no file found
