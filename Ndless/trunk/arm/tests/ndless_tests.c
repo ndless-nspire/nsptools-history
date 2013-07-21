@@ -242,9 +242,9 @@ int main(int argc, char *argv[]) {
 	assertUIntEquals("bswap16", 0x0100, bswap16(0x0001));
 	assertUIntEquals("bswap32", 0x03020100, bswap32(0x00010203));
 	
-	assertTrue("is_color", (is_color && *(unsigned*)0x900A0000 == 0x101) || (!is_color && *(unsigned*)0x900A0000 == 0x01000010));
-	unsigned asic_user_flags = (*(unsigned*)0x900A002C & 0x7C000000) >> 26;
-	assertTrue("is_cm", (is_cm && asic_user_flags == 2) || (is_cm && asic_user_flags == 3) || !is_cm);
+	assertTrue("has_colors", (has_colors && *(unsigned*)0x900A0000 == 0x101) || (!has_colors && *(unsigned*)0x900A0000 == 0x01000010));
+	unsigned asic_user_flags_model = (*(volatile unsigned*)0x900A002C & 0x7C000000) >> 26;
+	assertTrue("is_cm", (is_cm && asic_user_flags_model == 2) || (is_cm && asic_user_flags_model == 3) || !is_cm);
 	assertTrue("is_touchpad", (*keypad_type != 3  &&  *keypad_type != 4) || is_touchpad);
 	assertTrue("isstartup", nl_isstartup()); // will only pass if run as startup program
 	assertFalse("nl_loaded_by_3rd_party_loader", nl_loaded_by_3rd_party_loader());

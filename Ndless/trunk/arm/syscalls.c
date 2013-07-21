@@ -52,7 +52,8 @@ unsigned sc_nl_hwtype(void) {
 }
 
 unsigned sc_nl_hwsubtype(void) {
-	return ut_os_version_index >= 4; // 1 if CM
+	unsigned asic_user_flags_model = (*(volatile unsigned*)0x900A002C & 0x7C000000) >> 26;
+	return  (/* CM */ asic_user_flags_model == 2 || /* CM CAS */ asic_user_flags_model == 3) ? 1 : 0; // 1 if CM
 }
 
 BOOL sc_nl_isstartup(void) {
