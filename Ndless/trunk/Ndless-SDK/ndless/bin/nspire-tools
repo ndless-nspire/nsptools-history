@@ -52,7 +52,7 @@ case "$1" in
 		;;
 	main)
 		if [ -f main.c ]; then
-			echo -n "Makefile already exists. Overwrite? (y/n) "
+			echo -n "main.c already exists. Overwrite? (y/n) "
 			read yn
 			if [ "$yn" != "y" ]; then
 				exit 0

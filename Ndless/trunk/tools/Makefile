@@ -1,5 +1,5 @@
 UNAME := $(shell uname)
-SUBDIRS = build MakeTNO
+SUBDIRS = MakeTNO
 
 all:
 ifneq ($(findstring CYGWIN,$(UNAME)),)
