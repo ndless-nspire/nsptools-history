@@ -120,9 +120,8 @@ static inline void bkpt(void) {
 #define show_msgbox_3b(title, msg, button1, button2, button3) _show_msgbox(title, msg, 3, button1, button2, button3)
 
 unsigned hwtype(void);
-#define is_color (hwtype() == 1)
 // deprecated, use is_color
-#define is_cx is_color
+#define is_cx has_colors
 #define is_classic (hwtype() < 1)
 #define is_cm (nl_hwsubtype() == 1)
 #define has_colors (!is_classic)

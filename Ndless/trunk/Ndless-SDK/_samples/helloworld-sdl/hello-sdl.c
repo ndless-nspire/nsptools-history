@@ -7,7 +7,7 @@ int main(void) {
 	SDL_Surface *screen;
 	nSDL_Font *font;
 	SDL_Init(SDL_INIT_VIDEO);
-	screen = SDL_SetVideoMode(320, 240, is_cx ? 16 : 8, SDL_SWSURFACE);
+	screen = SDL_SetVideoMode(320, 240, has_colors ? 16 : 8, SDL_SWSURFACE);
 	font = nSDL_LoadFont(NSDL_FONT_TINYTYPE,
 	                     29, 43, 61);
 	SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 184, 200, 222));
