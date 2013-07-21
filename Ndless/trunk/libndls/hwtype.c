@@ -23,6 +23,7 @@
 
 static unsigned _hwtype = 0xFFFFFFFF;
 
+// Cached version of nl_hwtype(). Frequently used for instance by keyboard scanning.
 unsigned hwtype(void) {
 	if (_hwtype == 0xFFFFFFFF)
 		_hwtype = nl_hwtype();

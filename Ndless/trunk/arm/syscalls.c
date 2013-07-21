@@ -51,6 +51,10 @@ unsigned sc_nl_hwtype(void) {
 	return ut_os_version_index >= 2; // 1 if CX
 }
 
+unsigned sc_nl_hwsubtype(void) {
+	return ut_os_version_index >= 4; // 1 if CM-C
+}
+
 BOOL sc_nl_isstartup(void) {
 	return plh_isstartup;
 }
@@ -68,7 +72,7 @@ void sc_nl_no_scr_redraw(void) {
 unsigned sc_ext_table[] = {
 	(unsigned)sc_nl_osvalue, (unsigned)sc_ext_relocdatab, (unsigned)sc_nl_hwtype, (unsigned)sc_nl_isstartup,
 	(unsigned)luaext_getstate, (unsigned)ld_set_resident, (unsigned)sc_nl_ndless_rev, (unsigned)sc_nl_no_scr_redraw,
-	(unsigned)ins_loaded_by_3rd_party_loader,
+	(unsigned)ins_loaded_by_3rd_party_loader, (unsigned)sc_nl_hwsubtype,
 };
 
 void sc_setup(void) {
