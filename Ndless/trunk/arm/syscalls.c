@@ -52,7 +52,7 @@ unsigned sc_nl_hwtype(void) {
 }
 
 unsigned sc_nl_hwsubtype(void) {
-	return ut_os_version_index >= 4; // 1 if CM-C
+	return ut_os_version_index >= 4; // 1 if CM
 }
 
 BOOL sc_nl_isstartup(void) {
