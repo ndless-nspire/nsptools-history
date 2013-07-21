@@ -1,3 +1,4 @@
+DEBUG = FALSE
 GCC = nspire-gcc
 GXX = nspire-g++
 LD-BFLT = nspire-ld-bflt
@@ -6,8 +7,14 @@ OBJCOPY := "$(shell which arm-elf-objcopy 2>/dev/null)"
 ifeq (${OBJCOPY},"")
 	OBJCOPY := arm-none-eabi-objcopy
 endif
-GCCFLAGS = -Os -Wall -W -marm
+GCCFLAGS = -Wall -W -marm
 LDFLAGS = 
+ifeq ($(DEBUG),FALSE)
+	GCCFLAGS += -Os
+else
+	GCCFLAGS += -O0 -g
+	LDFLAGS += --debug
+endif
 EXE = ndless_tests.test.tns ndless_keys.tns ndless_tpad.tns ndless_tests.luax.tns ndless_luatests.tns ndless_popup_tests.tns ndless_docbrowser_tests.tns ndless_cpp_tests.tns
 DISTDIR = ../../calcbin/tests
 vpath %.tns $(DISTDIR)
@@ -31,18 +38,27 @@ distdir:
 
 ndless_cpp_tests.tns: ndless_cpp_tests.o assert.o
 	$(LD-BFLT) --cpp $(LDFLAGS) $^ -o  $(DISTDIR)/$@
+ifeq ($(DEBUG),FALSE)
+	@rm -f $(DISTDIR)/*.gdb
+endif
 
 ndless_tests.test.tns: ndless_tests.o assert.o
 	$(LD-BFLT) $(LDFLAGS) $^ -o  $(DISTDIR)/$@
+ifeq ($(DEBUG),FALSE)
+	@rm -f $(DISTDIR)/*.gdb
+endif
 
 ndless_tests.luax.tns: ndless_tests.luax.o assert.o
 	$(LD-BFLT) $(LDFLAGS) $^ -o  $(DISTDIR)/$@
+ifeq ($(DEBUG),FALSE)
+	@rm -f $(DISTDIR)/*.gdb
+endif
 
 static:
 	@cp ReadMe.txt $(DISTDIR)
 	@cp ndless.cfg.tns $(DISTDIR)
 
 clean:
-	rm -f *.o *.elf
+	rm -f *.o *.elf ${DISTDIR}/*.gdb
 	-(cd $(DISTDIR) && rm -f $(EXE))
 	rm -f $(DISTDIR)/ReadMe.txt $(DISTDIR)/ndless.cfg.tns

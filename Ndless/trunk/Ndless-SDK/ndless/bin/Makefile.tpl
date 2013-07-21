@@ -34,6 +34,9 @@ all: $(EXE)
 $(EXE): $(OBJS)
 	mkdir -p $(DISTDIR)
 	$(LD) $^ -o $(DISTDIR)/$@ $(LDFLAGS)
+ifeq ($(DEBUG),FALSE)
+	@rm -f $(DISTDIR)/*.gdb
+endif
 
 clean:
-	rm -f *.o *.elf *.gdb
+	rm -f *.o *.elf $(DISTDIR)/*.gdb
