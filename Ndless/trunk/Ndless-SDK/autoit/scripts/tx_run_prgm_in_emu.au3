@@ -19,11 +19,6 @@ GoHome()
 Send("{2}"); My Documents
 WinMenuSelectItem("nspire_emu", "", "&Link", "&Connect")
 Sleep(200)
-WinMenuSelectItem("nspire_emu", "", "&Link", "Set Target &Folder...")
-WinWait("Set target folder", "", 0)
-ControlSetText("[LAST]", "", 3, "ndless")
-Send("{ENTER}")
-WinWaitClose("Set target folder")
 WinMenuSelectItem("nspire_emu", "", "&Link", "&Send Document..")
 WinWait("[CLASS:#32770; INSTANCE:1]", "", 0)
 ControlSetText("[LAST]", "", 1148, $CmdLine[1]) ; File path

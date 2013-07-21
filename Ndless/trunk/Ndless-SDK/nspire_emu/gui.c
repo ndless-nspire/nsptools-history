@@ -543,7 +543,7 @@ DWORD CALLBACK gui_thread(LPVOID hEvent) {
 	if (!RegisterClass(&wc))
 		exit(printf("RegisterClass failed\n"));
 
-	strcpy(target_folder, "Examples");
+	strcpy(target_folder, "ndless");
 
 	rc.left = 0;
 	rc.top = 0;
