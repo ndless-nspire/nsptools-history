@@ -31,27 +31,36 @@ local out = spawner.popen(props['SciteDefaultHome'] .. "\\autoit\\autoit3.exe \"
 for line in out:lines() do
 	if line == "NO" then
 
+		local modelswitch = "/MX"
 		local txx = getres("*.tco")
-		if not txx then txx = getres("*.tcc", "OS not found.") end
+		if not txx then
+			txx = getres("*.tcc")
+			modelswitch = "/MXC"
+		end
+		if not txx then
+			txx = getres("*.tno")
+			modelswitch = ""
+		end
+		if not txx then
+			txx = getres("*.tnc", "OS not found.")
+			modelswitch = "/MC"
+		end
 		if txx then
-			local casswitch = string.find(txx, ".tcc$") and "C" or ""
 			local boot1 = getres("boot1.img.tns", "Boot1 not found.")
 			if boot1 then
-
 				local nand_path = getres("*.img")
 				if nand_path then
-					local ns_spawner = spawner.new(props['SciteDefaultHome'] .. "\\nspire_emu\\nspire_emu.bat \"/1=" .. boot1 .. "\" \"/F=" .. nand_path .. "\" \"/MX" .. casswitch ..  "\"" .. " \"/G=" .. props['ndless.gdb.port'] .."\"")
+					local ns_spawner = spawner.new(props['SciteDefaultHome'] .. "\\nspire_emu\\nspire_emu.bat \"/1=" .. boot1 .. "\" \"/F=" .. nand_path .. "\" " .. modelswitch .. " \"/G=" .. props['ndless.gdb.port'] .."\"")
 					ns_spawner:run()
 				
 				else
 					local boot2 = getres("boot2.img.tns", "Boot2 not found.")
 					if boot2 then
-						local ns_spawner = spawner.new(props['SciteDefaultHome'] .. "\\nspire_emu\\nspire_emu.bat \"/1=" .. boot1 .. "\" \"/PO=" .. txx .. "\" \"/PB=" .. boot2 .. "\" /MX" .. casswitch)
+						local ns_spawner = spawner.new(props['SciteDefaultHome'] .. "\\nspire_emu\\nspire_emu.bat \"/1=" .. boot1 .. "\" \"/PO=" .. txx .. "\" \"/PB=" .. boot2 .. "\" " .. modelswitch)
 						ns_spawner:run()
 					end
 				 
 				end
-
 			end
 		end
 

@@ -2,20 +2,23 @@ To be able to use the 'nspire_emu' TI-Nspire emulator integration with the
 NdlessEditor, you must first drop several resources to this directory and let 
 the OS image install itself to a NAND image.
 
-1) Download OS "TI-Nspire CX (v 3.1)" or "TI-Nspire CX CAS (v 3.1)" from 
-   http://tiplanet.org/forum/archives_list.php?id=OS+Nspire
-   Emulation of non-CX devices is not supported.
+1) Download the OS corresponding to your calculator model from
+   http://tiplanet.org/forum/archives_list.php?id=OS+Nspire :
+   - TI-Nspire CX (v 3.1)
+   - TI-Nspire CX CAS (v 3.1)
+   - TI-Nspire (v 3.1)
+   - TI-Nspire CAS (v 3.1)
 
 2) Drop it in this directory [emu_resources]
 
-3) Use PolyDumper to dump your TI-Nspire CX boot1 and boot2 images:
-   a) Install Ndless on your TI-Nspire CX
+3) Use PolyDumper to dump your TI-Nspire classic/CX boot1 and boot2 images:
+   a) Install Ndless on your TI-Nspire
    b) Transfer the file emu_resources/polydumper/polydumper_3.1.tns to your
-      TI-Nspire CX
+      TI-Nspire
    c) Run polydumper_3.1.tns
 
 4) Transfer the files boot1.img.tns and boot2.img.tns produced by PolyDumper 
-   from your TI-Nspire CX to the directory emu_resources/ on the computer side
+   from your TI-Nspire to the directory emu_resources/ on the computer side
 
 5) Set up the NAND image from the NdlessEditor with Tools > 'Run the TI-
    Nspire emulator'. Let the OS reboot, then press 'I' when asked. The OS will 

@@ -47,13 +47,15 @@ Func GoHome()
    local $hBitmap = _GDIPlus_BitmapCreateFromHBITMAP($hMemory)
    If $hBitmap = 0 Then Exit _WinAPI_ShowError("_GDIPlus_BitmapCreateFromHBITMAP failed")
 
+   local $home_sample_cx = _GDIPlus_ImageLoadFromFile(@ScriptDir & "\emu_home_cx.png")
+   If $home_sample_cx = -1 or $home_sample_cx = -0 Then Exit _WinAPI_ShowError("CX Home sample not found")
    local $home_sample = _GDIPlus_ImageLoadFromFile(@ScriptDir & "\emu_home.png")
    If $home_sample = -1 or $home_sample = -0 Then Exit _WinAPI_ShowError("Home sample not found")
 
-   local $hBitmap_extract = _GDIPlus_BitmapCloneArea($hBitmap, 0, 0, _GDIPlus_ImageGetWidth($home_sample), _GDIPlus_ImageGetHeight($home_sample))
+   local $hBitmap_extract = _GDIPlus_BitmapCloneArea($hBitmap, 0, 0, _GDIPlus_ImageGetWidth($home_sample_cx), _GDIPlus_ImageGetHeight($home_sample_cx))
    If $hBitmap_extract = -1 Then Exit _WinAPI_ShowError("_GDIPlus_BitmapCloneArea failed")
 
-   If not CompareBitmaps($home_sample, $hBitmap_extract) Then Exit _WinAPI_ShowError("Can't reach the TI-Nspire home screen.")
+   If not CompareBitmaps($home_sample_cx, $hBitmap_extract) and not CompareBitmaps($home_sample, $hBitmap_extract) Then Exit _WinAPI_ShowError("Can't reach the TI-Nspire home screen.")
    _GDIPlus_Shutdown()
 EndFunc
 
