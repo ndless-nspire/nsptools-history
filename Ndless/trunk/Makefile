@@ -122,12 +122,15 @@ _upload_ndless:
 	rm -rf "ndless-v3.1-beta-r$$svnrev"; \
 	echo "Ndless r$${svnrev} available at http://www.unsads.com/projects/nsptools/downloader/download/release/1"
 
-upload_msys: update_version_info distmsys _upload_msys
-upload_sdk: update_version_info distsdk _upload_sdk
-upload_ndless: update_version_info dist _upload_ndless
+upload_msys: check_uncommited update_version_info distmsys _upload_msys
+upload_sdk: check_uncommited update_version_info distsdk _upload_sdk
+upload_ndless: check_uncommited update_version_info dist _upload_ndless
 
-upload: update_version_info dist distsdk distmsys _upload_msys _upload_sdk _upload_ndless
-upload_sdk_ndless: dist distsdk _upload_sdk _upload_ndless
+upload: check_uncommited update_version_info dist distsdk distmsys _upload_msys _upload_sdk _upload_ndless
+upload_sdk_ndless: check_uncommited dist distsdk _upload_sdk _upload_ndless
+
+check_uncommited:
+	@[ -z "`svn status -q`" ] || (echo "Commit changes first."; false)
 
 # Increment only if the last update was not an increment
 update_version_info:
