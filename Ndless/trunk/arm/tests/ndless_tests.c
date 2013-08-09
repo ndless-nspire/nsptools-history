@@ -52,7 +52,7 @@ static void test_va(char __attribute__((unused)) dummy, ...) {
 int main(int argc, char *argv[]) {
 	char buf[100];
 	char buf2[100];
-	int ret;
+	int ret, i;
 	char *ptr;
 	FILE *file;
 	struct stat sstat;
@@ -156,9 +156,10 @@ int main(int argc, char *argv[]) {
 	assertStrEquals("strstr", "def", strstr("abcdef", "def"));
 	
 	test_va(0, (char)1, (char)0x20);
-	sprintf(buf, "%s", "abc");
-	assertStrEquals("sprintf", "abc", buf);
-	
+	sprintf(buf, "%s", "abc 123");
+	assertStrEquals("sprintf", "abc 123", buf);
+	assertIntEquals("sscanf-ret", 1, sscanf(buf, "%*s %d", &i));
+	assertIntEquals("sscanf", 123, i);
 	srand(5050);
 	assertUIntEquals("rand-1", 0x6A5, rand());
 	assertUIntEquals("rand-2", 0x6B5D, rand());

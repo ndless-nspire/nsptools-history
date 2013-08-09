@@ -314,6 +314,7 @@ typedef __builtin_va_list va_list;
 _SYSCALLVAR(int, __attribute__((__format__(__printf__,1,2))), printf, __attribute__((unused)) const char *format, ...)
 _SYSCALLVAR(int, __attribute__((__format__(__printf__,2,3))), sprintf, __attribute__((unused)) char *s, __attribute__((unused)) const char *format, ...)
 _SYSCALLVAR(int, __attribute__((__format__(__printf__,2,3))), fprintf, __attribute__((unused)) FILE *s, __attribute__((unused)) const char *format, ...)
+_SYSCALLVAR(int, __attribute__((__format__(__scanf__,2,3))), sscanf, __attribute__((unused)) const char *s, __attribute__((unused)) const char * format, ...)
 
 // wrapper with cast to avoid the GCC warning "error: aggregate value used where an integer was expected"
 #define vsprintf(str, fmt, arg) _vsprintf(str, fmt, *(void**)&arg)
@@ -669,6 +670,7 @@ _SYSCALL0(unsigned, nl_ndless_rev)
 _SYSCALL0(void, nl_no_scr_redraw)
 _SYSCALL0(BOOL, nl_loaded_by_3rd_party_loader)
 _SYSCALL0(unsigned, nl_hwsubtype)
+_SYSCALL1(unsigned, nl_load, const char * /* prgm_path */)
 
 /* stdlib replacements not directly available as syscalls */
 extern unsigned __crt0exit;
