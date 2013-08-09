@@ -214,6 +214,7 @@ int main(int argc, char *argv[]) {
 	assertZero("mkdir", mkdir("/tmp/__testdir", 0));
 	assertZero("rename", rename("/tmp/__testdir", "/tmp/__testdir2"));
 	assertZero("chdir", chdir("/tmp"));
+	assertStrEquals("getcwd", getcwd(buf, sizeof(buf)), "/tmp/");
 	assertZero("rmdir", rmdir("__testdir2"));
 	
 	assertZero("NU_Set_Current_Dir", NU_Set_Current_Dir("A:\\tmp"));

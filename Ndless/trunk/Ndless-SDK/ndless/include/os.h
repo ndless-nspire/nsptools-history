@@ -345,6 +345,7 @@ _SYSCALL1(long int, ftell, FILE *)
 _SYSCALL1(int, remove, const char *)
 
 _SYSCALL2(int, mkdir, const char *, int)
+_SYSCALL2(char *, getcwd, char *, size_t)
 _SYSCALL1(int, chdir, char *)
 _SYSCALL1(int, rmdir, const char *)
 _SYSCALL2(int, stat, const char *, struct stat *)

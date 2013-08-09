@@ -280,11 +280,12 @@
 #define e_send_key_event 262
 #define e_send_click_event 263
 #define e_send_pad_event 264
+#define e_getcwd 265
 
 // END_OF_LIST (always keep this line after the last constant, used by mksyscalls.sh)
 
 // Must be kept up-to-date with the value of the last syscall
-#define __SYSCALLS_LAST 264
+#define __SYSCALLS_LAST 265
 
 // Flag: 3 higher bits of the 3-bytes comment field of the swi instruction
 #define __SYSCALLS_ISEXT 0x200000
