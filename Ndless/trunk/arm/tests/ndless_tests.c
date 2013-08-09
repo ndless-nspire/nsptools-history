@@ -59,7 +59,16 @@ int main(int argc, char *argv[]) {
 	DSTAT dstat;
 
 	assertUIntEquals("TCT_Local_Control_Interrupts", 0xFFFFFFFF, TCT_Local_Control_Interrupts(0));
-	if (argc != 2)
+	if (argc == 3) {
+		// called with nl_exec(), return special value for test case
+		unsigned orig_errcount = errcount;
+		assertStrEquals("nl_exec_parms-argv1", "ndless_tests.test.tns", strrchr(argv[1], '/') + 1); // file association (run with ourself)
+		assertStrEquals("nl_exec_parms-argv2", "hello", argv[2]);
+		if (errcount != orig_errcount)
+			return -1; // make sure the parent program counts it as an error
+		return 0xBEEF;
+	}
+	else if (argc != 2)
 		puts("Make sure to use ndless.cfg from the tests/ directory.");
 	assertStrEquals("argv0", "ndless_tests.test.tns", strrchr(argv[0], '/') + 1);
 	assertStrEquals("argv1", "ndless_tests.test.tns", strrchr(argv[1], '/') + 1); // file association (run with ourself)
@@ -77,7 +86,8 @@ int main(int argc, char *argv[]) {
 	
 	global_int = 1; // tests relocation of global variables 
 	assertUIntEquals("nl_relocdata_data bflt", 1, (unsigned)*nl_relocdata_data[0]);
-		
+	
+	assertIntEquals("nl_exec", 0xBEEF, nl_exec(argv[0], 1, (char*[]){"hello"}));
 	nl_set_resident(); // caution, will leak. This at least checks that it doesn't crash.
 	
 	/* syscalls */

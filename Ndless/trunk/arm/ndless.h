@@ -71,6 +71,7 @@ enum e_ld_bin_format {
 extern enum e_ld_bin_format ld_bin_format;
 void ld_set_resident(void);
 int ld_exec(const char *path, void **resident_ptr);
+int ld_exec_with_args(const char *path, int argc, char *argv[], void **resident_ptr);
 void ld_free(void *resident_ptr);
 
 /* utils.c */
