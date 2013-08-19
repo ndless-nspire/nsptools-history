@@ -282,11 +282,41 @@
 #define e_send_pad_event 264
 #define e_getcwd 265
 #define e_sscanf 266
+#define e_TI_NN_SendKeyPress 267
+#define e_TI_NN_IsNodeResponsive 268
+#define e_TI_NN_NodeEnumDone 269
+#define e_TI_NN_NodeEnumNext 270
+#define e_TI_NN_GetConnMaxPktSize 271
+#define e_TI_NN_Read 272
+#define e_TI_NN_Write 273
+#define e_TI_NN_StartService 274
+#define e_TI_NN_StopService 275
+#define e_TI_NN_Connect 276
+#define e_TI_NN_Disconnect 277
+#define e_TI_NN_NodeEnumInit 278
+#define e_TI_NN_UnregisterNotifyCallback 279
+#define e_TI_NN_RegisterNotifyCallback 280
+#define e_TI_NN_InstallOS 281
+#define e_TI_NN_GetNodeInfo 282
+#define e_TI_NN_DestroyOperationHandle 283
+#define e_TI_NN_CreateOperationHandle 284
+#define e_TI_NN_GetNodeScreen 285
+#define e_TI_NN_CopyFile 286
+#define e_TI_NN_Rename 287
+#define e_TI_NN_RmDir 288
+#define e_TI_NN_MkDir 289
+#define e_TI_NN_DeleteFile 290
+#define e_TI_NN_GetFileAttributes 291
+#define e_TI_NN_PutFile 292
+#define e_TI_NN_DirEnumDone 293
+#define e_TI_NN_DirEnumNext 294
+#define e_TI_NN_DirEnumInit 295
+#define e_TI_NN_GetFile 296
 
 // END_OF_LIST (always keep this line after the last constant, used by mksyscalls.sh)
 
 // Must be kept up-to-date with the value of the last syscall
-#define __SYSCALLS_LAST 266
+#define __SYSCALLS_LAST 296
 
 // Flag: 3 higher bits of the 3-bytes comment field of the swi instruction
 #define __SYSCALLS_ISEXT 0x200000
