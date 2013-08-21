@@ -244,6 +244,8 @@ int main(int argc, char *argv[]) {
 	assertStrEquals("readdir.d_name",	"tmp", ep->d_name);
 	assertZero("closedir", closedir(dp));
 	
+	assertStrEquals("get_documents_dir", "/documents/", get_documents_dir());
+	
 	assertUIntLower("keypad_type", 5, *keypad_type);
 	assertNonZero("keypad_type", *keypad_type);
 	

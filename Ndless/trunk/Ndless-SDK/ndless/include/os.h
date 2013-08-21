@@ -374,6 +374,8 @@ _SYSCALL3(PCFD, NU_Open, char * /* name */, unsigned /* flag */, unsigned /* mod
 _SYSCALL1(int, NU_Close, PCFD /* fd */)
 _SYSCALL2(int, NU_Truncate, PCFD /* fd */, long /* offset */)
 
+_SYSCALL0(const char *, get_documents_dir)
+
 /* 1: clickpad, 2: 84+, 3: touchpad prototype, 4: touchpad */
 _SYSCALL_OSVAR(unsigned char *, keypad_type)
 #define keypad_type keypad_type()

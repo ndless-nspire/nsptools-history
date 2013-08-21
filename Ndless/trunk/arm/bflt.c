@@ -108,7 +108,7 @@ static int load_shared_library(int id, void **base, unsigned long current_build_
     if (id > MAX_SHARED_LIB_ID) error_goto_error("Library ID too high");
 
     char filename[128];
-    sprintf(filename,"%s/lib%d.so.tns",LIB_SEARCH_DIR,id);
+    sprintf(filename,"%s/ndless/lib/lib%d.so.tns",get_documents_dir(), id);
     fp = fopen(filename, "rb");
     if (!fp) {
         error_user_goto_error("Could not open shared library %s", filename);

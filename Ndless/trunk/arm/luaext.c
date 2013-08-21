@@ -46,7 +46,7 @@ static int require(lua_State *L) {
 		return 1;
 	}
   sprintf(modulepath, "%s.luax.tns", name);
-	if (!ut_file_recur_each("/documents", require_file_recur_cb, modulepath)) {
+	if (!ut_file_recur_each(get_documents_dir(), require_file_recur_cb, modulepath)) {
 require_not_found:
 		luaL_error(L, "module " LUA_QS " not found", name);
 		return 1;

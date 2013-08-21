@@ -312,11 +312,12 @@
 #define e_TI_NN_DirEnumNext 294
 #define e_TI_NN_DirEnumInit 295
 #define e_TI_NN_GetFile 296
+#define e_get_documents_dir 297
 
 // END_OF_LIST (always keep this line after the last constant, used by mksyscalls.sh)
 
 // Must be kept up-to-date with the value of the last syscall
-#define __SYSCALLS_LAST 296
+#define __SYSCALLS_LAST 297
 
 // Flag: 3 higher bits of the 3-bytes comment field of the swi instruction
 #define __SYSCALLS_ISEXT 0x200000

@@ -297,4 +297,5 @@ unsigned syscalls_cmc_3_1_0[] = {
 	, 0X1007FE4C
 	, 0X100800B4
 	, 0X100802EC
+	, 0X10005D40
 };

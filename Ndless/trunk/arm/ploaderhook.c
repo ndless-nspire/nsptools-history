@@ -233,7 +233,7 @@ HOOK_DEFINE(plh_hook) {
 	char docpath[FILENAME_MAX];
 	halfpath = (char*)(HOOK_SAVED_REGS(plh_hook)[5] /* r5 */ + 32);
 	// TODO use snprintf
-	sprintf(docpath, "/documents/%s", halfpath);
+	sprintf(docpath, "/%s%s", get_documents_dir(), halfpath);
 	if (ld_exec(docpath, NULL)) {
 		HOOK_SAVED_REGS(plh_hook)[3] = HOOK_SAVED_REGS(plh_hook)[0]; // 'mov r3, r0' was overwritten by the hook
 		HOOK_RESTORE_RETURN_SKIP(plh_hook, -0x114, 0); // to the error dialog about the unsupported format (we've overwritten a branch with our hook)

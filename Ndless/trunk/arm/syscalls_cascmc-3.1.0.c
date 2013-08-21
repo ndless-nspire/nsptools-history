@@ -297,4 +297,5 @@ unsigned syscalls_cascmc_3_1_0[] = {
 	, 0X1007FDDC
 	, 0X10080044
 	, 0X1008027C
+	, 0X10005D40
 };

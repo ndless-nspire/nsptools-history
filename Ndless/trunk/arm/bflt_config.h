@@ -21,9 +21,6 @@
    Comment out if you don't want to cache it */
 #define CACHE_LIBS_AFTER_EXEC 1
 
-/* Where libraries are searched for */
-#define LIB_SEARCH_DIR "/documents/ndless/lib"
-
 #endif
 
 /* Verbose level
