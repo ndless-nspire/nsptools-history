@@ -39,4 +39,4 @@ ifeq ($(DEBUG),FALSE)
 endif
 
 clean:
-	rm -f *.o *.elf $(DISTDIR)/*.gdb
+	rm -f *.o *.elf $(DISTDIR)/*.gdb $(DISTDIR)/$(EXE)
