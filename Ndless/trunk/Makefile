@@ -1,7 +1,6 @@
-SUBDIRS_SDK = libndls Ndless-SDK/_samples Ndless-SDK/nspire_emu
+SUBDIRS_SDK = libndls Ndless-SDK/_samples Ndless-SDK/nspire_emu Ndless-SDK/ndless_pc/lib
 SUBDIRS = $(SUBDIRS_SDK) tools arm
 SUBDIR_TOOLS = tools
-SUBDIRSCLEAN = $(SUBDIRS)
 DISTDIRS = calcbin
 
 all: subdirs
@@ -63,7 +62,7 @@ cleandistsdk:
 	rm -rf distsdk
 
 clean: cleandist cleandistsdk cleandistmsys
-	@for i in $(SUBDIRSCLEAN); do \
+	@for i in $(SUBDIRS); do \
 	echo "Clearing in $$i..."; \
 	(cd $$i; make clean) || exit 1; done
 	(cd Ndless-SDK/ndless/system && make clean)

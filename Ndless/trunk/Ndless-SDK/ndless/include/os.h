@@ -14,6 +14,7 @@ extern "C" {
 #define _STRING_H_
 
 #include <common.h>
+
 #ifdef _NDLS_LIGHT
 // Use the light version of the syscalls table
 #include "syscalls-light.h"
@@ -653,6 +654,29 @@ _SYSCALL2(usb_endpoint_descriptor_t *, usbd_get_endpoint_descriptor, usbd_interf
 //_SYSCALL2(void, usb_add_task, usbd_device_handle, struct usb_task *)
 //_SYSCALL2(void, usb_rem_task, usbd_device_handle, struct usb_task *)
 
+// A sub-set of the NavNet functions for calc-to-calc and cal-to-computer USB transfers
+typedef void *nn_ch_t;
+typedef void *nn_nh_t;
+typedef void *nn_oh_t;
+
+_SYSCALL1(uint32_t, TI_NN_GetConnMaxPktSize, nn_ch_t /* ch */)
+// caution, returns 0 on timeout
+_SYSCALLVAR(int16_t,, TI_NN_Read,  __attribute__((unused)) nn_ch_t ch,  __attribute__((unused)) uint32_t timeout,  __attribute__((unused)) void *buf,  __attribute__((unused)) uint32_t buf_size,  __attribute__((unused)) uint32_t *data_size)
+_SYSCALL3(int16_t, TI_NN_Write, nn_ch_t /* ch */, void * /* buf */, uint32_t /* data_size */)
+// workaround to make _SYSCALL accept a function pointer
+typedef void (*__TI_NN_StartService_cb_t)(nn_ch_t, void*);
+_SYSCALL3(int16_t, TI_NN_StartService, uint32_t /* service_id */, void * /* data */, __TI_NN_StartService_cb_t /* cb */)
+_SYSCALL1(int16_t, TI_NN_StopService, uint32_t /* service_id */)
+typedef void (*__TI_NN_RegisterNotifyCallback_cb_t)(void); // unknown parameters
+// not working on calculator
+_SYSCALL2(int16_t, TI_NN_RegisterNotifyCallback, uint32_t /* filter_flags */, __TI_NN_RegisterNotifyCallback_cb_t /* cb */);
+_SYSCALL0(nn_oh_t, TI_NN_CreateOperationHandle)
+_SYSCALL1(int16_t, TI_NN_NodeEnumInit, nn_ch_t /* ch */)
+_SYSCALL1(int16_t, TI_NN_DestroyOperationHandle, nn_oh_t /* oh */)
+_SYSCALL2(int16_t, TI_NN_NodeEnumNext, nn_oh_t /* oh */, nn_nh_t * /* nh */)
+_SYSCALL1(int16_t, TI_NN_NodeEnumDone, nn_oh_t /* oh */)
+_SYSCALL3(int16_t, TI_NN_Connect, nn_nh_t /* nh */, uint32_t /* service_id */, nn_ch_t * /* ch */)
+_SYSCALL1(int16_t, TI_NN_Disconnect, nn_ch_t /* ch */)
 
 /* Ndless extensions. Not available in thumb state. */
 // Given a list of OS-specific value and its size, returns the value for the current OS.

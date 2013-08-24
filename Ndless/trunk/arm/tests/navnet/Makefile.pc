@@ -1,0 +1,20 @@
+CC = gcc
+NDLESS_SDK_HOME = ../../../Ndless-SDK
+CFLAGS = -Wall -W -I$(NDLESS_SDK_HOME)/ndless_pc/include -DNAVNET_TESTS_PC
+LDFLAGS = -L$(NDLESS_SDK_HOME)/ndless_pc/lib -lnavnet
+OBJS = $(patsubst %.c,%.o,$(wildcard *.c))
+EXE = ndless_navnet_tests.exe
+DISTDIR = .
+vpath %.tns $(DISTDIR)
+
+all: $(EXE)
+
+ndless_navnet_tests_pc.o: ndless_navnet_tests.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(EXE): ndless_navnet_tests_pc.o
+	mkdir -p $(DISTDIR)
+	$(CC) $^ -o $(DISTDIR)/$@ $(LDFLAGS)
+
+clean:
+	rm -f *.o $(DISTDIR)/$(EXE) 
