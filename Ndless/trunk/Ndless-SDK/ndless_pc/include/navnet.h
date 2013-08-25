@@ -29,6 +29,7 @@ DLLDECL int16_t TI_NN_RegisterNotifyCallback(uint32_t filter_flags, void (*cb)(v
 DLLDECL uint32_t TI_NN_GetConnMaxPktSize(nn_ch_t ch);
 DLLDECL int16_t TI_NN_StartService(uint32_t service_id, void *data, void (*cb)(nn_ch_t ch, void *data));
 DLLDECL int16_t TI_NN_StopService(uint32_t service_id);
+DLLDECL int16_t TI_NN_PutFile(nn_nh_t nh, nn_oh_t oh, const char *local_path, const char *remote_path);
 
 #ifdef __cplusplus
 }
