@@ -73,7 +73,7 @@ static void notify_cb(void) {
 
 static void nconnect(uint32_t remote_service_id) {
 	struct timeval init_tv, tv;
-	NNCALL(TI_NN_Init, ("-c 1 -d 1"));
+	NNCALL(TI_NN_Init, ("-c 1 -d 0"));
 	TI_NN_RegisterNotifyCallback(0, notify_cb);
 	gettimeofday(&init_tv, NULL);
 	while (!gettimeofday(&tv, NULL) && !partner_connected && tv.tv_sec - init_tv.tv_sec < 5) {
@@ -128,5 +128,9 @@ int main(int argc, char *argv[]) {
 		putfile(argv[2], argv[3]);
 		return 0;
 	}
-	return 0;
+	else {
+		printf("unknown command: %s\n", argv[2]);
+		usage();
+		return 1;
+	}
 }
