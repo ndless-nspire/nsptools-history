@@ -15,7 +15,7 @@ function makeall_finished_cb(result_code)
 end
 
 function makeall()
-	local makespawner = spawner.new(props['ndls.sh'] .. " '" .. props['ndls.env'] .. " && cd \"" .. props['FileDir'] .. "\" && make'")
+	local makespawner = spawner.new(props['ndls.sh'] .. " '(" .. props['ndls.inienvcmd'] .. ";" .. props['ndls.env'] .. "; cd \"" .. props['FileDir'] .. "\" && make)'")
 	makespawner:set_output("makeall_processchunk_cb")
 	makespawner:set_result("makeall_finished_cb")
 	makespawner:run()

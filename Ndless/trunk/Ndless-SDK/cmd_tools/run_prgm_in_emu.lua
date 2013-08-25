@@ -17,7 +17,7 @@ end
 
 local tns = get_tns_name()
 if tns == nil then
-	dofile(props['SciteDefaultHome'] .. "/scite_lua/build.lua")
+	dofile(props['SciteDefaultHome'] .. "/cmd_tools/build.lua")
 	for i = 0, 5 do
 		sleep(1)
 		tns = get_tns_name()
@@ -29,7 +29,7 @@ if tns ~= nil then
 	local out = spawner.popen(props['SciteDefaultHome'] .. "\\autoit\\autoit3.exe \"" .. props['SciteDefaultHome'] .. "\\autoit\\scripts\\is_emu_running.au3\"")
 	for line in out:lines() do
 		if line == "NO" then
-			dofile(props['SciteDefaultHome'] .. "/scite_lua/run_emu.lua")
+			dofile(props['SciteDefaultHome'] .. "/cmd_tools/run_emu.lua")
 			sleep(14)
 		end
 		break
