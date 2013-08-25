@@ -4,11 +4,14 @@ LDFLAGS = -lnavnet
 OBJS = $(patsubst %.c,%.o,$(wildcard *.c))
 EXE = ndless_navnet_tests.exe
 DISTDIR = .
-vpath %.tns $(DISTDIR)
+vpath %.exe $(DISTDIR)
+OS ?= `uname -s`
 
+ifeq ($(OS),Windows_NT)
 all: $(EXE)
 
 ndless_navnet_tests_pc.o: ndless_navnet_tests.c
+	echo $$C_INCLUDE_PATH
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(EXE): ndless_navnet_tests_pc.o
@@ -17,3 +20,9 @@ $(EXE): ndless_navnet_tests_pc.o
 
 clean:
 	rm -f *.o $(DISTDIR)/$(EXE) 
+
+# OS
+else
+all:
+clean:
+endif

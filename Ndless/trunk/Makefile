@@ -1,5 +1,4 @@
-SUBDIRS_SDK = libndls Ndless-SDK/_samples Ndless-SDK/nspire_emu Ndless-SDK/ndless_pc/lib
-SUBDIRS = $(SUBDIRS_SDK) tools arm
+SUBDIRS = libndls Ndless-SDK tools arm
 SUBDIR_TOOLS = tools
 DISTDIRS = calcbin
 
@@ -46,7 +45,7 @@ distsdk: cleandistsdk
 	cp -r Ndless-SDK/* distsdk
 	find distsdk -name .svn -o -name "*~" -o -name "*.img.tns" -o -name "*.img" -o -name "*.tcc" -o -name "yagarto" -o -name "mingw-get" | xargs rm -rf
 
-distmsys: cleandistmsys $(SUBDIRS_SDK) 
+distmsys: cleandistmsys
 	mkdir -p distsdk-msys-yagarto
 	cp -r Ndless-SDK/yagarto distsdk-msys-yagarto
 	cp -r Ndless-SDK/mingw-get distsdk-msys-yagarto

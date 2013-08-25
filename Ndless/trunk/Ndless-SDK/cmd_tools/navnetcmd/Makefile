@@ -4,7 +4,9 @@ LDFLAGS = -lnavnet
 EXE = navnetcmd.exe
 DISTDIR = .
 vpath %.exe $(DISTDIR)
+OS ?= `uname -s`
 
+ifeq ($(OS),Windows_NT)
 all: $(EXE)
 
 navnetcmd.o: navnetcmd.c
@@ -16,3 +18,9 @@ $(EXE): navnetcmd.o
 
 clean:
 	rm -f *.o $(DISTDIR)/$(EXE) 
+
+# OS
+else
+all:
+clean:
+endif
