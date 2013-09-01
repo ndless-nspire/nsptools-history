@@ -161,6 +161,25 @@
 #define KEY_84_MODE            KEY_(0x1C, 0x040)
 #define KEY_84_DEL             KEY_(0x1C, 0x080)
 
+
+typedef enum {
+    RES_CLNK = 0x636C6E6B,
+    RES_CTLG = 0x63746C67,
+    RES_DCOL = 0x64636F6C,
+    RES_DLOG = 0x646C6F67,
+    RES_DTST = 0x64747374,
+    RES_GEOG = 0x67656F67,
+    RES_MATH = 0x6D617468,
+    RES_MWIZ = 0x6D77697A,
+    RES_NTPD = 0x6E747064,
+    RES_PGED = 0x70676564,
+    RES_QCKP = 0x71636B70,
+    RES_QUES = 0x71756573,
+    RES_SCPD = 0x73637064,
+    RES_SYST = 0x73797374,
+    RES_TBLT = 0x74626C74,
+} e_resourceID;
+
 /** GNU AS */
 #ifdef GNU_AS
   #define SHARP(s)          #

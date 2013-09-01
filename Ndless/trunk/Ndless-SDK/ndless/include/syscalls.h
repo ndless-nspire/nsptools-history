@@ -313,11 +313,45 @@
 #define e_TI_NN_DirEnumInit 295
 #define e_TI_NN_GetFile 296
 #define e_get_documents_dir 297
+#define e_gui_gc_global_GC_ptr 298
+#define e_gui_gc_free 299
+#define e_gui_gc_copy 300
+#define e_gui_gc_begin 301
+#define e_gui_gc_finish 302
+#define e_gui_gc_clipRect 303
+#define e_gui_gc_setColorRGB 304
+#define e_gui_gc_setColor 305
+#define e_gui_gc_setAlpha 306
+#define e_gui_gc_setFont 307
+#define e_gui_gc_getFont 308
+#define e_gui_gc_setPen 309
+#define e_gui_gc_setRegion 310
+#define e_gui_gc_drawArc 311
+#define e_gui_gc_drawIcon 312
+#define e_gui_gc_drawSprite 313
+#define e_gui_gc_drawLine 314
+#define e_gui_gc_drawRect 315
+#define e_gui_gc_drawString 316
+#define e_gui_gc_drawPoly 317
+#define e_gui_gc_fillArc 318
+#define e_gui_gc_fillPoly 319
+#define e_gui_gc_fillRect 320
+#define e_gui_gc_fillGradient 321
+#define e_gui_gc_drawImage 322
+#define e_gui_gc_getStringWidth 323
+#define e_gui_gc_getCharWidth 324
+#define e_gui_gc_getStringSmallHeight 325
+#define e_gui_gc_getCharHeight 326
+#define e_gui_gc_getStringHeight 327
+#define e_gui_gc_getFontHeight 328
+#define e_gui_gc_getIconSize 329
+#define e_gui_gc_blit_gc 330
+#define e_gui_gc_blit_buffer 331
 
 // END_OF_LIST (always keep this line after the last constant, used by mksyscalls.sh)
 
 // Must be kept up-to-date with the value of the last syscall
-#define __SYSCALLS_LAST 297
+#define __SYSCALLS_LAST 331
 
 // Flag: 3 higher bits of the 3-bytes comment field of the swi instruction
 #define __SYSCALLS_ISEXT 0x200000

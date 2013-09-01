@@ -15,7 +15,7 @@ else
 	GCCFLAGS += -O0 -g
 	LDFLAGS += --debug
 endif
-EXE = ndless_tests.test.tns ndless_keys.tns ndless_tpad.tns ndless_tests.luax.tns ndless_luatests.tns ndless_popup_tests.tns ndless_docbrowser_tests.tns ndless_cpp_tests.tns
+EXE = ndless_tests.test.tns ndless_keys.tns ndless_tpad.tns ndless_tests.luax.tns ndless_luatests.tns ndless_popup_tests.tns ndless_docbrowser_tests.tns ndless_cpp_tests.tns ndless_ngc_tests.tns
 DISTDIR = ../../calcbin/tests
 vpath %.tns $(DISTDIR)
 SUBDIRS = navnet
@@ -41,6 +41,12 @@ distdir:
 
 %.tns: %.o
 	$(LD-BFLT) $(LDFLAGS) $^ -o  $(DISTDIR)/$@
+
+ndless_ngc_tests.tns: ndless_ngc_tests.o assert.o
+	$(LD-BFLT) $(LDFLAGS) $^ -o  $(DISTDIR)/$@
+ifeq ($(DEBUG),FALSE)
+	@rm -f $(DISTDIR)/*.gdb
+endif
 
 ndless_cpp_tests.tns: ndless_cpp_tests.o assert.o
 	$(LD-BFLT) --cpp $(LDFLAGS) $^ -o  $(DISTDIR)/$@

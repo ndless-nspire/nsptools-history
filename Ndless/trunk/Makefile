@@ -113,7 +113,7 @@ _upload_ndless:
 	svn update
 	svnrev=`svn info --xml |grep revision | uniq | sort -r | head -1 | sed 's/\(revision="\)//' | sed 's/">//' | sed 's/[[:blank:]]*//g'`; \
 	mv dist "ndless-v3.1-beta-r$$svnrev"; \
- 	rm -rf ndless.zip ; \
+	rm -rf ndless.zip ; \
 	7z a ndless.zip "ndless-v3.1-beta-r$$svnrev" > /dev/null; \
 	curl --cookie upload_cookies.txt -F 'super_id=1' -F 'form_type=file' -F '__FORM_TOKEN=ffa21de629e1d6de857923e4' -F "name=ndless-v3.1-beta-r$$svnrev.zip" -F 'submit=Submit' -F 'file_to_upload=@ndless.zip' -F 'sort=' -F 'architecture=' -F 'notes=' http://www.unsads.com/projects/nsptools/admin/general/downloader/files/release/1 > /dev/null; \
 	rm -rf ndless.zip; \
