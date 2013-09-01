@@ -2,6 +2,13 @@ dofile(props["SciteDefaultHome"].."\\scite-debug\\extman.lua")
 
 props['SciteDefaultHomeMsys'] = '/' .. props['SciteDefaultHome']:gsub("\\", "/"):gsub(":", "")
 
+local fn = package.loadlib(props['SciteDefaultHome'] .. "/spawner-ex/spawner-ex.dll", "luaopen_spawner")
+if not fn then
+	print("Can't load spawner-ex")
+	return
+end
+fn()
+
 -- ==== Custom function ====
 
 -- Return the result of "cd <dir> && ls <mask>", or nil if no file found
@@ -34,6 +41,21 @@ function folder_exists(strFolderName)
 			return true
 		end
 	end
+end
+
+function build_lua_output_cb(chunk)
+	print(chunk)
+end
+
+function build_lua_finished_cb(result_code)
+	print("'" .. props['FileNameExt'] .. "' converted with Luna.")
+end
+
+function build_lua()
+	local lunaspawner = spawner.new(props['SciteDefaultHome'] .. '/luna/luna ' .. props['FilePath'] .. ' ' .. props['FileDir'] .. '/' .. props['FileName'] .. '.tns')
+	lunaspawner:set_output("build_lua_output")
+	lunaspawner:set_result("build_lua_finished_cb")
+	lunaspawner:run()
 end
 
 -- =========================
