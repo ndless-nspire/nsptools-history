@@ -496,7 +496,7 @@ void nio_cursor_custom(nio_console* c, unsigned char cursor_data[6]);
 #define nio_ScrollDown                  nio_scroll
 #define nio_DrawChar                    nio_csl_drawchar
 #define nio_SetChar                     nio_csl_savechar
-#define nio_printf                      nio_printf
+#define nio_printf                      nio_fprintf
 
 #define uart_putc                       uart_putchar
 #define uart_getc                       uart_getchar
