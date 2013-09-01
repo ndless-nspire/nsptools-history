@@ -57,9 +57,7 @@ static __attribute__ ((noreturn)) void exit_with_error(const char *m) {
 		TI_NN_DestroyOperationHandle(oh);
 	if (ch)
 		TI_NN_Disconnect(ch);
-#ifdef NAVNET_TESTS_PC
 	TI_NN_Shutdown();
-#endif
 	exit(1);
 }
 
