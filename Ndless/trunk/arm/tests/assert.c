@@ -63,6 +63,10 @@ void assertFalse(const char *tstname, BOOL actual) {
 	assert(tstname, !actual, "%s", actual ? "TRUE" : "FALSE");
 }
 
+void assertCharEquals(const char *tstname, char expected, char actual) {
+	assert(tstname, expected == actual, "\"%c\", \"%c\"", expected, actual);
+}
+
 void assertStrEquals(const char *tstname, const char *expected, const char *actual) {
 	assert(tstname, !strcmp(expected, actual), "\"%s\", \"%s\"", expected, actual);
 }

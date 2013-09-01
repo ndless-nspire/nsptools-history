@@ -49,6 +49,10 @@ static void test_va(char __attribute__((unused)) dummy, ...) {
 	va_end(vl);
 }
 
+void print_string(String s) {
+  puts(string_to_ascii(s));
+}
+
 int main(int argc, char *argv[]) {
 	char buf[100];
 	char buf2[100];
@@ -237,7 +241,7 @@ int main(int argc, char *argv[]) {
 	NU_Done(&dstat);
 	
 	DIR	*dp;
-	struct dirent	*ep;		 
+	struct dirent *ep;		 
 	assertNotNull("opendir", (dp = opendir("/")));
 	assertNotNull("readdir-1", (ep = readdir(dp)));
 	assertNotNull("readdir-2", (ep = readdir(dp)));
@@ -248,6 +252,50 @@ int main(int argc, char *argv[]) {
 	
 	assertUIntLower("keypad_type", 5, *keypad_type);
 	assertNonZero("keypad_type", *keypad_type);
+
+	/* strings */
+	String s = string_new();
+	String s2 = string_new();
+	string_set_ascii(s2, " Lorem Ipsum");
+	string_set_ascii(s, "hello world!");
+	string_concat_utf16(s, s2->str);
+	string_free(s2);
+	assertStrEquals("string_set_ascii", "hello world! Lorem Ipsum", string_to_ascii(s));
+	char * l = "l\0\0";
+	assertUIntEquals("string_indexOf_utf16", 2, string_indexOf_utf16(s, 0, l));
+	assertUIntEquals("string_last_indexOf_utf16", 9, string_last_indexOf_utf16(s, 0, l));
+	assertUIntEquals("string_indexOf_utf16", 6, string_indexOf_utf16(s, 0, "w\0o\0r\0l\0d\0\0"));
+	int pos = 1;
+	assertUIntEquals("string_substring_utf16", 5, utf16_strlen(string_substring_utf16(s, "w\0o\0r\0l\0d\0\0", &pos)));
+	String t = string_new();
+	string_set_ascii(t, "%d");
+	string_sprintf_utf16(s, t->str, 42);
+	assertStrEquals("string_sprintf_utf16", "42", string_to_ascii(s));
+	
+	String s42 = string_new();
+	string_set_ascii(s42, "42");
+	assertZero("string_compareTo_utf16", string_compareTo_utf16(s, s42->str));
+
+	string_set_ascii(s, "String erased ; hello:3");
+	String s3 = string_new();
+	string_set_ascii(s3, "The Game");
+	string_substring(s, s3, 4, 7);
+	assertStrEquals("string_substring", "Game", string_to_ascii(s));
+	string_free(s3);
+	
+	String s4 = string_new();
+	string_set_ascii(s4, " Lorem ");
+	string_insert_utf16(s, s4->str, 2);
+	assertStrEquals("string_lower", "Ga Lorem me", string_to_ascii(s));
+	string_free(s4);
+	
+	string_lower(s);
+	assertStrEquals("string_lower", "ga lorem me", string_to_ascii(s));
+
+	string_erase(s, 2);
+	assertStrEquals("string_erase", " lorem me", string_to_ascii(s));
+	assertCharEquals("string_charAt", 'e', string_charAt(s, 4));
+	string_free(s);
 	
 	/* libndls */
 	assertUIntEquals("isalnum", TRUE, isalnum('0'));
