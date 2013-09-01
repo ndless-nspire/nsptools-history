@@ -1,5 +1,6 @@
 	MakeName	(0X100054C4,	"j_TMT_Retreive_Clock");
 	MakeName	(0X10005CE4,	"j_get_battery_door_detection_mode");
+	MakeName	(0X10005DF8,	"get_documents_dir");
 	MakeName	(0X10008C1C,	"file_exists");
 	MakeName	(0X10009984,	"ndless_ploader");
 	MakeName	(0X100099B4,	"ndless_ploader2");
@@ -262,6 +263,7 @@
 	MakeName	(0X101C47CC,	"touchpad_read");
 	MakeName	(0X10208D9C,	"j_j_free_13");
 	MakeName	(0X1021E544,	"get_event");
+	MakeName	(0X1021EEBC,	"j_get_documents_dir");
 	MakeName	(0X1021FBF4,	"string_str");
 	MakeName	(0X1021FBFC,	"string_len");
 	MakeName	(0X1021FC04,	"string_charAt");

@@ -5,6 +5,7 @@
 	MakeName	(0X10005C20,	"cursor_hide");
 	MakeName	(0X10005C4C,	"cursor_show");
 	MakeName	(0X10005C84,	"j_get_battery_door_detection_mode");
+	MakeName	(0X10005D98,	"get_documents_dir");
 	MakeName	(0X10006C18,	"Exitptt");
 	MakeRptCmt	(0X10006C94,	"ressources_syst");
 	MakeRptCmt	(0X10006CA4,	"ressources_syst");
@@ -312,6 +313,7 @@
 	MakeRptCmt	(0X1021E754,	"pending event flag");
 	MakeRptCmt	(0X1021E768,	"fill up the event struct");
 	MakeRptCmt	(0X1021E790,	"pending event flag");
+	MakeName	(0X1021F0BC,	"j_get_documents_dir");
 	MakeName	(0X1021FDF4,	"string_str");
 	MakeName	(0X1021FDFC,	"string_len");
 	MakeName	(0X1021FE04,	"string_charAt");

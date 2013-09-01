@@ -1,4 +1,5 @@
 	MakeName	(0X10005CD4,	"GUI_setFont_to_NU_Font");
+	MakeName	(0X10005D40,	"get_documents_dir");
 	MakeName	(0X100117B8,	"j_j_free");
 	MakeName	(0X100118EC,	"j_unlink");
 	MakeName	(0X10016558,	"j_j_free_0");
@@ -162,6 +163,7 @@
 	MakeName	(0X1020502C,	"j_j_free_13");
 	MakeName	(0X102094DC,	"TI_ColorPicker");
 	MakeName	(0X1021A7D4,	"get_event");
+	MakeName	(0X1021B14C,	"j_get_documents_dir");
 	MakeName	(0X1021BE84,	"string_str");
 	MakeName	(0X1021BE8C,	"string_len");
 	MakeName	(0X1021BE94,	"string_charAt");

@@ -1,5 +1,6 @@
 	MakeName	(0X1000549C,	"j_TMT_Retreive_Clock");
 	MakeName	(0X10005CBC,	"j_get_battery_door_detection_mode");
+	MakeName	(0X10005DD0,	"get_documents_dir");
 	MakeName	(0X10008BF4,	"file_exists");
 	MakeName	(0X10012EE4,	"j_j_free");
 	MakeName	(0X10013018,	"j_unlink");
@@ -254,6 +255,7 @@
 	MakeName	(0X10209494,	"j_j_free_13");
 	MakeName	(0X1020D978,	"TI_ColorPicker");
 	MakeName	(0X1021EC70,	"get_event");
+	MakeName	(0X1021F5E8,	"j_get_documents_dir");
 	MakeName	(0X10220320,	"string_str");
 	MakeName	(0X10220328,	"string_len");
 	MakeName	(0X10220330,	"string_charAt");
