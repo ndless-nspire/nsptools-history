@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<sysroot id="sysroot-0-002-a7c6-d7dbb5" path="%R">
+    <installed tarname="mingw-get-0.5-mingw32-beta-20120426-1-bin.tar.xz" />
+    <installed tarname="mingw-get-0.5-mingw32-beta-20120426-1-lic.tar.xz" />
+    <installed tarname="pkginfo-0.5-mingw32-beta-20120426-1-bin.tar.xz" />
+</sysroot>

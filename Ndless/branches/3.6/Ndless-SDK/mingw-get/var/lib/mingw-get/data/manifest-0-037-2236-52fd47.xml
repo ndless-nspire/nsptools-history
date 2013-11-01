@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<package id="manifest-0-037-2236-52fd47">
+    <release tarname="rxvt-2.7.2-3-msys-1.0.14-doc.tar.lzma" />
+    <references>
+        <sysroot id="sysroot-0-011-664d-7cd9c6" />
+    </references>
+    <manifest>
+        <dir path="share/doc" />
+        <dir path="share/doc/MSYS" />
+        <file path="share/doc/MSYS/rxvt-2.7.2-3-msys.RELEASE_NOTES.txt" />
+        <dir path="share/doc/rxvt" />
+        <dir path="share/doc/rxvt/2.7.2" />
+        <file path="share/doc/rxvt/2.7.2/BUGS" />
+        <file path="share/doc/rxvt/2.7.2/ChangeLog" />
+        <file path="share/doc/rxvt/2.7.2/ChangeLog.MSYS" />
+        <file path="share/doc/rxvt/2.7.2/changes.txt" />
+        <dir path="share/doc/rxvt/2.7.2/etc" />
+        <file path="share/doc/rxvt/2.7.2/etc/rxvt.termcap" />
+        <file path="share/doc/rxvt/2.7.2/etc/rxvt.terminfo" />
+        <file path="share/doc/rxvt/2.7.2/etc/XTerm.ad" />
+        <file path="share/doc/rxvt/2.7.2/FAQ" />
+        <dir path="share/doc/rxvt/2.7.2/menu" />
+        <file path="share/doc/rxvt/2.7.2/menu/example.menu" />
+        <file path="share/doc/rxvt/2.7.2/menu/jedmenu.sl" />
+        <file path="share/doc/rxvt/2.7.2/menu/menu" />
+        <file path="share/doc/rxvt/2.7.2/menu/rxvt.menu" />
+        <file path="share/doc/rxvt/2.7.2/menu/terminal.menu" />
+        <file path="share/doc/rxvt/2.7.2/README.greek" />
+        <file path="share/doc/rxvt/2.7.2/README.menu" />
+        <file path="share/doc/rxvt/2.7.2/README.xvt" />
+        <file path="share/doc/rxvt/2.7.2/rxvt-2.7.2.lsm" />
+        <file path="share/doc/rxvt/2.7.2/TODO" />
+        <file path="share/doc/rxvt/2.7.2/xterm.seq" />
+        <dir path="share/man" />
+        <dir path="share/man/man1" />
+        <file path="share/man/man1/rxvt.1" />
+        <dir path="share/pixmaps" />
+        <file path="share/pixmaps/rxvt-dark-stripes.xpm" />
+        <file path="share/pixmaps/rxvt-light-stripes.xpm" />
+    </manifest>
+</package>

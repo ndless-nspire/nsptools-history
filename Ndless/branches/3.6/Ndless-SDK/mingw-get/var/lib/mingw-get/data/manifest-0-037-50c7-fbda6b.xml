@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<package id="manifest-0-037-50c7-fbda6b">
+    <release tarname="rxvt-2.7.2-3-msys-1.0.14-bin.tar.lzma" />
+    <references>
+        <sysroot id="sysroot-0-011-664d-7cd9c6" />
+    </references>
+    <manifest>
+        <dir path="bin" />
+        <file path="bin/msys-W11.dll" />
+        <file path="bin/rxvt.exe" />
+    </manifest>
+</package>
