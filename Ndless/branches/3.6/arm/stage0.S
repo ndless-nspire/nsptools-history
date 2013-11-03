@@ -52,6 +52,10 @@ unescaped:
 
 main: .global main
 	bkpt
+	@ we are in abt mode, switch to the standard svc mode
+	mrs   r0, cpsr
+	eor   r0, #0b100 @ svc mode
+	msr   cpsr, r0
 	@ to thumb mode as required by stage1
 	to_thumb r0
 	b stage1
