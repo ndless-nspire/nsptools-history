@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Olivier ARMAND
  * <olivier.calc@gmail.com>.
- * Portions created by the Initial Developer are Copyright (C) 2010-2011
+ * Portions created by the Initial Developer are Copyright (C) 2010-2013
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): 
@@ -36,18 +36,18 @@ struct next_descriptor ut_next_descriptor = {
 unsigned ut_os_version_index;
 
 // OS-specific
-extern unsigned syscalls_ncas_3_1_0[];
-extern unsigned syscalls_light_ncas_3_1_0[];
-extern unsigned syscalls_cas_3_1_0[];
-extern unsigned syscalls_light_cas_3_1_0[];
-extern unsigned syscalls_ncascx_3_1_0[];
-extern unsigned syscalls_light_ncascx_3_1_0[];
-extern unsigned syscalls_cascx_3_1_0[];
-extern unsigned syscalls_light_cascx_3_1_0[];
-extern unsigned syscalls_cmc_3_1_0[];
-extern unsigned syscalls_light_cmc_3_1_0[];
-extern unsigned syscalls_cascmc_3_1_0[];
-extern unsigned syscalls_light_cascmc_3_1_0[];
+extern unsigned syscalls_ncas_3_6_0[];
+extern unsigned syscalls_light_ncas_3_6_0[];
+extern unsigned syscalls_cas_3_6_0[];
+extern unsigned syscalls_light_cas_3_6_0[];
+extern unsigned syscalls_ncascx_3_6_0[];
+extern unsigned syscalls_light_ncascx_3_6_0[];
+extern unsigned syscalls_cascx_3_6_0[];
+extern unsigned syscalls_light_cascx_3_6_0[];
+extern unsigned syscalls_cmc_3_6_0[];
+extern unsigned syscalls_light_cmc_3_6_0[];
+extern unsigned syscalls_cascmc_3_6_0[];
+extern unsigned syscalls_light_cascmc_3_6_0[];
 
 /* Writes to ut_os_version_index a zero-based index identifying the OS version and HW model.
  * Also sets up the syscalls table.
@@ -67,7 +67,7 @@ void ut_read_os_version_index(void) {
 		case 0x102F0A10:  // 3.1.0 non-CAS CX
 			ut_os_version_index = 2;
 			break;
-		case 0x102F11A0:  // 3.1.0 CAS CX
+		case 0x10376090:  // 3.6.0 CAS CX
 			ut_os_version_index = 3;
 			break;
 		case 0x102DBF20:  // 3.1.0 CM-C
@@ -86,27 +86,27 @@ void ut_read_os_version_index(void) {
 		// OS-specific
 		case 0x102F0FA0:  // 3.1.0 non-CAS
 			ut_os_version_index = 0;
-			sc_addrs_ptr = syscalls_ncas_3_1_0;
+//			sc_addrs_ptr = syscalls_ncas_3_6_0;
 			break;
 		case 0x102F16D0:  // 3.1.0 CAS
 			ut_os_version_index = 1;
-			sc_addrs_ptr = syscalls_cas_3_1_0;
+//			sc_addrs_ptr = syscalls_cas_3_6_0;
 			break;
 		case 0x102F0A10:  // 3.1.0 non-CAS CX
 			ut_os_version_index = 2;
-			sc_addrs_ptr = syscalls_ncascx_3_1_0;
+//			sc_addrs_ptr = syscalls_ncascx_3_6_0;
 			break;
-		case 0x102F11A0:  // 3.1.0 CAS CX
+		case 0x10376090:  // 3.6.0 CAS CX
 			ut_os_version_index = 3;
-			sc_addrs_ptr = syscalls_cascx_3_1_0;
+			sc_addrs_ptr = syscalls_cascx_3_6_0;
 			break;
 		case 0x102DBF20:  // 3.1.0 CM-C
 			ut_os_version_index = 4;
-			sc_addrs_ptr = syscalls_cmc_3_1_0;
+//			sc_addrs_ptr = syscalls_cmc_3_6_0;
 			break;
 		case 0x102DC6B0:  // 3.1.0 CAS CM-C
 			ut_os_version_index = 5;
-			sc_addrs_ptr = syscalls_cascmc_3_1_0;
+//			sc_addrs_ptr = syscalls_cascmc_3_6_0;
 			break;
 		default:
 			ut_panic("v?");

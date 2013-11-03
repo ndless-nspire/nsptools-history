@@ -1,5 +1,5 @@
 UNAME := $(shell uname)
-SUBDIRS = MakeTNO
+SUBDIRS = MakeEscapeTable MakeLuaInst
 
 all:
 ifneq ($(findstring CYGWIN,$(UNAME)),)

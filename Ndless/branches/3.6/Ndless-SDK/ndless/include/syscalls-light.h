@@ -18,6 +18,6 @@
 // END_OF_LIST (always keep this line after the last constant, used by mksyscalls.sh)
 
 // Must be kept up-to-date with the value of the last syscall
-#define SYSCALLS_NUM 7
+#define SYSCALLS_NUM 6
 
 #endif

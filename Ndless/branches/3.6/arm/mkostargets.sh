@@ -1,29 +1,17 @@
 #!/bin/sh
-# Generate verbose Makefile targets for the different OS versions and models
-
-get_ext() {
-		case $1 in
-		ncas)   echo tno;;
-		cas)    echo tnc;;
-		ncascx) echo tco;;
-		cascx)  echo tcc;;
-		cmc)  echo tmo;;
-		cascmc)  echo tmc;;
-		esac
-}
+# Generates verbose Makefile targets for the different OS versions and models
 
 # OS-specific
-OS_VERSIONS="3.1.0"
-MODELS="ncas cas ncascx cascx cmc cascmc"
+OS_VERSIONS="3.6.0"
+#MODELS="ncas cas ncascx cascx cmc cascmc"
+MODELS="cascx"
 
 echo "OS_VERSIONS := $OS_VERSIONS"
 echo "MODELS := $MODELS"
 
-extensions=".tno .tnc .tco .tcc .tmo .tmc"
-
 for os_version in $OS_VERSIONS; do
 	for model in $MODELS; do
-		installer_files="$installer_files ndless_installer-$os_version.`get_ext $model`"
+		installer_files="$installer_files ndless_installer-$os_version-$model.tns"
 	done
 done
 echo "INSTALLER_FILES := $installer_files"
@@ -38,10 +26,10 @@ done
 
 for os_version in $OS_VERSIONS; do
 	for model in $MODELS; do
-		extension=`get_ext $model`
-		echo "ndless_installer-${os_version}.${extension}: OS_NAME=$os_version-$model"
-		echo "ndless_installer-${os_version}.${extension}: OS_VERSION=$os_version"
-		echo "ndless_installer-${os_version}.${extension}: MODEL=$model"
-		echo "ndless_installer-${os_version}.${extension}: ndless_installer-${os_version}-$model.elf"
+		echo "ndless_installer-${os_version}-$model.tns: OS_NAME=$os_version-$model"
+		echo "ndless_installer-${os_version}-$model.tns: OS_VERSION=$os_version"
+		echo "ndless_installer-${os_version}-$model.tns: MODEL=$model"
+		echo "ndless_installer-${os_version}-$model.tns: ndless_installer-${os_version}-$model.lua"
+		echo "ndless_installer-${os_version}-$model.lua: ndless_installer-${os_version}-$model.bin"
 	done
 done

@@ -9,7 +9,7 @@
 # Available non-GCC options:
 # --no-startup: do not link with the startup code
 # --light-startup: use crt0light.o instead
-# --light-startup-no-header: use crt0lightnoheader.o instead
+# --light-startup-no-header-initfunc: use crt0lightnoheader_initfunc.o instead
 # --no-ldscript: do not use the standard Ndless linker script
 # --cpp: link a C++ program
 
@@ -37,7 +37,7 @@ fi
 nostdlib=false
 nostartup=false
 lightstartup=false
-noprgmheader=false
+noprgmheader_initfunc=false
 noldscript=false
 cpp=false
 # an array is used to change the arguments while supporting arguments with spaces
@@ -47,7 +47,7 @@ for arg in "$@"; do
 		-nostdlib) nostdlib=true; args=("${args[@]}" $arg);;
 		--no-startup) nostartup=true;;
 		--light-startup) lightstartup=true;;
-		--light-startup-no-header) noprgmheader=true;;
+		--light-startup-no-header-initfunc) noprgmheader_initfunc=true;;
 		--no-ldscript) noldscript=true;;
 		--cpp) cpp=true;;
 		*) args=("${args[@]}" $arg);;
@@ -71,8 +71,8 @@ fi
 if [ $nostartup = false ]; then
 	if [ $lightstartup = true ]; then
 		startupobj=crt0light.o
-	elif [ $noprgmheader = true ]; then
-		startupobj=crt0lightnoheader.o
+	elif [ $noprgmheader_initfunc = true ]; then
+		startupobj=crt0lightnoheader_initfunc.o
 	else
 		if [ $cpp = true ]; then
 			startupobj=crt0-cpp.o

@@ -17,7 +17,7 @@
  *
  * The Initial Developer of the Original Code is Olivier ARMAND
  * <olivier.calc@gmail.com>.
- * Portions created by the Initial Developer are Copyright (C) 2010-2011
+ * Portions created by the Initial Developer are Copyright (C) 2010-2013
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): 
@@ -26,23 +26,16 @@
 
 #include "ndless.h"
 
+/* 0000 and 0009 half-words are forbidden in this shellcode */
 /* The error handling is commented and only enabled for debugging purposes
  * because of the size constraints of the installer.
  */
 void stage1(void) {
 	struct stat res_stat;
-	unsigned *uptr;
-	unsigned *osptr;
-	unsigned i;
 	
 	ut_debug_trace(INSTTR_S1_ENTER);
-
-	ut_disable_watchdog();
-
-	// Restore a few bytes at 0 destroyed by the TNO installation
-	for (i = 0, uptr = 0, osptr = OS_BASE_ADDRESS; i < 5; i++)
-		*uptr++ = *osptr++;
 	
+	ut_disable_watchdog();
 	ut_read_os_version_index();
 	ints_setup_handlers();
 	
