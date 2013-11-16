@@ -1,4 +1,4 @@
-SUBDIRS = _samples nspire_emu ndless_pc/lib cmd_tools/navnetcmd luna
+SUBDIRS = nspire_emu ndless_pc/lib cmd_tools/navnetcmd luna _samples
 
 all:
 	@for i in $(SUBDIRS); do \
