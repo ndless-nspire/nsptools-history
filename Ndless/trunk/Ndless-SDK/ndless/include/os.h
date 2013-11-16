@@ -311,19 +311,30 @@ typedef __builtin_va_list va_list;
 #define va_start(ap,p)  __builtin_va_start(ap, p)
 #define va_arg(ap,type) __builtin_va_arg(ap, type)
 #define va_end(ap) __builtin_va_end(ap)
+#define va_copy(d,s) __builtin_va_copy(d,s)
 
 _SYSCALLVAR(int, __attribute__((__format__(__printf__,1,2))), printf, __attribute__((unused)) const char *format, ...)
 _SYSCALLVAR(int, __attribute__((__format__(__printf__,2,3))), sprintf, __attribute__((unused)) char *s, __attribute__((unused)) const char *format, ...)
 _SYSCALLVAR(int, __attribute__((__format__(__printf__,2,3))), fprintf, __attribute__((unused)) FILE *s, __attribute__((unused)) const char *format, ...)
 _SYSCALLVAR(int, __attribute__((__format__(__scanf__,2,3))), sscanf, __attribute__((unused)) const char *s, __attribute__((unused)) const char * format, ...)
-
+// wrapper with cast to avoid the GCC warning "error: aggregate value used where an integer was expected"
+#define vfprintf(str, fmt, arg) _vfprintf(str, fmt, *(void**)&arg)
+_SYSCALL3(int, _vfprintf, FILE *, const char *, void*)
+// wrapper with cast to avoid the GCC warning "error: aggregate value used where an integer was expected"
+#define vprintf(fmt, arg) _vprintf(fmt, *(void**)&arg)
+_SYSCALL2(int, _vprintf, const char *, void*)
+_SYSCALLVAR(int, __attribute__((__format__(__printf__,3,4))), snprintf, __attribute__((unused)) char *str, __attribute__((unused)) size_t size, __attribute__((unused)) const char *format, ...)
+// wrapper with cast to avoid the GCC warning "error: aggregate value used where an integer was expected"
+#define vsnprintf(s, n, fmt, arg) _vsnprintf(s, n, fmt, *(void**)&arg)
+_SYSCALL4(int, _vsnprintf, char *, size_t, const char *, void*)
 // wrapper with cast to avoid the GCC warning "error: aggregate value used where an integer was expected"
 #define vsprintf(str, fmt, arg) _vsprintf(str, fmt, *(void**)&arg)
-_SYSCALL3(int, _vsprintf, char *, const char *, void*)
+_SYSCALL3(int, _vsprintf, char*, const char*, void*)
 
 _SYSCALL1(int, puts, const char *)
 _SYSCALL2(int, fputc, int, FILE *)
 #define putc fputc
+#define putchar(c) fputc(c, stdout)
 _SYSCALL1(int, fgetc, FILE *)
 #define getc fgetc
 _SYSCALL2(int, ungetc, int, FILE *)

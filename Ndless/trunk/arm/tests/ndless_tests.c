@@ -29,8 +29,6 @@
 #include "ndless_tests.h"
 #include "../ndless.h"
 
-// TODO: use snprintf instead of sprintf
-
 int global_int;
 int *nl_relocdata_data[] = {&global_int};
 
@@ -40,12 +38,20 @@ static const unsigned custom_sprintf_addrs[] = {0x10376F28}; // only non-CAS 3.1
 /* the actual parameters should be: dummy, (char)1, char(0x20) */
 static void test_va(char __attribute__((unused)) dummy, ...) {
 	char buf[10];
-	va_list vl;
+	va_list vl, vl2;
 	va_start(vl, dummy);
-	unsigned char c = va_arg(vl, int);
+	va_copy(vl2, vl);
+	unsigned char c = va_arg(vl2, int);
 	assertUIntEquals("va_arg", 1, c);
-	vsprintf(buf, "%c", vl);
+	vsprintf(buf, "%c", vl2);
 	assertStrEquals("vsprintf", " ", buf);
+	vsnprintf(buf, sizeof(buf), "%c", vl2);
+	assertStrEquals("vsnprintf", " ", buf);
+	vprintf("%c\n", vl2);
+	FILE *file = fopen("__testfile.tns", "wb+");
+	assertUIntEquals("vfprintf", 1, vfprintf(file, "%c", vl2));
+	assertZero("fclose", fclose(file));
+	va_end(vl2);
 	va_end(vl);
 }
 
@@ -76,7 +82,8 @@ int main(int argc, char *argv[]) {
 		puts("Make sure to use ndless.cfg from the tests/ directory.");
 	assertStrEquals("argv0", "ndless_tests.test.tns", strrchr(argv[0], '/') + 1);
 	assertStrEquals("argv1", "ndless_tests.test.tns", strrchr(argv[1], '/') + 1); // file association (run with ourself)
-		
+	assertIntEquals("enable_relative_paths", 0, enable_relative_paths(argv));
+	
 	ret = sprintf(buf, "%i%i%i", 1, 2, 3);
 	assertStrEquals("_syscallsvar >4 params", "123", buf); // tests sprintf. uses _syscallvar_savedlr.
 	assertUIntEquals("_syscallsvar return", 3, ret);
@@ -180,7 +187,6 @@ int main(int argc, char *argv[]) {
 	srand(1818);
 	assertUIntEquals("rand-2", 0x264, rand());
 	
-	assertIntEquals("enable_relative_paths", 0, enable_relative_paths(argv));
 	file = fopen("__testfile.tns", "wb+");
 	assertNotNull("fopen", file);
 	file = freopen("__testfile.tns", "wb+", file);

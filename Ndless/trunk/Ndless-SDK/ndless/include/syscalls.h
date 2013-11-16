@@ -347,11 +347,15 @@
 #define e_gui_gc_getIconSize 329
 #define e_gui_gc_blit_gc 330
 #define e_gui_gc_blit_buffer 331
+#define e_snprintf 332
+#define e__vprintf 333
+#define e__vfprintf 334
+#define e__vsnprintf 335
 
 // END_OF_LIST (always keep this line after the last constant, used by mksyscalls.sh)
 
 // Must be kept up-to-date with the value of the last syscall
-#define __SYSCALLS_LAST 331
+#define __SYSCALLS_LAST 335
 
 // Flag: 3 higher bits of the 3-bytes comment field of the swi instruction
 #define __SYSCALLS_ISEXT 0x200000
