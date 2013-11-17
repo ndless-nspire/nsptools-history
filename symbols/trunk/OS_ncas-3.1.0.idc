@@ -471,6 +471,7 @@
 	MakeName	(0X1035F458,	"bsd_panic");
 	MakeName	(0X1035F990,	"bsd_free2");
 	MakeName	(0X1035F998,	"bsd_malloc");
+	MakeName	(0X1035FB14,	"snprintf");
 	MakeName	(0X1035FB44,	"bsd_sprintf");
 	MakeName	(0X1035FB78,	"j_strcpy");
 	MakeName	(0X1035FB7C,	"j_strncmp");
@@ -499,9 +500,9 @@
 	MakeName	(0X10376EA0,	"printf");
 	MakeName	(0X10376ED8,	"unknown_vsprintf_");
 	MakeName	(0X10376F28,	"sprintf");
-	MakeName	(0X10376F5C,	"vfprintf_limit256");
-	MakeName	(0X10376FD8,	"printf3");
-	MakeName	(0X1037705C,	"snprintf");
+	MakeName	(0X10376F5C,	"vfprintf");
+	MakeName	(0X10376FD8,	"vprintf");
+	MakeName	(0X1037705C,	"vsnprintf");
 	MakeName	(0X103770B0,	"_vsprintf");
 	MakeName	(0X10377A34,	"vsprintf_limit256");
 	MakeName	(0X10378828,	"sscanf");

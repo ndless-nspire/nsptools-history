@@ -290,6 +290,7 @@
 	MakeName	(0X1033BAD0,	"usb_register_driver");
 	MakeName	(0X1033C2D0,	"usbd_errstr");
 	MakeName	(0X10346624,	"bsd_malloc");
+	MakeName	(0X103467A0,	"snprintf");
 	MakeName	(0X10346804,	"j_strcpy");
 	MakeName	(0X10346808,	"j_strncmp");
 	MakeName	(0X1034680C,	"j_strcmp");
@@ -313,6 +314,9 @@
 	MakeName	(0X1035DA94,	"fprintf");
 	MakeName	(0X1035DB2C,	"printf");
 	MakeName	(0X1035DBB4,	"sprintf");
+	MakeName	(0X1035DBE8,	"vfprintf");
+	MakeName	(0X1035DC64,	"vprintf");
+	MakeName	(0X1035DCE8,	"vsnprintf");
 	MakeName	(0X1035DD3C,	"_vsprintf");
 	MakeName	(0X1035F4B4,	"sscanf");
 	MakeName	(0X10360520,	"fclose");
