@@ -222,6 +222,8 @@ extern char target_folder[256];
 void *gui_save_state(size_t *size);
 void gui_reload_state(void *state);
 void gui_read_frame(u16 (*dest_framebuffer)[320]);
+int gui_vkey_to_row_col(s32 vkey, s32 scancode, int *col, int *row, int *down);
+int gui_handle_key_press(int col, int row, int down);
 
 /* Declarations for interrupt.c */
 

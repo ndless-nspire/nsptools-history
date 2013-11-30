@@ -32,7 +32,4 @@ void AppStreamCalc::shutdownCalc()
 {
 	m_exit = true;
 	exiting = true;
-#if 0
-    PostMessage(m_hWnd, WM_SHUTDOWNGAME, 0, 0);
-#endif
 }

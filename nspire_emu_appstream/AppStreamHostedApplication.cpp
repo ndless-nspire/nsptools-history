@@ -180,7 +180,7 @@ public:
     bool convertRGBAtoYUV(unsigned char* rgba, XStxRawVideoFrame* yuv);
 
     /**
-     * The game wants to post a new RGBA frame..save it
+     * The app wants to post a new RGBA frame..save it
      * so it can be returned when Stx asks for a new frame
      */
     void postNewRGBAFrame(unsigned char* theFrame)
@@ -318,32 +318,13 @@ XStxResult AppStreamHostedApplicationImp::XStxIInputSinkOnInput(const XStxInputE
     if (event->mType == XSTX_INPUT_EVENT_TYPE_KEYBOARD)
     {
         // Keyboard input
-        if (event->mInfo.mKeyboard.mIsKeyDown)
-        {
-            printf("Accepting keyboard input: virtualKey=%d, scanCode=%d\n"
-                   , event->mInfo.mKeyboard.mVirtualKey
-                   , event->mInfo.mKeyboard.mScanCode );
-            int32_t code =event->mInfo.mKeyboard.mVirtualKey;
-            // You can close client window by clicking window close button
-            if (code == 78)  // 'N' key
-            {
-                printf("Received N-key\n");
-                std::string msg("Server received N-keyboard input!");
-                if (XSTX_RESULT_OK == XStxServerSendMessage(
-                        mServer, (const unsigned char*) msg.c_str(), msg.size()))
-                {
-                    printf("Successfully sent message to client\n");
-                } else
-                {
-                    printf("Failed to send message to client\n");
-                }
-            } else {
-                // all other keys are delegated to theGame
-#if 0
-                mCalc->sendInput((char)code);
-#endif
-            }
-        }
+		printf("Accepting keyboard input: virtualKey=%d, scanCode=%d\n"
+			   , event->mInfo.mKeyboard.mVirtualKey
+			   , event->mInfo.mKeyboard.mScanCode );
+		int col, row;
+		if (!gui_vkey_to_row_col(event->mInfo.mKeyboard.mVirtualKey, event->mInfo.mKeyboard.mScanCode, &col, &row, NULL)) {
+			gui_handle_key_press(col, row, event->mInfo.mKeyboard.mIsKeyDown ? 1 : 0);
+		}
     } else if (event->mType == XSTX_INPUT_EVENT_TYPE_MOUSE)
         // mouse input is ignored
     {
