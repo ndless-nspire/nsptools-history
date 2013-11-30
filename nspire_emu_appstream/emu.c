@@ -231,7 +231,10 @@ void add_reset_proc(void (*proc)(void)) {
 	reset_procs[reset_proc_count++] = proc;
 }
 
-int main(int argc, char **argv) {
+int argc;
+char **argv;
+
+int emu_run() {
 	int i;
 	static FILE *boot2_file = NULL;
 	static char *boot1_filename = NULL, *boot2_filename = NULL, *flash_filename = NULL;
@@ -242,6 +245,7 @@ int main(int argc, char **argv) {
 	bool large_sdram = false;
 	bool large_flash = false;
 
+	
 	for (i = 1; i < argc; i++) {
 		char *arg = argv[i];
 		if (*arg == '/' || *arg == '-') {
@@ -544,3 +548,11 @@ reset:
 	}
 	return 0;
 }
+
+int main(int largc, char **largv) {
+	argc = largc;
+	argv = largv;
+	appstream_init_and_wait();
+	return 0;
+}
+

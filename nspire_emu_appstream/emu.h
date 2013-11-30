@@ -1,3 +1,7 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdio.h>
 
 typedef unsigned char      u8;
@@ -9,7 +13,9 @@ typedef signed short       s16;
 typedef signed int         s32;
 typedef signed long long   s64;
 
+#ifndef __cplusplus
 typedef enum { false, true } bool;
+#endif
 
 static inline u16 BSWAP16(u16 x) { return x << 8 | x >> 8; }
 static inline u32 BSWAP32(u32 x) {
@@ -49,12 +55,16 @@ void logprintf(int type, char *str, ...);
 
 void warn(char *fmt, ...);
 __attribute__((noreturn)) void error(char *fmt, ...);
+int emu_run();
 void throttle_timer_on();
 void throttle_timer_off();
 int exec_hack();
 typedef void fault_proc(u32 mva, u8 status);
 fault_proc prefetch_abort, data_abort;
 void add_reset_proc(void (*proc)(void));
+
+/* Declarations for appstream.cpp */
+int appstream_init_and_wait(void);
 
 /* Declarations for casplus.c */
 
@@ -211,6 +221,7 @@ void get_messages();
 extern char target_folder[256];
 void *gui_save_state(size_t *size);
 void gui_reload_state(void *state);
+void gui_read_frame(u16 (*dest_framebuffer)[320]);
 
 /* Declarations for interrupt.c */
 
@@ -527,6 +538,7 @@ enum SNIPPETS {
 extern char binary_snippets_bin_start[];
 extern char binary_snippets_bin_end[];
 enum ARMLOADER_PARAM_TYPE {ARMLOADER_PARAM_VAL, ARMLOADER_PARAM_PTR};
+#ifndef __cplusplus
 struct armloader_load_params {
 	enum ARMLOADER_PARAM_TYPE t;
 	union {
@@ -540,6 +552,7 @@ struct armloader_load_params {
 void armloader_cb(void);
 int armloader_load_snippet(enum SNIPPETS snippet, struct armloader_load_params params[],
                            unsigned params_num, void (*callback)(struct arm_state *));
+#endif
 
 /* Declarations for schedule.c */
 
@@ -625,3 +638,7 @@ void usblink_reset();
 void usblink_connect();
 void *usblink_save_state(size_t *size);
 void usblink_reload_state(void *state);
+
+#ifdef __cplusplus
+}
+#endif

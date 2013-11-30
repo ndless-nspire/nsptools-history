@@ -607,3 +607,8 @@ void gui_reload_state(void *state) {
 	(void)state;
 }
 #endif
+
+
+void gui_read_frame(u16 (*dest_framebuffer)[320]) {
+	lcd_cx_draw_frame(dest_framebuffer, (u32 *)bmi.bmiColors);	
+}
