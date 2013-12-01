@@ -5,7 +5,6 @@
 
 AppStreamCalc::AppStreamCalc()
 {
-	m_exit = false;
 }
 
 AppStreamCalc::~AppStreamCalc()
@@ -23,13 +22,20 @@ DWORD WINAPI AppStreamCalc::threadProc(void* param)
 
 bool AppStreamCalc::runCalcThread()
 {
-    emu_run();
+	STARTUPINFO startupInfo;
+	memset(&startupInfo, 0, sizeof(startupInfo));
+	startupInfo.wShowWindow = SW_SHOW;
+	memset(&processInfo, 0, sizeof(processInfo));
+	SetEnvironmentVariable("NSPIRE_EMU_NO_APPSTREAM", " "); // for the child process
+	if (!CreateProcess(NULL, GetCommandLine(), NULL, NULL, 0, CREATE_NEW_CONSOLE, NULL, NULL, &startupInfo, &processInfo))
+		return false;
+	WaitForSingleObject(processInfo.hProcess, INFINITE);
+	printf("waited\n");
     return true;
 }
 
 
 void AppStreamCalc::shutdownCalc()
 {
-	m_exit = true;
-	exiting = true;
+	TerminateProcess(processInfo.hProcess, 0);
 }

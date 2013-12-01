@@ -238,7 +238,7 @@ static int first_exec = 1;
 
 int emu_run() {
 	exiting = false;
-	if (!first_exec) goto reset;
+	//if (!first_exec) goto reset;
 	first_exec = 0;
 	
 	int i;
@@ -559,7 +559,12 @@ int main(int largc, char **largv) {
 	argc = largc;
 	argv = largv;
 #ifdef TARGET_APPSTREAM
-	appstream_init_and_wait();
+	char noappstream[10];
+	printf("%i\n", GetEnvironmentVariable("NSPIRE_EMU_NO_APPSTREAM", noappstream, sizeof(noappstream)));
+	if (GetEnvironmentVariable("NSPIRE_EMU_NO_APPSTREAM", noappstream, sizeof(noappstream)))
+		return emu_run(); // running through a call to CreateProcess() by the AppStream server
+	else
+		appstream_init_and_wait();
 	return 0;
 #else
 	return emu_run();
