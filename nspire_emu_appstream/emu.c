@@ -231,10 +231,16 @@ void add_reset_proc(void (*proc)(void)) {
 	reset_procs[reset_proc_count++] = proc;
 }
 
-int argc;
-char **argv;
+static int argc;
+static char **argv;
+
+static int first_exec = 1;
 
 int emu_run() {
+	exiting = false;
+	if (!first_exec) goto reset;
+	first_exec = 0;
+	
 	int i;
 	static FILE *boot2_file = NULL;
 	static char *boot1_filename = NULL, *boot2_filename = NULL, *flash_filename = NULL;
@@ -552,7 +558,11 @@ reset:
 int main(int largc, char **largv) {
 	argc = largc;
 	argv = largv;
+#ifdef TARGET_APPSTREAM
 	appstream_init_and_wait();
 	return 0;
+#else
+	return emu_run();
+#endif
 }
 

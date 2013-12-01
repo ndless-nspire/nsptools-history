@@ -318,9 +318,6 @@ XStxResult AppStreamHostedApplicationImp::XStxIInputSinkOnInput(const XStxInputE
     if (event->mType == XSTX_INPUT_EVENT_TYPE_KEYBOARD)
     {
         // Keyboard input
-		printf("Accepting keyboard input: virtualKey=%d, scanCode=%d\n"
-			   , event->mInfo.mKeyboard.mVirtualKey
-			   , event->mInfo.mKeyboard.mScanCode );
 		int col, row;
 		if (!gui_vkey_to_row_col(event->mInfo.mKeyboard.mVirtualKey, event->mInfo.mKeyboard.mScanCode, &col, &row, NULL)) {
 			gui_handle_key_press(col, row, event->mInfo.mKeyboard.mIsKeyDown ? 1 : 0);
