@@ -1,7 +1,7 @@
 #include <windows.h>
 #include <stdio.h>
+#include <shlwapi.h>
 #include "AppStreamCalc.h"
-#include "emu.h"
 
 AppStreamCalc::AppStreamCalc()
 {
@@ -22,12 +22,15 @@ DWORD WINAPI AppStreamCalc::threadProc(void* param)
 
 bool AppStreamCalc::runCalcThread()
 {
+	TCHAR exePath[MAX_PATH];
+	GetModuleFileName(NULL, exePath, MAX_PATH);
+	PathRemoveFileSpec(exePath);
+	strncat(exePath, "\\nspire_emu.exe", MAX_PATH);
 	STARTUPINFO startupInfo;
 	memset(&startupInfo, 0, sizeof(startupInfo));
 	startupInfo.wShowWindow = SW_SHOW;
 	memset(&processInfo, 0, sizeof(processInfo));
-	SetEnvironmentVariable("NSPIRE_EMU_NO_APPSTREAM", " "); // for the child process
-	if (!CreateProcess(NULL, GetCommandLine(), NULL, NULL, 0, CREATE_NEW_CONSOLE, NULL, NULL, &startupInfo, &processInfo))
+	if (!CreateProcess(exePath, GetCommandLine(), NULL, NULL, 0, CREATE_NEW_CONSOLE, NULL, NULL, &startupInfo, &processInfo))
 		return false;
 	WaitForSingleObject(processInfo.hProcess, INFINITE);
 	printf("waited\n");

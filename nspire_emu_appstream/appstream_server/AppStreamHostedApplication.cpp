@@ -15,13 +15,13 @@
 
 #define FRAME_POOL_SIZE 10  // frame buffer size
 
-#include "emu.h"
 #include <windows.h>
 #include <string>
 #include <unordered_set>
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 #include "AppStreamHostedApplication.h"
 #include "AppStreamCalc.h"
 
@@ -319,9 +319,9 @@ XStxResult AppStreamHostedApplicationImp::XStxIInputSinkOnInput(const XStxInputE
     {
         // Keyboard input
 		int col, row;
-		if (!gui_vkey_to_row_col(event->mInfo.mKeyboard.mVirtualKey, event->mInfo.mKeyboard.mScanCode, &col, &row, NULL)) {
-			gui_handle_key_press(col, row, event->mInfo.mKeyboard.mIsKeyDown ? 1 : 0);
-		}
+		//if (!gui_vkey_to_row_col(event->mInfo.mKeyboard.mVirtualKey, event->mInfo.mKeyboard.mScanCode, &col, &row, NULL)) {
+		//	gui_handle_key_press(col, row, event->mInfo.mKeyboard.mIsKeyDown ? 1 : 0);
+		//}
     } else if (event->mType == XSTX_INPUT_EVENT_TYPE_MOUSE)
         // mouse input is ignored
     {
@@ -381,21 +381,21 @@ XStxResult AppStreamHostedApplicationImp::XStxIVideoSourceGetFrame(XStxRawVideoF
         return XSTX_RESULT_VIDEO_FAILED_ALLOCATE_FRAME;
     }
     // populate video frame
-		u16 framebuffer[240][320];
-		gui_read_frame(framebuffer);
+		uint16_t framebuffer[240][320];
+		//gui_read_frame(framebuffer);
 		char rgbbuf[320*240*4];
 		char *ptr;
 		int x, y;
 		// framebuffer (R5G6B5) to R8G8B8. Target is upside down.
 		for (ptr = (char*)rgbbuf, y = 240 - 1; y >= 0; y--) {
 			for (x = 0; x < 320; x++) {
-				u16 rgb = framebuffer[y][x];
-				u8 R5  = (rgb >> 11) & 0x1f;
-				u8 G6  = (rgb >> 5 ) & 0x3f;
-				u8 B5  = (rgb >> 0 ) & 0x1f;
-				u8 R8  = ((R5 << 3) & 0xf8) | ((R5 >> 2) & 0x7);
-				u8 G8  = ((G6 << 2) & 0xfc) | ((G6 >> 4) & 0x3);
-				u8 B8  = ((B5 << 3) & 0xf8) | ((B5 >> 2) & 0x7);
+				uint16_t rgb = framebuffer[y][x];
+				uint8_t R5  = (rgb >> 11) & 0x1f;
+				uint8_t G6  = (rgb >> 5 ) & 0x3f;
+				uint8_t B5  = (rgb >> 0 ) & 0x1f;
+				uint8_t R8  = ((R5 << 3) & 0xf8) | ((R5 >> 2) & 0x7);
+				uint8_t G8  = ((G6 << 2) & 0xfc) | ((G6 >> 4) & 0x3);
+				uint8_t B8  = ((B5 << 3) & 0xf8) | ((B5 >> 2) & 0x7);
 				*ptr++ = R8;
 				*ptr++ = G8;
 				*ptr++ = B8;

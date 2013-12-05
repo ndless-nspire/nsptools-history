@@ -3,7 +3,7 @@
 
 #define MyAppName "nspire_emu_appstream"
 #define MyAppVersion "0.1"
-#define MyAppExeName "nspire_emu.exe"
+#define MyAppExeName "nspire_emu_appstream_server.exe"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -27,6 +27,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 Source: "C:\Users\Olivier\Documents\Developpement\AWS\appstream\nspire_emu_appstream\nspire_emu.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\Olivier\Documents\Developpement\AWS\appstream\nspire_emu_appstream\nspire_emu_appstream_server.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\Olivier\Documents\Developpement\TI\Nspire\nsptools\Ndless\trunk\Ndless-SDK\emu_resources\boot1.img.tns"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\Olivier\Documents\Developpement\TI\Nspire\nsptools\Ndless\trunk\Ndless-SDK\emu_resources\nand.img"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files

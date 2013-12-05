@@ -558,16 +558,6 @@ reset:
 int main(int largc, char **largv) {
 	argc = largc;
 	argv = largv;
-#ifdef TARGET_APPSTREAM
-	char noappstream[10];
-	printf("%i\n", GetEnvironmentVariable("NSPIRE_EMU_NO_APPSTREAM", noappstream, sizeof(noappstream)));
-	if (GetEnvironmentVariable("NSPIRE_EMU_NO_APPSTREAM", noappstream, sizeof(noappstream)))
-		return emu_run(); // running through a call to CreateProcess() by the AppStream server
-	else
-		appstream_init_and_wait();
-	return 0;
-#else
 	return emu_run();
-#endif
 }
 
