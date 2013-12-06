@@ -78,6 +78,7 @@ ndless_installer-%.lua: ndless_installer-%.bin
 	MakeLuaInst $(<:.bin=-escaped.bin) $@
 	
 ndless_installer-%.tns: ndless_installer-%.lua
+	@mkdir -p $(DISTDIR)
 	luna $< $(DISTDIR)/$@
 
 .PRECIOUS: ndless_installer-%.bin
@@ -102,6 +103,7 @@ ndless_core.elf: $(CORE_OBJS)
 	$(LD) --light-startup $^ -o $@
 
 ndless_resources.tns: ndless_core.elf
+	@mkdir -p $(DISTDIR)
 	$(OBJCOPY) -O binary $< $(DISTDIR)/$@
 
 subdirs:
