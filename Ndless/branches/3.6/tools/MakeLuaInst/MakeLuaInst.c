@@ -91,9 +91,9 @@ int main(int argc, const char* argv[]) {
 	sfprintf(flua, "\ns = s .. string.rep(string.uchar(0x0001), %i)", size_to_pad/2);
 	
 	// address
-	unsigned code_addr = 0x11115C2E; // TODO OS 3.6 CAS CX
+	unsigned code_addr = 0x11112E5C; // TODO OS 3.6 CAS CX
 	sfprintf(flua, "\ns = s .. string.uchar(0x%02hx%02hx) .. string.uchar(0x%02hx%02hx)",
-		(code_addr & 0x000000FF) >> 0, (code_addr & 0x0000FF00) >> 8, (code_addr & 0x00FF0000) >> 16, (code_addr & 0xFF000000) >> 24);
+		(code_addr & 0x0000FF00) >> 0, (code_addr & 0x000000FF) >> 8, (code_addr & 0xFF000000) >> 16, (code_addr & 0x00FF0000) >> 24);
 	
 	// footer
 	sfprintf(flua, "\ntoolpalette.register{{s}}");
