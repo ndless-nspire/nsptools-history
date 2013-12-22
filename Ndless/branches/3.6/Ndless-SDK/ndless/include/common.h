@@ -439,6 +439,8 @@ typedef struct {
 /* Read-write: can be used to access the values that had the registers when the hook was called: {r0-r12,lr} */
 #define HOOK_SAVED_REGS(hookname) ((unsigned*) __##hookname##_saved_sp)
 
+#define HOOK_SAVED_SP(hookname) ((void*) __##hookname##_saved_sp)
+
 #define HOOK_RESTORE_STATE() do { \
 	__asm volatile(" ldmfd sp!, {r0-r12,lr}"); \
 } while (0)

@@ -27,7 +27,6 @@
 #include "ndless.h"
 #include "bflt.h"
 
-
 struct assoc_file_recur_cb_ctx {
 	const char *prgm_name;
 	char *prgm_path;
@@ -231,14 +230,14 @@ void ld_free(void *resident_ptr) {
 HOOK_DEFINE(plh_hook) {
 	char *halfpath; // [docfolder/]file.tns
 	char docpath[FILENAME_MAX];
-	halfpath = (char*)(HOOK_SAVED_REGS(plh_hook)[5] /* r5 */ + 32);
+	halfpath = (char*)(HOOK_SAVED_SP(plh_hook)) + 0x788;
 	// TODO use snprintf
 	sprintf(docpath, "/%s%s", get_documents_dir(), halfpath);
 	if (ld_exec(docpath, NULL) == 0xDEAD) {
 		HOOK_SAVED_REGS(plh_hook)[3] = HOOK_SAVED_REGS(plh_hook)[0]; // 'mov r3, r0' was overwritten by the hook
-		HOOK_RESTORE_RETURN_SKIP(plh_hook, -0x114, 0); // to the error dialog about the unsupported format (we've overwritten a branch with our hook)
+		HOOK_RESTORE_RETURN_SKIP(plh_hook, -0x134, 0); // to the error dialog about the unsupported format (we've overwritten a branch with our hook)
 	} else {
-		HOOK_RESTORE_RETURN_SKIP(plh_hook, -0xDC, 1); // skip the error dialog about the unsupported format
+		HOOK_RESTORE_RETURN_SKIP(plh_hook, -0xF0, 1); // skip the error dialog about the unsupported format
 	}
 }
 
