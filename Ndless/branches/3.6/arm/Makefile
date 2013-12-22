@@ -32,8 +32,8 @@ static:
 	@mkdir -p $(DISTDIR)
 	@cp ndless.cfg.tns $(DISTDIR)
 
-# Build with the light and stage1 switches (temporarily added to $GCCFLAGS), and in thumb mode
-# because of the size limit of the installer
+# Build with the light and stage1 switches (temporarily added to $GCCFLAGS)
+# Thumb mode is actually not used anymore in this version of Ndless, because the installer is not size-constrainted
 ints_light_thumb.o: ints.c
 	$(GCC) $(GCCFLAGS) -c $< -o $@
 syscalls_light_thumb.o: syscalls.c
@@ -48,7 +48,7 @@ utils_light_thumb_%.o: utils.c
 # Use with $(call GCCFLAGS_INSTALLER, <os_version>)
 # OS_VERSION has its '.' replaced by '_' by this function.
 # OS_VERSION_INT only contains digits for easier case testing with the C preprocessing.
-GCCFLAGS_INSTALLER =-D _NDLS_LIGHT -D STAGE1 -mthumb-interwork -mthumb -D OS_VERSION=$(subst .,_,$(1)) -D OS_VERSION_INT=$(subst .,,$(1)) -D MODEL=$(MODEL)
+GCCFLAGS_INSTALLER =-D _NDLS_LIGHT -D STAGE1 -D OS_VERSION=$(subst .,_,$(1)) -D OS_VERSION_INT=$(subst .,,$(1)) -D MODEL=$(MODEL)
 
 # Explicit dependencies strangely required for the target to avoid being rebuilt when not really needed
 stage0.o: stage0.S
@@ -58,17 +58,17 @@ stage1.o: stage1.c
 .SECONDEXPANSION:
 
 ndless_installer-%-ncas.elf: stage1.o ints_light_thumb.o syscalls_light_thumb.o utils_light_thumb_ncas-$$*.o syscalls-light_ncas-%.o
-	$(LD) --light-startup-no-header-thumb-entry $(LDFLAGS) $^ -o $@
+	$(LD) --light-startup-no-header $(LDFLAGS) $^ -o $@
 ndless_installer-%-cas.elf: stage1.o ints_light_thumb.o syscalls_light_thumb.o utils_light_thumb_cas-$$*.o syscalls-light_cas-%.o
-	$(LD) --light-startup-no-header-thumb-entry $(LDFLAGS) $^ -o $@
+	$(LD) --light-startup-no-header $(LDFLAGS) $^ -o $@
 ndless_installer-%-ncascx.elf: stage1.o ints_light_thumb.o syscalls_light_thumb.o utils_light_thumb_ncascx-$$*.o syscalls-light_ncascx-%.o
-	$(LD) --light-startup-no-header-thumb-entry $(LDFLAGS) $^ -o $@
+	$(LD) --light-startup-no-header $(LDFLAGS) $^ -o $@
 ndless_installer-%-cascx.elf: stage1.o ints_light_thumb.o syscalls_light_thumb.o utils_light_thumb_cascx-$$*.o syscalls-light_cascx-%.o
-	$(LD) --light-startup-no-header-thumb-entry $(LDFLAGS) $^ -o $@
+	$(LD) --light-startup-no-header $(LDFLAGS) $^ -o $@
 ndless_installer-%-cmc.elf: stage1.o ints_light_thumb.o syscalls_light_thumb.o utils_light_thumb_cmc-$$*.o syscalls-light_cmc-%.o
-	$(LD) --light-startup-no-header-thumb-entry $(LDFLAGS) $^ -o $@
+	$(LD) --light-startup-no-header $(LDFLAGS) $^ -o $@
 ndless_installer-%-cascmc.elf: stage1.o ints_light_thumb.o syscalls_light_thumb.o utils_light_thumb_cascmc-$$*.o syscalls-light_cascmc-%.o
-	$(LD) --light-startup-no-header-thumb-entry $(LDFLAGS) $^ -o $@
+	$(LD) --light-startup-no-header $(LDFLAGS) $^ -o $@
 
 ndless_installer-%.bin:  ndless_installer-%.elf
 	$(OBJCOPY) -O binary $< $@

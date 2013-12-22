@@ -52,6 +52,30 @@ static void write_touchpad(uint16_t port, uint8_t value) {
     write_i2c(0x20, port & 0xFF, value);
 }
 
+// OS-specific
+static unsigned const end_of_init_addrs[] = {0, 0, 0, 0x10012424};
+
+HOOK_DEFINE(s1_startup_hook) {
+	ut_read_os_version_index();
+	ints_setup_handlers();
+	struct stat res_stat;
+	const char *res_path = NDLESS_DIR "/ndless_resources.tns";
+	FILE *res_file = fopen(res_path, "rb");
+	if (!res_file) {
+		//show_msgbox("Ndless", "You have forgotten to transfer 'ndless_resources'. Ndless won't be installed.");
+		goto s1_startup_hook_return;
+	}
+	stat(res_path, &res_stat);
+	char *core = malloc(res_stat.st_size);
+	fread(core, res_stat.st_size, 1, res_file);
+	fclose(res_file);
+	char *res_params = NULL; // Dummy filename to tell the installer we are booting or installing
+	clear_cache();
+	((void (*)(int argc, void* argv))(char*)core + sizeof(PRGMSIG))(1, &res_params); // Run the core installation
+s1_startup_hook_return:
+	HOOK_RESTORE_RETURN(s1_startup_hook);
+}
+
 int main(void) {
 	ut_disable_watchdog();
 	ut_read_os_version_index();
@@ -123,6 +147,8 @@ int main(void) {
 
 	#include "hrpatches-os-cascx-3.6.0.h"
 	#include "hrpatches-internal-ram-cascx-3.6.0.h"
+	
+	HOOK_INSTALL(end_of_init_addrs[ut_os_version_index], s1_startup_hook);
 	
 	clear_cache();
 	((void(*)(void))0x10000000)();

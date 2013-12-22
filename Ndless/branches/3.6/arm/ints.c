@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Olivier ARMAND
  * <olivier.calc@gmail.com>.
- * Portions created by the Initial Developer are Copyright (C) 2010
+ * Portions created by the Initial Developer are Copyright (C) 2010-2013
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): 
@@ -56,11 +56,8 @@ asm(
 "ints_swi_handler: .global ints_swi_handler  @ caution: 1) only supports calls from the svc mode (i.e. the mode used by the OS) 2) destroys the caller's mode lr \n"
 " stmfd sp!, {r0-r2, r3}  @ r3 is dummy and will be overwritten with the syscall address. Caution, update the offset below if reg list changed. \n"
 " mrs	  r0, spsr \n"
-#ifndef STAGE1
-/* stage1 always in thumb */
 " tst   r0, #0b100000     @ caller in thumb state? \n"
 " beq   stateok           @ ARM state \n"
-#endif
 " add   lr, lr, #1        @ so that the final 'bx lr' of the syscall switches back to thumb state \n"
 " bic   r0, #0b100000     @ clear the caller's thumb bit. The syscall is run in 32-bit state \n"
 "stateok: \n"
@@ -76,17 +73,11 @@ asm(
 " msr   spsr, r0 \n"
 " subs  pc, pc, #4        @  move spsr to cpsr (restore the ints mask) \n"
 "@ extract the syscall number from the comment field of the swi instruction \n"
-#ifdef STAGE1
-/* stage1 always in thumb */
-" ldrh  r0, [lr, #-3]    @ thumb state (-2-1, because of the previous +1) \n"
-" bic   r0, r0, #0xFF00 \n"
-#else
 " tst   lr, #1            @ was the caller in thumb state? \n"
 " ldreq r0, [lr, #-4]     @ ARM state \n"
 " biceq r0, r0, #0xFF000000 \n"
 " ldrneh r0, [lr, #-3]    @ thumb state (-2-1, because of the previous +1) \n"
 " bicne r0, r0, #0xFF00 \n"
-#endif
 #ifndef _NDLS_LIGHT // with extension/emu support
 " mov   r1, r0            @ syscall number \n"
 " and   r1, #0xE00000   @ keep the 3-bit flag \n"

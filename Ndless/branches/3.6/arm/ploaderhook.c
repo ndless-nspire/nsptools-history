@@ -251,11 +251,10 @@ BOOL plh_isstartup = FALSE;
 BOOL plh_noscrredraw = FALSE;
 
 // Try to run all the documents in the startup folder and its sub-folders
-HOOK_DEFINE(plh_startup_hook) {
+void plh_run_startup_prgms(void) {
 	if (!isKeyPressed(KEY_NSPIRE_ESC)) {
 		plh_isstartup = TRUE;
 		ut_file_recur_each(NDLESS_DIR "/startup", startup_file_recur_cb, NULL);
 		plh_isstartup = FALSE;
 	}
-	HOOK_RESTORE_RETURN(plh_startup_hook);
 }

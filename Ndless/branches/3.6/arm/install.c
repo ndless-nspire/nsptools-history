@@ -28,16 +28,7 @@
 
 // OS-specific
 // Call to the dialog box display telling that the format isn't recognized.
-static unsigned const ploader_hook_addrs[] = {0x10009984, 0x1000995C, 0x10009924, 0x10009924, 0x100098CC, 0x100098CC};
-
-// OS-specific
-static unsigned const init_task_return_addrs[] = {0x10001548, 0x10001548, 0x10001510, 0x10001510, 0x100014F8, 0x100014F8};
-
-// OS-specific
-static unsigned const api100_task_return_addrs[] = {0x100777A0, 0x10077708, 0x10076E9C, 0x10076e2c, 0x100738F0, 0x10073880};
-
-// OS-specific
-static unsigned const end_of_init_addrs[] = {0X100104F0, 0x10010478, 0x100104BC, 0x1001046C, 0x1000ED30, 0x1000ECE0};
+static unsigned const ploader_hook_addrs[] = {0, 0, 0, 0x1000A924};
 
 // initialized at load time. Kept in resident program memory, use nl_is_3rd_party_loader to read it.
 static BOOL loaded_by_3rd_party_loader = FALSE;
@@ -48,7 +39,7 @@ BOOL ins_loaded_by_3rd_party_loader(void) {
 
 /* argv[0]=
  *         NULL if loaded by Ndless's stage1 at installation or OS startup
- *         "L" if loaded by a third party loader such as nLaunchy: we won't install ourself, and we'll exit the regular way
+ *         "L" if loaded by a third party loader such as nLaunchy
  *         <path to ndless_resources> if run from the OS documents screen for uninstallation      
  */
 int main(int __attribute__((unused)) argc, char* argv[]) {
@@ -56,6 +47,8 @@ int main(int __attribute__((unused)) argc, char* argv[]) {
 	ut_read_os_version_index();
 	BOOL installed = FALSE;
 
+// useless if non persistent and won't work since stage1 set it up
+#if 0
 	struct next_descriptor *installed_next_descriptor = ut_get_next_descriptor();
 	if (installed_next_descriptor) {
 		if (*(unsigned*)installed_next_descriptor->ext_name == 0x534C444E) // 'NDLS'
@@ -63,16 +56,19 @@ int main(int __attribute__((unused)) argc, char* argv[]) {
 		else
 			ut_panic("unknown N-ext");
 	}
+#endif
 
-	if (!argv[0] || argv[0][0] == 'L') { // not ndless_resources run
+	if (!argv[0] || argv[0][0] == 'L') { // not opened from the Documents screen
 		ints_setup_handlers();
 		sc_setup();
+	} else {
+		installed = TRUE;
 	}
 
 	if (!installed) {
 		HOOK_INSTALL(ploader_hook_addrs[ut_os_version_index], plh_hook);
-		HOOK_INSTALL(end_of_init_addrs[ut_os_version_index], plh_startup_hook);
 		lua_install_hooks();
+		plh_run_startup_prgms();
 	}
 	
 	if (argv[0] && argv[0][0] == 'L') { // third-party launcher
@@ -80,22 +76,11 @@ int main(int __attribute__((unused)) argc, char* argv[]) {
 		return 0;
 	}
 	
-	NU_TASK *current_task  = TCC_Current_Task_Pointer();
-	char *task_name = ((char*)current_task) + 16;
-	if (!strcmp(task_name, "API-100.")) { // Installation over USB
-		// TODO
-	} else { // either OS startup or ndless_resources.tns run
-		if (installed) { // ndless_resources.tns run: uninstall
-			if (nl_loaded_by_3rd_party_loader())
-				return 0; // do nothing
-			if (show_msgbox_2b("Ndless", "Do you really want to uninstall Ndless r" STRINGIFY(NDLESS_REVISION) "?\nThe device will reboot.", "Yes", "No") == 2)
-				return 0;
-			ut_calc_reboot();
-		}
-		// Continue OS startup
-		// Simulate the prolog of the thread function for correct function return. Set r4 to a dummy variable, written to by a sub-function that follows.
-		__asm volatile("add lr, pc, #8; stmfd sp!, {r4-r6,lr}; sub sp, sp, #0x18; mov r4, sp; mov pc, %0" : : "r" (init_task_return_addrs[ut_os_version_index]));
+	if (installed) { // ndless_resources.tns run: uninstall
+		if (show_msgbox_2b("Ndless", "Do you really want to uninstall Ndless r" STRINGIFY(NDLESS_REVISION) "?\nThe device will reboot.", "Yes", "No") == 2)
+			return 0;
+		ut_calc_reboot();
 	}
-	// never reached
+	// continue OS startup
 	return 0;
 }
