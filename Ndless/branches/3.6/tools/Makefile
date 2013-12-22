@@ -1,5 +1,5 @@
 UNAME := $(shell uname)
-SUBDIRS = MakeEscapeTable MakeLuaInst
+SUBDIRS = EscapeInstaller MakeLuaInst
 
 all:
 ifneq ($(findstring CYGWIN,$(UNAME)),)
@@ -15,3 +15,4 @@ clean:
 	@for i in $(SUBDIRS); do \
 	echo "Clearing in $$i..."; \
 	(cd $$i; make clean) || exit 1; done
+	

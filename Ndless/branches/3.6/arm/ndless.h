@@ -74,6 +74,9 @@ int ld_exec(const char *path, void **resident_ptr);
 int ld_exec_with_args(const char *path, int argc, char *argv[], void **resident_ptr);
 void ld_free(void *resident_ptr);
 
+/* stage1 */
+void stage1(void);
+
 /* utils.c */
 // 'NEXT'
 #define NEXT_SIGNATURE 0x4E455854

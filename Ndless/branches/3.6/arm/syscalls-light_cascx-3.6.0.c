@@ -7,4 +7,5 @@ unsigned syscalls_light_cascx_3_6_0[] = {
 	, 0X103F7860
 	, 0X104053C0
 	, 0X103FEEE4
+	, 0X103FED28
 };

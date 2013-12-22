@@ -9,13 +9,6 @@ __base: .global __base
 #endif
 
 	stmfd sp!, {r4-r11,lr} @ and never destroy r0 and r1 which are C's argc and argv
-	
-	@ used by the Ndless installer for early init
-#ifdef CRT0_INITFUNC
-	adr r0, __base
-	bl _crt0_init
-#endif
-	
 	@ GOT-based relocation, required for C global variables. The program must be built with the GCC option -fpic.
 relocate:
 	@ Get the absolute address of the GOT. See http://www.google.com/codesearch/p?hl=en#FiIujMxKUHU/sites/sources.redhat.com/pub/glibc/snapshots/glibc-ports-latest.tar.bz2%7CDNu48aiJSpY/glibc-ports-20090518/sysdeps/arm/dl-machine.h&q=%22.word%20_GLOBAL_OFFSET_TABLE_%22
@@ -35,7 +28,13 @@ relocate_loop:
 #ifdef CRT0_CPP
 	bl __cpp_init /* C++ static initializers */
 #endif
+#ifdef THUMB_ENTRYPOINT
+	to_thumb r2
+#endif
 	bl   main
+#ifdef THUMB_ENTRYPOINT
+	to_arm r2
+#endif
 #ifdef CRT0_CPP
 	bl __cpp_fini /* C++ static destructors */
 #endif

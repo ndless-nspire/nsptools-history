@@ -16,7 +16,11 @@ halt\@: b halt\@
 	.endm
 
 	.macro bkpt
+#ifdef __thumb__
+	.word 0xbe01
+#else
 	.long 0xE1212374
+#endif
 	.endm
 
 #else /* GNU_AS */
@@ -112,9 +116,13 @@ static inline void halt(void) {
 }
 
 static inline void bkpt(void) {
+#ifdef __thumb__
+	asm(".word 0xBE01");
+#else
 	asm(".long 0xE1212374");
+#endif
 }
-
+	
 #define show_msgbox(title, msg) _show_msgbox(title, msg, 0)
 #define show_msgbox_2b(title, msg, button1, button2) _show_msgbox(title, msg, 2, button1, button2)
 #define show_msgbox_3b(title, msg, button1, button2, button3) _show_msgbox(title, msg, 3, button1, button2, button3)
