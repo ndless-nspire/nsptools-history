@@ -32,12 +32,6 @@
 	mrs   r1, cpsr
 	eor   r1, #0b100 @ svc mode
 	msr   cpsr, r1
-	
-	@ deactivate D- and I-Cache
-	mrc p15, 0, r0, c1, c0
-	bic r0, #0x0004
-	bic r0, #0x1000
-	mcr p15, 0, r0, c1, c0
 
 	@ Input: FF 00 FF 09 => 00 09
 	adr r2, escaped_start
@@ -81,6 +75,13 @@
 	cmp r0, r2 @ Have we finished?
 	bls unescape_loop
 	
+	@ inlined clear_cache, because branching to libndls function generates a 0000
+clear_cache_loop:
+	mrc p15, 0, r15, c7, c10, 3 @ test and clean DCache
+	bne clear_cache_loop
+	mov r1, #0
+	mcr p15, 0, r1, c7, c7, 0 @ invalidate ICache and DCache
+
 	mov pc, lr
 
 escaped_start:

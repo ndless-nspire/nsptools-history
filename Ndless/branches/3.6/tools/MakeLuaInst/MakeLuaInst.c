@@ -65,7 +65,7 @@ int main(int argc, const char* argv[]) {
 	if (fread(inbuf, inst_size, 1, finst) != 1) error("can't read installer file");
 	
 	// header
-	sfprintf(flua, "local uchar = string.uchar\n");
+	sfprintf(flua, "local u = string.uchar\n");
 	sfprintf(flua, "local s = \"\"");
 	
 	// code
@@ -80,7 +80,7 @@ int main(int argc, const char* argv[]) {
 		else {
 			sfprintf(flua, "\ns = s .. ");
 		}
-		sfprintf(flua, "uchar(0x%02hx%02hx)", (unsigned short)(*(p+1)), (unsigned short)*p);
+		sfprintf(flua, "u(0x%02hx%02hx)", (unsigned short)(*(p+1)), (unsigned short)*p);
 		line_size += 1;
 		p += 2;
 	}
@@ -95,15 +95,15 @@ int main(int argc, const char* argv[]) {
         size_to_pad = code_offset[3] - code_addr[3] - inst_size;
         if (size_to_pad < 0)
             error("installer is too long");
-        sfprintf(flua, "\ns = s .. string.rep(uchar(0x0001), %i)", size_to_pad/2);
-        sfprintf(flua, "\ns = s .. uchar(0x%02hx%02hx) .. uchar(0x%02hx%02hx)",
+        sfprintf(flua, "\ns = s .. string.rep(u(0x0001), %i)", size_to_pad/2);
+        sfprintf(flua, "\ns = s .. u(0x%02hx%02hx) .. u(0x%02hx%02hx)",
             (code_addr[3] & 0x0000FF00) >> 8, (code_addr[3] & 0x000000FF) >> 0, (code_addr[3] & 0xFF000000) >> 24, (code_addr[3] & 0x00FF0000) >> 16);
     sfprintf(flua, "\nelse");
         size_to_pad = code_offset[1] - code_addr[1] - inst_size;
         if (size_to_pad < 0)
             error("installer is too long");
-        sfprintf(flua, "\ns = s .. string.rep(uchar(0x0001), %i)", size_to_pad/2);
-        sfprintf(flua, "\ns = s .. uchar(0x%02hx%02hx) .. uchar(0x%02hx%02hx)",
+        sfprintf(flua, "\ns = s .. string.rep(u(0x0001), %i)", size_to_pad/2);
+        sfprintf(flua, "\ns = s .. u(0x%02hx%02hx) .. u(0x%02hx%02hx)",
             (code_addr[1] & 0x0000FF00) >> 8, (code_addr[1] & 0x000000FF) >> 0, (code_addr[1] & 0xFF000000) >> 24, (code_addr[1] & 0x00FF0000) >> 16);
     sfprintf(flua, "\nend");
 	

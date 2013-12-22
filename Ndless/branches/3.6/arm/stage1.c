@@ -124,20 +124,8 @@ int main(void) {
 	#include "hrpatches-os-cascx-3.6.0.h"
 	#include "hrpatches-internal-ram-cascx-3.6.0.h"
 	
-	bkpt();
-    __asm volatile(
-		".thumb\n"
-		"adr r0, 0f\n" // to_arm
-		"bx r0\n"
-		".arm\n"
-		"0:\n"
-        "MRC p15, 0, r0, c1, c0, 0\n"
-        "ORR r0, r0, #0x1000\n"      //I-Cache
-        "ORR r0, r0, #0x5\n"         //MMU + D-Cache
-        "MCR p15, 0, r0, c1, c0, 0\n"
-		"LDR PC, =0x10000000 \n"
-		::: "r0", "cc"
-    );
+	clear_cache();
+	((void(*)(void))0x10000000)();
 	__builtin_unreachable();
 	return 0;
 }
