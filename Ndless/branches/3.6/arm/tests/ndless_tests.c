@@ -305,6 +305,10 @@ int main(int argc, char *argv[]) {
 	assertCharEquals("string_charAt", 'e', string_charAt(s, 4));
 	string_free(s);
 	
+	s = string_new();
+	string_set_ascii(s, "Save As...");
+	assertZero("get_res_string", string_compareTo_utf16(s, get_res_string(RES_SYST, 0x15)));
+	
 	/* libndls */
 	assertTrue("isalnum", isalnum('0'));
 	assertTrue("iscntrl", iscntrl('\0'));

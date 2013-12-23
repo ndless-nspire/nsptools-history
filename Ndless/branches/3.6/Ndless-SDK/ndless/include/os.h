@@ -416,6 +416,25 @@ _SYSCALL4(void, send_pad_event, struct s_ns_event* /* eventbuf */, unsigned shor
 _SYSCALL0(void, refresh_homescr)
 _SYSCALL1(void, refresh_docbrowser, int)
 
+typedef enum {
+    RES_CLNK = 0x636C6E6B,
+    RES_CTLG = 0x63746C67,
+    RES_DCOL = 0x64636F6C,
+    RES_DLOG = 0x646C6F67,
+    RES_DTST = 0x64747374,
+    RES_GEOG = 0x67656F67,
+    RES_MATH = 0x6D617468,
+    RES_MWIZ = 0x6D77697A,
+    RES_NTPD = 0x6E747064,
+    RES_PGED = 0x70676564,
+    RES_QCKP = 0x71636B70,
+    RES_QUES = 0x71756573,
+    RES_SCPD = 0x73637064,
+    RES_SYST = 0x73797374,
+    RES_TBLT = 0x74626C74,
+} e_resourceID;
+_SYSCALL2(char *, get_res_string, int, int)
+
 #define Z_NO_FLUSH      0
 #define Z_PARTIAL_FLUSH 1
 #define Z_SYNC_FLUSH    2
