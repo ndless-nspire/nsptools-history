@@ -62,7 +62,6 @@
 	MakeRptCmt	(0X10035EC8,	"ressources_syst");
 	MakeName	(0X1003A3C0,	"compress_encrypt_tns");
 	MakeName	(0X1003C3CC,	"__OS_registerProgramEditor");
-	MakeName	(0X10045750,	"string_free");
 	MakeName	(0X10046BC4,	"gui_gc_setAlpha");
 	MakeName	(0X1004F344,	"inflateInit");
 	MakeName	(0X10054DE4,	"j_j_free_3");
@@ -77,6 +76,7 @@
 	MakeName	(0X10076BEC,	"j_j_free_5");
 	MakeName	(0X100783B8,	"j_j_free_6");
 	MakeName	(0X1007B8CC,	"j_j_free_8");
+	MakeName	(0X1007BBB4,	"calc_cmd");
 	MakeName	(0X10080BBC,	"flash_debug_print");
 	MakeName	(0X10082F6C,	"flash_ECC_word_to_bytes");
 	MakeName	(0X10082F90,	"flash_query_status");
@@ -87,6 +87,7 @@
 	MakeName	(0X10084250,	"read_nand");
 	MakeName	(0X1008458C,	"write_nand");
 	MakeName	(0X100847C4,	"flash_get_block_data_size");
+	MakeName	(0X100847F0,	"nand_erase_range");
 	MakeName	(0X10084CC4,	"TI_NN_GetLocalNode");
 	MakeName	(0X10084D3C,	"TI_NN_IsNodeResponsive");
 	MakeName	(0X10084D84,	"TI_NN_GetRemoteServiceId");
@@ -158,6 +159,7 @@
 	MakeName	(0X100C5B40,	"publish_send_immediate");
 	MakeName	(0X100D12A8,	"ti_pm_register_dma");
 	MakeName	(0X100D1980,	"reboot");
+	MakeName	(0X100EAAF0,	"j_string_free_1");
 	MakeName	(0X100EAAF4,	"j_string_new_0");
 	MakeName	(0X100EAB6C,	"j_string_concat_utf16_0");
 	MakeName	(0X100EABF4,	"j_string_set_utf16_0");
@@ -209,6 +211,7 @@
 	MakeName	(0X10287468,	"string_truncate");
 	MakeName	(0X10287490,	"string_erase");
 	MakeName	(0X10287860,	"string_lower");
+	MakeName	(0X102878A0,	"string_free");
 	MakeName	(0X102878F4,	"string_new");
 	MakeName	(0X10287984,	"string_realloc_str");
 	MakeName	(0X10287A90,	"string_to_ascii");
@@ -374,6 +377,7 @@
 	MakeName	(0X103E2944,	"bsd_free2");
 	MakeName	(0X103E2948,	"j_msc2_free");
 	MakeName	(0X103E294C,	"bsd_malloc");
+	MakeName	(0X103E2AC8,	"snprintf");
 	MakeName	(0X103E2B2C,	"j_strcpy");
 	MakeName	(0X103E2B30,	"j_strncmp");
 	MakeName	(0X103E2B34,	"j_strcmp");
@@ -403,9 +407,9 @@
 	MakeName	(0X103FA138,	"printf");
 	MakeName	(0X103FA170,	"unknown_vsprintf_");
 	MakeName	(0X103FA1C0,	"sprintf");
-	MakeName	(0X103FA1F4,	"vfprintf_limit256");
-	MakeName	(0X103FA270,	"printf3");
-	MakeName	(0X103FA2F4,	"snprintf");
+	MakeName	(0X103FA1F4,	"_vfprintf");
+	MakeName	(0X103FA270,	"_vprintf");
+	MakeName	(0X103FA2F4,	"_vsnprintf");
 	MakeName	(0X103FA348,	"_vsprintf");
 	MakeName	(0X103FACCC,	"vsprintf_limit256");
 	MakeName	(0X103FBAC0,	"sscanf");
@@ -664,6 +668,7 @@
 	MakeName	(0X107FB8B0,	"lua_setfenv");
 	MakeName	(0X107FB968,	"lua_newuserdata");
 	MakeName	(0X107FB9C8,	"lua_concat");
+	MakeName	(0X107FBA64,	"lua_pushlstring");
 	MakeName	(0X107FBAC4,	"lua_next");
 	MakeName	(0X107FBB04,	"lua_error");
 	MakeName	(0X107FBB14,	"lua_gc");
@@ -720,6 +725,7 @@
 	MakeName	(0X107FD30C,	"luaL_newmetatable");
 	MakeName	(0X107FD380,	"luaL_getmetafield");
 	MakeName	(0X107FD3EC,	"luaL_callmeta");
+	MakeName	(0X107FD468,	"luaL_where");
 	MakeName	(0X107FD500,	"luaL_error");
 	MakeName	(0X107FD554,	"luaI_openlib");
 	MakeName	(0X107FD700,	"luaL_register");
