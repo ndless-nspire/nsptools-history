@@ -678,6 +678,13 @@ _SYSCALL1(int16_t, TI_NN_NodeEnumDone, nn_oh_t /* oh */)
 _SYSCALL3(int16_t, TI_NN_Connect, nn_nh_t /* nh */, uint32_t /* service_id */, nn_ch_t * /* ch */)
 _SYSCALL1(int16_t, TI_NN_Disconnect, nn_ch_t /* ch */)
 
+// returns 1 on success
+_SYSCALLVAR(void,, read_nand,  __attribute__((unused)) void* dest,  __attribute__((unused)) int size,  __attribute__((unused)) int nanhd_offset,  __attribute__((unused)) int unknown,  __attribute__((unused)) int percent_max,  __attribute__((unused)) void *progress_cb)
+_SYSCALL3(int, write_nand, void * /* source */, int /* size */, unsigned int /* nand_offset */)
+_SYSCALL2(int, nand_erase_range, int /* nand_start_offset */, int /* nand_end_offset */)
+
+_SYSCALL_OSVAR(void *, calc_cmd)
+
 /* Ndless extensions. Not available in thumb state. */
 // Given a list of OS-specific value and its size, returns the value for the current OS.
 // The order must be:  3.1.0, 3.1.0 CAS, 3.1.0 CX, 3.1.0 CAS CX
