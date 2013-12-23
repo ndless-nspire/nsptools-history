@@ -347,15 +347,19 @@
 #define e_gui_gc_getIconSize 329
 #define e_gui_gc_blit_gc 330
 #define e_gui_gc_blit_buffer 331
-#define e_read_nand 332
-#define e_write_nand 333
-#define e_nand_erase_range 334
-#define e_calc_cmd 335
+#define e_snprintf 332
+#define e__vprintf 333
+#define e__vfprintf 334
+#define e__vsnprintf 335
+#define e_read_nand 336
+#define e_write_nand 337
+#define e_nand_erase_range 338
+#define e_calc_cmd 339
 
 // END_OF_LIST (always keep this line after the last constant, used by mksyscalls.sh)
 
 // Must be kept up-to-date with the value of the last syscall
-#define __SYSCALLS_LAST 335
+#define __SYSCALLS_LAST 339
 
 // Flag: 3 higher bits of the 3-bytes comment field of the swi instruction
 #define __SYSCALLS_ISEXT 0x200000
