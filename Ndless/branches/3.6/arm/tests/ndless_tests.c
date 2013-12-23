@@ -104,14 +104,14 @@ int main(int argc, char *argv[]) {
 	utf162ascii(buf2, buf, sizeof(buf2));
 	assertStrEquals("utf162ascii", "abc", buf2);
 	
-	assertUIntEquals("isalpha", TRUE, isalpha('a'));
-	assertUIntEquals("isascii", TRUE, isascii('+'));
-	assertUIntEquals("isdigit", TRUE, isdigit('0'));
-	assertUIntEquals("islower", TRUE, islower('a'));
-	assertUIntEquals("isprint", TRUE, isprint('a'));
-	assertUIntEquals("isspace", TRUE, isspace(' '));
-	assertUIntEquals("isupper", TRUE, isupper('A'));
-	assertUIntEquals("isxdigit", TRUE, isxdigit('f'));
+	assertTrue("isalpha", isalpha('a'));
+	assertTrue("isascii", isascii('+'));
+	assertTrue("isdigit", isdigit('0'));
+	assertTrue("islower", islower('a'));
+	assertTrue("isprint", isprint('a'));
+	assertTrue("isspace", isspace(' '));
+	assertTrue("isupper", isupper('A'));
+	assertTrue("isxdigit", isxdigit('f'));
 	assertUIntEquals("tolower", 'a', tolower('A'));
 	assertUIntEquals("toupper", 'A', toupper('a'));
 	assertUIntEquals("atoi", 1, atoi("1"));
@@ -250,16 +250,18 @@ int main(int argc, char *argv[]) {
 	
 	assertStrEquals("get_documents_dir", "/documents/", get_documents_dir());
 	
-	assertUIntLower("keypad_type", 5, *keypad_type);
-	assertNonZero("keypad_type", *keypad_type);
+	assertUIntLower("keypad_type-1", 5, *keypad_type);
+	assertNonZero("keypad_type-2", *keypad_type);
 
 	/* strings */
 	String s = string_new();
+	assertNotNull("String", s);
 	String s2 = string_new();
-	string_set_ascii(s2, " Lorem Ipsum");
+	assertUIntEquals("string_set_ascii", 1, string_set_ascii(s2, " Lorem Ipsum"));
 	string_set_ascii(s, "hello world!");
-	string_concat_utf16(s, s2->str);
+	assertUIntEquals("string_concat_utf16", 1, string_concat_utf16(s, s2->str));
 	string_free(s2);
+	assertTrue("string_free", TRUE);
 	assertStrEquals("string_set_ascii", "hello world! Lorem Ipsum", string_to_ascii(s));
 	char * l = "l\0\0";
 	assertUIntEquals("string_indexOf_utf16", 2, string_indexOf_utf16(s, 0, l));
@@ -298,8 +300,8 @@ int main(int argc, char *argv[]) {
 	string_free(s);
 	
 	/* libndls */
-	assertUIntEquals("isalnum", TRUE, isalnum('0'));
-	assertUIntEquals("iscntrl", TRUE, iscntrl('\0'));
+	assertTrue("isalnum", isalnum('0'));
+	assertTrue("iscntrl", iscntrl('\0'));
 	assertUIntEquals("abs,min,max", 4, max(min(abs(-3), 2), 4));
 	assertUIntEquals("bswap16", 0x0100, bswap16(0x0001));
 	assertUIntEquals("bswap32", 0x03020100, bswap32(0x00010203));
