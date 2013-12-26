@@ -4,7 +4,7 @@ also have important values required for a stable hot-rebooted OS.
 
 This utility generates patch commands to reset these variables by comparing either:
  - a original decrypted OS image with a post-boot image (0x10000000-0x110F0110, i.e. before the BSS)
- - a pre-boot internal RAM image with a post-boot image (0x0-
+ - a pre-boot internal RAM image with a post-boot image (0x0-0x14000)
 
 nspire_emu's commands from the internal RAM images dump:
 - k 10000000
