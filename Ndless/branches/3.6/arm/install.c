@@ -37,6 +37,8 @@ BOOL ins_loaded_by_3rd_party_loader(void) {
 	return loaded_by_3rd_party_loader;
 }
 
+static unsigned const end_of_init_addrs[] = {0, 0, 0, 0x10012424};
+
 /* argv[0]=
  *         NULL if loaded by Ndless's stage1 at installation or OS startup
  *         "L" if loaded by a third party loader such as nLaunchy
@@ -66,9 +68,10 @@ int main(int __attribute__((unused)) argc, char* argv[]) {
 	}
 
 	if (!installed) {
+		// Startup programs cannot be run safely there, as stage1 is being executed in unregistered memory. Run them asynchronously in another hook.
+		HOOK_INSTALL(end_of_init_addrs[ut_os_version_index], plh_startup_hook);
 		HOOK_INSTALL(ploader_hook_addrs[ut_os_version_index], plh_hook);
 		lua_install_hooks();
-		plh_run_startup_prgms();
 	}
 	
 	if (argv[0] && argv[0][0] == 'L') { // third-party launcher

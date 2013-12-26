@@ -53,8 +53,9 @@ static void write_touchpad(uint16_t port, uint8_t value) {
 }
 
 // OS-specific
-static unsigned const end_of_init_addrs[] = {0, 0, 0, 0x10012424};
+static unsigned const ndless_inst_resident_hook_addrs[] = {0, 0, 0, 0x10012370};
 
+// Install the resident part.
 HOOK_DEFINE(s1_startup_hook) {
 	ut_read_os_version_index();
 	ints_setup_handlers();
@@ -148,7 +149,7 @@ int main(void) {
 	#include "hrpatches-os-cascx-3.6.0.h"
 	#include "hrpatches-internal-ram-cascx-3.6.0.h"
 	
-	HOOK_INSTALL(end_of_init_addrs[ut_os_version_index], s1_startup_hook);
+	HOOK_INSTALL(ndless_inst_resident_hook_addrs[ut_os_version_index], s1_startup_hook);
 	
 	clear_cache();
 	((void(*)(void))0x10000000)();
