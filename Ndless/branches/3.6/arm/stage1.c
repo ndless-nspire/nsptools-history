@@ -38,9 +38,7 @@ static void write_i2c(uint8_t client, uint8_t addr, uint8_t value) {
     PATCH_WW(0x9005006c, 0); //Disable I2C
     PATCH_WW(0x90050004, client); //Set target address
     PATCH_WW(0x9005006c, 1); //Enable I2C
-    
     volatile uint32_t *status = (uint32_t*) 0x90050070;
-    
     PATCH_WW(0x90050010, addr);
     while(*status & 1); //Wait until transmitted
     PATCH_WW(0x90050010, value);
@@ -146,13 +144,15 @@ int main(void) {
     PATCH_WW(0x900E000C, 0);
     PATCH_WW(0x900E0040, 0);
 
+	// Reset OS global variables to their initial values
 	#include "hrpatches-os-cascx-3.6.0.h"
+	// Reset internal RAM state, else instable without USB plugged-in
 	#include "hrpatches-internal-ram-cascx-3.6.0.h"
 	
 	HOOK_INSTALL(ndless_inst_resident_hook_addrs[ut_os_version_index], s1_startup_hook);
 	
 	clear_cache();
-	((void(*)(void))0x10000000)();
+	((void(*)(void))0x10000000)(); // Hot-reboot the OS
 	__builtin_unreachable();
 	return 0;
 }
