@@ -717,7 +717,6 @@ _SYSCALL_OSVAR(void *, calc_cmd)
 
 /* Ndless extensions. Not available in thumb state. */
 // Given a list of OS-specific value and its size, returns the value for the current OS.
-// The order must be:  3.1.0, 3.1.0 CAS, 3.1.0 CX, 3.1.0 CAS CX
 // If the array isn't enough long for the current OS, returns 0.
 // You may cast 'values' from unsigned* to int*.
 _SYSCALL2(int, nl_osvalue, const int * /* values */, unsigned /* size */)
@@ -726,6 +725,7 @@ _SYSCALL2(int, nl_osvalue, const int * /* values */, unsigned /* size */)
 _SYSCALL3(void, nl_relocdatab, unsigned * /* dataptr */, unsigned /* size */, void * /* base */)
 // 0 on non-CX, 1 on CX
 _SYSCALL0(unsigned, nl_hwtype)
+_SYSCALL0(unsigned, nl_osid)
 _SYSCALL0(BOOL, nl_isstartup)
 _SYSCALL0(lua_State *, nl_lua_getstate)
 _SYSCALL0(void, nl_set_resident)

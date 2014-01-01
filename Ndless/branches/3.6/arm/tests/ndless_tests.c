@@ -32,7 +32,7 @@
 int global_int;
 int *nl_relocdata_data[] = {&global_int};
 
-static const unsigned custom_sprintf_addrs[] = {0x10376F28}; // only non-CAS 3.1
+static const unsigned custom_sprintf_addrs[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0x103FA1C0}; // only CAS CX 3.6
 #define custom_sprintf SYSCALL_CUSTOM(custom_sprintf_addrs, int __attribute__((__format__(__printf__,2,3))), char *s, const char *format, ...)
 
 /* the actual parameters should be: dummy, (char)1, char(0x20) */
@@ -88,9 +88,9 @@ int main(int argc, char *argv[]) {
 	assertStrEquals("_syscallsvar >4 params", "123", buf); // tests sprintf. uses _syscallvar_savedlr.
 	assertUIntEquals("_syscallsvar return", 3, ret);
 	
-	if (nl_osvalue((int*)custom_sprintf_addrs, 1)) { // we are on non-CAS 3.1: execute tests which only work on this version.
-		unsigned nl_osvalue_data[] = {1, 2, 3};
-		assertUIntEquals("nl_osvalue", 1, nl_osvalue((int*)nl_osvalue_data, 3)); // Also tests syscalls extensions
+	if (nl_osid() == 3) { // we are on CAS CX 3.6: execute tests which only work on this version.
+		unsigned nl_osvalue_data[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+		assertUIntEquals("nl_osvalue", 10, nl_osvalue((int*)nl_osvalue_data, 10)); // Also tests syscalls extensions
 		custom_sprintf(buf, "%s", "custom");
 		assertStrEquals("_syscall_custom", "custom", buf);
 	}

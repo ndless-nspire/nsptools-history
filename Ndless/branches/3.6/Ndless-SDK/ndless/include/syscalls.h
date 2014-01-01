@@ -384,9 +384,10 @@
 #define e_nl_loaded_by_3rd_party_loader (__SYSCALLS_ISEXT | 8)
 #define e_nl_hwsubtype (__SYSCALLS_ISEXT | 9)
 #define e_nl_exec (__SYSCALLS_ISEXT | 10)
+#define e_nl_osid (__SYSCALLS_ISEXT | 11)
 
 // Must be kept up-to-date with the value of the last syscalls extension without __SYSCALLS_ISEXT
-#define __SYSCALLS_LASTEXT 10
+#define __SYSCALLS_LASTEXT 11
 
 /* Ndless integration with emulators. Grouped to make the integration easier for the emulators (they require
  * only these constants).

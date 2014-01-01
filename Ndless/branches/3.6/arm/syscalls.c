@@ -27,10 +27,13 @@
 #ifndef _NDLS_LIGHT
 /* Ndless extensions exposed as syscalls. See os.h for documentation. */
 
+/* Values is an array of values for non-CAS 3.1, CAS 3.1, non-CAS CX 3.1, CAS CX 3.1, CM-C 3.1, CAS CM-C 3.1,
+ * non-CAS 3.6, CAS 3.6, non-CAS CX 3.6, CAS CX 3.6 */
 int sc_nl_osvalue(const int *values, unsigned size) {
-	if (ut_os_version_index >= size)
+	unsigned index = ut_os_version_index + 6; // the first values are for backward compatibility with Ndless 3.1s
+	if (index >= size)
 		return 0;
-	return values[ut_os_version_index];
+	return values[index];
 }
 
 /* The lightweight relocation support unfortunately cannot handle 
@@ -49,6 +52,11 @@ void sc_ext_relocdatab(unsigned *dataptr, unsigned size, void *base) {
 
 unsigned sc_nl_hwtype(void) {
 	return ut_os_version_index >= 2; // 1 if CX
+}
+
+// same as ut_os_version_index
+unsigned sc_nl_osid(void) {
+	return ut_os_version_index;
 }
 
 unsigned sc_nl_hwsubtype(void) {
@@ -77,7 +85,7 @@ int sc_nl_exec(const char *prgm_path, int argsn, char *args[]) {
 unsigned sc_ext_table[] = {
 	(unsigned)sc_nl_osvalue, (unsigned)sc_ext_relocdatab, (unsigned)sc_nl_hwtype, (unsigned)sc_nl_isstartup,
 	(unsigned)luaext_getstate, (unsigned)ld_set_resident, (unsigned)sc_nl_ndless_rev, (unsigned)sc_nl_no_scr_redraw,
-	(unsigned)ins_loaded_by_3rd_party_loader, (unsigned)sc_nl_hwsubtype, (unsigned)sc_nl_exec, 
+	(unsigned)ins_loaded_by_3rd_party_loader, (unsigned)sc_nl_hwsubtype, (unsigned)sc_nl_exec, (unsigned)sc_nl_osid,
 };
 
 void sc_setup(void) {
