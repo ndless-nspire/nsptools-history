@@ -1,6 +1,6 @@
 OBJ = armloader.o asmcode.o casplus.o cpu.o des.o debug.o emu.o flash.o gdbstub.o gui.o interrupt.o keypad.o lcd.o link.o memory.o misc.o mmu.o os-win32.o resource.o schedule.o serial.o sha256.o snippets.o translate.o usb.o usblink.o
 
-FLAGS = -W -Wall
+FLAGS = -W -Wall -m32
 
 CC ?= gcc
 LD ?= ld
@@ -19,7 +19,7 @@ cpu.o : cpu.c
 	$(CC) $(FLAGS) -O3 -c $< -o $@
 
 resource.o : resource.rc id.h
-	$(WINDRES) $< -o $@
+	$(WINDRES) -Fpe-i386 $< -o $@
 
 sha256.o : sha256.c
 	$(CC) $(FLAGS) -O3 -c $< -o $@
@@ -34,7 +34,7 @@ snippets.o: armsnippets.o
 	arm-none-eabi-objcopy -O binary $< snippets.bin
 	$(LD) -r -b binary -o snippets.o snippets.bin
 	rm snippets.bin
-	$(OBJCOPY) --rename-section .data=.rodata,alloc,load,readonly,data,contents snippets.o snippets.o
+	$(OBJCOPY) -Fpe-i386 --rename-section .data=.rodata,alloc,load,readonly,data,contents snippets.o snippets.o
 
 %.o : %.c
 	$(CC) $(FLAGS) -Os -c $< -o $@
