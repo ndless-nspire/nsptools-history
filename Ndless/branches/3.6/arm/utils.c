@@ -58,55 +58,37 @@ void ut_read_os_version_index(void) {
 			sc_addrs_ptr = CONCAT(CONCAT(CONCAT(syscalls_light_, MODEL), _), OS_VERSION);
 	switch (*(unsigned*)(OS_BASE_ADDRESS + 0x20)) {
 		// OS-specific
-		case 0x102F0FA0:  // 3.1.0 non-CAS
+		case 0x10375BB0:  // 3.6.0 non-CAS
 			ut_os_version_index = 0;
 			break;
-		case 0x102F16D0:  // 3.1.0 CAS
+		case 0x103765F0:  // 3.6.0 CAS
 			ut_os_version_index = 1;
 			break;
-		case 0x102F0A10:  // 3.1.0 non-CAS CX
+		case 0x10375620:  // 3.6.0 non-CAS CX
 			ut_os_version_index = 2;
 			break;
 		case 0x10376090:  // 3.6.0 CAS CX
 			ut_os_version_index = 3;
 			break;
-		case 0x102DBF20:  // 3.1.0 CM-C
-			ut_os_version_index = 4;
-			break;
-		case 0x102DC6B0:  // 3.1.0 CAS CM-C
-			ut_os_version_index = 5;
-			break;
-
 	}
 	#else
-	/* The heuristic is based on the address of INT_Initialize - Thanks Goplat.
-	 * The address is read from the RAM copy and not the real vector which is
-	 * destroyed at installation time */
 	switch (*(unsigned*)(OS_BASE_ADDRESS + 0x20)) {
 		// OS-specific
-		case 0x102F0FA0:  // 3.1.0 non-CAS
+		case 0x10375BB0:  // 3.6.0 non-CAS
 			ut_os_version_index = 0;
 //			sc_addrs_ptr = syscalls_ncas_3_6_0;
 			break;
-		case 0x102F16D0:  // 3.1.0 CAS
+		case 0x103765F0:  // 3.6.0 CAS
 			ut_os_version_index = 1;
 //			sc_addrs_ptr = syscalls_cas_3_6_0;
 			break;
-		case 0x102F0A10:  // 3.1.0 non-CAS CX
+		case 0x10375620:  // 3.6.0 non-CAS CX
 			ut_os_version_index = 2;
 //			sc_addrs_ptr = syscalls_ncascx_3_6_0;
 			break;
 		case 0x10376090:  // 3.6.0 CAS CX
 			ut_os_version_index = 3;
 			sc_addrs_ptr = syscalls_cascx_3_6_0;
-			break;
-		case 0x102DBF20:  // 3.1.0 CM-C
-			ut_os_version_index = 4;
-//			sc_addrs_ptr = syscalls_cmc_3_6_0;
-			break;
-		case 0x102DC6B0:  // 3.1.0 CAS CM-C
-			ut_os_version_index = 5;
-//			sc_addrs_ptr = syscalls_cascmc_3_6_0;
 			break;
 		default:
 			ut_panic("v?");

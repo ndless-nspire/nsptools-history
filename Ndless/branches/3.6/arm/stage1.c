@@ -1,7 +1,6 @@
 /****************************************************************************
  * Stage 1 of the installation.
  * Loads the installer.
- * Error checking is disabled due to the size constraint of ndless_installer.
  *
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
@@ -32,13 +31,13 @@
 #define PATCH_CLRZ(A,B)  PATCH_SETZ((A), (B), 0x0)
 #define PATCH_SETZ(A,B,C) memset((void *)(A), (C), (B)-(A))
 
-static int8_t model = -1; // model&1: CAS bit; >1 => screen has colors
-
 static void write_i2c(uint8_t client, uint8_t addr, uint8_t value) {
     PATCH_WW(0x9005006c, 0); //Disable I2C
     PATCH_WW(0x90050004, client); //Set target address
     PATCH_WW(0x9005006c, 1); //Enable I2C
+    
     volatile uint32_t *status = (uint32_t*) 0x90050070;
+    
     PATCH_WW(0x90050010, addr);
     while(*status & 1); //Wait until transmitted
     PATCH_WW(0x90050010, value);
@@ -85,28 +84,8 @@ int main(void) {
     *(volatile unsigned*)0x90060008 = 0;          // disable reset, counter and interrupt
     *(volatile unsigned*)0x90060C00 = 0;          // disable write access to all other watchdog registers
     
-    switch (*((volatile uint32_t *)0x10000020))
-    {
-        case 0x10375BB0:    // TI-Nspire-3.6.0.546/phoenix.raw
-            model = 0;
-        break;
-        case 0x103765F0:    // TI-NspireCAS-3.6.0.546/phoenix.raw
-            model = 1;
-        break; 
-        case 0x10375620:    // TI-NspireCX-3.6.0.546/phoenix.raw
-            model = 2;
-        break;
-        case 0x10376090:    // TI-NspireCXCAS-3.6.0.546/phoenix.raw
-            model = 3;
-        break;
-        default:
-            //"Fun fact: trying to nstall Ndless 3.6.546 without having OS 3.6.546 is NOT a good idea. I am now going to drain your battery." (cannot even print it because we do not know if the screen has colors)
-            while (1) {}
-        break;
-    }
-	
     //Reset all timers and their IRQ flags
-    if (model > 1) {
+    if (ut_os_version_index > 1) {
         PATCH_WW(0x90010008, 0);
         PATCH_WW(0x90010008, 0);
         PATCH_WW(0x9001000C, 1);
@@ -120,16 +99,16 @@ int main(void) {
         PATCH_WW(0x900D000C, 1);
         PATCH_WW(0x900D0028, 0);
         PATCH_WW(0x900D002c, 1);
-    } //Causes the EMU(!) to be slower than TI's schedule to fix math bugs on CAS OS.
+    }
     
     //Disable all interrupts
-    if (model < 2) {
+    if (ut_os_version_index < 2) {
         PATCH_WW(0xDC000008, 0xFFFFFFFF);
     } else {
         PATCH_WW(0xDC000014, 0xFFFFFFFF);
     }
 	
-    if (model > 1) {
+    if (ut_os_version_index > 1) {
         //Reset touchpad
         write_touchpad(0x0004, 0x01);
         //Disable I2C IRQ
@@ -145,9 +124,26 @@ int main(void) {
     PATCH_WW(0x900E0040, 0);
 
 	// Reset OS global variables to their initial values
-	#include "hrpatches-os-cascx-3.6.0.h"
 	// Reset internal RAM state, else instable without USB plugged-in
-	#include "hrpatches-internal-ram-cascx-3.6.0.h"
+    switch (ut_os_version_index)
+    {
+        case 0:
+            //#include "hrpatches-os-ncas-3.6.0.h"
+            //#include "hrpatches-internal-ram-ncas-3.6.0.h"
+        break;
+        case 1:
+            //#include "hrpatches-os-cas-3.6.0.h"
+            //#include "hrpatches-internal-ram-cas-3.6.0.h"
+        break;
+        case 2:
+            //#include "hrpatches-os-ncascx-3.6.0.h"
+            //#include "hrpatches-internal-ram-ncascx-3.6.0.h"
+        break;
+        case 3:
+            #include "hrpatches-os-cascx-3.6.0.h"
+            #include "hrpatches-internal-ram-cascx-3.6.0.h"
+        break;
+    }
 	
 	HOOK_INSTALL(ndless_inst_resident_hook_addrs[ut_os_version_index], s1_startup_hook);
 	
