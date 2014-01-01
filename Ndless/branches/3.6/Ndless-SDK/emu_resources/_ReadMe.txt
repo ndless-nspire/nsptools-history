@@ -3,11 +3,7 @@ NdlessEditor, you must first drop several resources to this directory and let
 the OS image install itself to a NAND image.
 
 1) Download the OS corresponding to your calculator model from
-   http://tiplanet.org/forum/archives_list.php?id=OS+Nspire :
-   - TI-Nspire CX (v 3.1)
-   - TI-Nspire CX CAS (v 3.1)
-   - TI-Nspire (v 3.1)
-   - TI-Nspire CAS (v 3.1)
+   http://tiplanet.org/forum/archives_list.php?id=OS+Nspire (v3.1 or v3.6)
 
 2) Drop it in this directory [emu_resources]
 
@@ -27,11 +23,9 @@ the OS image install itself to a NAND image.
 6) Install Ndless:
    Create a new folder called 'ndless' in 'My Documents'.
    Set the target folder with 'Link > Set Target Folder...' to 'ndless'.
-   Transfer ndless_resources.tns with 'Link > Connect' then
-   'Link > Send Document...'.
-   Transfer 'ndless_installer-3.1.0.tco|.tcc' with 'Link > Connect' then
-   'Link > Send OS...'.
-   A popup should confirm the installation.
+   Transfer (ndless_resources.tns( 'ndless_installer.tns' with 'Link > Connect'
+   then 'Link > Send Document...'.
+   Install Ndless with ''ndless_installer.tns'. 
 
 7) Save the NAND (flash) image with the File > 'Save Flash As...' option of 
    nspire_emu to a file named 'nand.img' in this directory.
