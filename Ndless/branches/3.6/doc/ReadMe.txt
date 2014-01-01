@@ -1,6 +1,6 @@
-===============================================
-= Ndless v3.1 beta-r515 for TI-Nspire OS v3.1 =
-===============================================
+=====================================
+= Ndless v3.6 for TI-Nspire OS v3.6 =
+=====================================
 
 Ndless combines an executable loader and utilities to open the TI-Nspire to 
 third-party C and assembly development.

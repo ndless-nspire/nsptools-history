@@ -27,9 +27,8 @@ Luna
 
 Support for Lua extensions require Luna, the community command-line converter of 
 Lua scripts.
-
-- Get Luna: http://www.ticalc.org/archives/files/fileinfo/441/44113.html
-- Add Luna's directory to the PATH environment variable
+The Ndless SDK includes Luna's source code. Luna depends on some external dependencies,
+configure them as described in Ndless-SDK/Luna/ReadMe.txt.
 
 7-Zip
 =====

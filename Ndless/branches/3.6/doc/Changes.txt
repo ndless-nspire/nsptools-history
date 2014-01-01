@@ -1,6 +1,9 @@
 Ndless - Changelog
 ==================
 
+* v3.6 - since 2013/01
+  - NEW: compatible with OS v3.6.0
+
 * v3.1 beta - since 2012/01/19
   - NEW: compatible with OS v3.1.0 and TI-Nspire CX. Reboot-proof.
   - NEW: support file association
