@@ -25,7 +25,7 @@ sha256.o : sha256.c
 	$(CC) $(FLAGS) -O3 -c $< -o $@
 
 asmcode.o : asmcode.S
-	$(CC) -c $< -o $@
+	$(CC) $(FLAGS) -c $< -o $@
 
 armsnippets.o: armsnippets.S
 	arm-none-eabi-gcc -c -mcpu=arm7tdmi $< -o $@
