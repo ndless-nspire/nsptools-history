@@ -355,19 +355,20 @@ int main(int argc, char **argv) {
 				default:
 usage:
 					printf(
-						"nspire emulator v0.61\n"
+						"nspire emulator v0.70[+Ndless-SDK patches]\n"
 						"  /1=boot1	- location of BOOT1 image\n"
 						"  /B=boot2	- location of decompressed BOOT2 image\n"
 						"  /D[=cmdfile]	- enter debugger on startup (optionally read from file)\n"
 						"  /F=file	- flash image filename\n"
 						"  /G=port	- enable GDB remote protocol through the TCP port\n"
 						"  /Kn		- set keypad type (2 = TI-84 Plus, 4 = Touchpad)\n"
-						"  /M[X|M][C]	- set model (original/CX/CM, non-CAS/CAS)\n"
+						"  /M[P|X|M][C]	- set model (original/CAS+/CX/CM, non-CAS/CAS)\n"
 						"  /N		- large NAND flash size\n"
 						"  /PB=boot2.img	- preload flash with BOOT2 (.img file)\n"
 						"  /PD=diags.img	- preload flash with DIAGS image\n"
 						"  /PO=osfile	- preload flash with OS (.tnc/.tno file)\n"
-						"  /R		- large SDRAM size\n");
+						"  /R		- large SDRAM size\n"
+						"  /W		- enter debugger on warning\n");
 					return 1;
 			}
 		} else {
