@@ -54,46 +54,43 @@ extern unsigned syscalls_light_cascmc_3_6_0[];
  * Should be called only once.
  * May be used for OS-specific arrays of constants (marked with "// OS-specific"). */
 void ut_read_os_version_index(void) {
-	#if defined STAGE1
-			sc_addrs_ptr = CONCAT(CONCAT(CONCAT(syscalls_light_, MODEL), _), OS_VERSION);
 	switch (*(unsigned*)(OS_BASE_ADDRESS + 0x20)) {
 		// OS-specific
 		case 0x10375BB0:  // 3.6.0 non-CAS
 			ut_os_version_index = 0;
+#ifdef _NDLS_LIGHT
+			sc_addrs_ptr = syscalls_light_ncas_3_6_0;
+#else
+			sc_addrs_ptr = syscalls_ncas_3_6_0;
+#endif
 			break;
 		case 0x103765F0:  // 3.6.0 CAS
 			ut_os_version_index = 1;
+#ifdef _NDLS_LIGHT
+			sc_addrs_ptr = syscalls_light_cas_3_6_0;
+#else
+			sc_addrs_ptr = syscalls_cas_3_6_0;
+#endif
 			break;
 		case 0x10375620:  // 3.6.0 non-CAS CX
 			ut_os_version_index = 2;
+#ifdef _NDLS_LIGHT
+			sc_addrs_ptr = syscalls_light_ncascx_3_6_0;
+#else
+			sc_addrs_ptr = syscalls_ncascx_3_6_0;
+#endif
 			break;
 		case 0x10376090:  // 3.6.0 CAS CX
 			ut_os_version_index = 3;
-			break;
-	}
-	#else
-	switch (*(unsigned*)(OS_BASE_ADDRESS + 0x20)) {
-		// OS-specific
-		case 0x10375BB0:  // 3.6.0 non-CAS
-			ut_os_version_index = 0;
-//			sc_addrs_ptr = syscalls_ncas_3_6_0;
-			break;
-		case 0x103765F0:  // 3.6.0 CAS
-			ut_os_version_index = 1;
-//			sc_addrs_ptr = syscalls_cas_3_6_0;
-			break;
-		case 0x10375620:  // 3.6.0 non-CAS CX
-			ut_os_version_index = 2;
-//			sc_addrs_ptr = syscalls_ncascx_3_6_0;
-			break;
-		case 0x10376090:  // 3.6.0 CAS CX
-			ut_os_version_index = 3;
+#ifdef _NDLS_LIGHT
+			sc_addrs_ptr = syscalls_light_cascx_3_6_0;
+#else
 			sc_addrs_ptr = syscalls_cascx_3_6_0;
+#endif
 			break;
 		default:
 			ut_panic("v?");
 	}
-	#endif
 }
 void __attribute__ ((noreturn)) ut_calc_reboot(void) {
 	*(unsigned*)0x900A0008 = 2; //CPU reset
@@ -126,7 +123,6 @@ void ut_disable_watchdog(void) {
 static int scmp(const void *sp1, const void *sp2) {
 	return strcmp(*(char**)sp1, *(char**)sp2);
 }
-
 
 // Calls callback() for each file and folder found in folder and its subfolders. context is passed to callback() and can be NULL.
 // callback() must return:

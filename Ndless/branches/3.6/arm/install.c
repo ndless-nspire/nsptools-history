@@ -28,7 +28,7 @@
 
 // OS-specific
 // Call to the dialog box display telling that the format isn't recognized.
-static unsigned const ploader_hook_addrs[] = {0, 0, 0, 0x1000A924};
+static unsigned const ploader_hook_addrs[] = {0x1000A988, 0x1000A95C, 0x1000A920, 0x1000A924};
 
 // initialized at load time. Kept in resident program memory, use nl_is_3rd_party_loader to read it.
 static BOOL loaded_by_3rd_party_loader = FALSE;
@@ -37,7 +37,7 @@ BOOL ins_loaded_by_3rd_party_loader(void) {
 	return loaded_by_3rd_party_loader;
 }
 
-static unsigned const end_of_init_addrs[] = {0, 0, 0, 0x10012424};
+static unsigned const end_of_init_addrs[] = {0x1001264C, 0x100125D0, 0x10012470, 0x10012424};
 
 /* argv[0]=
  *         NULL if loaded by Ndless's stage1 at installation or OS startup

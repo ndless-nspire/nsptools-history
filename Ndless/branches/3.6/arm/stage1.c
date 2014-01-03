@@ -50,10 +50,11 @@ static void write_touchpad(uint16_t port, uint8_t value) {
 }
 
 // OS-specific
-static unsigned const ndless_inst_resident_hook_addrs[] = {0, 0, 0, 0x10012370};
+static unsigned const ndless_inst_resident_hook_addrs[] = {0x100BE8DC, 0x100BEB94, 0x100BDED4, 0x100BDEFC};
 
-// Install the resident part.
+// Install the resident part
 HOOK_DEFINE(s1_startup_hook) {
+	bkpt();
 	ut_read_os_version_index();
 	ints_setup_handlers();
 	struct stat res_stat;
@@ -72,19 +73,16 @@ HOOK_DEFINE(s1_startup_hook) {
 	((void (*)(int argc, void* argv))(char*)core + sizeof(PRGMSIG))(1, &res_params); // Run the core installation
 s1_startup_hook_return:
 	HOOK_RESTORE_RETURN(s1_startup_hook);
+	bkpt();
 }
 
 int main(void) {
 	ut_disable_watchdog();
 	ut_read_os_version_index();
 	ints_setup_handlers();
-	
-    //Disable the watchdog on CX that may trigger a reset
-    *(volatile unsigned*)0x90060C00 = 0x1ACCE551; // enable write access to all other watchdog registers
-    *(volatile unsigned*)0x90060008 = 0;          // disable reset, counter and interrupt
-    *(volatile unsigned*)0x90060C00 = 0;          // disable write access to all other watchdog registers
+	ut_disable_watchdog();
     
-    //Reset all timers and their IRQ flags
+    // Reset all timers and their IRQ flags
     if (ut_os_version_index > 1) {
         PATCH_WW(0x90010008, 0);
         PATCH_WW(0x90010008, 0);
@@ -101,43 +99,43 @@ int main(void) {
         PATCH_WW(0x900D002c, 1);
     }
     
-    //Disable all interrupts
+    // Disable all interrupts
     if (ut_os_version_index < 2) {
         PATCH_WW(0xDC000008, 0xFFFFFFFF);
     } else {
-        PATCH_WW(0xDC000014, 0xFFFFFFFF);
+	PATCH_WW(0xDC000014, 0xFFFFFFFF);
     }
 	
     if (ut_os_version_index > 1) {
-        //Reset touchpad
+        // Reset touchpad
         write_touchpad(0x0004, 0x01);
-        //Disable I2C IRQ
+        // Disable I2C IRQ
         PATCH_WW(0x90050030, 0);
-        //Disable I2C
+        // Disable I2C
         PATCH_WW(0x9005006C, 0);
     }
-    //Disable RTC IRQ
+    // Disable RTC IRQ
     PATCH_WW(0x9009000C, 1);
 
-    //Disable keypad and touchpad IRQs
-    PATCH_WW(0x900E000C, 0);
+    // Disable keypad and touchpad IRQs
+	PATCH_WW(0x900E000C, 0);
     PATCH_WW(0x900E0040, 0);
 
 	// Reset OS global variables to their initial values
 	// Reset internal RAM state, else instable without USB plugged-in
-    switch (ut_os_version_index)
-    {
+    switch (ut_os_version_index) {
         case 0:
             //#include "hrpatches-os-ncas-3.6.0.h"
             //#include "hrpatches-internal-ram-ncas-3.6.0.h"
+
         break;
         case 1:
-            //#include "hrpatches-os-cas-3.6.0.h"
-            //#include "hrpatches-internal-ram-cas-3.6.0.h"
+            #include "hrpatches-os-cas-3.6.0.h"
+            #include "hrpatches-internal-ram-cas-3.6.0.h"
         break;
         case 2:
-            //#include "hrpatches-os-ncascx-3.6.0.h"
-            //#include "hrpatches-internal-ram-ncascx-3.6.0.h"
+            #include "hrpatches-os-ncascx-3.6.0.h"
+            #include "hrpatches-internal-ram-ncascx-3.6.0.h"
         break;
         case 3:
             #include "hrpatches-os-cascx-3.6.0.h"

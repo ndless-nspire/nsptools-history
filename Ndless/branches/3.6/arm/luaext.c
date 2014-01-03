@@ -68,8 +68,8 @@ static unsigned const interp_startup_addrs[] = {0x101003CC, 0x101009F0, 0x100FFE
 static unsigned const interp_shutdown_addrs[] = {0x106D14B0, 0x106B59A4, 0x106B249C, 0x106B2C38, 0x106AA5B4, 0x106AAD50};
 
 void lua_install_hooks(void) {
-	HOOK_INSTALL(interp_startup_addrs[ut_os_version_index], lua_interp_startup);
-	HOOK_INSTALL(interp_shutdown_addrs[ut_os_version_index], lua_interp_shutdown);
+	//HOOK_INSTALL(interp_startup_addrs[ut_os_version_index], lua_interp_startup);
+	//HOOK_INSTALL(interp_shutdown_addrs[ut_os_version_index], lua_interp_shutdown);
 	nl_relocdata((unsigned*)baselib, (sizeof(baselib) / sizeof(unsigned*)) - 2);
 }
 

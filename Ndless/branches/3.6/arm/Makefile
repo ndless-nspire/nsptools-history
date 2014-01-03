@@ -11,12 +11,7 @@ vpath %.tns $(DISTDIR)
 
 .DEFAULT_GOAL := all
 
-ostargets.mk: mkostargets.sh
-	./mkostargets.sh > ostargets.mk
-
-include ostargets.mk
-
-all: $(INSTALLER_FILES) static ndless_resources.tns subdirs
+all: ndless_installer.tns static ndless_resources.tns subdirs
 res: ndless_resources.tns
 
 %.o: %.c
@@ -32,23 +27,17 @@ static:
 	@mkdir -p $(DISTDIR)
 	@cp ndless.cfg.tns $(DISTDIR)
 
+OS_VERSIONS="3.6.0"
+MODELS="ncas cas ncascx cascx cmc cascmc"
+
 # Build with the light and stage1 switches (temporarily added to $GCCFLAGS)
 # Thumb mode is actually not used anymore in this version of Ndless, because the installer is not size-constrainted
 ints_light_thumb.o: ints.c
 	$(GCC) $(GCCFLAGS) -c $< -o $@
 syscalls_light_thumb.o: syscalls.c
 	$(GCC) $(GCCFLAGS) -c $< -o $@
-# utils.c contains C-preprocessor logic based on OS_VERSION. Build an .o for each version.
-utils_light_thumb_%.o: utils.c
+utils_light_thumb.o: utils.c
 	$(GCC) $(GCCFLAGS) -c $< -o $@
-# Prevent automatic deletion of these files considered as intermediate because not explicitely named as a target
-.PRECIOUS: utils_light_thumb_%.o
-
-# To be used as a target-specific value for each ndless_installer_*.elf.
-# Use with $(call GCCFLAGS_INSTALLER, <os_version>)
-# OS_VERSION has its '.' replaced by '_' by this function.
-# OS_VERSION_INT only contains digits for easier case testing with the C preprocessing.
-GCCFLAGS_INSTALLER =-D _NDLS_LIGHT -D STAGE1 -D OS_VERSION=$(subst .,_,$(1)) -D OS_VERSION_INT=$(subst .,,$(1)) -D MODEL=$(MODEL)
 
 # Explicit dependencies strangely required for the target to avoid being rebuilt when not really needed
 stage0.o: stage0.S
@@ -57,41 +46,33 @@ stage1.o: stage1.c
 # Required for $$*. Caution, applies to all the following targets.
 .SECONDEXPANSION:
 
-ndless_installer-%-ncas.elf: stage1.o ints_light_thumb.o syscalls_light_thumb.o utils_light_thumb_ncas-$$*.o syscalls-light_ncas-%.o
-	$(LD) --light-startup-no-header $(LDFLAGS) $^ -o $@
-ndless_installer-%-cas.elf: stage1.o ints_light_thumb.o syscalls_light_thumb.o utils_light_thumb_cas-$$*.o syscalls-light_cas-%.o
-	$(LD) --light-startup-no-header $(LDFLAGS) $^ -o $@
-ndless_installer-%-ncascx.elf: stage1.o ints_light_thumb.o syscalls_light_thumb.o utils_light_thumb_ncascx-$$*.o syscalls-light_ncascx-%.o
-	$(LD) --light-startup-no-header $(LDFLAGS) $^ -o $@
-ndless_installer-%-cascx.elf: stage1.o ints_light_thumb.o syscalls_light_thumb.o utils_light_thumb_cascx-$$*.o syscalls-light_cascx-%.o
-	$(LD) --light-startup-no-header $(LDFLAGS) $^ -o $@
-ndless_installer-%-cmc.elf: stage1.o ints_light_thumb.o syscalls_light_thumb.o utils_light_thumb_cmc-$$*.o syscalls-light_cmc-%.o
-	$(LD) --light-startup-no-header $(LDFLAGS) $^ -o $@
-ndless_installer-%-cascmc.elf: stage1.o ints_light_thumb.o syscalls_light_thumb.o utils_light_thumb_cascmc-$$*.o syscalls-light_cascmc-%.o
+ndless_installer.elf: GCCFLAGS+= -D _NDLS_LIGHT -D STAGE1
+
+SYSCALLS_OBJS_LIGHT:=syscalls-light_ncas-3.6.0.o syscalls-light_cas-3.6.0.o syscalls-light_ncascx-3.6.0.o syscalls-light_cascx-3.6.0.o
+SYSCALLS_OBJS:=syscalls_ncas-3.6.0.o syscalls_cas-3.6.0.o syscalls_ncascx-3.6.0.o syscalls_cascx-3.6.0.o
+
+ndless_installer.elf: stage1.o ints_light_thumb.o syscalls_light_thumb.o utils_light_thumb.o $(SYSCALLS_OBJS_LIGHT)
 	$(LD) --light-startup-no-header $(LDFLAGS) $^ -o $@
 
-ndless_installer-%.bin:  ndless_installer-%.elf
+ndless_installer.bin: ndless_installer.elf
 	$(OBJCOPY) -O binary $< $@
 
 stage0.bin: stage0.o
 	$(OBJCOPY) -O binary $< $@
 
-ndless_installer-%.lua: ndless_installer-%.bin stage0.bin
+ndless_installer.lua: ndless_installer.tpl.lua
+ndless_installer.lua: ndless_installer.bin stage0.bin
 	EscapeInst $< $(<:.bin=-escaped.bin)
 	cat stage0.bin $(<:.bin=-escaped.bin) > $(<:.bin=-escaped.bin.tmp)
 	mv $(<:.bin=-escaped.bin.tmp) $(<:.bin=-escaped.bin)
-	MakeLuaInst $(<:.bin=-escaped.bin) $@
+	MakeLuaInst $(<:.bin=-escaped.bin) $(<:.bin=-escaped.lua.tmp)
+	cat ndless_installer.tpl.lua $(<:.bin=-escaped.lua.tmp) > $@
+	rm $(<:.bin=-escaped.lua.tmp) $(<:.bin=-escaped.bin)
 
-ndless_installer-%.tns: ndless_installer-%.lua
+ndless_installer.tns: ndless_installer.lua
 	@mkdir -p $(DISTDIR)
 	luna $< $(DISTDIR)/$@
 
-.PRECIOUS: ndless_installer-%.bin
-
-SYSCALLS_LIGHT_OBJS :=  $(foreach os_version, $(OS_VERSIONS), $(foreach model, $(MODELS), syscalls-light_$(model)-$(os_version).o))
-# Prevent automatic deletion of these files considered as intermediate because not explicitely named as a target
-.PRECIOUS: $(SYSCALLS_LIGHT_OBJS)
-SYSCALLS_OBJS :=  $(foreach os_version, $(OS_VERSIONS), $(foreach model, $(MODELS), syscalls_$(model)-$(os_version).o))
 CORE_OBJS := install.o ploaderhook.o bflt.o ints.o syscalls.o utils.o emu.o luaext.o $(SYSCALLS_OBJS)
 RES_OBJS := $(CORE_OBJS)
 
@@ -118,14 +99,14 @@ subdirs:
 
 clean: cleanbin cleanapp cleansubdirs
 cleanapp:
-	rm -rf $(DISTDIR)/ndless_installer*.tns $(DISTDIR)/ndless_resources.tns $(DISTDIR)/ndless.cfg.tns
+	rm -rf $(DISTDIR)/ndless_installer.tns $(DISTDIR)/ndless_resources.tns $(DISTDIR)/ndless.cfg.tns
 cleaninst:
 	rm -rf ndless_installer.elf $(INST_OBJS)
 cleanres:
 	rm -rf ndless_core.elf $(RES_OBJS)
 
 cleanbin:
-	rm -rf *.o *.elf stage0.bin ndless_installer-*.bin ndless_installer-*.lua *.tmp
+	rm -rf *.o *.elf stage0.bin ndless_installer.bin ndless_installer.lua *.tmp
 
 cleansubdirs:
 	@for i in $(SUBDIRS); do \

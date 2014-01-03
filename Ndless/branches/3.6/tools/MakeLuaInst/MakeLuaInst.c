@@ -1,5 +1,5 @@
 /****************************************************************************
- * Produce the Lua installer file.
+ * Produce the dynamic part of the Lua installer file.
  * 
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
@@ -65,8 +65,8 @@ int main(int argc, const char* argv[]) {
 	if (fread(inbuf, inst_size, 1, finst) != 1) error("can't read installer file");
 	
 	// header
-	sfprintf(flua, "local u = string.uchar\n");
-	sfprintf(flua, "local s = \"\"");
+	sfprintf(flua, "u = string.uchar\n");
+	sfprintf(flua, "s = \"\"");
 	
 	// code
 	unsigned char *p = inbuf;
@@ -85,30 +85,22 @@ int main(int argc, const char* argv[]) {
 		p += 2;
 	}
 	
-    // address
-	unsigned code_addr[]   = {0x0, 0x10E34D14, 0x0, 0x11112E5C};
-	unsigned code_offset[] = {0x0, 0x10E48248, 0x0, 0x11126390};
-    int size_to_pad;
-    
+
 	// padding
-    sfprintf(flua, "\nif platform.isColorDisplay() then");
-        size_to_pad = code_offset[3] - code_addr[3] - inst_size;
-        if (size_to_pad < 0)
-            error("installer is too long");
-        sfprintf(flua, "\ns = s .. string.rep(u(0x0001), %i)", size_to_pad/2);
-        sfprintf(flua, "\ns = s .. u(0x%02hx%02hx) .. u(0x%02hx%02hx)",
-            (code_addr[3] & 0x0000FF00) >> 8, (code_addr[3] & 0x000000FF) >> 0, (code_addr[3] & 0xFF000000) >> 24, (code_addr[3] & 0x00FF0000) >> 16);
-    sfprintf(flua, "\nelse");
-        size_to_pad = code_offset[1] - code_addr[1] - inst_size;
-        if (size_to_pad < 0)
-            error("installer is too long");
-        sfprintf(flua, "\ns = s .. string.rep(u(0x0001), %i)", size_to_pad/2);
-        sfprintf(flua, "\ns = s .. u(0x%02hx%02hx) .. u(0x%02hx%02hx)",
-            (code_addr[1] & 0x0000FF00) >> 8, (code_addr[1] & 0x000000FF) >> 0, (code_addr[1] & 0xFF000000) >> 24, (code_addr[1] & 0x00FF0000) >> 16);
-    sfprintf(flua, "\nend");
+	int size_to_pad;
+	size_to_pad = 0x13534 - inst_size;
+	if (size_to_pad < 0)
+		error("installer is too long");
+	sfprintf(flua, "\ns = s .. string.rep(u(0x0001), %i)", size_to_pad/2);
 	
-	// footer
-	sfprintf(flua, "\ntoolpalette.register{{s}}");
+	// OS-specific addresses to jump to
+	char *var_names[]      = {"ncas",    "cas",       "ncascx",   "cascx"};
+	unsigned code_addr[]   = {0x10E60D14, 0x10E34D14, 0x110AEE5C, 0x11112E5C};
+	unsigned i;
+	for (i = 0; i < 4; i++) {
+		sfprintf(flua, "\ns_%s = u(0x%02hx%02hx) .. u(0x%02hx%02hx)", var_names[i],
+				 (code_addr[i] & 0x0000FF00) >> 8, (code_addr[i] & 0x000000FF) >> 0, (code_addr[i] & 0xFF000000) >> 24, (code_addr[i] & 0x00FF0000) >> 16);
+	}
 	
 	free(inbuf);
 	fclose(finst);
