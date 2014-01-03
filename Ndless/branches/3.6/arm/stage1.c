@@ -50,11 +50,10 @@ static void write_touchpad(uint16_t port, uint8_t value) {
 }
 
 // OS-specific
-static unsigned const ndless_inst_resident_hook_addrs[] = {0x100BE8DC, 0x100BEB94, 0x100BDED4, 0x100BDEFC};
+static unsigned const ndless_inst_resident_hook_addrs[] = {0x100BE8DC, 0x100BEB94, 0x100BDED4, 0x100BE1E4};
 
 // Install the resident part
 HOOK_DEFINE(s1_startup_hook) {
-	bkpt();
 	ut_read_os_version_index();
 	ints_setup_handlers();
 	struct stat res_stat;
@@ -73,7 +72,6 @@ HOOK_DEFINE(s1_startup_hook) {
 	((void (*)(int argc, void* argv))(char*)core + sizeof(PRGMSIG))(1, &res_params); // Run the core installation
 s1_startup_hook_return:
 	HOOK_RESTORE_RETURN(s1_startup_hook);
-	bkpt();
 }
 
 int main(void) {
@@ -125,7 +123,7 @@ int main(void) {
 	// Reset internal RAM state, else instable without USB plugged-in
     switch (ut_os_version_index) {
         case 0:
-            //#include "hrpatches-os-ncas-3.6.0.h"
+            #include "hrpatches-os-ncas-3.6.0.h"
             //#include "hrpatches-internal-ram-ncas-3.6.0.h"
 
         break;
