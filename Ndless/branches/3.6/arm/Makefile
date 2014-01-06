@@ -67,7 +67,7 @@ ndless_installer.lua: ndless_installer.bin stage0.bin
 	mv $(<:.bin=-escaped.bin.tmp) $(<:.bin=-escaped.bin)
 	MakeLuaInst $(<:.bin=-escaped.bin) $(<:.bin=-escaped.lua.tmp)
 	cat ndless_installer.tpl.lua $(<:.bin=-escaped.lua.tmp) > $@
-	rm $(<:.bin=-escaped.lua.tmp) $(<:.bin=-escaped.bin)
+	#rm $(<:.bin=-escaped.lua.tmp) $(<:.bin=-escaped.bin)
 
 ndless_installer.tns: ndless_installer.lua
 	@mkdir -p $(DISTDIR)

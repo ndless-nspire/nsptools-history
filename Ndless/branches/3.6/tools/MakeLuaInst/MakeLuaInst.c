@@ -68,27 +68,50 @@ int main(int argc, const char* argv[]) {
 	sfprintf(flua, "u = string.uchar\n");
 	sfprintf(flua, "s = \"\"");
 	
-	// code
+	// code. Use string.rep when possible to avoid any Lua memory error.
 	unsigned char *p = inbuf;
+	unsigned short prev_word = 0;
 	unsigned line_size = 0;
-	while (p < inbuf + inst_size) {
-		if (line_size >= 50) // avoid "chunk has too many syntax levels" Lua error
-			line_size = 0;
-		if (line_size) {
-			sfprintf(flua, " .. ");
+	unsigned seq_length = 0;
+	for (; 1; p += 2) {
+		unsigned short word = 0;
+		int end_of_file = 0;
+		if (p >= inbuf + inst_size)
+			end_of_file = 1;
+		else
+			word = (((unsigned short)*p) << 8) | ((unsigned short)(*(p+1)));
+		// end of sequence
+		if ( (seq_length > 0)
+			 && ( end_of_file || (prev_word != word) ) ) {
+			// flush
+			if (line_size >= 50) // avoid "chunk has too many syntax levels" Lua error
+				line_size = 0;
+			if (line_size) {
+				sfprintf(flua, " .. ");
+			}
+			else {
+				sfprintf(flua, "\ns = s .. ");
+			}
+			line_size++;
+            if (seq_length == 1) {
+				sfprintf(flua, "u(0x%04hx)", (prev_word >> 8) | (prev_word << 8));
+			} else {
+               sfprintf(flua, "string.rep(u(0x%04hx), %u)", (prev_word >> 8) | (prev_word << 8), seq_length);
+            }
+			seq_length = 0;
 		}
-		else {
-			sfprintf(flua, "\ns = s .. ");
-		}
-		sfprintf(flua, "u(0x%02hx%02hx)", (unsigned short)(*(p+1)), (unsigned short)*p);
-		line_size += 1;
-		p += 2;
+		// end of file
+		if (end_of_file) break;
+		// new sequence
+		if (!seq_length)
+			prev_word = word;
+		// longer sequence
+		seq_length++;
 	}
-	
 
 	// padding
 	int size_to_pad;
-	size_to_pad = 0x13534 - inst_size;
+	size_to_pad = 0x13534 - inst_size; // to the OS pointer variable
 	if (size_to_pad < 0)
 		error("installer is too long");
 	sfprintf(flua, "\ns = s .. string.rep(u(0x0001), %i)", size_to_pad/2);
@@ -97,7 +120,7 @@ int main(int argc, const char* argv[]) {
 	char *var_names[]      = {"ncas",    "cas",       "ncascx",   "cascx"};
 	unsigned code_addr[]   = {0x10E60D14, 0x10E34D14, 0x110AEE5C, 0x11112E5C};
 	unsigned i;
-	for (i = 0; i < 4; i++) {
+	for (i = 0; i < sizeof(var_names)/sizeof(var_names[0]); i++) {
 		sfprintf(flua, "\ns_%s = u(0x%02hx%02hx) .. u(0x%02hx%02hx)", var_names[i],
 				 (code_addr[i] & 0x0000FF00) >> 8, (code_addr[i] & 0x000000FF) >> 0, (code_addr[i] & 0xFF000000) >> 24, (code_addr[i] & 0x00FF0000) >> 16);
 	}

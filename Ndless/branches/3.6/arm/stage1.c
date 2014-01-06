@@ -48,7 +48,7 @@ static void write_touchpad(uint16_t port, uint8_t value) {
 }
 
 // OS-specific
-static unsigned const ndless_inst_resident_hook_addrs[] = {0x100BE8DC, 0x100BEB94, 0x100BDEFC, 0x100BE1E4};
+static unsigned const ndless_inst_resident_hook_addrs[] = {0x100BE8DC, 0x100BEC68, 0x100123BC, 0x10012370};
 
 // Install the resident part
 HOOK_DEFINE(s1_startup_hook) {
@@ -78,7 +78,7 @@ int main(void) {
 	ints_setup_handlers();
 	ut_disable_watchdog();
     
-    // Reset all timers and their IRQ flags
+    // Reset	IRQ flags
     if (ut_os_version_index > 1) {
         PATCH_SETW(0x90010008, 0);
         PATCH_SETW(0x90010008, 0);
@@ -99,7 +99,7 @@ int main(void) {
     if (ut_os_version_index < 2) {
         PATCH_SETW(0xDC000008, 0xFFFFFFFF);
     } else {
-	PATCH_SETW(0xDC000014, 0xFFFFFFFF);
+		PATCH_SETW(0xDC000014, 0xFFFFFFFF);
     }
 	
     if (ut_os_version_index > 1) {

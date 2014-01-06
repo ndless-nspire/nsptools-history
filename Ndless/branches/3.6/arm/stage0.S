@@ -14,51 +14,58 @@
  *
  * The Original Code is Ndless code.
  *
- * The Initial Developer of the Original Code is Fabian Vogt.
+ * The Initial Developer of the Original Code is Olivier ARMAND
+ * <olivier.calc@gmail.com>.
  * 
  * Portions created by the Initial Developer are Copyright (C) 2013
  * the Initial Developer. All Rights Reserved.
  *
- * Contributor(s): Olivier ARMAND <olivier.calc@gmail.com>, Excale
+ * Contributor(s): 
  ****************************************************************************/
 
 #include <os.h>
 
-@ Unescapes forbidden half-words (see tools/EscapeInstaller) and loads stage1.
+#define FILLER_SIZE_1 0xA800
+#define FILLER_SIZE_2 0x70
+
+@ Unescapes forbidden half-words (see tools/MakeEscapeTable) and loads stage1.
 @ Will also unescape crt0.
-@ This code must *not* contain 0000 and 0009.
+@ Must *not* contain 0000 and 0009.
 
 	@ we are in abt mode, switch to the standard svc mode
 	mrs   r1, cpsr
 	eor   r1, #0b100 @ svc mode
 	msr   cpsr, r1
-
-	mov r1, #0x11800000
+	
+	mov r1, #0x11800000 @ unescaped installer dest
 	mov lr, r1
 	
-	@ Input: FF 00 FF 09 => 00 09
-	adr r2, escaped_start
-	add r0, r2, #4 @ Source (skip length)
-	ldr r2, [r2] @ Length of escaped ORed with 0xFF000000
-	and r2, r2, #0x00FFFFFF
-	add r2, r2, r0 @End
+	adr r0, padding @ we can t use adr with escaped_start
+	add r0, #FILLER_SIZE_1
+	add r0, #FILLER_SIZE_2
+	mov r3, r0 @ escaped_start
+	ldrh r2, [r0], #2 @ installer size
+	ldrh r4, [r0], #2 @ number of entries in escape table
+	add r5, r0, r4, lsl #1 @ installer entry point
+	mov r8, r5 @ src
+	mov r6, r1 @ dest
+copy_installer_loop:
+	ldrb r7, [r8], #1
+	strb r7, [r6], #1
+	subs r2, #1
+	bne copy_installer_loop
 
-  unescape_loop:
-	@ Load bytes
-	ldrb r4, [r0], #2
-	ldrb r3, [r0], #2
-	ldrb r6, [r0], #2
-	ldrb r5, [r0], #2
-
-	orr r3, r3, r4, lsl #8
-	orr r3, r3, r5, lsl #16
-	orr r3, r3, r6, lsl #24
-
-	@ Write word
-	str r3, [r1], #4
-	
-	cmp r0, r2 @ Have we finished?
-	bls unescape_loop
+unescape_loop:
+	ldrh r2, [r0], #2 @ entry in offset table
+	add r2, r1 @ base + offset
+	ldrh r6, [r2]
+			   @ use tst and not cmp to avoid the code to contain 0x0000
+	tst r6, #0b10000 @ 0xFFFF is 0x0000 escaped -> bit 0=1. 0xEEEE is 0x0009 -> bit 0=0. 
+	movne r6, #0
+	moveq r6, #9
+	strh r6, [r2]
+	subs r4, #1 @ number of entries--
+	bne unescape_loop
 	
 	@ inlined clear_cache, because branching to libndls function generates a 0000
 clear_cache_loop:
@@ -69,5 +76,8 @@ clear_cache_loop:
 
 	mov pc, lr
 
+padding:
+	.fill FILLER_SIZE_1+FILLER_SIZE_2, 1, 0x01 @ some OS global vars are written to by the OS during the overflow. Don't put installer code there.
 escaped_start:
-	@ concatenated here
+	@ concatenated here by the Makefile. Contains the escape table, then the installer.
+	

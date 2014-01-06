@@ -14,17 +14,27 @@
  *
  * The Original Code is Ndless code.
  *
- * The Initial Developer of the Original Code is Fabian Vogt.
+ * The Initial Developer of the Original Code is Olivier ARMAND
+ * <olivier.calc@gmail.com>.
  * Portions created by the Initial Developer are Copyright (C) 2013
  * the Initial Developer. All Rights Reserved.
  *
- * Contributor(s): Olivier ARMAND <olivier.calc@gmail.com>
+ * Contributor(s): 
  ****************************************************************************/
 
+#include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <stdint.h>
 
-static unsigned file_size(FILE *f) {
+#define MIN(a,b) ({typeof(a) __a = (a); typeof(b) __b = (b); (__a < __b) ? __a : __b;})
+
+void error(const char* msg) {
+	fprintf(stderr, "Error: %s.\n", msg);
+	exit(1);	
+}
+
+unsigned file_size(FILE *f) {
   int pos, end;
   pos = ftell(f);
   fseek (f, 0, SEEK_END);
@@ -33,64 +43,68 @@ static unsigned file_size(FILE *f) {
   return end;
 }
 
-/* Format of escaped installer:
- * 4-byte size
- * FF byte0 FF byte1 FF byte2 ...
- */
-int main(int argc, char* argv[]) {
-	if(argc != 3) {
+int main(int argc, const char* argv[]) {
+	if (argc != 3) {
 		puts("Usage: EscapeInst <in_installer.bin> <out_installer.bin>\n"
 			 "Escape forbidden half-words (0000 and 0009).\n"
-		     "stage0 will unescape them.");
-		return 1;
+			 "The escape table is added at the beginning.\n");
+		return 0;
 	}
+	FILE *finst = fopen(argv[1], "rb");
+	if (!finst) error("can't open input file");
+	FILE *fout = fopen(argv[2], "wb");
+	if (!fout) error("can't open output file");
+	unsigned inst_size = file_size(finst);
+	char *inbuf = malloc(inst_size);
+	if (fread(inbuf, 1, inst_size, finst) != inst_size) error("can't read installer file");
 	
-	FILE *input = fopen(argv[1], "rb");
-	if (!input) {
-		printf("Open #1 failed.\n");
-		return 1;
-	}
-	FILE *output = fopen(argv[2], "wb");
-	if(!output)	{
-		printf("Open #2 failed.\n");
-		return 1;
-	}
+	// build the escape table at the beginning of the installer
+	// format: 
+	// 2 bytes: size of the installer
+	// 2 bytes: number of entries in the table
+	// 2 bytes*: offset from the beginning of the installer
+	//        FFFF if 0000 is escaped.
+	//        EEEE if 0009 is escaped.
 	
-	uint32_t filesize = file_size(input);
-	uint32_t escaped_size = (filesize >> 2) * 8;
-	if (filesize % 4 > 0)
-		escaped_size += 8;
+	// write the size of the installer
+	if (   fputc(inst_size & 0x00FF, fout) == EOF
+			|| fputc((inst_size & 0xFF00) >> 8, fout) == EOF)
+			error("can't write installer size to installer file");
+	// space for the table size - will be written afterwards
+	if (   fputc(0, fout) == EOF
+	    || fputc(0, fout) == EOF)
+		error("can't write nul escape table size to installer file");
+	uint16_t *p16 = (uint16_t*)inbuf;
+	uint16_t escape_table_size = 0;
+	while (p16 < (uint16_t*)((char*)inbuf + inst_size)) {
+		if (*p16 == 0x0000)
+			*p16 = 0xFFFF;
+		else if (*p16 == 0x0009)
+			*p16 = 0xEEEE;
+		else {
+			p16++;
+			continue;
+		}
+		// write the offset
+		if (   fputc(((char*)p16 - (char*)inbuf) & 0x00FF, fout) == EOF
+			|| fputc((((char*)p16 - (char*)inbuf) & 0xFF00) >> 8, fout) == EOF)
+			error("can't write the escape table to installer file");
+		escape_table_size++;
+		p16++;
+	}
 
-	//escaped_size & 0xFFFF == 0x0009 can never happen
-	if (escaped_size > 0xFFFFFF || (escaped_size & 0xFFFF) == 0x0000) {
-		printf("Unsupported size.\n");
-		return 1;
-	}
+	// append the escaped installer
+	if (fwrite(inbuf, 1, inst_size, fout) != inst_size)
+		error("can't append escaped installer to output file");
 
-	escaped_size = escaped_size | 0xFF000000;
-	fseek(input, 0, SEEK_SET);
+	// write the table size
+	fseek(fout, 2, SEEK_SET);
+	if (   fputc(escape_table_size & 0x00FF, fout) == EOF
+	    || fputc((escape_table_size & 0xFF00) >> 8, fout) == EOF)
+		error("can't write escape table size to installer file");
 	
-	fwrite(&escaped_size, 4, 1, output);
-	
-	uint32_t word;
-	//If we read less than 4 it doesn't matter
-	while (fread(&word, 1, 4, input) > 0) {
-		uint8_t byte0 = word & 0xFF;
-		word >>= 8;
-		uint8_t byte1 = word & 0xFF;
-		word >>= 8;
-		uint8_t byte2 = word & 0xFF;
-		word >>= 8;
-		uint8_t byte3 = word & 0xFF;
-
-		uint32_t newword_1 = 0xFF00FF00 | byte0 << 16 | byte1;
-		uint32_t newword_2 = 0xFF00FF00 | byte2 << 16 | byte3;
-		
-		fwrite(&newword_1, 4, 1, output);
-		fwrite(&newword_2, 4, 1, output);
-	}
-	
-	fclose(input);
-	fclose(output);
+	free(inbuf);
+	fclose(finst);
+	fclose(fout);
 	return 0;
 }
