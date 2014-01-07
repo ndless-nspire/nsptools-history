@@ -78,7 +78,7 @@ int main(void) {
 	ints_setup_handlers();
 	ut_disable_watchdog();
     
-    // Reset	IRQ flags
+    // Reset IRQ flags
     if (ut_os_version_index > 1) {
         PATCH_SETW(0x90010008, 0);
         PATCH_SETW(0x90010008, 0);

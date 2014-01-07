@@ -19,7 +19,7 @@ end_of_os is just before the BSS.
 
 Then:
 - MakeHotRebootPtch.exe 0x0 internal-pre-boot.img internal-post-boot.img hrpatches-internal-ram-ncas-3.6.0.h
-Remove the first patches for the vectors.
+Remove the first patches for the vectors and the screen buffer (0-96FF).
 - MakeHotRebootPtch.exe 0x10000000 os-pre-boot.img os-post-boot.img hrpatches-os-ncas-3.6.0.h
 
 Comparing an OS image produced by nspire_emu doesn't seem to be enough, the 
