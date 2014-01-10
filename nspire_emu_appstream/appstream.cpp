@@ -3,7 +3,8 @@
 #include <XStx/server/XStxServerAPI.h>
 #include "AppStreamServerManagerListener.h"
 
-int main(int argc, const char* argv[]) {
+// return non-zero on error
+extern "C" int appstream_init_and_wait(void) {
 	XStxServerLibraryHandle serverLibraryHandle = NULL;
 	XStxServerManagerHandle serverManagerHandle = NULL;
 	AppStreamServerManagerListener* serverManagerListener = NULL;

@@ -1,12 +1,19 @@
 # empty or APPSTREAM
 TARGET_PLATFORM = APPSTREAM
 
+ifeq ($(TARGET_PLATFORM),APPSTREAM)
+APPSTREAM_SDK_DIR=C:\XStxSdk
+endif
+
 OBJ = armloader.o asmcode.o casplus.o cpu.o des.o debug.o emu.o flash.o gdbstub.o gui.o interrupt.o keypad.o lcd.o link.o memory.o misc.o mmu.o os-win32.o resource.o schedule.o serial.o sha256.o snippets.o translate.o usb.o usblink.o
+ifeq ($(TARGET_PLATFORM),APPSTREAM)
+OBJ += appstream.o AppStreamCalc.o AppStreamServerManagerListener.o AppStreamHostedApplication.o
+endif
 
 FLAGS = -W -Wall
 ifeq ($(TARGET_PLATFORM),APPSTREAM)
-FLAGS += -DTARGET_APPSTREAM
-LDFLAGS += -static-libgcc -static-libstdc++
+FLAGS += -DTARGET_APPSTREAM -I$(APPSTREAM_SDK_DIR)\include
+LDFLAGS += -L$(APPSTREAM_SDK_DIR)\lib -lXStxServerLibraryShared -static-libgcc -static-libstdc++
 CPPFLAGS =-std=c++0x
 endif
 

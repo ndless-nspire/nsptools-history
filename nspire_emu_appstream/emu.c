@@ -238,7 +238,7 @@ static int first_exec = 1;
 
 int emu_run() {
 	exiting = false;
-	//if (!first_exec) goto reset;
+	if (!first_exec) goto reset;
 	first_exec = 0;
 	
 	int i;
@@ -558,6 +558,11 @@ reset:
 int main(int largc, char **largv) {
 	argc = largc;
 	argv = largv;
+#ifdef TARGET_APPSTREAM
+	appstream_init_and_wait();
+	return 0;
+#else
 	return emu_run();
+#endif
 }
 

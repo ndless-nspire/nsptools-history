@@ -1,5 +1,4 @@
-#include <windows.h>
-
+// Calculator instance for AppStream
 class AppStreamCalc
 {
     public:
@@ -17,5 +16,5 @@ class AppStreamCalc
     private:
         bool runCalcThread();
 		
-		PROCESS_INFORMATION processInfo;
+		bool volatile m_exit;
 };
