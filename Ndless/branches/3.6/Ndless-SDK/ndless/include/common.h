@@ -367,11 +367,11 @@ typedef struct {
 	                                                   : !((*(volatile short*)(KEY_MAP + (key).row)) & (key).col) ) ) )
 
 /***********************************
- * Misc inline functions
+ * Hooks management
  ***********************************/
 
 /* Hooked functions and hooks must be built in ARM and not Thumb.
- * 8 bytes are overwritten. They mustn't contain relative accesses such as jumps. */
+ * 8 bytes are overwritten. They musn't contain relative accesses such as jumps. */
 #define HOOK_INSTALL(address, hookname) do { \
 	void hookname(void); \
 	extern unsigned __##hookname##_end_instrs[4]; /* orig_instrs1; orig_instrs2; ldr pc, [pc, #-4]; .long return_addr */ \
