@@ -148,7 +148,7 @@ int main(void) {
 	
 	// disable the OS monitor thread that would throw a discrepancy error and wipe out the OS
 	// this thread use signature data passed by the boot2 and copied to the first OS variable at the beginning of the BSS
-	// this signature data is not always available after a boot (never on classic TI-Nspire)
+	// this signature data may have been overwritten (and is always on classic TI-Nspire after opening the Lua installer)
 	
 	// OS-specific
 	static unsigned const os_monitor_thread_addrs[] = {0x10135DF4, 0x10136418, 0x10135838, 0x10135E8C};
