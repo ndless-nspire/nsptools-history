@@ -1,6 +1,6 @@
 /****************************************************************************
  * Stage 1 of the installation.
- * Loads the installer.
+ * Set a hook and hot reboot the OS to get it back to a stable state.
  *
  * The contents of this file are subject to the Mozilla Public
  * License Version 1.1 (the "License"); you may not use this file
@@ -146,6 +146,15 @@ int main(void) {
         break;
     }
 	
+	// disable the OS monitor thread that would throw a discrepancy error and wipe out the OS
+	// this thread use signature data passed by the boot2 and copied to the first OS variable at the beginning of the BSS
+	// this signature data is not available on not always available after a boot (never on classic TI-Nspire)
+	
+	// OS-specific
+	static unsigned const os_monitor_thread_addrs[] = {0x10135DF4, 0x10136418, 0x10135838, 0x10135E8C};
+	PATCH_SETW(os_monitor_thread_addrs[ut_os_version_index], 0xE12FFF1E); // "bx lr" at the beginning of the thread
+	
+	// post hot-reboot hook
 	HOOK_INSTALL(ndless_inst_resident_hook_addrs[ut_os_version_index], s1_startup_hook);
 	
 	clear_cache();
