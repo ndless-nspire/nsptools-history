@@ -38,6 +38,7 @@
 	msr   cpsr, r1
 	
 	mov r1, #0x11800000 @ unescaped installer dest
+	sub r1, #0x00100000 @ can't be 0x11800000 which is wiped out on OS boot up on classic TI-Nspire
 	mov lr, r1
 	
 	adr r0, padding @ we can t use adr with escaped_start
