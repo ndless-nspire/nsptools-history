@@ -65,8 +65,8 @@ int main(int argc, const char* argv[]) {
 	if (fread(inbuf, inst_size, 1, finst) != 1) error("can't read installer file");
 	
 	// header
-	sfprintf(flua, "u = string.uchar\n");
-	sfprintf(flua, "s = \"\"");
+	sfprintf(flua, "u=string.uchar\n");
+	sfprintf(flua, "s=\"\"");
 	
 	// code. Use string.rep when possible to avoid any Lua memory error.
 	unsigned char *p = inbuf;
@@ -87,16 +87,16 @@ int main(int argc, const char* argv[]) {
 			if (line_size >= 50) // avoid "chunk has too many syntax levels" Lua error
 				line_size = 0;
 			if (line_size) {
-				sfprintf(flua, " .. ");
+				sfprintf(flua, "..");
 			}
 			else {
-				sfprintf(flua, "\ns = s .. ");
+				sfprintf(flua, "\ns=s..");
 			}
 			line_size++;
             if (seq_length == 1) {
 				sfprintf(flua, "u(0x%04hx)", (prev_word >> 8) | (prev_word << 8));
 			} else {
-               sfprintf(flua, "string.rep(u(0x%04hx), %u)", (prev_word >> 8) | (prev_word << 8), seq_length);
+               sfprintf(flua, "string.rep(u(0x%04hx),%u)", (prev_word >> 8) | (prev_word << 8), seq_length);
             }
 			seq_length = 0;
 		}
@@ -114,7 +114,7 @@ int main(int argc, const char* argv[]) {
 	size_to_pad = 0x13534 - inst_size; // to the OS pointer variable
 	if (size_to_pad < 0)
 		error("installer is too long");
-	sfprintf(flua, "\ns = s .. string.rep(u(0x0001), %i)", size_to_pad/2);
+	sfprintf(flua, "\ns=s..string.rep(u(0x0001),%i)", size_to_pad/2);
 	
 	// OS-specific addresses to jump to
 	char *var_names[]      = {"ncas",    "cas",       "ncascx",   "cascx"};
