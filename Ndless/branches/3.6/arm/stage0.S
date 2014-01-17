@@ -17,7 +17,7 @@
  * The Initial Developer of the Original Code is Olivier ARMAND
  * <olivier.calc@gmail.com>.
  * 
- * Portions created by the Initial Developer are Copyright (C) 2013
+ * Portions created by the Initial Developer are Copyright (C) 2013-2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): 

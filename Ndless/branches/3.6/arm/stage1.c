@@ -15,7 +15,7 @@
  * The Original Code is Ndless code.
  *
  * The Initial Developer of the Original Code is Fabian Vogt.
- * Portions created by the Initial Developer are Copyright (C) 2013
+ * Portions created by the Initial Developer are Copyright (C) 2013-2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): Excale, Olivier ARMAND <olivier.calc@gmail.com>.
@@ -85,6 +85,23 @@ int main(void) {
 	ints_setup_handlers();
 	ut_disable_watchdog();
     
+    // Disable all interrupts
+    if (ut_os_version_index < 2) {
+        PATCH_SETW(0xDC00000C, 0xFFFFFFFF);
+    } else {
+		PATCH_SETW(0xDC000014, 0xFFFFFFFF);
+    }
+    uint32_t RX;
+    __asm volatile (
+        "mrs %0, cpsr      \n"
+        "bic %0, %0, #0x80 \n"
+        "msr cpsr_c, %0    \n"
+    : "=r" (RX));
+    if (ut_os_version_index < 2) {
+        uint32_t dummyint = *((volatile uint32_t *)(0xDC000028));
+        dummyint++; // unused warning
+    }
+	
     // Reset IRQ flags
     if (ut_os_version_index > 1) {
         PATCH_SETW(0x90010008, 0);
@@ -102,11 +119,23 @@ int main(void) {
         PATCH_SETW(0x900D002c, 1);
     }
     
-    // Disable all interrupts
+    //Reset USB
     if (ut_os_version_index < 2) {
-        PATCH_SETW(0xDC000008, 0xFFFFFFFF);
-    } else {
-		PATCH_SETW(0xDC000014, 0xFFFFFFFF);
+        volatile int z;
+        PATCH_SETW(0x900B0018, 0x00000000);
+        for (z = 0; z <= 0x10000; z++)
+			;
+        uint32_t usb_cmd = *((uint32_t *)(0xB0000140));
+        usb_cmd &= ~(1);
+        PATCH_SETW(0xB0000140, usb_cmd);
+        for (z = 0; z <= 0x10000; z++)
+			;
+        usb_cmd = *((uint32_t *)(0xB0000140));
+        usb_cmd |= 0x2;
+        PATCH_SETW(0xB0000140, usb_cmd);
+        while ( ((*((volatile uint32_t *)(0xB0000140)))&0x2) != 0x0 )
+			;
+        PATCH_SETW(0xB00001A4, 0x003C1120);
     }
 	
     if (ut_os_version_index > 1) {
@@ -134,7 +163,7 @@ int main(void) {
         break;
         case 1:
             #include "hrpatches-os-cas-3.6.0.h"
-            #include "hrpatches-internal-ram-cas-3.6.0.h"
+            //#include "hrpatches-internal-ram-cas-3.6.0.h"
         break;
         case 2:
             #include "hrpatches-os-ncascx-3.6.0.h"
