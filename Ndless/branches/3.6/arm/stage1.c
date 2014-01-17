@@ -55,7 +55,7 @@ static void write_touchpad(uint16_t port, uint8_t value) {
 }
 
 // OS-specific
-static unsigned const ndless_inst_resident_hook_addrs[] = {0x100BE8DC, 0x100BEC68, 0x100123BC, 0x10012370};
+static unsigned const ndless_inst_resident_hook_addrs[] = {0x10012598, 0x1001251C, 0x100123BC, 0x10012370};
 
 // Install the resident part
 HOOK_DEFINE(s1_startup_hook) {

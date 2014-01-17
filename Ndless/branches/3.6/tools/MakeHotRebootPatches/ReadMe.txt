@@ -7,6 +7,9 @@ This utility generates patch commands to reset these variables by comparing eith
  - a pre-boot internal RAM image with a post-boot image (0x0-0x14000)
 
 nspire_emu's commands for the OS and internal RAM images dump:
+k [stage1 base address]
+c
+[run the Ndless installer]
 wm C:\temp\internal-post-boot.img 0xA4000000 14000
 wm C:\temp\os-post-boot.img 0x10000000 [end_of_os-0x10000000]
 k 10000000
