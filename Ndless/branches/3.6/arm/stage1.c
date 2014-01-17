@@ -91,12 +91,14 @@ int main(void) {
     } else {
 		PATCH_SETW(0xDC000014, 0xFFFFFFFF);
     }
-    uint32_t RX;
-    __asm volatile (
-        "mrs %0, cpsr      \n"
-        "bic %0, %0, #0x80 \n"
-        "msr cpsr_c, %0    \n"
-    : "=r" (RX));
+	if (ut_os_version_index < 2) {
+		uint32_t RX;
+		__asm volatile (
+			"mrs %0, cpsr      \n"
+			"bic %0, %0, #0x80 \n"
+			"msr cpsr_c, %0    \n"
+		: "=r" (RX));
+	}
     if (ut_os_version_index < 2) {
         uint32_t dummyint = *((volatile uint32_t *)(0xDC000028));
         dummyint++; // unused warning
@@ -178,9 +180,8 @@ int main(void) {
 	// disable the OS monitor thread that would throw a discrepancy error and wipe out the OS
 	// this thread use signature data passed by the boot2 and copied to the first OS variable at the beginning of the BSS
 	// this signature data may have been overwritten (and is always on classic TI-Nspire after opening the Lua installer)
-	
 	// OS-specific
-	static unsigned const os_monitor_thread_addrs[] = {0x10135DF4, 0x10136418, 0x10135838, 0x10135E8C};
+	static unsigned const os_monitor_thread_addrs[] = {0x10135DF4, 0x10136418};
 	PATCH_SETW(os_monitor_thread_addrs[ut_os_version_index], 0xE12FFF1E); // "bx lr" at the beginning of the thread
 	
 	// post hot-reboot hook
