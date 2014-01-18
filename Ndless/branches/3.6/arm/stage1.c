@@ -180,9 +180,11 @@ int main(void) {
 	// this thread use signature data passed by the boot2 and copied to the first OS variable at the beginning of the BSS
 	// this signature data may have been overwritten (and is always on classic TI-Nspire after opening the Lua installer)
 	// OS-specific
-	static unsigned const os_monitor_thread_addrs[] = {0x10135DF4, 0x10136418};
-	PATCH_SETW(os_monitor_thread_addrs[ut_os_version_index], 0xE12FFF1E); // "bx lr" at the beginning of the thread
-	
+    if (ut_os_version_index < 2) {
+		static unsigned const os_monitor_thread_addrs[] = {0x10135DF4, 0x10136418};
+		PATCH_SETW(os_monitor_thread_addrs[ut_os_version_index], 0xE12FFF1E); // "bx lr" at the beginning of the thread
+	}
+		
 	// post hot-reboot hook
 	HOOK_INSTALL(ndless_inst_resident_hook_addrs[ut_os_version_index], s1_startup_hook);
 	
