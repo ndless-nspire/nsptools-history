@@ -32,7 +32,7 @@
 @ Will also unescape crt0.
 @ Must *not* contain 0000 and 0009.
 
-	@ we are in abt mode, switch to the standar18/01/2014 11:01:41d svc mode
+	@ we are in abt mode, switch to the standard svc mode
 	mrs   r1, cpsr
 	eor   r1, #0b100 @ svc mode
 	msr   cpsr, r1
