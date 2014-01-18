@@ -7,6 +7,7 @@ This utility generates patch commands to reset these variables by comparing eith
  - a pre-boot internal RAM image with a post-boot image (0x0-0x14000)
 
 nspire_emu's commands for the OS and internal RAM images dump:
+[use the calc as a user do - also initiate USB transfers]
 k [stage1 base address]
 c
 [run the Ndless installer]
@@ -21,9 +22,9 @@ wm C:\temp\os-pre-boot.img 0x10000000 [end_of_os-0x10000000]
 end_of_os is just before the BSS.
 
 Then:
-- MakeHotRebootPtch.exe 0x0 internal-pre-boot.img internal-post-boot.img hrpatches-internal-ram-ncas-3.6.0.h
+- MakeHotRebootPtch.exe 0x0 internal-pre-boot.img internal-post-boot.img hrpatches-internal-ram-cascx-3.6.0.h
 Remove the first patches for the vectors and the screen buffer (0-96FF).
-- MakeHotRebootPtch.exe 0x10000000 os-pre-boot.img os-post-boot.img hrpatches-os-ncas-3.6.0.h
+- MakeHotRebootPtch.exe 0x10000000 os-pre-boot.img os-post-boot.img hrpatches-os-cascx-3.6.0.h
 
 Comparing an OS image produced by nspire_emu doesn't seem to be enough, the 
 post-boot image should be produced from real HW.

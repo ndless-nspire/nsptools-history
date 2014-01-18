@@ -59,7 +59,6 @@ static unsigned const ndless_inst_resident_hook_addrs[] = {0x10012598, 0x1001251
 
 // Install the resident part
 HOOK_DEFINE(s1_startup_hook) {
-	bkpt();
 	ut_read_os_version_index();
 	ints_setup_handlers();
 	struct stat res_stat;
