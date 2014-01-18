@@ -32,13 +32,14 @@
 @ Will also unescape crt0.
 @ Must *not* contain 0000 and 0009.
 
-	@ we are in abt mode, switch to the standard svc mode
+	@ we are in abt mode, switch to the standar18/01/2014 11:01:41d svc mode
 	mrs   r1, cpsr
 	eor   r1, #0b100 @ svc mode
 	msr   cpsr, r1
 	
 	mov r1, #0x11800000 @ unescaped installer dest
 	sub r1, #0x00100000 @ can't be 0x11800000 which is wiped out on OS boot up on classic TI-Nspire
+	add r1, #0x00040000 @ somewhere not overwritten on OS boot up, especially on classic non-CAS. Found with a pre/post boot dump diff.
 	mov lr, r1
 	
 	adr r0, padding @ we can t use adr with escaped_start

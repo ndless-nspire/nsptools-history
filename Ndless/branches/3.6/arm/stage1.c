@@ -59,6 +59,7 @@ static unsigned const ndless_inst_resident_hook_addrs[] = {0x10012598, 0x1001251
 
 // Install the resident part
 HOOK_DEFINE(s1_startup_hook) {
+	bkpt();
 	ut_read_os_version_index();
 	ints_setup_handlers();
 	struct stat res_stat;
@@ -160,19 +161,18 @@ int main(void) {
     switch (ut_os_version_index) {
         case 0:
             #include "hrpatches-os-ncas-3.6.0.h"
-			// installer too long if uncommented, MakeHotRebootPtch still needs more optimization
-            //#include "hrpatches-internal-ram-ncas-3.6.0.h"
         break;
         case 1:
             #include "hrpatches-os-cas-3.6.0.h"
-            //#include "hrpatches-internal-ram-cas-3.6.0.h"
-        break;
+         break;
         case 2:
             #include "hrpatches-os-ncascx-3.6.0.h"
+			// required for USB-less installation
             #include "hrpatches-internal-ram-ncascx-3.6.0.h"
         break;
         case 3:
             #include "hrpatches-os-cascx-3.6.0.h"
+			// required for USB-less installation
             #include "hrpatches-internal-ram-cascx-3.6.0.h"
         break;
     }
