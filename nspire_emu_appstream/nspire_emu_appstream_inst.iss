@@ -3,7 +3,7 @@
 
 #define MyAppName "nspire_emu_appstream"
 #define MyAppVersion "0.1"
-#define MyAppExeName "nspire_emu.exe"
+#define MyAppExeName "runall.bat"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -14,7 +14,7 @@ AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
 DefaultDirName={pf}\{#MyAppName}
-DefaultGroupName={#MyAppName}
+DefaultGroupName={#MyAppName}           
 OutputBaseFilename=setup
 Compression=lzma
 SolidCompression=yes
@@ -26,9 +26,12 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\Users\Olivier\Documents\Developpement\AWS\appstream\nspire_emu_appstream\nspire_emu.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Olivier\Documents\Developpement\TI\Nspire\nsptools\Ndless\trunk\Ndless-SDK\emu_resources\boot1.img.tns"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Olivier\Documents\Developpement\TI\Nspire\nsptools\Ndless\trunk\Ndless-SDK\emu_resources\nand.img"; DestDir: "{app}"; Flags: ignoreversion
+Source: "nspire_emu.exe"; DestDir: "{app}"; Flags: ignoreversion; Permissions: everyone-readexec
+Source: "runall.bat"; DestDir: "{app}"; Flags: ignoreversion; Permissions: everyone-readexec
+Source: "C:\Users\Olivier\Documents\Developpement\TI\Nspire\nsptools\Ndless\trunk\Ndless-SDK\emu_resources\boot1.img.tns"; DestDir: "{app}"; Flags: ignoreversion; Permissions: everyone-readexec
+Source: "C:\Users\Olivier\Documents\Developpement\TI\Nspire\nsptools\Ndless\trunk\Ndless-SDK\emu_resources\nand.img"; DestDir: "{app}"; Flags: ignoreversion; Permissions: everyone-readexec
+Source: "jre\*"; DestDir: "{app}\jre"; Flags: ignoreversion recursesubdirs; Permissions: everyone-readexec
+Source: "logstash\*"; DestDir: "{app}\logstash"; Flags: ignoreversion recursesubdirs; Permissions: everyone-readexec
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
