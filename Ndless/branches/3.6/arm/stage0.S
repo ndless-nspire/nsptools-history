@@ -20,13 +20,13 @@
  * Portions created by the Initial Developer are Copyright (C) 2013-2014
  * the Initial Developer. All Rights Reserved.
  *
- * Contributor(s): 
+ * Contributor(s): Excale
  ****************************************************************************/
 
 #include <os.h>
 
 #define FILLER_SIZE_1 0xA800
-#define FILLER_SIZE_2 0x70
+#define FILLER_SIZE_2 0x80
 
 @ Unescapes forbidden half-words (see tools/MakeEscapeTable) and loads stage1.
 @ Will also unescape crt0.
@@ -37,35 +37,33 @@
 	eor   r1, #0b100 @ svc mode
 	msr   cpsr, r1
 	
-	mov r1, #0x11800000 @ unescaped installer dest
-	sub r1, #0x00100000 @ can't be 0x11800000 which is wiped out on OS boot up on classic TI-Nspire
-	add r1, #0x00040000 @ somewhere not overwritten on OS boot up, especially on classic non-CAS. Found with a pre/post boot dump diff.
-	mov lr, r1
+	mov lr, #0x11800000 @ unescaped installer dest
+	sub lr, #0x00100000 @ can't be 0x11800000 which is wiped out on OS boot up on classic TI-Nspire
+	add lr, #0x00040000 @ somewhere not overwritten on OS boot up, especially on classic non-CAS. Found with a pre/post boot dump diff.
 	
 	adr r0, padding @ we can t use adr with escaped_start
 	add r0, #FILLER_SIZE_1
 	add r0, #FILLER_SIZE_2
-	mov r3, r0 @ escaped_start
-	ldrh r2, [r0], #2 @ installer size
-	ldrh r4, [r0], #2 @ number of entries in escape table
+	ldrh r3, [r0], #2 @ installer size
+	ldrh r4, [r0], #2 @ number of entries in offset table
+	
 	add r5, r0, r4, lsl #1 @ installer entry point
-	mov r8, r5 @ src
-	mov r6, r1 @ dest
+	mov r6, lr @ dest
 copy_installer_loop:
-	ldrb r7, [r8], #1
-	strb r7, [r6], #1
-	subs r2, #1
+	ldr r7, [r5], #4
+	str r7, [r6], #4
+	subs r3, #4 @ code assumes r3==0 after the loop
 	bne copy_installer_loop
 
+	mov r8, #9
 unescape_loop:
 	ldrh r2, [r0], #2 @ entry in offset table
-	add r2, r1 @ base + offset
-	ldrh r6, [r2]
+	add r2, lr @ offset + base
+	ldrh r9, [r2]
 			   @ use tst and not cmp to avoid the code to contain 0x0000
-	tst r6, #0b10000 @ 0xFFFF is 0x0000 escaped -> bit 0=1. 0xEEEE is 0x0009 -> bit 0=0. 
-	movne r6, #0
-	moveq r6, #9
-	strh r6, [r2]
+	tst r9, #0b10000 @ 0xFFFF is 0x0000 escaped -> bit 0=1. 0xEEEE is 0x0009 -> bit 0=0. 
+	strneh r3, [r2]
+	streqh r8, [r2]
 	subs r4, #1 @ number of entries--
 	bne unescape_loop
 	
@@ -73,13 +71,13 @@ unescape_loop:
 clear_cache_loop:
 	mrc p15, 0, r15, c7, c10, 3 @ test and clean DCache
 	bne clear_cache_loop
-	mov r1, #0
-	mcr p15, 0, r1, c7, c7, 0 @ invalidate ICache and DCache
+	mcr p15, 0, r3, c7, c7, 0 @ invalidate ICache and DCache
 
 	mov pc, lr
 
 padding:
-	.fill FILLER_SIZE_1+FILLER_SIZE_2, 1, 0x01 @ some OS global vars are written to by the OS during the overflow. Don't put installer code there.
+	.fill FILLER_SIZE_1, 		      1, 0x01	    	@ some OS global vars are written to by the OS during the overflow. Don't put installer code there.
+	.fill FILLER_SIZE_2/4,        4, 0x11800004	@ same. 0x11800004 is a valid address to avoid abt in the interrupt handler.
 escaped_start:
 	@ concatenated here by the Makefile. Contains the escape table, then the installer.
 	
