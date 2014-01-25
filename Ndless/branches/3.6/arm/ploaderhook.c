@@ -256,5 +256,6 @@ HOOK_DEFINE(plh_startup_hook) {
 		ut_file_recur_each(NDLESS_DIR "/startup", startup_file_recur_cb, NULL);
 		plh_isstartup = FALSE;
 	}
+	ins_install_successmsg_hook();
 	HOOK_RESTORE_RETURN(plh_startup_hook);
 }

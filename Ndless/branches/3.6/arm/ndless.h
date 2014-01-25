@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Olivier ARMAND
  * <olivier.calc@gmail.com>.
- * Portions created by the Initial Developer are Copyright (C) 2010-2013
+ * Portions created by the Initial Developer are Copyright (C) 2010-2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): 
@@ -49,6 +49,7 @@ extern unsigned emu_sysc_table[];
 
 /* install.c */
 BOOL ins_loaded_by_3rd_party_loader(void);
+void ins_install_successmsg_hook(void);
 
 /* ints.c */
 extern unsigned ints_scextnum;

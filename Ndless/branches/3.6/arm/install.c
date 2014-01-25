@@ -20,10 +20,11 @@
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): 
- *                 Geoffrey ANNEHEIM <geoffrey.anneheim@gmail.com>
+ *                 Geoffrey ANNEHEIM <geoffrey.anneheim@gmail.com>, Excale
  ****************************************************************************/
 
 #include <os.h>
+#include <ngc.h>
 #include "ndless.h"
 
 // OS-specific
@@ -86,4 +87,29 @@ int main(int __attribute__((unused)) argc, char* argv[]) {
 	}
 	// continue OS startup
 	return 0;
+}
+
+
+// OS-specific
+// gui_gc_drawIcon + 4
+const unsigned ins_successmsg_hook_addrs[] = {0x1002DE38, 0x1002DDC8, 0x1002D388, 0x1002D348};
+
+void ins_install_successmsg_hook(void) {
+	HOOK_INSTALL(ins_successmsg_hook_addrs[ut_os_version_index], ins_successsuccessmsg_hook);
+}
+
+// chained after the startup programs execution
+HOOK_DEFINE(ins_successsuccessmsg_hook) {
+    static uint32_t i = 6;
+	if (HOOK_SAVED_REGS(ins_successsuccessmsg_hook)[2] == 0x171) {
+		Gc gc = (Gc)HOOK_SAVED_REGS(ins_successsuccessmsg_hook)[0];
+        gui_gc_setColor(gc, has_colors ? 0x32cd32 : 0x505050);
+		gui_gc_setFont(gc, SerifRegular9);
+		gui_gc_drawString(gc, "N\0d\0l\0e\0s\0s\0 \0i\0n\0s\0t\0a\0l\0l\0e\0d\0!\0\0", 25, 4, GC_SM_TOP);
+        if (!i--) {        
+            HOOK_UNINSTALL(ins_successmsg_hook_addrs[ut_os_version_index], ins_successsuccessmsg_hook);
+            clear_cache();
+        }
+    }
+	HOOK_RESTORE_RETURN(ins_successsuccessmsg_hook);
 }

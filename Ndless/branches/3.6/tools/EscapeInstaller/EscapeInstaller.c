@@ -19,7 +19,7 @@
  * Portions created by the Initial Developer are Copyright (C) 2013
  * the Initial Developer. All Rights Reserved.
  *
- * Contributor(s): 
+ * Contributor(s): Excale
  ****************************************************************************/
 
 #include <stdlib.h>
@@ -55,6 +55,7 @@ int main(int argc, const char* argv[]) {
 	FILE *fout = fopen(argv[2], "wb");
 	if (!fout) error("can't open output file");
 	unsigned inst_size = file_size(finst);
+    if (inst_size > 0xFFFC) { error("installer too long"); }
 	char *inbuf = malloc(inst_size);
 	if (fread(inbuf, 1, inst_size, finst) != inst_size) error("can't read installer file");
 	
@@ -67,15 +68,17 @@ int main(int argc, const char* argv[]) {
 	//        EEEE if 0009 is escaped.
 	
 	// write the size of the installer
-	if (   fputc(inst_size & 0x00FF, fout) == EOF
-			|| fputc((inst_size & 0xFF00) >> 8, fout) == EOF)
+	//if (   fputc((inst_size+3) & 0x00FC, fout) == EOF
+	//		|| fputc(((inst_size+3) & 0xFF00) >> 8, fout) == EOF)
+	if (   fputc((inst_size+3) & 0x00FC, fout) == EOF
+			|| fputc(((inst_size+3) & 0xFF00) >> 8, fout) == EOF)
 			error("can't write installer size to installer file");
 	// space for the table size - will be written afterwards
 	if (   fputc(0, fout) == EOF
 	    || fputc(0, fout) == EOF)
 		error("can't write nul escape table size to installer file");
 	uint16_t *p16 = (uint16_t*)inbuf;
-	uint16_t escape_table_size = 0;
+	uint16_t escape_table_entries = 0;
 	while (p16 < (uint16_t*)((char*)inbuf + inst_size)) {
 		if (*p16 == 0x0000)
 			*p16 = 0xFFFF;
@@ -89,18 +92,28 @@ int main(int argc, const char* argv[]) {
 		if (   fputc(((char*)p16 - (char*)inbuf) & 0x00FF, fout) == EOF
 			|| fputc((((char*)p16 - (char*)inbuf) & 0xFF00) >> 8, fout) == EOF)
 			error("can't write the escape table to installer file");
-		escape_table_size++;
+		escape_table_entries++;
 		p16++;
 	}
+    if (escape_table_entries & 1) { //dummy entry so the table size is a multiple of 4
+        if (   fputc(0xFC, fout) == EOF
+			|| fputc(0xFF, fout) == EOF)
+			error("can't write the escape table to installer file");
+        escape_table_entries++;
+    }
 
 	// append the escaped installer
 	if (fwrite(inbuf, 1, inst_size, fout) != inst_size)
 		error("can't append escaped installer to output file");
-
+	while (inst_size & 0b11) {
+        if (fwrite("\xFF\xFF\xFF", 1, inst_size & 0b11, fout) != inst_size)
+            error("can't append escaped installer to output file");
+	}
+    
 	// write the table size
 	fseek(fout, 2, SEEK_SET);
-	if (   fputc(escape_table_size & 0x00FF, fout) == EOF
-	    || fputc((escape_table_size & 0xFF00) >> 8, fout) == EOF)
+	if (   fputc(escape_table_entries & 0x00FF, fout) == EOF
+	    || fputc((escape_table_entries & 0xFF00) >> 8, fout) == EOF)
 		error("can't write escape table size to installer file");
 	
 	free(inbuf);
