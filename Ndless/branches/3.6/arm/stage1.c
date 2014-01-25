@@ -101,7 +101,7 @@ int main(void) {
 	}
     if (ut_os_version_index < 2) {
         uint32_t dummyint = *((volatile uint32_t *)(0xDC000028));
-        dummyint++; // unused warning
+        (void)dummyint; // unused warning
     }
 	
     // Reset IRQ flags
@@ -138,7 +138,19 @@ int main(void) {
         while ( ((*((volatile uint32_t *)(0xB0000140)))&0x2) != 0x0 )
 			;
         PATCH_SETW(0xB00001A4, 0x003C1120);
-    }
+    } else {
+		// Reset USB host
+		volatile uint32_t *usbcmd = (volatile uint32_t*)0xB4000140;
+		*usbcmd &= ~1; //Halt
+		*usbcmd |= 2; //Reset
+		//Reset USB device
+		usbcmd = (volatile uint32_t*)0xB0000140;
+		*usbcmd &= ~1; //Halt
+		//Not recommended (if anything is attached), but should work
+		*usbcmd |= 2; //Reset
+		//Reset OTGSC, it's not reset after a soft-reset
+		PATCH_SETW(0xB00001A4, 0x003C1120);
+	}
 	
     if (ut_os_version_index > 1) {
         // Reset touchpad
@@ -167,12 +179,10 @@ int main(void) {
         case 2:
             #include "hrpatches-os-ncascx-3.6.0.h"
 			// required for USB-less installation
-            #include "hrpatches-internal-ram-ncascx-3.6.0.h"
         break;
         case 3:
             #include "hrpatches-os-cascx-3.6.0.h"
 			// required for USB-less installation
-            #include "hrpatches-internal-ram-cascx-3.6.0.h"
         break;
     }
 	
