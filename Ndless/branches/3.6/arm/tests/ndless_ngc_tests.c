@@ -123,10 +123,10 @@ int main(void)
     gui_gc_Font f = gui_gc_getFont(gc);
     assertIntEquals("gui_gc_getStringWidth", gui_gc_getStringWidth(gc, f, str, 0, l), 33);
     assertIntEquals("gui_gc_getCharWidth", gui_gc_getCharWidth(gc, f, str[0]), 11);
-    assertIntEquals("gui_gc_getStringSmallHeight", gui_gc_getStringSmallHeight(gc, f, str, 0, l), 17);
-    assertIntEquals("gui_gc_getCharHeight", gui_gc_getCharHeight(gc, f, str[0]), 17);
-    assertIntEquals("gui_gc_getStringHeight", gui_gc_getStringHeight(gc, f, str, 0, l), 23);
-    assertIntEquals("gui_gc_getFontHeight", gui_gc_getFontHeight(gc, f), 23);
+    assertIntEquals("gui_gc_getStringSmallHeight", gui_gc_getStringSmallHeight(gc, f, str, 0, l), 16);
+    assertIntEquals("gui_gc_getCharHeight", gui_gc_getCharHeight(gc, f, str[0]), 16);
+    assertIntEquals("gui_gc_getStringHeight", gui_gc_getStringHeight(gc, f, str, 0, l), 21);
+    assertIntEquals("gui_gc_getFontHeight", gui_gc_getFontHeight(gc, f), 21);
 
     gui_gc_drawString(gc, "M\0e\0t\0r\0i\0c\0s\0:\0\0", 180, 10, GC_SM_TOP);
     gui_gc_drawString(gc, str, 240, 12, GC_SM_TOP);
