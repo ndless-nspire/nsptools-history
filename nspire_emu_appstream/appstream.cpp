@@ -22,7 +22,7 @@ extern "C" int appstream_init_and_wait(void) {
 
     result = XStxServerManagerStart(serverManagerHandle);
 	if (result != XSTX_RESULT_OK) goto exit_appstream;
-
+	
     result = XStxServerManagerWait(serverManagerHandle);
 
 exit_appstream:

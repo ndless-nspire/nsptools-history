@@ -559,6 +559,7 @@ int main(int largc, char **largv) {
 	argc = largc;
 	argv = largv;
 #ifdef TARGET_APPSTREAM
+	//freopen("C:\\app\\logs\\stdout.txt", "w", stdout);
 	appstream_init_and_wait();
 	return 0;
 #else

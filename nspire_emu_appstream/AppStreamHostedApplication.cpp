@@ -16,6 +16,7 @@
 #define FRAME_POOL_SIZE 10  // frame buffer size
 
 #include "emu.h"
+#include "os-win32.h"
 #include <windows.h>
 #include <string>
 #include <unordered_set>
@@ -306,7 +307,6 @@ XStxResult AppStreamHostedApplicationImp::XStxIServerListenerMessageReceived(
 
 /**
  * Handling keyboard + mouse input
- * F12 quits the server. All other keyboard inputs are delegated to the game.
  * Mouse input is ignored
  */
 XStxResult AppStreamHostedApplicationImp::XStxIInputSinkOnInput(const XStxInputEvent* event)
@@ -317,6 +317,21 @@ XStxResult AppStreamHostedApplicationImp::XStxIInputSinkOnInput(const XStxInputE
     }
     if (event->mType == XSTX_INPUT_EVENT_TYPE_KEYBOARD)
     {
+		// make sure keyboard events aren't sent too fast by Android/iOS virtual keyboards (down/up),
+		// else they won't be taken into account by the TI-Nspire OS
+		static os_frequency_t perffreq;
+		if (!os_frequency_hz(perffreq))
+			os_query_frequency(perffreq);
+		os_time_t interval_end;
+		os_query_time(interval_end);
+		static os_time_t prev;
+		s64 time = os_time_diff(interval_end, prev);
+		if (time <= os_frequency_hz(perffreq) >> 5)
+			Sleep(20);
+		prev = interval_end;
+		// printf("Accepting keyboard input: virtualKey=%d, isKeyDown=%d\n"
+		// 	event->mInfo.mKeyboard.mVirtualKey
+		// 	event->mInfo.mKeyboard.mIsKeyDown);
         // Keyboard input
 		int col, row;
 		if (!gui_vkey_to_row_col(event->mInfo.mKeyboard.mVirtualKey, event->mInfo.mKeyboard.mScanCode, &col, &row, NULL)) {
@@ -350,9 +365,9 @@ XStxResult AppStreamHostedApplicationImp::XStxIVideoSourceSetFrameRate(double ra
 /** start the video source generator */
 XStxResult AppStreamHostedApplicationImp::XStxIVideoSourceStart()
 {        
-    // Kick off the game thread and put a wrapper
+    // Kick off the thread and put a wrapper
     printf("Creating hosted app: width = %d, height = %d\n", mVideoWidth, mVideoHeight);
-		mCalc = new AppStreamCalc();
+	mCalc = new AppStreamCalc();
     mCalcHandle = CreateThread(NULL, 0, &AppStreamCalc::threadProc, mCalc, 0, &theCalcThread);
 		return XSTX_RESULT_OK;
 }

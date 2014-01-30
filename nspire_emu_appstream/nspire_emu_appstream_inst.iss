@@ -3,7 +3,7 @@
 
 #define MyAppName "nspire_emu_appstream"
 #define MyAppVersion "0.1"
-#define MyAppExeName "runall.bat"
+#define MyAppExeName "run_agent.exe"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -27,7 +27,6 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 Source: "nspire_emu.exe"; DestDir: "{app}"; Flags: ignoreversion; Permissions: everyone-readexec
-Source: "runall.bat"; DestDir: "{app}"; Flags: ignoreversion; Permissions: everyone-readexec
 Source: "C:\Users\Olivier\Documents\Developpement\TI\Nspire\nsptools\Ndless\trunk\Ndless-SDK\emu_resources\boot1.img.tns"; DestDir: "{app}"; Flags: ignoreversion; Permissions: everyone-readexec
 Source: "C:\Users\Olivier\Documents\Developpement\TI\Nspire\nsptools\Ndless\trunk\Ndless-SDK\emu_resources\nand.img"; DestDir: "{app}"; Flags: ignoreversion; Permissions: everyone-readexec
 Source: "jre\*"; DestDir: "{app}\jre"; Flags: ignoreversion recursesubdirs; Permissions: everyone-readexec
