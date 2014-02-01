@@ -30,28 +30,28 @@
 #define PATCH_SETZ(A,B,C) memset32((void *)(A), (C), (B)-(A))
 
 static void memset32(uint32_t *p, uint32_t value, size_t num) {
-    num = num/4;
-    while(num--) {
-        *(p++) = value;
-    }
+	num = num/4;
+	while(num--) {
+		*(p++) = value;
+	}
 }
 
 static void write_i2c(uint8_t client, uint8_t addr, uint8_t value) {
-    PATCH_SETW(0x9005006c, 0); //Disable I2C
-    PATCH_SETW(0x90050004, client); //Set target address
-    PATCH_SETW(0x9005006c, 1); //Enable I2C
-    
-    volatile uint32_t *status = (uint32_t*) 0x90050070;
-    
-    PATCH_SETW(0x90050010, addr);
-    while(*status & 1); //Wait until transmitted
-    PATCH_SETW(0x90050010, value);
-    while(*status & 1); //Wait until transmitted
+	PATCH_SETW(0x9005006c, 0); //Disable I2C
+	PATCH_SETW(0x90050004, client); //Set target address
+	PATCH_SETW(0x9005006c, 1); //Enable I2C
+		
+	volatile uint32_t *status = (uint32_t*) 0x90050070;
+	
+	PATCH_SETW(0x90050010, addr);
+	while(*status & 1); //Wait until transmitted
+	PATCH_SETW(0x90050010, value);
+	while(*status & 1); //Wait until transmitted
 }
 
 static void write_touchpad(uint16_t port, uint8_t value) {
-    write_i2c(0x20, 0xFF, port >> 8);
-    write_i2c(0x20, port & 0xFF, value);
+	write_i2c(0x20, 0xFF, port >> 8);
+	write_i2c(0x20, port & 0xFF, value);
 }
 
 // OS-specific
@@ -84,13 +84,13 @@ int main(void) {
 	ut_read_os_version_index();
 	ints_setup_handlers();
 	ut_disable_watchdog();
-    
-    // Disable all interrupts
-    if (ut_os_version_index < 2) {
-        PATCH_SETW(0xDC00000C, 0xFFFFFFFF);
-    } else {
-		PATCH_SETW(0xDC000014, 0xFFFFFFFF);
-    }
+		
+	// Disable all interrupts
+	if (ut_os_version_index < 2) {
+			PATCH_SETW(0xDC00000C, 0xFFFFFFFF);
+	} else {
+	PATCH_SETW(0xDC000014, 0xFFFFFFFF);
+	}
 	if (ut_os_version_index < 2) {
 		uint32_t RX;
 		__asm volatile (
@@ -99,98 +99,83 @@ int main(void) {
 			"msr cpsr_c, %0    \n"
 		: "=r" (RX));
 	}
-    if (ut_os_version_index < 2) {
-        uint32_t dummyint = *((volatile uint32_t *)(0xDC000028));
-        (void)dummyint; // unused warning
-    }
-	
-    // Reset IRQ flags
-    if (ut_os_version_index > 1) {
-        PATCH_SETW(0x90010008, 0);
-        PATCH_SETW(0x90010008, 0);
-        PATCH_SETW(0x9001000C, 1);
-        PATCH_SETW(0x90010028, 0);
-        PATCH_SETW(0x9001002C, 1);
-        PATCH_SETW(0x900C0008, 0);
-        PATCH_SETW(0x900C000C, 1);
-        PATCH_SETW(0x900C0028, 0);
-        PATCH_SETW(0x900C002C, 1);
-        PATCH_SETW(0x900D0008, 0);
-        PATCH_SETW(0x900D000C, 1);
-        PATCH_SETW(0x900D0028, 0);
-        PATCH_SETW(0x900D002c, 1);
-    }
-    
-    //Reset USB
-    if (ut_os_version_index < 2) {
-        volatile int z;
-        PATCH_SETW(0x900B0018, 0x00000000);
-        for (z = 0; z <= 0x10000; z++)
-			;
-        uint32_t usb_cmd = *((uint32_t *)(0xB0000140));
-        usb_cmd &= ~(1);
-        PATCH_SETW(0xB0000140, usb_cmd);
-        for (z = 0; z <= 0x10000; z++)
-			;
-        usb_cmd = *((uint32_t *)(0xB0000140));
-        usb_cmd |= 0x2;
-        PATCH_SETW(0xB0000140, usb_cmd);
-        while ( ((*((volatile uint32_t *)(0xB0000140)))&0x2) != 0x0 )
-			;
-        PATCH_SETW(0xB00001A4, 0x003C1120);
-    } else {
-		// Reset USB host
-		volatile uint32_t *usbcmd = (volatile uint32_t*)0xB4000140;
-		*usbcmd &= ~1; //Halt
-		*usbcmd |= 2; //Reset
-		//Reset USB device
-		usbcmd = (volatile uint32_t*)0xB0000140;
-		*usbcmd &= ~1; //Halt
-		//Not recommended (if anything is attached), but should work
-		*usbcmd |= 2; //Reset
-		//Reset OTGSC, it's not reset after a soft-reset
-		PATCH_SETW(0xB00001A4, 0x003C1120);
+	if (ut_os_version_index < 2) {
+			uint32_t dummyint = *((volatile uint32_t *)(0xDC000028));
+			(void)dummyint; // unused warning
 	}
 	
-    if (ut_os_version_index > 1) {
-        // Reset touchpad
-        write_touchpad(0x0004, 0x01);
-        // Disable I2C IRQ
-        PATCH_SETW(0x90050030, 0);
-        // Disable I2C
-        PATCH_SETW(0x9005006C, 0);
-    }
-    // Disable RTC IRQ
-    PATCH_SETW(0x9009000C, 1);
+	// Reset IRQ flags
+	if (ut_os_version_index > 1) {
+			PATCH_SETW(0x90010008, 0);
+			PATCH_SETW(0x90010008, 0);
+			PATCH_SETW(0x9001000C, 1);
+			PATCH_SETW(0x90010028, 0);
+			PATCH_SETW(0x9001002C, 1);
+			PATCH_SETW(0x900C0008, 0);
+			PATCH_SETW(0x900C000C, 1);
+			PATCH_SETW(0x900C0028, 0);
+			PATCH_SETW(0x900C002C, 1);
+			PATCH_SETW(0x900D0008, 0);
+			PATCH_SETW(0x900D000C, 1);
+			PATCH_SETW(0x900D0028, 0);
+			PATCH_SETW(0x900D002c, 1);
+	}
+		
+	//Reset USB
+	volatile int z;
+	PATCH_SETW(0x900B0018, 0x00000000);
+	for (z = 0; z <= 0x10000; z++)
+		;
+	uint32_t usb_cmd = *((volatile uint32_t *)(0xB0000140));
+	usb_cmd &= ~1;
+	PATCH_SETW(0xB0000140, usb_cmd);
+	PATCH_SETW(0xB4000140, usb_cmd);
+	for (z = 0; z <= 0x10000; z++)
+		;
+	usb_cmd = *((volatile uint32_t *)(0xB0000140));
+	usb_cmd |= 0x2;
+	PATCH_SETW(0xB0000140, usb_cmd);
+	while ( ((*((volatile uint32_t *)(0xB0000140)))&0x2) != 0x0 )
+			;
+	PATCH_SETW(0xB00001A4, 0x003C1120);
+	
+	if (ut_os_version_index > 1) {
+		// Reset touchpad
+		write_touchpad(0x0004, 0x01);
+		// Disable I2C IRQ
+		PATCH_SETW(0x90050030, 0);
+		// Disable I2C
+		PATCH_SETW(0x9005006C, 0);
+	}
+	// Disable RTC IRQ
+	PATCH_SETW(0x9009000C, 1);
 
-    // Disable keypad and touchpad IRQs
+	// Disable keypad and touchpad IRQs
 	PATCH_SETW(0x900E000C, 0);
-    PATCH_SETW(0x900E0040, 0);
+	PATCH_SETW(0x900E0040, 0);
 
 	// Reset OS global variables to their initial values
 	// Reset internal RAM state, else instable without USB plugged-in
-    switch (ut_os_version_index) {
-        case 0:
-            #include "hrpatches-os-ncas-3.6.0.h"
-        break;
-        case 1:
-            #include "hrpatches-os-cas-3.6.0.h"
-         break;
-        case 2:
-            #include "hrpatches-os-ncascx-3.6.0.h"
-			// required for USB-less installation
-        break;
-        case 3:
-            #include "hrpatches-os-cascx-3.6.0.h"
-			// required for USB-less installation
-        break;
-    }
+	switch (ut_os_version_index) {
+		case 0:
+				#include "hrpatches-os-ncas-3.6.0.h"
+		break;
+		case 1:
+				#include "hrpatches-os-cas-3.6.0.h"
+		 break;
+		case 2:
+				#include "hrpatches-os-ncascx-3.6.0.h"
+		break;
+		case 3:
+				#include "hrpatches-os-cascx-3.6.0.h"
+		break;
+	}
 	
 	// disable the OS monitor thread that would throw a discrepancy error and wipe out the OS
 	// this thread use signature data passed by the boot2 and copied to the first OS variable at the beginning of the BSS
 	// this signature data may have been overwritten (and is always on classic TI-Nspire after opening the Lua installer)
 	// OS-specific
-    if (ut_os_version_index < 2) {
+	if (ut_os_version_index < 2) {
 		static unsigned const os_monitor_thread_addrs[] = {0x10135DF4, 0x10136418};
 		PATCH_SETW(os_monitor_thread_addrs[ut_os_version_index], 0xE12FFF1E); // "bx lr" at the beginning of the thread
 	}
