@@ -119,7 +119,6 @@ void ut_disable_watchdog(void) {
 	*(volatile unsigned*)0x90060C00 = 0; // disable write access to all other watchdog registers
 }
 
-#ifndef _NDLS_LIGHT
 static int scmp(const void *sp1, const void *sp2) {
 	return strcmp(*(char**)sp1, *(char**)sp2);
 }
@@ -190,4 +189,4 @@ int ut_file_recur_each(const char *folder, int (*callback)(const char *path, voi
 	free(filenames);
 	return 0;
 }
-#endif // _NDLS_LIGHT
+

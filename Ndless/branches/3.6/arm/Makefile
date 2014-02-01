@@ -1,10 +1,10 @@
 SUBDIRS := tests
 AS := nspire-as
 GCC := nspire-gcc
-GCCFLAGS := -Os -nostdlib -Wall -W -Wno-strict-aliasing
+GCCFLAGS := -Os -Wall -W -Wno-strict-aliasing
 GCCFLAGS_INIT := $(GCCFLAGS)
 LD := nspire-ld
-LDFLAGS := -nostdlib
+LDFLAGS := 
 OBJCOPY := "$(shell (which arm-elf-objcopy arm-none-eabi-objcopy arm-linux-gnueabi-objcopy | head -1) 2>/dev/null)"
 DISTDIR := ../calcbin
 vpath %.tns $(DISTDIR)
@@ -86,7 +86,7 @@ utils_light.o: utils.c
 	$(GCC) $(GCCFLAGS) -c $< -o $@
 
 ndless_core.elf: $(CORE_OBJS)
-	$(LD) --light-startup $^ -o $@
+	$(LD) --light-startup $(LDFLAGS) $^ -o $@
 
 ndless_resources.tns: ndless_core.elf
 	@mkdir -p $(DISTDIR)

@@ -40,7 +40,7 @@ static void write_i2c(uint8_t client, uint8_t addr, uint8_t value) {
 	PATCH_SETW(0x9005006c, 0); //Disable I2C
 	PATCH_SETW(0x90050004, client); //Set target address
 	PATCH_SETW(0x9005006c, 1); //Enable I2C
-		
+	
 	volatile uint32_t *status = (uint32_t*) 0x90050070;
 	
 	PATCH_SETW(0x90050010, addr);
@@ -54,6 +54,15 @@ static void write_touchpad(uint16_t port, uint8_t value) {
 	write_i2c(0x20, port & 0xFF, value);
 }
 
+static int res_file_recur_cb(const char *path, void *context) {
+	if (!strcmp(strrchr(path, '/') + 1, "ndless_resources.tns")) {
+		strncpy((char*)context, path, 100);
+		if (((char*)context)[99]) return 0;
+		return 1;
+	}
+	return 0;
+}
+
 // OS-specific
 static unsigned const ndless_inst_resident_hook_addrs[] = {0x10012598, 0x1001251C, 0x100123BC, 0x10012370};
 
@@ -65,9 +74,9 @@ HOOK_DEFINE(s1_startup_hook) {
 	ut_read_os_version_index();
 	ints_setup_handlers();
 	struct stat res_stat;
-	const char *res_path = NDLESS_DIR "/ndless_resources.tns";
-	FILE *res_file = fopen(res_path, "rb");
-	if (!res_file) {
+	char res_path[100];
+	FILE *res_file;
+	if (!ut_file_recur_each("/documents", res_file_recur_cb, res_path) || !(res_file = fopen(res_path, "rb"))) {
 		typedef int (*disp_str_t) (char*, int*, int);
 		int x = 0;
 		((disp_str_t)disp_str_addrs[ut_os_version_index])("Oops, you've forgotten to transfer 'ndless_resources'Ndless won't be installed.", &x, 10);
