@@ -20,11 +20,16 @@ function getVersion()
     local has_cas = caserr == 930
     
     -- is computer?
-    local hw = platform.hw()
+	local hw
+	if not platform.hw then
+		hw = 0
+	else
+		hw = platform.hw()
+	end
     local computer = hw == 7
     
     -- is tablet?
-    local tablet = platform.isTabletModeRendering()
+    local tablet = platform.isTabletModeRendering and platform.isTabletModeRendering()
     
     -- So what's the device
     local device
