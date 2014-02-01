@@ -215,6 +215,7 @@
 	MakeName	(0X100C0FF8,	"get_battery_door_detection_mode");
 	MakeName	(0X100C1A58,	"set_task_name");
 	MakeName	(0X100C5B40,	"publish_send_immediate");
+	MakeName	(0X100CC030,	"disp_str");
 	MakeName	(0X100D12A8,	"ti_pm_register_dma");
 	MakeName	(0X100D1980,	"reboot");
 	MakeName	(0X100EAAF0,	"j_string_free_1");
@@ -227,6 +228,7 @@
 	MakeName	(0X10110BFC,	"get_res_string_sys");
 	MakeName	(0X10110C0C,	"read_unaligned");
 	MakeName	(0X10125278,	"lua_string_usub");
+	MakeName	(0X10125F4C,	"luaL_openlibs");
 	MakeName	(0X1012DDB8,	"lua_d2editor_newRichText");
 	MakeName	(0X1012E918,	"lua_clipboard_getText");
 	MakeName	(0X10131D48,	"lua_platform_isDeviceModeRendering");
@@ -875,6 +877,7 @@
 	MakeName	(0X10802C1C,	"luaC_separateudata");
 	MakeName	(0X10803AE8,	"luaopen_math");
 	MakeName	(0X1080463C,	"luaM_realloc_");
+	MakeName	(0X10804764,	"load_lua_libs");
 	MakeName	(0X10804B4C,	"luaO_rawequalObj");
 	MakeName	(0X10804BD4,	"luaO_chunkid");
 	MakeName	(0X10807C9C,	"preinit_state");

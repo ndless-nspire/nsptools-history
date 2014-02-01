@@ -212,6 +212,7 @@
 	MakeName	(0X100C0D10,	"get_battery_door_detection_mode");
 	MakeName	(0X100C1770,	"set_task_name");
 	MakeName	(0X100C5858,	"publish_send_immediate");
+	MakeName	(0X100CBD48,	"disp_str");
 	MakeName	(0X100D0FC0,	"ti_pm_register_dma");
 	MakeName	(0X100D1698,	"reboot");
 	MakeName	(0X100EA7D0,	"j_string_free_1");
