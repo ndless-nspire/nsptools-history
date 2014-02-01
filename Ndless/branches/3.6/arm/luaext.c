@@ -48,7 +48,7 @@ static int require(lua_State *L) {
 	sprintf(modulepath, "%s.luax.tns", name);
 	if (!ut_file_recur_each(get_documents_dir(), require_file_recur_cb, modulepath)) {
 require_not_found:
-		luaL_error(L, "modulee " LUA_QS " not found", name);
+		luaL_error(L, "module " LUA_QS " not found", name);
 		return 1;
 	}
   return 1;
@@ -56,6 +56,10 @@ require_not_found:
 
 static const luaL_reg baselib[] = {
 	{"nrequire", require},
+	{NULL, NULL}
+};
+
+static const luaL_reg ndlesslib[] = { // no function at the moment. At least let Lua know Nldess is installed.
 	{NULL, NULL}
 };
 
@@ -71,6 +75,7 @@ void lua_install_hooks(void) {
 	HOOK_INSTALL(interp_startup_addrs[ut_os_version_index], lua_interp_startup);
 	HOOK_INSTALL(interp_shutdown_addrs[ut_os_version_index], lua_interp_shutdown);
 	nl_relocdata((unsigned*)baselib, (sizeof(baselib) / sizeof(unsigned*)) - 2);
+	//nl_relocdata((unsigned*)ndlesslib, (sizeof(ndlesslib) / sizeof(unsigned*)) - 2);
 }
 
 static lua_State *luastate = NULL;
@@ -83,6 +88,7 @@ HOOK_DEFINE(lua_interp_startup) {
 	// reg number: OS-specific
 	luastate = (lua_State*)HOOK_SAVED_REGS(lua_interp_startup)[6];
 	luaL_register(luastate, "_G", baselib);
+	luaL_register(luastate, "ndless", ndlesslib);
 	HOOK_RESTORE_RETURN(lua_interp_startup);
 }
 

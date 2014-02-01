@@ -63,7 +63,11 @@ function on.resize()
 		elseif device == "CX" and has_cas then
 			s = s .. s_cascx
 		end
-		toolpalette.register{{s}}
+		if not ndless then
+			toolpalette.register{{s}}
+		else
+			-- TODO: error message when Ndless is already installed
+		end
 	else
 		-- TODO: error message for v3.1
 	end
