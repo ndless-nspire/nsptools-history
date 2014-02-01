@@ -40,6 +40,10 @@ BOOL ins_loaded_by_3rd_party_loader(void) {
 
 static unsigned const end_of_init_addrs[] = {0x1001264C, 0x100125D0, 0x10012470, 0x10012424};
 
+void ins_uninstall(void) {
+	ut_calc_reboot();
+}
+
 /* argv[0]=
  *         NULL if loaded by Ndless's stage1 at installation or OS startup
  *         "L" if loaded by a third party loader such as nLaunchy
@@ -83,7 +87,7 @@ int main(int __attribute__((unused)) argc, char* argv[]) {
 	if (installed) { // ndless_resources.tns run: uninstall
 		if (show_msgbox_2b("Ndless", "Do you really want to uninstall Ndless r" STRINGIFY(NDLESS_REVISION) "?\nThe device will reboot.", "Yes", "No") == 2)
 			return 0;
-		ut_calc_reboot();
+		ins_uninstall();
 	}
 	// continue OS startup
 	return 0;

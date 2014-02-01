@@ -54,12 +54,18 @@ require_not_found:
   return 1;
 }
 
+static int ndless_uninstall(lua_State *L) {
+	ins_uninstall();
+	return 1;
+}
+
 static const luaL_reg baselib[] = {
 	{"nrequire", require},
 	{NULL, NULL}
 };
 
-static const luaL_reg ndlesslib[] = { // no function at the moment. At least let Lua know Nldess is installed.
+static const luaL_reg ndlesslib[] = {
+	{"uninst", ndless_uninstall},
 	{NULL, NULL}
 };
 
@@ -75,7 +81,7 @@ void lua_install_hooks(void) {
 	HOOK_INSTALL(interp_startup_addrs[ut_os_version_index], lua_interp_startup);
 	HOOK_INSTALL(interp_shutdown_addrs[ut_os_version_index], lua_interp_shutdown);
 	nl_relocdata((unsigned*)baselib, (sizeof(baselib) / sizeof(unsigned*)) - 2);
-	//nl_relocdata((unsigned*)ndlesslib, (sizeof(ndlesslib) / sizeof(unsigned*)) - 2);
+	nl_relocdata((unsigned*)ndlesslib, (sizeof(ndlesslib) / sizeof(unsigned*)) - 2);
 }
 
 static lua_State *luastate = NULL;

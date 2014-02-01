@@ -49,6 +49,7 @@ extern unsigned emu_sysc_table[];
 
 /* install.c */
 BOOL ins_loaded_by_3rd_party_loader(void);
+void ins_uninstall(void);
 void ins_install_successmsg_hook(void);
 
 /* ints.c */

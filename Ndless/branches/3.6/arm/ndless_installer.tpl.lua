@@ -71,7 +71,8 @@ function on.resize()
 		if not ndless then
 			toolpalette.register{{s}}
 		else
-			-- TODO: error message when Ndless is already installed
+			-- TODO: confirmation popup
+			ndless.uninst()
 		end
 	else
 		-- TODO: error message for v3.1
