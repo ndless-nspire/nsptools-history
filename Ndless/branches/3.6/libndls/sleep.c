@@ -32,7 +32,7 @@ void sleep(unsigned millisec) {
 		*divider = 31;
 		*timer = millisec;
 		while (*timer > 0)
-	  	idle();
+			idle();
 	   *control = orig_control;
 		*divider = orig_divider;
 		*timer = 32;

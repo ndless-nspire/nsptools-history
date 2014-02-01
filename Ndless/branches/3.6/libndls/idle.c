@@ -25,7 +25,7 @@ void idle(void) {
 	volatile unsigned *intmask = IO(0xDC000008, 0xDC000010);
 	unsigned orig_mask = intmask[0];
 	intmask[1] = ~(1 << 19); // Disable all IRQs except timer
-  __asm volatile("mcr p15, 0, %0, c7, c0, 4" : : "r"(0) ); // Wait for an interrupt to occur
+	__asm volatile("mcr p15, 0, %0, c7, c0, 4" : : "r"(0) ); // Wait for an interrupt to occur
 	*IO(0x900A0020, 0x900D000C) = 1; // Acknowledge timer interrupt at source
 	if (is_classic) *(volatile unsigned*)0xDC000028; // Make interrupt controller stop asserting nIRQ if there aren't any active IRQs left
 	intmask[1] = 0xFFFFFFFF; // Disable all IRQs

@@ -101,6 +101,7 @@ void ins_install_successmsg_hook(void) {
 // chained after the startup programs execution
 HOOK_DEFINE(ins_successsuccessmsg_hook) {
     static uint32_t i = 6;
+	// OS-specific: reg number
 	if (HOOK_SAVED_REGS(ins_successsuccessmsg_hook)[2] == 0x171) {
 		Gc gc = (Gc)HOOK_SAVED_REGS(ins_successsuccessmsg_hook)[0];
         gui_gc_setColor(gc, has_colors ? 0x32cd32 : 0x505050);

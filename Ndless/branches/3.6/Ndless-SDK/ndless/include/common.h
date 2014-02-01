@@ -470,6 +470,7 @@ typedef struct {
 	extern unsigned __##hookname##_end_instrs[4]; /* orig_instrs1; orig_instrs2; ... */ \
 	*(unsigned*)(address) = __##hookname##_end_instrs[0]; \
 	*(unsigned*)((address) + 4) = __##hookname##_end_instrs[1]; \
+	clear_cache(); \
 } while (0)
 
 

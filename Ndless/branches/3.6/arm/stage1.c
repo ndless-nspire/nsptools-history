@@ -57,6 +57,9 @@ static void write_touchpad(uint16_t port, uint8_t value) {
 // OS-specific
 static unsigned const ndless_inst_resident_hook_addrs[] = {0x10012598, 0x1001251C, 0x100123BC, 0x10012370};
 
+// OS-specific
+static unsigned const disp_str_addrs[] = {0x100CC78C, 0x100CCA44, 0x100CBD48, 0x100CC030};
+
 // Install the resident part
 HOOK_DEFINE(s1_startup_hook) {
 	ut_read_os_version_index();
@@ -65,7 +68,12 @@ HOOK_DEFINE(s1_startup_hook) {
 	const char *res_path = NDLESS_DIR "/ndless_resources.tns";
 	FILE *res_file = fopen(res_path, "rb");
 	if (!res_file) {
-		//show_msgbox("Ndless", "You have forgotten to transfer 'ndless_resources'. Ndless won't be installed.");
+		typedef int (*disp_str_t) (char*, int*, int);
+		int x = 0;
+		((disp_str_t)disp_str_addrs[ut_os_version_index])("Oops, you've forgotten to transfer 'ndless_resources'Ndless won't be installed.", &x, 10);
+		volatile int i;
+		for (i = 0; i < 100000000; i++) // libndls's sleep() requires is_classic, not available here
+			;
 		goto s1_startup_hook_return;
 	}
 	stat(res_path, &res_stat);
@@ -76,6 +84,7 @@ HOOK_DEFINE(s1_startup_hook) {
 	clear_cache();
 	((void (*)(int argc, void* argv))(char*)core + sizeof(PRGMSIG))(1, &res_params); // Run the core installation
 s1_startup_hook_return:
+	HOOK_UNINSTALL(ndless_inst_resident_hook_addrs[ut_os_version_index], s1_startup_hook);
 	HOOK_RESTORE_RETURN(s1_startup_hook);
 }
 
