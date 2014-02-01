@@ -15,12 +15,14 @@
  *
  * The Initial Developer of the Original Code is Olivier ARMAND
  * <olivier.calc@gmail.com>.
- * Portions created by the Initial Developer are Copyright (C) 2012
+ * Portions created by the Initial Developer are Copyright (C) 2012-2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): 
 --]]
 
-require "ndless_tests"
-
-tests.run("run")
+if nrequire then
+	nrequire "ndless_tests"
+	
+	tests.run("run")
+end

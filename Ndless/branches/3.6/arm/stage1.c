@@ -123,7 +123,7 @@ int main(void) {
 		
 	//Reset USB
 	volatile int z;
-	PATCH_SETW(0x900B0018, 0x00000000);
+	PATCH_SETW(0x900B0018, *(volatile uint32_t*)0x900B0018 & 0b11111111111111111111111110011111);
 	for (z = 0; z <= 0x10000; z++)
 		;
 	uint32_t usb_cmd = *((volatile uint32_t *)(0xB0000140));

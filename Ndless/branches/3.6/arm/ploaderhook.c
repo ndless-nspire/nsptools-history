@@ -20,7 +20,7 @@
  *
  * Contributor(s):
  *                 Geoffrey ANNEHEIM <geoffrey.anneheim@gmail.com>
- *                 Daniel TANG <dt.tangr@gmail.com>>
+ *                 Daniel TANG <dt.tangr@gmail.com>
  ****************************************************************************/
 
 #include <os.h>
@@ -90,10 +90,6 @@ static int ndless_load(char *docpath, void **base, size_t *size, int (**entry_ad
 int ld_exec(const char *path, void **resident_ptr) {
 	return ld_exec_with_args(path, 0, NULL, resident_ptr);
 }
-
-struct resident_ctx {
-	void *prgm_base;
-};
 
 // Run a program. Returns 0xDEAD if can't run it. Else returns the program return code.
 // If resident_ptr isn't NULL, the program's memory block isn't freed and is stored in resident_ptr. It may be freed later with ld_free(). 
@@ -208,7 +204,7 @@ ld_exec_with_args_quit:
 	wait_no_key_pressed(); // let the user release the key used to exit the program, to avoid being read by the OS
 	TCT_Local_Control_Interrupts(intmask);
 	if (ret != 0xDEAD && resident_ptr) {
-		((struct resident_ctx*)resident_ptr)->prgm_base = base;
+		*resident_ptr = base;
 		return ret;
 	}
 	if (is_current_prgm_resident) // required by the program itself
@@ -223,7 +219,7 @@ ld_exec_with_args_quit:
 
 // To free the program's memory block when run with ld_exec(non null resident_ptr)
 void ld_free(void *resident_ptr) {
-	free(((struct resident_ctx*)resident_ptr)->prgm_base);
+	free(resident_ptr);
 }
 
 // When opening a document

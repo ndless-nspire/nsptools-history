@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Olivier ARMAND
  * <olivier.calc@gmail.com>.
- * Portions created by the Initial Developer are Copyright (C) 2012
+ * Portions created by the Initial Developer are Copyright (C) 2012-2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): 
@@ -58,8 +58,7 @@ static int run(lua_State *L) {
 	assertRuns("lua_pushinteger", lua_pushstring(L, "3"));
 	assertRuns("lua_pushinteger", lua_pushstring(L, "3"));
 	assertTrue("lua_equal", lua_equal(L, -1, -2));
-	bkpt();
-	assertUIntEquals("lua_tonumber", 3, lua_tonumber(L, -1));
+	assertUIntEquals("lua_tonumber", 3, lua_tonumber(L, -1)); // fails because double format different than the OS's?
 	assertUIntEquals("lua_tointeger", 3, lua_tointeger(L, -1));
 	assertNonZero("lua_gc", lua_gc(L, LUA_GCCOUNT, 0));
 	i = lua_gettop(L);
@@ -79,7 +78,6 @@ static const luaL_reg lualib[] = {
 int main(void) {
 	lua_State *L = nl_lua_getstate();
 	if (!L) return 0; // not being called as Lua module
-	nl_relocdata((unsigned*)lualib, (sizeof(lualib) / sizeof(unsigned*)) - 2);
 	luaL_register(L, "tests", lualib);
 	return 0;
 }

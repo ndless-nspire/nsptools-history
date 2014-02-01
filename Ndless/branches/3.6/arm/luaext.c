@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Olivier ARMAND
  * <olivier.calc@gmail.com>.
- * Portions created by the Initial Developer are Copyright (C) 2012
+ * Portions created by the Initial Developer are Copyright (C) 2012-2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): 
@@ -24,7 +24,7 @@
 #include "ndless.h"
 #include <lauxlib.h>
 
-// array of modules's memory blocks.
+// array of modules's memory blocks
 #define LUAEXT_MAX_MODULES 30
 static void *loaded[LUAEXT_MAX_MODULES];
 static unsigned loaded_next_index = 0;
@@ -45,33 +45,31 @@ static int require(lua_State *L) {
 		luaL_error(L, "cannot load module " LUA_QS ": too many modules loaded", name);
 		return 1;
 	}
-  sprintf(modulepath, "%s.luax.tns", name);
+	sprintf(modulepath, "%s.luax.tns", name);
 	if (!ut_file_recur_each(get_documents_dir(), require_file_recur_cb, modulepath)) {
 require_not_found:
-		luaL_error(L, "module " LUA_QS " not found", name);
+		luaL_error(L, "modulee " LUA_QS " not found", name);
 		return 1;
 	}
   return 1;
 }
 
 static const luaL_reg baselib[] = {
-	{"require", require},
+	{"nrequire", require},
 	{NULL, NULL}
 };
 
 // At the end of luaL_openlibs
-// Not up-to-date for 3.6
 // OS-specific
-static unsigned const interp_startup_addrs[] = {0x101003CC, 0x101009F0, 0x100FFEE0, 0x1010052C, 0x100FC700, 0x100FCD4C};
+static unsigned const interp_startup_addrs[] = {0x10125F30, 0x10126558, 0x10125974, 0x10125FCC};
 
 // At the beginning of lua_close
-// Not up-to-date for 3.6
 // OS-specific
-static unsigned const interp_shutdown_addrs[] = {0x106D14B0, 0x106B59A4, 0x106B249C, 0x106B2C38, 0x106AA5B4, 0x106AAD50};
+static unsigned const interp_shutdown_addrs[] = {0x10825B10, 0x1080A35C, 0x108072FC, 0x10807DB8};
 
 void lua_install_hooks(void) {
-	//HOOK_INSTALL(interp_startup_addrs[ut_os_version_index], lua_interp_startup);
-	//HOOK_INSTALL(interp_shutdown_addrs[ut_os_version_index], lua_interp_shutdown);
+	HOOK_INSTALL(interp_startup_addrs[ut_os_version_index], lua_interp_startup);
+	HOOK_INSTALL(interp_shutdown_addrs[ut_os_version_index], lua_interp_shutdown);
 	nl_relocdata((unsigned*)baselib, (sizeof(baselib) / sizeof(unsigned*)) - 2);
 }
 
@@ -82,7 +80,8 @@ lua_State *luaext_getstate(void) {
 }
 
 HOOK_DEFINE(lua_interp_startup) {
-	luastate = (lua_State*)HOOK_SAVED_REGS(lua_interp_startup)[4];
+	// reg number: OS-specific
+	luastate = (lua_State*)HOOK_SAVED_REGS(lua_interp_startup)[6];
 	luaL_register(luastate, "_G", baselib);
 	HOOK_RESTORE_RETURN(lua_interp_startup);
 }
