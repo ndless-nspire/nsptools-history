@@ -7,7 +7,7 @@
 --
 -- The Initial Developer of the Original Code is Jim Bauwens.
 
-platform.apiLevel = "2.2"
+platform.apiLevel = "1.0"
 
 function getVersion()
     local version

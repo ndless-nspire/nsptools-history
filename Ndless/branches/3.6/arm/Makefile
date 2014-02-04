@@ -38,6 +38,11 @@ syscalls_light_thumb.o: syscalls.c
 	$(GCC) $(GCCFLAGS) -c $< -o $@
 utils_light_thumb.o: utils.c
 	$(GCC) $(GCCFLAGS) -c $< -o $@
+# Build some libndls functions used by stage1 that depends on syscalls (the SWI number is different in light mode)
+file_each_light_thumb.o: ../libndls/file_each.c
+	$(GCC) $(GCCFLAGS) -c $< -o $@
+locate_light_thumb.o: ../libndls/locate.c
+	$(GCC) $(GCCFLAGS) -c $< -o $@
 
 # Explicit dependencies strangely required for the target to avoid being rebuilt when not really needed
 stage0.o: stage0.S
@@ -51,7 +56,7 @@ ndless_installer.elf: GCCFLAGS+= -D _NDLS_LIGHT -D STAGE1
 SYSCALLS_OBJS_LIGHT:=syscalls-light_ncas-3.6.0.o syscalls-light_cas-3.6.0.o syscalls-light_ncascx-3.6.0.o syscalls-light_cascx-3.6.0.o
 SYSCALLS_OBJS:=syscalls_ncas-3.6.0.o syscalls_cas-3.6.0.o syscalls_ncascx-3.6.0.o syscalls_cascx-3.6.0.o
 
-ndless_installer.elf: stage1.o ints_light_thumb.o syscalls_light_thumb.o utils_light_thumb.o $(SYSCALLS_OBJS_LIGHT)
+ndless_installer.elf: stage1.o ints_light_thumb.o syscalls_light_thumb.o utils_light_thumb.o locate_light_thumb.o file_each_light_thumb.o $(SYSCALLS_OBJS_LIGHT)
 	$(LD) --light-startup-no-header $(LDFLAGS) $^ -o $@
 
 ndless_installer.bin: ndless_installer.elf
@@ -75,15 +80,6 @@ ndless_installer.tns: ndless_installer.lua
 
 CORE_OBJS := install.o ploaderhook.o bflt.o ints.o syscalls.o utils.o emu.o luaext.o $(SYSCALLS_OBJS)
 RES_OBJS := $(CORE_OBJS)
-
-# Build with the light switch (temporarily added to $GCCFLAGS)
-# (no thumb mode because HOOK_() isn't compatible with this mode)
-ints_light.o: ints.c
-	$(GCC) $(GCCFLAGS) -c $< -o $@
-syscalls_light.o: syscalls.c
-	$(GCC) $(GCCFLAGS) -c $< -o $@
-utils_light.o: utils.c
-	$(GCC) $(GCCFLAGS) -c $< -o $@
 
 ndless_core.elf: $(CORE_OBJS)
 	$(LD) --light-startup $(LDFLAGS) $^ -o $@

@@ -27,14 +27,14 @@
 #include "ndless.h"
 #include "bflt.h"
 
-struct assoc_file_recur_cb_ctx {
+struct assoc_file_each_cb_ctx {
 	const char *prgm_name;
 	char *prgm_path;
 	BOOL *isassoc;
 };
 
-int assoc_file_recur_cb(const char *path, void *context) {
-	struct assoc_file_recur_cb_ctx *ctx = context;
+int assoc_file_each_cb(const char *path, void *context) {
+	struct assoc_file_each_cb_ctx *ctx = context;
 	if (!strcmp(ctx->prgm_name, strrchr(path, '/') + 1)) {
 		strncpy(ctx->prgm_path, path, FILENAME_MAX - 1);
 		*ctx->isassoc = TRUE;
@@ -130,8 +130,8 @@ int ld_exec_with_args(const char *path, int argsn, char *args[], void **resident
 			char prgm_name[FILENAME_MAX + 4];
 			strcpy(prgm_name, prgm_name_noext);
 			strcat(prgm_name, ".tns");
-			struct assoc_file_recur_cb_ctx context = {prgm_name, prgm_path, &isassoc};
-			ut_file_recur_each("/", assoc_file_recur_cb, &context);
+			struct assoc_file_each_cb_ctx context = {prgm_name, prgm_path, &isassoc};
+			file_each("/", assoc_file_each_cb, &context);
 		}
 		cfg_close();
 	}
@@ -237,7 +237,7 @@ HOOK_DEFINE(plh_hook) {
 	}
 }
 
-static int startup_file_recur_cb(const char *path, __attribute__((unused)) void *context) {
+static int startup_file_each_cb(const char *path, __attribute__((unused)) void *context) {
 	ld_exec(path, NULL);
 	return 0;
 }
@@ -249,7 +249,7 @@ BOOL plh_noscrredraw = FALSE;
 HOOK_DEFINE(plh_startup_hook) {
 	if (!isKeyPressed(KEY_NSPIRE_ESC)) {
 		plh_isstartup = TRUE;
-		ut_file_recur_each(NDLESS_DIR "/startup", startup_file_recur_cb, NULL);
+		file_each(NDLESS_DIR "/startup", startup_file_each_cb, NULL);
 		plh_isstartup = FALSE;
 	}
 	ins_install_successmsg_hook();

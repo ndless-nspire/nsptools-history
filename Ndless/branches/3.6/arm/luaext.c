@@ -30,7 +30,7 @@ static void *loaded[LUAEXT_MAX_MODULES];
 static unsigned loaded_next_index = 0;
 
 
-static int require_file_recur_cb(const char *path, void *context) {
+static int require_file_each_cb(const char *path, void *context) {
 	if (strcmp(strrchr(path, '/') + 1, (char*)context) || ld_exec(path, loaded + loaded_next_index))
 		return 0;
  	loaded_next_index++; // found and loaded
@@ -46,7 +46,7 @@ static int require(lua_State *L) {
 		return 1;
 	}
 	sprintf(modulepath, "%s.luax.tns", name);
-	if (!ut_file_recur_each(get_documents_dir(), require_file_recur_cb, modulepath)) {
+	if (!file_each(get_documents_dir(), require_file_each_cb, modulepath)) {
 require_not_found:
 		luaL_error(L, "module " LUA_QS " not found", name);
 		return 1;
