@@ -79,9 +79,10 @@ int main(int argc, char *argv[]) {
 		return 0xBEEF;
 	}
 	else if (argc != 2)
-		puts("Make sure to use ndless.cfg from the tests/ directory.");
+		puts("Make sure to use ndless.cfg from the tests/ directory. test argv1 will be skipped.");
 	assertStrEquals("argv0", "ndless_tests.test.tns", strrchr(argv[0], '/') + 1);
-	assertStrEquals("argv1", "ndless_tests.test.tns", strrchr(argv[1], '/') + 1); // file association (run with ourself)
+	if (argc == 2)
+		assertStrEquals("argv1", "ndless_tests.test.tns", strrchr(argv[1], '/') + 1); // file association (run with ourself)
 	assertIntEquals("enable_relative_paths", 0, enable_relative_paths(argv));
 	
 	ret = sprintf(buf, "%i%i%i", 1, 2, 3);

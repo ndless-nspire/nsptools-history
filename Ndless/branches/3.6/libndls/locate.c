@@ -47,7 +47,8 @@ int locate(const char *filename, char *dst_path, size_t dst_path_size) {
 	ctx.filename = filename;
 	ctx.dst_path = dst_path;
 	ctx.dst_path_size = dst_path_size;
-	if (!file_each("/documents", file_each_cb, &ctx))
+	if (file_each("/documents", file_each_cb, &ctx)) {
 		return 0;
+	}
 	return 1;
 }

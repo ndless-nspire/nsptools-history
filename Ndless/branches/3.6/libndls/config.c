@@ -119,10 +119,15 @@ close_quit:
 	kv_num = kv_index;
 }
 
-#define CFG_FILE (NDLESS_DIR "/ndless.cfg.tns")
+static int cfg_locate_cfg_file(char *dst_path, size_t dst_path_size) {
+	return locate("ndless.cfg.tns", dst_path, dst_path_size);
+}
 
 void cfg_open(void) {
-	cfg_open_file(CFG_FILE);
+	char path[300];
+	if (cfg_locate_cfg_file(path, sizeof(path)))
+		return;
+	cfg_open_file(path);
 }
 
 // Returns the value associated to the key. NULL if not found.
@@ -161,8 +166,13 @@ void cfg_register_fileext_file(const char *filepath, const char *ext, const char
 	fclose(file);
 }
 
+#define DEFAULT_CFG_FILE (NDLESS_DIR "/ndless.cfg.tns")
 
 // ext without leading '.'
 void cfg_register_fileext(const char *ext, const char *prgm) {
-	cfg_register_fileext_file(CFG_FILE, ext, prgm);
+	char path[300];
+	if (cfg_locate_cfg_file(path, sizeof(path)))
+		cfg_register_fileext_file(DEFAULT_CFG_FILE, ext, prgm);
+	else
+		cfg_register_fileext_file(path, ext, prgm);
 }
