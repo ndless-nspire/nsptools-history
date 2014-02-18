@@ -136,4 +136,5 @@ update_version_info:
 	@(svn log --xml --limit 1 | grep "ndless_version.h: update revision" > /dev/null) || \
 	(svnrev=`svn info --xml |grep revision | uniq | sort -r | head -1 | sed 's/\(revision="\)//' | sed 's/">//' | sed 's/[[:blank:]]*//g'`; \
 	 echo "#define NDLESS_REVISION $$((svnrev+1))" > arm/ndless_version.h; \
+	 echo "#ndless_revision=\"$$((svnrev+1))\"" > arm/ndless_version.lua; \
 	 svn commit -m "ndless_version.h: update revision" arm/ndless_version.h)
