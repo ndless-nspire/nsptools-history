@@ -90,34 +90,34 @@ rtests:
 _upload_msys:
 	svn update
 	svnrev=`svn info --xml |grep revision | uniq | sort -r | head -1 | sed 's/\(revision="\)//' | sed 's/">//' | sed 's/[[:blank:]]*//g'`; \
-	mv distsdk-msys-yagarto "ndless-v3.1-beta-r$${svnrev}-sdk-msys-yagarto"; \
+	mv distsdk-msys-yagarto "ndless-v3.6-beta-r$${svnrev}-sdk-msys-yagarto"; \
 	rm -rf ndless-sdk-msys-yagarto.zip ; \
-	7z a ndless-sdk-msys-yagarto.zip "ndless-v3.1-beta-r$${svnrev}-sdk-msys-yagarto" > /dev/null; \
-	curl --cookie upload_cookies.txt -F 'super_id=7' -F 'form_type=file' -F '__FORM_TOKEN=ffa21de629e1d6de857923e4' -F "name=ndless-v3.1-beta-r$${svnrev}-msys-yagarto.zip" -F 'submit=Submit' -F 'file_to_upload=@ndless-msys-yagarto.zip' -F 'sort=' -F 'architecture=' -F 'notes=' http://www.unsads.com/projects/nsptools/admin/general/downloader/files/release/7 > /dev/null; \
+	7z a ndless-sdk-msys-yagarto.zip "ndless-v3.6-beta-r$${svnrev}-sdk-msys-yagarto" > /dev/null; \
+	curl --cookie upload_cookies.txt -F 'super_id=7' -F 'form_type=file' -F '__FORM_TOKEN=ffa21de629e1d6de857923e4' -F "name=ndless-v3.6-beta-r$${svnrev}-msys-yagarto.zip" -F 'submit=Submit' -F 'file_to_upload=@ndless-msys-yagarto.zip' -F 'sort=' -F 'architecture=' -F 'notes=' http://www.unsads.com/projects/nsptools/admin/general/downloader/files/release/7 > /dev/null; \
 	rm -rf ndless-sdk-msys-yagarto.zip ; \
-	rm -rf "ndless-v3.1-beta-r$${svnrev}-sdk-msys-yagarto"; \
+	rm -rf "ndless-v3.6-beta-r$${svnrev}-sdk-msys-yagarto"; \
 	echo "MSYS/YAGARTO addin r$${svnrev} available at http://www.unsads.com/projects/nsptools/downloader/download/release/7"
 
 _upload_sdk:
 	svn update
 	svnrev=`svn info --xml |grep revision | uniq | sort -r | head -1 | sed 's/\(revision="\)//' | sed 's/">//' | sed 's/[[:blank:]]*//g'`; \
-	mv distsdk "ndless-v3.1-beta-r$${svnrev}-sdk"; \
+	mv distsdk "ndless-v3.6-beta-r$${svnrev}-sdk"; \
 	rm -rf ndless-sdk.zip ; \
-	7z a ndless-sdk.zip "ndless-v3.1-beta-r$${svnrev}-sdk" > /dev/null; \
-	curl --cookie upload_cookies.txt -F 'super_id=5' -F 'form_type=file' -F '__FORM_TOKEN=ffa21de629e1d6de857923e4' -F "name=ndless-v3.1-beta-r$${svnrev}-sdk.zip" -F 'submit=Submit' -F 'file_to_upload=@ndless-sdk.zip' -F 'sort=' -F 'architecture=' -F 'notes=' http://www.unsads.com/projects/nsptools/admin/general/downloader/files/release/5 > /dev/null; \
+	7z a ndless-sdk.zip "ndless-v3.6-beta-r$${svnrev}-sdk" > /dev/null; \
+	curl --cookie upload_cookies.txt -F 'super_id=5' -F 'form_type=file' -F '__FORM_TOKEN=ffa21de629e1d6de857923e4' -F "name=ndless-v3.6-beta-r$${svnrev}-sdk.zip" -F 'submit=Submit' -F 'file_to_upload=@ndless-sdk.zip' -F 'sort=' -F 'architecture=' -F 'notes=' http://www.unsads.com/projects/nsptools/admin/general/downloader/files/release/5 > /dev/null; \
 	rm -rf ndless-sdk.zip; \
-	rm -rf "ndless-v3.1-beta-r$${svnrev}-sdk"; \
+	rm -rf "ndless-v3.6-beta-r$${svnrev}-sdk"; \
 	echo "SDK r$${svnrev} available at http://www.unsads.com/projects/nsptools/downloader/download/release/5"
 
 _upload_ndless:
 	svn update
 	svnrev=`svn info --xml |grep revision | uniq | sort -r | head -1 | sed 's/\(revision="\)//' | sed 's/">//' | sed 's/[[:blank:]]*//g'`; \
-	mv dist "ndless-v3.1-beta-r$$svnrev"; \
+	mv dist "ndless-v3.6-beta-r$$svnrev"; \
 	rm -rf ndless.zip ; \
-	7z a ndless.zip "ndless-v3.1-beta-r$$svnrev" > /dev/null; \
-	curl --cookie upload_cookies.txt -F 'super_id=1' -F 'form_type=file' -F '__FORM_TOKEN=ffa21de629e1d6de857923e4' -F "name=ndless-v3.1-beta-r$$svnrev.zip" -F 'submit=Submit' -F 'file_to_upload=@ndless.zip' -F 'sort=' -F 'architecture=' -F 'notes=' http://www.unsads.com/projects/nsptools/admin/general/downloader/files/release/1 > /dev/null; \
+	7z a ndless.zip "ndless-v3.6-beta-r$$svnrev" > /dev/null; \
+	curl --cookie upload_cookies.txt -F 'super_id=1' -F 'form_type=file' -F '__FORM_TOKEN=ffa21de629e1d6de857923e4' -F "name=ndless-v3.6-beta-r$$svnrev.zip" -F 'submit=Submit' -F 'file_to_upload=@ndless.zip' -F 'sort=' -F 'architecture=' -F 'notes=' http://www.unsads.com/projects/nsptools/admin/general/downloader/files/release/1 > /dev/null; \
 	rm -rf ndless.zip; \
-	rm -rf "ndless-v3.1-beta-r$$svnrev"; \
+	rm -rf "ndless-v3.6-beta-r$$svnrev"; \
 	echo "Ndless r$${svnrev} available at http://www.unsads.com/projects/nsptools/downloader/download/release/1"
 
 upload_msys: check_uncommited update_version_info distmsys _upload_msys
