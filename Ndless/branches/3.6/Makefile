@@ -133,8 +133,8 @@ check_uncommited:
 # Increment only if the last update was not an increment
 update_version_info:
 	@svn update
-	@(svn log --xml --limit 1 | grep "ndless_version.h: update revision" > /dev/null) || \
+	@(svn log --xml --limit 1 | grep "ndless_version: update revision" > /dev/null) || \
 	(svnrev=`svn info --xml |grep revision | uniq | sort -r | head -1 | sed 's/\(revision="\)//' | sed 's/">//' | sed 's/[[:blank:]]*//g'`; \
 	 echo "#define NDLESS_REVISION $$((svnrev+1))" > arm/ndless_version.h; \
 	 echo "#ndless_revision=\"$$((svnrev+1))\"" > arm/ndless_version.lua; \
-	 svn commit -m "ndless_version.h: update revision" arm/ndless_version.h)
+	 svn commit -m "ndless_version: update revision" arm/ndless_version.h arm/ndless_version.lua)
