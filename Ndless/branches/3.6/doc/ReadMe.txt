@@ -20,13 +20,16 @@ Developers, here is the Dev Guide:
 Development team
 ================
 
+Co-creator and lead maintainer:
   Olivier Armand aka ExtendeD  -  < olivier dot calc at gmail dot com >
-
-Former team member:
+Co-creator:
   Geoffrey Anneheim aka geogeo - < geoffrey dot anneheim at free dot fr >
 
-Ndless is brought to you by Omnimaga: The Coders Of Tomorrow
-                        www.omnimaga.org
+Contributors:
+Adriweb, bsl, critor, Excale, Goplat, hoffa, Jim Bauwens, Levak, Lionel Debroux,
+lkj, tangrs, Vogtinator, ... and many others.
+
+Ndless is brought to you by www.omnimaga.org and tiplanet.org
 
 We will gladly accept PayPal donations for the hardware expenses that were 
 required for the development of Ndless. You can use the e-mail addresses above 
@@ -44,8 +47,3 @@ distributing of any part of Ndless, with or without modification.
 Some parts are covered by other licenses. Others are in the public domain. These 
 parts are identified by the files LICENSE.txt or LICENSE.html in the sub-
 directory.
-
-Changelog
-=========
-
-See Changes.txt.
