@@ -84,7 +84,7 @@ int main(int __attribute__((unused)) argc, char* argv[]) {
 		return 0;
 	}
 	
-	if (installed) { // ndless_resources.tns run: uninstall
+	if (installed) { // ndless_resources_3.6.tns run: uninstall
 		if (show_msgbox_2b("Ndless", "Do you really want to uninstall Ndless r" STRINGIFY(NDLESS_REVISION) "?\nThe device will reboot.", "Yes", "No") == 2)
 			return 0;
 		ins_uninstall();

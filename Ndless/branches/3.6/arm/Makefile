@@ -11,8 +11,8 @@ vpath %.tns $(DISTDIR)
 
 .DEFAULT_GOAL := all
 
-all: ndless_installer.tns static ndless_resources.tns subdirs
-res: ndless_resources.tns
+all: ndless_installer.tns static ndless_resources_3.6.tns subdirs
+res: ndless_resources_3.6.tns
 
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $<
@@ -84,7 +84,7 @@ RES_OBJS := $(CORE_OBJS)
 ndless_core.elf: $(CORE_OBJS)
 	$(LD) --light-startup $(LDFLAGS) $^ -o $@
 
-ndless_resources.tns: ndless_core.elf
+ndless_resources_3.6.tns: ndless_core.elf
 	@mkdir -p $(DISTDIR)
 	$(OBJCOPY) -O binary $< $(DISTDIR)/$@
 
@@ -95,7 +95,7 @@ subdirs:
 
 clean: cleanbin cleanapp cleansubdirs
 cleanapp:
-	rm -rf $(DISTDIR)/ndless_installer.tns $(DISTDIR)/ndless_resources.tns $(DISTDIR)/ndless.cfg.tns
+	rm -rf $(DISTDIR)/ndless_installer.tns $(DISTDIR)/ndless_resources_3.6.tns $(DISTDIR)/ndless.cfg.tns
 cleaninst:
 	rm -rf ndless_installer.elf $(INST_OBJS)
 cleanres:

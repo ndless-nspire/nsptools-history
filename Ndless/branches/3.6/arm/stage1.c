@@ -68,10 +68,11 @@ HOOK_DEFINE(s1_startup_hook) {
 	struct stat res_stat;
 	char res_path[300];
 	FILE *res_file;
-	if (locate("ndless_resources.tns", res_path, sizeof(res_path)) || !(res_file = fopen(res_path, "rb"))) {
+	if (locate("ndless_resources_3.6.tns", res_path, sizeof(res_path)) || !(res_file = fopen(res_path, "rb"))) {
 		typedef int (*disp_str_t) (char*, int*, int);
 		int x = 0;
 		((disp_str_t)disp_str_addrs[ut_os_version_index])("Oops, you've forgotten to transfer 'ndless_resources'Ndless won't be installed.", &x, 10);
+		((disp_str_t)disp_str_addrs[ut_os_version_index])("Oops, you've forgotten to transfer                   'ndless_resources_3.6'! Ndless won't be installed.", &x, 10);
 		volatile int i;
 		for (i = 0; i < 100000000; i++) // libndls's sleep() requires is_classic, not available here
 			;
