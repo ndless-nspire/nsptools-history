@@ -200,7 +200,6 @@ local credits = {
     "Vogtinator",
     "Critor",
     "Tangrs",
-    "Adriweb",
     "Jim Bauwens"
 }
 

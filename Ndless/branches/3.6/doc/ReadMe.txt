@@ -26,7 +26,7 @@ Co-creator:
   Geoffrey Anneheim aka geogeo - < geoffrey dot anneheim at free dot fr >
 
 Contributors:
-Adriweb, bsl, critor, Excale, Goplat, hoffa, Jim Bauwens, Levak, Lionel Debroux,
+bsl, critor, Excale, Goplat, hoffa, Jim Bauwens, Levak, Lionel Debroux,
 lkj, tangrs, Vogtinator, ... and many others.
 
 Ndless is brought to you by www.omnimaga.org and tiplanet.org
