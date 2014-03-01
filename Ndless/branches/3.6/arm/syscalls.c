@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Olivier ARMAND
  * <olivier.calc@gmail.com>.
- * Portions created by the Initial Developer are Copyright (C) 2010-2013
+ * Portions created by the Initial Developer are Copyright (C) 2010-2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): 
@@ -80,12 +80,19 @@ int sc_nl_exec(const char *prgm_path, int argsn, char *args[]) {
 	return ld_exec_with_args(prgm_path, argsn, args, NULL);
 }
 
+unsigned const sc_syscall_num = __SYSCALLS_LAST;
+
+BOOL sc_nl_hassyscall(unsigned syscall_id) {
+	return syscall_id <= sc_syscall_num && sc_addrs_ptr[syscall_id] != NULL;
+}
+
 /* Extension syscalls table */
 /* Caution, these ones cannot call themselves other syscalls, because of the non-reentrant swi handler */
 unsigned sc_ext_table[] = {
 	(unsigned)sc_nl_osvalue, (unsigned)sc_ext_relocdatab, (unsigned)sc_nl_hwtype, (unsigned)sc_nl_isstartup,
 	(unsigned)luaext_getstate, (unsigned)ld_set_resident, (unsigned)sc_nl_ndless_rev, (unsigned)sc_nl_no_scr_redraw,
 	(unsigned)ins_loaded_by_3rd_party_loader, (unsigned)sc_nl_hwsubtype, (unsigned)sc_nl_exec, (unsigned)sc_nl_osid,
+	(unsigned)sc_nl_hassyscall,
 };
 
 void sc_setup(void) {

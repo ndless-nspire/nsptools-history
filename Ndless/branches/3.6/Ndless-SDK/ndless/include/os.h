@@ -734,6 +734,8 @@ _SYSCALL0(void, nl_no_scr_redraw)
 _SYSCALL0(BOOL, nl_loaded_by_3rd_party_loader)
 _SYSCALL0(unsigned, nl_hwsubtype)
 _SYSCALL3(int, nl_exec, const char * /* prgm_path */, int /* argsn */, char **/* args */)
+_SYSCALL1(unsigned, _nl_hassyscall, unsigned)
+#define nl_hassyscall(s) _nl_hassyscall(CONCAT(e_,s))
 
 /* stdlib replacements not directly available as syscalls */
 extern unsigned __crt0exit;

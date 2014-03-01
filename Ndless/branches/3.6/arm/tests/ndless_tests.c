@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is Olivier ARMAND
  * <olivier.calc@gmail.com>.
- * Portions created by the Initial Developer are Copyright (C) 2010-2013
+ * Portions created by the Initial Developer are Copyright (C) 2010-2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): 
@@ -25,6 +25,8 @@
 #error _TINSPIRE not defined as it should be
 #endif
 
+// For the "nl_hassyscall" test
+#define e_dummy 100000
 #include <os.h>
 #include "ndless_tests.h"
 #include "../ndless.h"
@@ -94,6 +96,9 @@ int main(int argc, char *argv[]) {
 		assertUIntEquals("nl_osvalue", 10, nl_osvalue((int*)nl_osvalue_data, 10)); // Also tests syscalls extensions
 		custom_sprintf(buf, "%s", "custom");
 		assertStrEquals("_syscall_custom", "custom", buf);
+		assertTrue("nl_hassyscall-1", nl_hassyscall(strlen));
+		assertFalse("nl_hassyscall-2", nl_hassyscall(TI_NN_SendKeyPress));
+		assertFalse("nl_hassyscall-3", nl_hassyscall(dummy));
 	}
 	
 	global_int = 1; // tests relocation of global variables 
