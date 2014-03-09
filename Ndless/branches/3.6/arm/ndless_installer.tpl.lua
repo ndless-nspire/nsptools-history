@@ -1,4 +1,4 @@
--- The contents of this file are subject to the Mozilla Public
+﻿-- The contents of this file are subject to the Mozilla Public
 -- License Version 1.1 (the "License"); you may not use this file
 -- except in compliance with the License. You may obtain a copy of
 -- the License at http://www.mozilla.org/MPL/
@@ -190,6 +190,7 @@ function drawMainView(gc)
             gc:setFont("sansserif", "r", 9)
             gc:setColorRGB(0xDD, 0xFF, 0xDD)
             gc:drawString(L"success", 5, 134, "top")
+			gc:drawString(L"nonpersistent", 5, 148, "top")
         end
     else
         if NO_TRICK then
@@ -230,7 +231,7 @@ function drawMainView(gc)
     end
 
     gc:setColorRGB(0xCC, 0xCC, 0xCC)
-    gc:fillRect(0, 152, 320, 1)
+    gc:fillRect(0, 166, 320, 1)
 
     if not NO_TRICK then -- to go well with non-displayed credits because of weird tincs stuff...
         gc:setColorRGB(0xFF, 0xDD, 0xDD)
@@ -382,6 +383,10 @@ strings = {
     ["success"] = {
         en = " ... Congratulations, you’ve successfully installed Ndless!",
         fr = " ... Félicitations, vous avez installé Ndless avec succès !",
+    },
+    ["nonpersistent"] = {
+        en = "Ndless will have to be reinstalled after each reboot.",
+        fr = "Ndless devra être réinstallé après chaque reboot.",
     },
     ["helpErr1"] = {
         en = bb .. "  Your device is not running OS 3.6!",
