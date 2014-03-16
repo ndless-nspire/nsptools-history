@@ -4,9 +4,8 @@
 by Critor
 with code fragments from Bsl, Goplat & ExtendeD
 
-Many thanks to TI-Planet and Omnimaga!
+Many thanks to TI-Planet!
 http://tiplanet.org
-http://omnimaga.org
 
 
 What for?

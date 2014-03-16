@@ -19,5 +19,13 @@
 #define BOOTD_PAGES_NUM		(DIAGS_PAGE_OFFSET-BOOTD_PAGE_OFFSET)
 #define DIAGS_PAGES_NUM		(FILES_PAGE_OFFSET-DIAGS_PAGE_OFFSET)
 
-static const unsigned read_nand_addrs[]			= {	0x10071F5C, 0x10071EC4, 0x10071658, 0X100715E8, 0x1006E0AC, 0x1006E03C,	0X10084C94,	0X10084BF0,	0X100842C4,	0x10084250};
-#define read_nand SYSCALL_CUSTOM(read_nand_addrs ,void,  void* dest, int size, int offset, int, int percent_max, void *progress_cb )
+static const unsigned read_nand_31_addrs[] = {0x10071F5C, 0x10071EC4, 0x10071658, 0X100715E8, 0x1006E0AC, 0x1006E03C};
+#define read_nand_31 SYSCALL_CUSTOM(read_nand_31_addrs, void,  void* dest, int size, int offset, int, int percent_max, void *progress_cb)
+
+// backward compatible read_nand
+void bc_read_nand(void* dest, int size, int offset, int unknown, int percent_max, void *progress_cb) {
+	if (nl_ndless_rev() < 989) // Ndless 3.1
+		read_nand_31(dest, size, offset, unknown, percent_max, progress_cb);
+	else
+		read_nand(dest, size, offset, unknown, percent_max, progress_cb);
+}

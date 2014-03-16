@@ -36,7 +36,7 @@ int diags_nand_endoffset() { return diags_nand_offset()+diags_size()-1; }
 int main(int argc, char** argv) {
 	char* manufflashdata=malloc(FILES_OFFSET_OFFSET+4);
 	int i;
-	read_nand(manufflashdata,FILES_OFFSET_OFFSET+4,manuf_nand_offset(),0,0,NULL);
+	bc_read_nand(manufflashdata,FILES_OFFSET_OFFSET+4,manuf_nand_offset(),0,0,NULL);
 	// TI-Nspire CX/CM partition table
 	if(!memcmp(manufflashdata+PART_TABLE_OFFSET,PART_TABLE_ID,PART_TABLE_SIZE))
 	{	nand_page_size=0x800;
@@ -97,7 +97,7 @@ int main(int argc, char** argv) {
 	strcpy(filename,"diags.img.tns");
 	ofile = fopen(filepath, "wb");
 	if(ofile)
-	{	read_nand(buf, diags_size(), diags_nand_offset(), 0, 0, NULL);
+	{	bc_read_nand(buf, diags_size(), diags_nand_offset(), 0, 0, NULL);
 		if(diags_size()==fwrite(buf, 1, diags_size(), ofile))
 			displn("Done!",0,1);
 		else
@@ -111,7 +111,7 @@ int main(int argc, char** argv) {
 	strcpy(filename,"boot2.img.tns");
 	ofile = fopen(filepath, "wb");
 	if(ofile)
-	{	read_nand(buf, boot2_size(), boot2_nand_offset(), 0, 0, NULL);
+	{	bc_read_nand(buf, boot2_size(), boot2_nand_offset(), 0, 0, NULL);
 		if(boot2_size()==fwrite(buf, 1, boot2_size(), ofile))
 			displn("Done!",0,1);
 		else
@@ -125,7 +125,7 @@ int main(int argc, char** argv) {
 	strcpy(filename,"manuf.img.tns");
 	ofile = fopen(filepath, "wb");
 	if(ofile)
-	{	read_nand(buf, manuf_size(), manuf_nand_offset(), 0, 0, NULL);
+	{	bc_read_nand(buf, manuf_size(), manuf_nand_offset(), 0, 0, NULL);
 		if(manuf_size()==fwrite(buf, 1, manuf_size(), ofile))
 			displn("Done!",0,1);
 		else
