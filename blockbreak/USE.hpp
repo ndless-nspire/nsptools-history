@@ -11,7 +11,7 @@
 /*}{}{}}{}{}{}{}{}{}{}{}{THIS USE.H FILE IS MODIFIED FOR BLOCKBREAK{}{}{}{}{}{}{}{}{}{}{}{}}{*/
 
 /********************************PREPROCESSOR INSTRUCTIONS *********************************/
-#include <OS.h>
+#include <os.h>
 #include <cstdlib>    
 /*For atexit() to deinitialize the engine at finish and rand() for random number generation as well 
 as exit() to terminate execution if something goes wrong.*/
@@ -33,7 +33,7 @@ as exit() to terminate execution if something goes wrong.*/
  
 //#define SCREEN_WIDTH 640     
 //#define SCREEN_HEIGHT 480 
-#define COLOR_DEPTH (is_cx ? 16 : 8)
+#define COLOR_DEPTH (has_colors ? 16 : 8)
 #define POINTSIZE 20
 /*Defines that make it easy for us to change the screen properties without even changing the functions.*/
 
