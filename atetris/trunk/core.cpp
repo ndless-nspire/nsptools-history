@@ -22,7 +22,7 @@ core::core()
     atexit (SDL_Quit);
 
     // Set 800x600 32-bits video mode
-    screen = SDL_SetVideoMode (SCREEN_WIDTH, SCREEN_HEIGHT, is_cx ? 16 : 8, SDL_SWSURFACE);
+    screen = SDL_SetVideoMode (SCREEN_WIDTH, SCREEN_HEIGHT, has_colors ? 16 : 8, SDL_SWSURFACE);
     if (screen == NULL)
     {
         printf ("Couldn't set video mode : %s\n", SDL_GetError ());
