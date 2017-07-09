@@ -339,7 +339,7 @@ void loadmedia()
   blocks[1] = nSDL_LoadImage(image_BLOCK1);
   
   /*Load the font we will be using*/
-  nSDL_LoadFont(NSDL_FONT_TINYTYPE, 255, 255, 255);
+  font = nSDL_LoadFont(NSDL_FONT_TINYTYPE, 255, 255, 255);
 }
 
 void mainloop()
@@ -371,7 +371,7 @@ void mainloop()
         heightoftext = nSDL_GetStringHeight(font, game_over_str);
 	    if (widthoftext > 320)
 			widthoftext = 320; // work around nSDL bug
-		gamedialog = SDL_CreateRGBSurface(SDL_SWSURFACE, widthoftext, heightoftext, COLOR_DEPTH, 0, 0, 0, 255);
+		gamedialog = SDL_CreateRGBSurface(SDL_SWSURFACE, widthoftext, heightoftext, COLOR_DEPTH, 255, 255, 255, 255);
         	  
 		/*Check to see if anything went wrong in rendering the text.*/
         if (gamedialog == 0)
@@ -379,7 +379,7 @@ void mainloop()
           printf("Unable to render text\n");
           exit(1);
         }
-		//nSDL_DrawString(gamedialog, font, 0, 0, game_over_str);
+		nSDL_DrawString(gamedialog, font, 0, 0, game_over_str);
       }
       SDL_FillRect(screen, 0, SDL_MapRGB(screen->format, 0, 0, 0));
       drawimage(gamedialog, 0, 0, widthoftext, heightoftext, screen, 25, 25, 255);
@@ -707,7 +707,7 @@ void UpdateDisplay()
     printf("Unable to render text\n");
     exit(1);
   }
-  //nSDL_DrawString(gamedialog, font, 0, 0, scoretext);
+  nSDL_DrawString(gamedialog, font, 0, 0, scoretext);
   
   /*Check to see if either player or computer has won and if so enter game over mode so the next iteration of the mainloop will be drawing the game over message on the screen.*/
   if (Lives < 0)
